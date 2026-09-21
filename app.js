@@ -2536,8 +2536,8 @@
     var defs = document.createElementNS(svgNS, 'defs');
     defs.innerHTML =
       '<linearGradient id="imagoChartFill" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="#4fa96a" stop-opacity="0.18"/>' +
-      '<stop offset="100%" stop-color="#4fa96a" stop-opacity="0"/></linearGradient>';
+      '<stop offset="0%" stop-color="#1b1b19" stop-opacity="0.12"/>' +
+      '<stop offset="100%" stop-color="#1b1b19" stop-opacity="0"/></linearGradient>';
     svg.appendChild(defs);
 
     // three horizontal guides, labelled with their value

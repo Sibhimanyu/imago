@@ -915,9 +915,9 @@ table.comp-table tr:last-child td { border-bottom: none; }
 /* chart */
 .chart-wrap { width: 100%; }
 .chart-svg { display: block; width: 100%; height: 130px; overflow: visible; }
-.chart-line { fill: none; stroke: var(--green); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart-area { fill: url(#imagoChartFill); }
-.chart-dot { fill: var(--green); }
+.chart-dot { fill: var(--ink); }
 .chart-axis { font-family: var(--mono); font-size: 9.5px; fill: var(--muted-2); }
 .chart-grid { stroke: var(--line-soft); stroke-width: 1; }
 
