@@ -1879,7 +1879,7 @@
       }
 
       var section = el('section', 'spec-section');
-      if (group.label) section.appendChild(el('h4', 'spec-section-head', group.label));
+      if (group.label) section.appendChild(el('h2', 'spec-section-head', group.label));
 
       var heroRow = null, strip = null, grid = null;
       var h, f, b;
@@ -3167,7 +3167,7 @@
 
   function renderRawSection() {
     var section = el('section', 'spec-section stage-raw');
-    section.appendChild(el('h4', 'spec-section-head', 'Raw response'));
+    section.appendChild(el('h2', 'spec-section-head', 'Raw response'));
     var grid = el('div', 'spec-grid');
     var raw = renderComponent({ type: 'jsonBlock', path: '', label: state.url || 'Response' }, state.data, state.diff);
     raw.node.className += ' span-12';
