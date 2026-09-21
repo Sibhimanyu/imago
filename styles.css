@@ -775,6 +775,23 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 }
 .timeline-mark[data-lane] .timeline-tag { transition: none; }
 .timeline-time { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Narrow columns: the same moments as a list, in time order. */
+.timeline-rail.is-stacked { height: auto; display: flex; flex-direction: column; gap: 0; }
+.timeline-rail.is-stacked .timeline-track { display: none; }
+.timeline-rail.is-stacked .timeline-mark {
+  position: static; transform: none;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--line-soft);
+}
+.timeline-rail.is-stacked .timeline-mark:last-child { border-bottom: none; }
+.timeline-rail.is-stacked .timeline-tag {
+  position: static; transform: none;
+  flex-direction: row; align-items: baseline; gap: 10px;
+  width: auto; text-align: left; min-width: 0;
+}
+.timeline-rail.is-stacked .timeline-time { flex: 0 0 auto; min-width: 44px; }
+.timeline-rail.is-stacked .timeline-name { font-size: 12.5px; }
 .timeline-name { font-size: 10.5px; color: var(--muted); line-height: 1.25; }
 
 .comp {

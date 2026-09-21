@@ -2188,6 +2188,20 @@
       if (!width) continue;
 
       var marks = rail.querySelectorAll('.timeline-mark');
+
+      // Under ~520px there is no room for lanes: a dawn cluster of four moments
+      // lands inside 30px. The sequence reads better as a list there.
+      var stacked = width < 520;
+      rail.classList.toggle('is-stacked', stacked);
+      if (stacked) {
+        rail.style.height = '';
+        for (var m = 0; m < marks.length; m += 1) {
+          marks[m].style.top = '';
+          var stackedTag = marks[m].querySelector('.timeline-tag');
+          if (stackedTag) { stackedTag.style.top = ''; stackedTag.style.bottom = ''; }
+        }
+        continue;
+      }
       var laneEnds = [];
       var rowStep = 0;
       var i;
