@@ -1090,6 +1090,8 @@ table.comp-table tr:last-child td { border-bottom: none; }
   .comp, .comp.span-6, .comp.span-8 { grid-column: span 12; }
   .timeline-rail { height: 132px; }
   .timeline-tag { width: 62px; }
+  .fact-strip { grid-template-columns: repeat(2, 1fr); }
+  .hero-row { grid-template-columns: 1fr; }
   .setup-card { padding: 32px 24px 26px; }
 
   .saved-item { flex-wrap: wrap; gap: 10px; }
