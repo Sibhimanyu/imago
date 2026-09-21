@@ -1,0 +1,61 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html{width:1200px;height:630px;overflow:hidden}
+body{width:1200px;height:630px;background:#f6f5f1;overflow:hidden;position:relative;
+  font-family:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1b1b19}
+.pad{padding:74px 78px;height:100%;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:13px}
+.brand .word{font-size:27px;font-weight:600;letter-spacing:-.024em}
+h1{font-size:82px;line-height:1.02;letter-spacing:-.04em;font-weight:600;max-width:15ch}
+.sub{margin-top:24px;font-size:24px;color:#575650;letter-spacing:-.012em}
+.foot{display:flex;align-items:center;gap:14px;font-size:19px;color:#8a8981}
+.dot{width:5px;height:5px;border-radius:50%;background:#c9c7bf}
+.art{position:absolute;right:14px;top:92px;display:flex;flex-direction:column;gap:18px;z-index:1}
+.card{background:#fff;border:1px solid #e7e5df;border-radius:18px;box-shadow:0 20px 50px -22px rgba(27,27,25,.30);padding:20px 24px;display:flex;align-items:center;gap:16px}
+.c1{width:306px;transform:rotate(-3deg)}
+.c2{width:340px;transform:rotate(2deg);margin-left:-26px}
+.c3{width:306px;transform:rotate(-1.5deg);margin-left:16px}
+.sw{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex:0 0 auto}
+.lbl{font-size:12px;color:#8a8981;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.val{font-size:25px;font-weight:600;letter-spacing:-.025em}
+.bars{flex:1;display:flex;flex-direction:column;gap:7px}
+.bar{height:7px;border-radius:99px;background:#f1efe9}
+.bar i{display:block;height:100%;border-radius:99px}
+</style></head><body>
+<div class="art">
+  <div class="card c1">
+    <span class="sw" style="background:#fdf3cd">⚡</span>
+    <div><div class="lbl">Pokémon</div><div class="val">Pikachu</div></div>
+  </div>
+  <div class="card c2">
+    <div class="bars">
+      <div class="bar"><i style="width:38%;background:#ef6b6b"></i></div>
+      <div class="bar"><i style="width:56%;background:#f5a623"></i></div>
+      <div class="bar"><i style="width:74%;background:#4fa96a"></i></div>
+    </div>
+  </div>
+  <div class="card c3">
+    <span class="sw" style="background:#eaf3fd">☀</span>
+    <div><div class="lbl">Chennai</div><div class="val">28°C</div></div>
+  </div>
+</div>
+<div class="pad">
+  <div class="brand">
+    <svg width="42" height="42" viewBox="0 0 32 32">
+      <rect width="32" height="32" rx="8" fill="#1b1b19"/>
+      <g fill="#fff" transform="translate(16 16) scale(.78) translate(-16 -16)">
+        <rect x="4.6" y="9.1" width="5.2" height="3" rx="1.5"/>
+        <rect x="4.6" y="14.5" width="7.6" height="3" rx="1.5"/>
+        <rect x="4.6" y="19.9" width="9.8" height="3" rx="1.5"/>
+        <rect x="18.8" y="7.4" width="8.6" height="17.2" rx="3.3"/>
+      </g>
+    </svg>
+    <span class="word">Imago</span>
+  </div>
+  <div>
+    <h1>APIs become interfaces.</h1>
+    <p class="sub">Paste an endpoint. Get a readable interface, not raw JSON.</p>
+  </div>
+  <div class="foot"><span>Explore</span><span class="dot"></span><span>Remember</span><span class="dot"></span><span>Watch it change</span></div>
+</div>
+</body></html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+:root{--ink:#1b1b19;--ink2:#45443f;--bg:#f6f5f1;--card:#fff;--line:#e7e5df;--soft:#efedE8;--muted:#8a8981;--m2:#a8a79f;
+--yellow:#f5ce47;--ybg:#fdf3cd;--yink:#8a6d12;--green:#4fa96a;--gbg:#e4f4e8;--red:#d9534f;--rbg:#fbeaea;--blue:#4f86c6;--bbg:#e8f0fa}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.6 "Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,sans-serif;padding:48px 56px 64px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.head .w{font-size:26px;font-weight:600;letter-spacing:-.026em}
+.lede{color:var(--muted);font-size:14px;margin-bottom:44px}
+h2{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--m2);margin:0 0 18px}
+section{padding:30px 0;border-top:1px solid var(--line)}
+.grid{display:grid;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}
+.cap{font:10.5px/1.4 ui-monospace,Menlo,monospace;color:var(--m2)}
+
+.cols3{grid-template-columns:repeat(3,1fr)}
+.cols4{grid-template-columns:repeat(4,1fr)}
+.cols2{grid-template-columns:1.1fr 1fr}
+
+.sw{height:76px;border-radius:11px;border:1px solid rgba(0,0,0,.05);margin-bottom:11px}
+.role{font-size:13px;font-weight:600}
+.hex{font:11.5px ui-monospace,Menlo,monospace;color:var(--muted)}
+.mean{font-size:12px;color:var(--muted);margin-top:5px;display:block;line-height:1.5}
+
+.spec{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap}
+.spec .cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.tile{background:var(--ink);border-radius:9px;display:grid;place-items:center;color:#fff}
+
+.type-row{display:flex;align-items:baseline;gap:20px;padding:11px 0;border-bottom:1px solid var(--soft)}
+.type-row:last-child{border:none}
+.type-row .lab{width:118px;flex:0 0 auto;font:10.5px ui-monospace,Menlo,monospace;color:var(--m2)}
+
+.dont{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--soft);font-size:13px}
+.dont:last-child{border:none}
+.x{width:20px;height:20px;border-radius:50%;background:var(--rbg);color:var(--red);display:grid;place-items:center;font-size:12px;flex:0 0 auto;font-weight:700}
+.ok{width:20px;height:20px;border-radius:50%;background:var(--gbg);color:#2f7a48;display:grid;place-items:center;font-size:12px;flex:0 0 auto;font-weight:700}
+
+.clear{position:relative;display:inline-block;padding:26px;background:repeating-linear-gradient(45deg,#f1efe9,#f1efe9 5px,transparent 5px,transparent 10px);border-radius:12px}
+.clear .inner{background:var(--bg);padding:0;display:block}
+.voice{font-size:13.5px;padding:10px 0;border-bottom:1px solid var(--soft)}
+.voice:last-child{border:none}
+.voice b{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:500}
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="m" viewBox="0 0 32 32" fill="currentColor">
+    <rect x="4.6" y="9.1" width="5.2" height="3" rx="1.5"/><rect x="4.6" y="14.5" width="7.6" height="3" rx="1.5"/>
+    <rect x="4.6" y="19.9" width="9.8" height="3" rx="1.5"/><rect x="18.8" y="7.4" width="8.6" height="17.2" rx="3.3"/>
+  </symbol>
+  <symbol id="ic" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="8" fill="#1b1b19"/>
+    <g fill="#fff" transform="translate(16 16) scale(.78) translate(-16 -16)">
+      <rect x="4.6" y="9.1" width="5.2" height="3" rx="1.5"/><rect x="4.6" y="14.5" width="7.6" height="3" rx="1.5"/>
+      <rect x="4.6" y="19.9" width="9.8" height="3" rx="1.5"/><rect x="18.8" y="7.4" width="8.6" height="17.2" rx="3.3"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="head"><svg width="40" height="40"><use href="#ic"/></svg><span class="w">Imago</span></div>
+<p class="lede">Brand system · APIs become interfaces</p>
+
+<section>
+  <h2>The mark — “Emergence”</h2>
+  <div class="grid cols2">
+    <div class="card">
+      <div class="spec">
+        <div class="cell"><svg width="104" height="104"><use href="#m"/></svg><span class="cap">mark</span></div>
+        <div class="cell"><span class="tile" style="width:76px;height:76px"><svg width="46" height="46"><use href="#m"/></svg></span><span class="cap">app icon</span></div>
+        <div class="cell"><svg width="28" height="28"><use href="#m"/></svg><span class="cap">28</span></div>
+        <div class="cell"><svg width="16" height="16"><use href="#m"/></svg><span class="cap">16 · favicon</span></div>
+      </div>
+      <p class="note">Three loose rows resolve into one solid form. Read left to right it is the product: raw data becomes a rendered interface. The rows grow toward the block so the eye travels in the direction of the transformation. An <i>imago</i> is the final, fully-formed stage after metamorphosis — the mark is that arrival, not the process.</p>
+    </div>
+    <div class="card">
+      <div class="clear"><span class="inner"><svg width="76" height="76"><use href="#m"/></svg></span></div>
+      <p class="note"><b>Clear space</b> — keep one block-width (the tall form) clear on every side. Minimum size 16px; below that use the app icon, never the bare mark. The mark is single-colour and never gradient, outlined, rotated, or stretched.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Lockups</h2>
+  <div class="grid cols3">
+    <div class="card"><span style="display:flex;align-items:center;gap:10px"><svg width="28" height="28"><use href="#ic"/></svg><span style="font-size:18px;font-weight:600;letter-spacing:-.021em">Imago</span></span><p class="note">Primary. Icon + wordmark, gap = ⅓ icon width.</p></div>
+    <div class="card" style="background:#1b1b19;border-color:#1b1b19"><span style="display:flex;align-items:center;gap:10px;color:#fff"><svg width="28" height="28" style="color:#fff"><use href="#m"/></svg><span style="font-size:18px;font-weight:600;letter-spacing:-.021em">Imago</span></span><p class="note" style="color:#8a8981">On ink. Mark goes white; drop the tile.</p></div>
+    <div class="card"><span style="font-size:18px;font-weight:600;letter-spacing:-.021em">Imago</span><p class="note">Wordmark alone, where the mark already appears nearby.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Colour — every value means something</h2>
+  <div class="grid cols4">
+    <div class="card"><div class="sw" style="background:#f6f5f1"></div><span class="role">Paper</span> <span class="hex">#f6f5f1</span><span class="mean">The page. Warm grey, never white — this is a reading surface for dense JSON.</span></div>
+    <div class="card"><div class="sw" style="background:#1b1b19"></div><span class="role">Ink</span> <span class="hex">#1b1b19</span><span class="mean">Text, the mark, primary actions. Near-black, never #000.</span></div>
+    <div class="card"><div class="sw" style="background:#f5ce47"></div><span class="role">Amber</span> <span class="hex">#f5ce47</span><span class="mean">Something changed. The only decorative-looking colour, and it is never decorative.</span></div>
+    <div class="card"><div class="sw" style="background:#4fa96a"></div><span class="role">Green</span> <span class="hex">#4fa96a</span><span class="mean">Live, generated, succeeded. Auto-refresh pulse.</span></div>
+    <div class="card"><div class="sw" style="background:#d9534f"></div><span class="role">Red</span> <span class="hex">#d9534f</span><span class="mean">Failed. Errors and destructive actions only.</span></div>
+    <div class="card"><div class="sw" style="background:#4f86c6"></div><span class="role">Blue</span> <span class="hex">#4f86c6</span><span class="mean">Links and numeric tokens in code.</span></div>
+    <div class="card"><div class="sw" style="background:#e7e5df"></div><span class="role">Line</span> <span class="hex">#e7e5df</span><span class="mean">Borders and rules. Structure comes from lines, not shadows.</span></div>
+    <div class="card"><div class="sw" style="background:#8a8981"></div><span class="role">Muted</span> <span class="hex">#8a8981</span><span class="mean">Labels and secondary text.</span></div>
+  </div>
+  <p class="note" style="margin-top:16px">Stat bars are the one exception — they run a six-step spectrum (red → amber → green) so ranked values can be compared at a glance. Outside charts, never introduce a colour without a meaning.</p>
+</section>
+
+<section>
+  <h2>Type — one family, weight does the work</h2>
+  <div class="card">
+    <div class="type-row"><span class="lab">display / 60</span><span style="font-size:40px;font-weight:600;letter-spacing:-.035em">APIs become interfaces.</span></div>
+    <div class="type-row"><span class="lab">title / 26</span><span style="font-size:26px;font-weight:600;letter-spacing:-.025em">Saved</span></div>
+    <div class="type-row"><span class="lab">metric / 27</span><span style="font-size:27px;font-weight:600;letter-spacing:-.03em">284.1</span></div>
+    <div class="type-row"><span class="lab">body / 14</span><span style="font-size:14px">Paste an endpoint and Imago designs a view for it.</span></div>
+    <div class="type-row"><span class="lab">label / 11.5</span><span style="font-size:11.5px;font-weight:600;color:var(--muted)">BASE EXPERIENCE</span></div>
+    <div class="type-row"><span class="lab">mono / 12.5</span><span style="font:12.5px ui-monospace,Menlo,monospace;color:var(--ink2)">sch_1a2g7a2</span></div>
+    <p class="note">Inter, falling back to the system UI stack — no webfont request, so the first paint is never blocked. Monospace carries anything the machine produced: URLs, hashes, JSON, headers. If it came from an API, it is monospace.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Voice</h2>
+  <div class="card">
+    <div class="voice"><span class="ok">✓</span> <b>“Schema already known — reused cached interface, no Gemini call.”</b></div>
+    <div class="voice"><span class="x">✕</span> <b>“Awesome! We've magically supercharged your API! 🚀”</b></div>
+    <div class="voice"><span class="ok">✓</span> <b>“The browser could not reach this endpoint. It may not send CORS headers.”</b></div>
+    <div class="voice"><span class="x">✕</span> <b>“Oops! Something went wrong.”</b></div>
+    <p class="note">Say what happened and what it means for the user. Name the real cause, including when the cause is us. No exclamation marks, no emoji, no congratulating the user for clicking a button.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Don’ts</h2>
+  <div class="card">
+    <div class="dont"><span class="x">✕</span> Recolour the mark, outline it, or place it on a busy photograph.</div>
+    <div class="dont"><span class="x">✕</span> Use amber for emphasis. Amber means a value changed.</div>
+    <div class="dont"><span class="x">✕</span> Add a second typeface, or set body copy in monospace.</div>
+    <div class="dont"><span class="x">✕</span> Animate for delight. Motion confirms an action or it does not ship.</div>
+    <div class="dont"><span class="x">✕</span> Put the tile behind the mark when it already sits on ink.</div>
+  </div>
+</section>
+
+</body></html>
