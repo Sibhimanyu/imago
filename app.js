@@ -1670,8 +1670,9 @@
   var BLOCK_TYPES = ['table', 'jsonBlock', 'chart', 'timeline', 'keyValue',
                      'list', 'statBars', 'badges', 'image'];
 
-  // Stat bars read better as a ranked spectrum than as one flat accent colour.
-  var STAT_COLORS = ['#ef6b6b', '#f5a623', '#f5ce47', '#5b9bd5', '#6aa9e0', '#4fa96a'];
+  // Brand rule: colour means the data moved, never decoration. Bars are ink;
+  // the eye ranks them by length, which is the point of a bar.
+  var STAT_COLORS = ['var(--ink)'];
 
   var HERO_KINDS = ['percent', 'duration', 'durationMs', 'bytes', 'money',
                     'temperature', 'number', 'datetime'];
