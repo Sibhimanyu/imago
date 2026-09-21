@@ -89,6 +89,18 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 ::selection { background: var(--ink); color: var(--card); }
 
+/* Keyboard focus is ink, like everything else that means "you are here". */
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible, select:focus-visible {
+  outline: 2px solid var(--ink); outline-offset: 2px;
+}
+button:focus:not(:focus-visible) { outline: none; }
+
+/* Fingers get 44px; pointers keep the dense desktop sizing. */
+@media (pointer: coarse) {
+  .stage-back, .action-btn, .chip, .appnav button, .tabs button, .link-btn, .btn-xs { min-height: 44px; }
+  .link-btn { padding: 12px 8px; }
+}
+
 /* ─── Buttons ──────────────────────────────────────────────────── */
 
 .btn {
