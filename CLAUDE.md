@@ -26,3 +26,27 @@ Using gstack skills: After install, skills like /qa, /ship, /review, /investigat
 and /browse are available. Use /browse for all web browsing (Aside first, the bundled gstack browser as fallback).
 Use the resolved install path above for gstack file paths
 (default: ~/.claude/skills/gstack).
+
+## Testing
+
+```bash
+npm test
+```
+
+Vitest + jsdom. Tests live in `test/`; read **TESTING.md** before adding any —
+`app.js` is a single IIFE reached through a `window.__imago` test seam, `boot()`
+is async and must be awaited, and jsdom has two traps (Storage is a Proxy, there
+is no layout) that the harness documents.
+
+Expectations:
+
+- 100% coverage is the goal — tests are what make fast iteration safe here.
+- New function → write a test for it.
+- Bug fix → write a regression test that fails without the fix, then
+  **mutation-check it**: break the fix on purpose and confirm the suite goes
+  red. Three tests in this repo once passed regardless of what the source did.
+- New conditional → test both paths. New error path → trigger it.
+- Never commit code that makes an existing test fail.
+
+`app.js` ships unbundled, so a syntax error is a blank page, not a build error.
+CI runs `node --check app.js` and `./publish.sh` alongside the suite.

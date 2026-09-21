@@ -1,2 +1,5 @@
 .claude/skills/gstack/
 dist/
+node_modules/
+.context/
+coverage/
