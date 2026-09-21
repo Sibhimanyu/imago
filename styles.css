@@ -998,6 +998,7 @@ table.comp-table tr:last-child td { border-bottom: none; }
   display: grid; place-items: center;
   font-size: 15px; font-weight: 600;
   flex: 0 0 auto;
+  background: var(--bg-sink); color: var(--ink);
 }
 .saved-main { flex: 1 1 auto; min-width: 0; }
 .saved-name { font-size: 14px; font-weight: 600; display: block; }

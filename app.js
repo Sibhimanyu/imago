@@ -3201,10 +3201,8 @@
 
   /* ── Saved requests ────────────────────────────────────────────────────── */
 
-  var AVATAR_COLORS = [
-    ['#fdf3cd', '#8a6d12'], ['#e8f0fa', '#3f6fb5'], ['#e4f4e8', '#2f7a48'],
-    ['#f4eaf8', '#7b4b9c'], ['#fbeaea', '#b5443f'], ['#eceaf6', '#54509c']
-  ];
+  // Saved-list avatars carry a letter, not a colour: the semantic set is
+  // reserved for changed / live / failed, and purple is banned outright.
 
   function currentRequestKey() {
     return state.url ? hashString(state.url) : '';
@@ -3239,10 +3237,7 @@
       (function (item) {
         var li = el('li', 'saved-item');
 
-        var palette = AVATAR_COLORS[Math.abs(hashCode(hostOf(item.url))) % AVATAR_COLORS.length];
         var avatar = el('span', 'saved-avatar', (item.name || '?').charAt(0).toUpperCase());
-        avatar.style.background = palette[0];
-        avatar.style.color = palette[1];
         li.appendChild(avatar);
 
         var main = el('div', 'saved-main');
