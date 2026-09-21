@@ -7,9 +7,9 @@
              Defined once as a symbol in index.html, and duplicated in
              favicon.svg, assets/*.svg and brand/og.html, which nothing syncs.
    Brand     No brand hue. Ink and paper only. The semantic set already owns
-             amber, green, red and blue; every remaining family either collides
-             with a meaning or is the banned purple. Colour means the user's
-             data moved, never "us".
+             amber, green and red, plus the single --link blue; every remaining
+             family either collides with a meaning or is the banned purple.
+             Colour means the user's data moved, never "us".
    Voice     Plain and precise. State what happened, not how clever it was.
              "Schema already known — reused cached interface."
    Colour    Paper (#f6f5f1) not white: this is a reading surface, and warm
@@ -47,9 +47,7 @@
   --red:        #d9534f;
   --red-bg:     #fbeaea;
   --red-ink:    #a83e3a;   /* red text on red-bg: 5.3:1 */
-  --blue:       #4f86c6;
   --link:       #3f6fb5;   /* the one link blue; 5.1:1 on white */
-  --blue-bg:    #e8f0fa;
 
   --r-lg: 16px;
   --r:    12px;
@@ -572,7 +570,7 @@ body.is-stage .runmeta,
 body.is-stage .tabs { display: none !important; }
 body.is-stage .app-main { max-width: 1180px; padding-top: 22px; }
 body.is-stage #interfaceCard { background: transparent; border: 0; box-shadow: none; padding: 0; }
-body.is-stage /* Wrapper the renderer puts around every generated layout. It carries the
+/* Wrapper the renderer puts around every generated layout. It carries the
    layout-* modifier, so it needs to exist as a stacking context even though
    the visual weight lives on the children. */
 .spec-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -601,7 +599,6 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 .action-btn.is-primary svg { color: inherit; }
 .action-btn.is-on { background: var(--green-bg); border-color: #c6e5cf; color: #2f7a48; }
 .action-btn.is-on svg { color: inherit; }
-.action-host { font-size: 12px; color: var(--muted-2); font-family: var(--mono); margin-left: 2px; }
 
 .stage-raw { margin-top: 26px; }
 
@@ -682,8 +679,8 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 .val-text { word-break: break-word; }
 .val-unit { font-size: max(12px, .62em); color: var(--muted); font-weight: 500; letter-spacing: 0; }
 .val-sub { font-size: 12px; color: var(--muted-2); margin-top: 4px; line-height: 1.4; }
-/* Emitted by renderText/renderLink for plain values. Was shipping with no rule
-   at all, so it inherited nothing and broke the reading rhythm. */
+/* Emitted by renderImage's non-URL degrade path for plain values. Was shipping
+   with no rule at all, so it inherited nothing and broke the reading rhythm. */
 .comp-text-value {
   font-size: 14px; color: var(--ink-2); line-height: 1.55;
   word-break: break-word; white-space: pre-wrap;
@@ -813,7 +810,6 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .comp.span-6  { grid-column: span 6; }
-.comp.span-8  { grid-column: span 8; }
 .comp.span-12 { grid-column: span 12; }
 
 .comp.is-changed {
@@ -885,11 +881,11 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .statbar:last-child { margin-bottom: 0; }
 .statbar-name { font-size: 12.5px; color: var(--ink-2); width: 86px; flex: 0 0 auto; }
 .statbar-track { flex: 1 1 auto; height: 8px; background: var(--bg-sink); border-radius: 999px; overflow: hidden; }
-.statbar-fill { height: 100%; border-radius: 999px; transition: width .45s cubic-bezier(.4,.1,.2,1); }
+/* Brand rule: colour means the data moved, never decoration. Bars are ink;
+   the eye ranks them by length, which is the point of a bar. */
+.statbar-fill { height: 100%; border-radius: 999px; background: var(--ink); transition: width .45s cubic-bezier(.4,.1,.2,1); }
 .statbar-val { font-size: 12.5px; font-weight: 600; color: var(--ink); width: 34px; text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 
-.comp-link a { color: var(--link); font-size: 13px; word-break: break-all; text-decoration: none; }
-.comp-link a:hover { text-decoration: underline; }
 
 .comp-json pre {
   margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.6;
@@ -897,12 +893,6 @@ table.comp-table tr:last-child td { border-bottom: none; }
   max-height: 280px; overflow: auto;
 }
 
-.comp-section-heading {
-  grid-column: 1 / -1;
-  font-size: 12px; font-weight: 600; color: var(--muted);
-  border-bottom: 1px solid var(--line-soft);
-  padding-bottom: 7px; margin-top: 6px;
-}
 .more-note { font-size: 12px; color: var(--muted-2); margin-top: 10px; font-style: italic; }
 
 /* chart */
@@ -942,7 +932,6 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .tok-num { color: var(--link); }
 .tok-bool { color: var(--ink); font-weight: 600; }
 .tok-null { color: var(--muted-2); }
-.tok-punc { color: var(--muted-2); }
 
 /* ─── Changes pane ─────────────────────────────────────────────── */
 
@@ -1055,7 +1044,6 @@ table.comp-table tr:last-child td { border-bottom: none; }
   .float-poke { left: 2%; }
   .float-repo { left: 12%; }
   .comp { grid-column: span 6; }
-  .comp.span-8 { grid-column: span 12; }
 }
 
 @media (max-width: 720px) {
@@ -1081,7 +1069,7 @@ table.comp-table tr:last-child td { border-bottom: none; }
   .url-input { font-size: 12.5px; }
   .reqtools { gap: 10px; }
 
-  .comp, .comp.span-6, .comp.span-8 { grid-column: span 12; }
+  .comp, .comp.span-6 { grid-column: span 12; }
   .timeline-rail { height: 132px; }
   .timeline-tag { width: 62px; }
   .fact-strip { grid-template-columns: repeat(2, 1fr); }

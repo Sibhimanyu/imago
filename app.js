@@ -287,10 +287,10 @@
       try {
         window.localStorage.removeItem(STORE.snaps);
         window.localStorage.setItem(storeKey, JSON.stringify(value));
-        setStatusMessage('Storage was full — older snapshots were dropped.', 'warn');
+        toast('Storage was full — older snapshots were dropped.', 'warn');
         return true;
       } catch (err2) {
-        setStatusMessage('Browser storage is full. Nothing was saved.', 'error');
+        toast('Browser storage is full. Nothing was saved.', 'error');
         return false;
       }
     }
@@ -1670,10 +1670,6 @@
   var BLOCK_TYPES = ['table', 'jsonBlock', 'chart', 'timeline', 'keyValue',
                      'list', 'statBars', 'badges', 'image'];
 
-  // Brand rule: colour means the data moved, never decoration. Bars are ink;
-  // the eye ranks them by length, which is the point of a bar.
-  var STAT_COLORS = ['var(--ink)'];
-
   var HERO_KINDS = ['percent', 'duration', 'durationMs', 'bytes', 'money',
                     'temperature', 'number', 'datetime'];
 
@@ -1874,11 +1870,6 @@
       }
       if (!heroes.length && !facts.length && !blocks.length) continue;
 
-      // A lone fact next to nothing else looks lost — promote it to a card.
-      if (!heroes.length && facts.length && facts.length < 2 && blocks.length) {
-        // keep it in the strip; a single-cell strip still reads fine
-      }
-
       var section = el('section', 'spec-section');
       if (group.label) section.appendChild(el('h2', 'spec-section-head', group.label));
 
@@ -1906,10 +1897,8 @@
         // Within structure-first layouts the timeline / table still leads.
         if (structureFirst) {
           blocks.sort(function (x, y) {
-            var lead = spec.layout === 'timeline' ? 'timeline' : (spec.layout === 'article' ? 'prose' : 'table');
             var xs = x.node.querySelector('.timeline, .comp-table, .kind-prose') ? 0 : 1;
             var ys = y.node.querySelector('.timeline, .comp-table, .kind-prose') ? 0 : 1;
-            void lead;
             return xs - ys;
           });
         }
@@ -2471,7 +2460,6 @@
       var fill = el('div', 'statbar-fill');
       var pct = Math.max(0, Math.min(100, (raw / max) * 100));
       fill.style.width = pct.toFixed(1) + '%';
-      fill.style.background = STAT_COLORS[i % STAT_COLORS.length];
       track.appendChild(fill);
       bar.appendChild(track);
 
@@ -2536,8 +2524,8 @@
     var defs = document.createElementNS(svgNS, 'defs');
     defs.innerHTML =
       '<linearGradient id="imagoChartFill" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="#1b1b19" stop-opacity="0.12"/>' +
-      '<stop offset="100%" stop-color="#1b1b19" stop-opacity="0"/></linearGradient>';
+      '<stop offset="0%" stop-color="var(--ink)" stop-opacity="0.12"/>' +
+      '<stop offset="100%" stop-color="var(--ink)" stop-opacity="0"/></linearGradient>';
     svg.appendChild(defs);
 
     // three horizontal guides, labelled with their value
@@ -2592,18 +2580,6 @@
     wrap.appendChild(svg);
     wrap.appendChild(el('p', 'more-note',
       numbers.length + ' points · low ' + (Math.round(min * 10) / 10) + ' · high ' + (Math.round(max * 10) / 10)));
-    return wrap;
-  }
-
-  function renderLink(value, component) {
-    var href = formatValue(value);
-    if (!isUrl(href)) return el('div', 'comp-text-value', href);
-    var wrap = el('div', 'comp-link');
-    var a = el('a', null, href);
-    a.href = href;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    wrap.appendChild(a);
     return wrap;
   }
 
@@ -2772,7 +2748,8 @@
     }
 
     var lines = text.split('\n');
-    var truncated = lines.length > MAX_CODE_LINES;
+    var totalLines = lines.length;
+    var truncated = totalLines > MAX_CODE_LINES;
     if (truncated) lines = lines.slice(0, MAX_CODE_LINES);
 
     var out = [];
@@ -2781,7 +2758,7 @@
     }
     if (truncated) {
       out.push('<span class="ln"></span><span class="tok-null">… ' +
-               (text.split('\n').length - MAX_CODE_LINES) + ' more lines</span>');
+               (totalLines - MAX_CODE_LINES) + ' more lines</span>');
     }
     dom.rawOut.innerHTML = out.join('\n');
   }
@@ -3271,12 +3248,6 @@
         dom.savedList.appendChild(li);
       })(list[i]);
     }
-  }
-
-  function hashCode(text) {
-    var hash = 0;
-    for (var i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) | 0;
-    return hash;
   }
 
   function saveCurrentRequest() {
