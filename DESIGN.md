@@ -49,6 +49,9 @@ sizes the two left fields plus the tall aperture can read as a padlock, and belo
 Geometry, on the 32-unit grid:
 
 ```
+<rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/>
+<rect x="3" y="14.3" width="11.5" height="6" rx="3"/>
+
 M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z
 ```
 
