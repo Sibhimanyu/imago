@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+  <!-- The app renders model-authored specs over third-party JSON and holds an
+       API key in sessionStorage, so the renderer runs behind a policy rather
+       than on trust alone. No inline script is allowed, and there is none.
+       `unsafe-inline` is granted to styles only, for the one style="" attribute
+       in this file; app.js sets styles through the CSSOM, which CSP does not
+       gate. connect-src allows https: because the whole point is fetching
+       user-chosen API endpoints and a provider's completion endpoint. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https:; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imago — APIs become interfaces</title>
 <meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">

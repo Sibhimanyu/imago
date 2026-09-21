@@ -17,6 +17,7 @@
 
   var SESSION = {
     key: 'imago.apiKey',
+    headers: 'imago.lastHeaders',   // request headers: session-only, like the key
     legacyKey: 'imago.geminiKey',   // pre-multi-provider builds
     model: 'imago.modelName',
     provider: 'imago.provider'
@@ -259,6 +260,12 @@
     stage: false,          // the generated page owns the screen
     stagePref: true,       // false once the reader pressed Back to the controls
     stack: [],             // urls behind the current page, for Back
+    historyDepth: 0,       // history entries this app pushed; popstate owns the pop
+    navRestorePoint: null, // what was on screen before an in-flight navigation
+    generating: false,     // a model call is in flight
+    rawPaneDirty: true,    // body changed since the Raw pane was last built
+    schemaPaneDirty: true,
+    hasData: false,        // a fetch succeeded — distinct from `data` being falsy
     showRaw: false
   };
 
@@ -286,6 +293,7 @@
       // bulkiest and the most disposable thing we keep.
       try {
         window.localStorage.removeItem(STORE.snaps);
+        snapshotCache = null;   // the store we just dropped must not be served from cache
         window.localStorage.setItem(storeKey, JSON.stringify(value));
         toast('Storage was full — older snapshots were dropped.', 'warn');
         return true;
@@ -308,11 +316,29 @@
   }
   function setSchemaSpecs(map) { return writeJSON(STORE.specs, map); }
 
+  // The snapshot store is the bulkiest thing we keep and it was being fully
+  // parsed and re-serialised several times per request (pushSnapshot, then
+  // latestSnapshotWithData, then the Snapshots pane). localStorage is
+  // synchronous, so on a 10s auto-refresh that blocked the main thread every
+  // tick. Read through an in-memory cache; write through it.
+  var snapshotCache = null;
+
   function getSnapshots() {
+    if (snapshotCache) return snapshotCache;
     var map = readJSON(STORE.snaps, {});
-    return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+    snapshotCache = map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+    return snapshotCache;
   }
-  function setSnapshots(map) { return writeJSON(STORE.snaps, map); }
+  function setSnapshots(map) {
+    snapshotCache = map;
+    var ok = writeJSON(STORE.snaps, map);
+    // writeJSON drops the whole snapshot store to recover from a quota error,
+    // so the cache must not keep serving what is no longer on disk.
+    if (!ok) snapshotCache = null;
+    return ok;
+  }
+
+  function invalidateSnapshotCache() { snapshotCache = null; }
 
   function getPrefs() {
     var p = readJSON(STORE.prefs, {});
@@ -328,9 +354,24 @@
     prefs.activeTab = state.tab;
     prefs.activePane = state.pane;
     prefs.lastUrl = state.url;
-    prefs.lastHeadersText = state.headersText;
+    // Request headers are where users put `Authorization: Bearer ...`. They get
+    // the same treatment as the API key: session storage, gone when the tab is.
+    delete prefs.lastHeadersText;
     prefs.stage = state.stagePref;
     setPrefs(prefs);
+    setSessionHeaders(state.headersText);
+  }
+
+  function getSessionHeaders() {
+    try { return window.sessionStorage.getItem(SESSION.headers) || ''; }
+    catch (err) { return ''; }
+  }
+
+  function setSessionHeaders(value) {
+    try {
+      if (value) window.sessionStorage.setItem(SESSION.headers, value);
+      else window.sessionStorage.removeItem(SESSION.headers);
+    } catch (err) { /* private mode — headers simply do not persist */ }
   }
 
   function getSessionKey() {
@@ -412,7 +453,13 @@
       } else if (ch === '[') {
         if (buffer) { segments.push(buffer); buffer = ''; }
         var close = str.indexOf(']', i);
-        if (close === -1) break;
+        if (close === -1) {
+          // Unterminated bracket. Take the remainder as the last segment
+          // rather than discarding it — `a[0` should still address a.0.
+          var rest = str.slice(i + 1).replace(/^['"]|['"]$/g, '');
+          if (rest) segments.push(rest);
+          break;
+        }
         var inner = str.slice(i + 1, close).replace(/^['"]|['"]$/g, '');
         if (inner) segments.push(inner);
         i = close;
@@ -433,6 +480,10 @@
     for (var i = 0; i < segments.length; i += 1) {
       if (current === null || current === undefined) return undefined;
       if (typeof current !== 'object') return undefined;
+      // Paths come from the model and from the fetched body, so a segment of
+      // `__proto__` / `constructor` / `toString` would otherwise hand the
+      // renderer a JavaScript internal instead of data.
+      if (!Object.prototype.hasOwnProperty.call(current, segments[i])) return undefined;
       current = current[segments[i]];
     }
     return current;
@@ -872,11 +923,16 @@
 
   /* ── Snapshot diffing ──────────────────────────────────────────────────── */
 
+  // Distinct object identities, so an empty container never compares equal to
+  // a body that literally contains the string "[]" or "{}".
+  var EMPTY_ARRAY = { empty: 'array' };
+  var EMPTY_OBJECT = { empty: 'object' };
+
   function flatten(value, prefix, out) {
     out = out || {};
     prefix = prefix || '';
     if (Array.isArray(value)) {
-      if (!value.length) { out[prefix || '$'] = '[]'; return out; }
+      if (!value.length) { out[prefix || '$'] = EMPTY_ARRAY; return out; }
       for (var i = 0; i < value.length; i += 1) {
         flatten(value[i], prefix + '[' + i + ']', out);
       }
@@ -884,7 +940,7 @@
     }
     if (isPlainObject(value)) {
       var keys = Object.keys(value);
-      if (!keys.length) { out[prefix || '$'] = '{}'; return out; }
+      if (!keys.length) { out[prefix || '$'] = EMPTY_OBJECT; return out; }
       for (var k = 0; k < keys.length; k += 1) {
         flatten(value[keys[k]], prefix ? prefix + '.' + keys[k] : keys[k], out);
       }
@@ -892,6 +948,14 @@
     }
     out[prefix || '$'] = value;
     return out;
+  }
+
+  // flatten's sentinels exist only so an empty container never compares equal
+  // to the string "[]". They must never reach the Changes pane.
+  function flatValue(v) {
+    if (v === EMPTY_ARRAY) return '[]';
+    if (v === EMPTY_OBJECT) return '{}';
+    return v;
   }
 
   function diffData(before, after) {
@@ -903,15 +967,15 @@
     for (path in next) {
       if (!Object.prototype.hasOwnProperty.call(next, path)) continue;
       if (!Object.prototype.hasOwnProperty.call(prev, path)) {
-        result[canonPath(path)] = { type: 'added', before: undefined, after: next[path] };
+        result[canonPath(path)] = { type: 'added', before: undefined, after: flatValue(next[path]) };
       } else if (prev[path] !== next[path]) {
-        result[canonPath(path)] = { type: 'changed', before: prev[path], after: next[path] };
+        result[canonPath(path)] = { type: 'changed', before: flatValue(prev[path]), after: flatValue(next[path]) };
       }
     }
     for (path in prev) {
       if (!Object.prototype.hasOwnProperty.call(prev, path)) continue;
       if (!Object.prototype.hasOwnProperty.call(next, path)) {
-        result[canonPath(path)] = { type: 'removed', before: prev[path], after: undefined };
+        result[canonPath(path)] = { type: 'removed', before: flatValue(prev[path]), after: undefined };
       }
     }
     return result;
@@ -1370,9 +1434,13 @@
     }
 
     if (!isPlainObject(data)) {
+      // `text` is not a ROOT_OK type, so a pathless one is stripped by
+      // normalizeSpec and the whole spec comes back null. jsonBlock is
+      // structural, so it may address the body root. A bare `null`, `42` or
+      // `"ok"` from a /health endpoint takes this path.
       return {
         title: 'Response', subtitle: subtitle, layout: 'raw',
-        components: [{ type: 'text', path: '', label: 'Value' }],
+        components: [{ type: 'jsonBlock', path: '', label: 'Value' }],
         actions: deriveActions(data, url)
       };
     }
@@ -2739,6 +2807,7 @@
   var MAX_CODE_LINES = 1500;
 
   function renderRawPane() {
+    state.rawPaneDirty = false;
     if (!state.data) { dom.rawOut.textContent = ''; return; }
     var text;
     try {
@@ -2764,6 +2833,7 @@
   }
 
   function renderSchemaPane() {
+    state.schemaPaneDirty = false;
     if (!state.schema) { dom.schemaOut.textContent = ''; dom.schemaHashChip.textContent = ''; return; }
     dom.schemaHashChip.textContent = state.schemaHash;
     var text = JSON.stringify(state.schema, null, 2);
@@ -2940,8 +3010,20 @@
     dom.interfaceOut.insertBefore(box, dom.interfaceOut.firstChild);
   }
 
+  // Last resort when even the fallback normalises away. Guarantees applySpec
+  // always has a title and a renderable component, so a response shape nobody
+  // anticipated degrades to the raw body instead of a TypeError.
+  function minimalSpec() {
+    return {
+      title: 'Response', subtitle: '', layout: 'raw',
+      components: [{ type: 'jsonBlock', path: '', label: 'Response' }],
+      actions: []
+    };
+  }
+
   function applySpec(spec, source) {
     if (!spec) spec = normalizeSpec(buildFallbackSpec(state.data, state.url));
+    if (!spec) spec = minimalSpec();
     state.spec = spec;
     state.specSource = source;
     state.pendingGenerate = false;
@@ -3001,6 +3083,7 @@
   function leaveStage() {
     state.stage = false;
     state.stagePref = false;
+    state.stack = [];
     document.body.classList.remove('is-stage');
     dom.stageBar.hidden = true;
     savePrefs();
@@ -3008,10 +3091,28 @@
     if (dom.urlInput) dom.urlInput.focus();
   }
 
+  // Back has two entry points (the stage button / Escape, and the browser's
+  // own Back) and they used to pop different stacks: goBack popped state.stack
+  // while history kept its entries, so after a couple of in-app Backs the
+  // browser's Back ejected the reader from a page they never navigated away
+  // from. Now history owns the count and popstate is the ONLY place that pops.
+  function pushHistory() {
+    state.historyDepth += 1;
+    try { window.history.pushState({ imagoDepth: state.historyDepth }, ''); }
+    catch (err) { /* history unavailable — the in-memory stack still works */ }
+  }
+
   function goBack() {
     if (!state.stage) return;
-    if (state.stack.length) {
-      var previous = state.stack.pop();
+    if (state.historyDepth > 0) { window.history.back(); return; }
+    stepBack(1);
+  }
+
+  function stepBack(steps) {
+    if (!state.stage) return;
+    var previous = null;
+    for (var i = 0; i < steps && state.stack.length; i += 1) previous = state.stack.pop();
+    if (previous) {
       dom.urlInput.value = previous.url;
       if (typeof previous.headersText === 'string') dom.headersInput.value = previous.headersText;
       state.headersText = previous.headersText || '';
@@ -3031,20 +3132,78 @@
 
   function followUrl(url) {
     if (!isUrl(url)) { toast('That field is not a URL.', 'error'); return; }
-    if (state.url) state.stack.push({ url: state.url, headersText: state.headersText });
-    if (state.stack.length > 30) state.stack.shift();
-    try { window.history.pushState({ imagoDepth: state.stack.length }, ''); } catch (e) { /* ignore */ }
-    navigateTo(url, state.headersText);
+    // The follow target comes out of the fetched body at a path the model
+    // chose, so it is attacker-influenceable. Custom headers are where the
+    // user's `Authorization: Bearer ...` lives — never replay them to an
+    // origin other than the one they were typed for.
+    var crossOrigin = !sameOrigin(state.url, url);
+    var carry = crossOrigin ? '' : state.headersText;
+    if (crossOrigin && hasSecretHeader(state.headersText)) {
+      toast('Credentials withheld — ' + hostOf(url) + ' is a different host.', 'warn');
+    }
+    var stackBefore = state.stack.length;
+    var depthBefore = state.historyDepth;
+    if (state.url) {
+      state.stack.push({ url: state.url, headersText: state.headersText });
+      if (state.stack.length > 30) state.stack.shift();
+      pushHistory();
+    }
+    if (navigateTo(url, carry) === false) {
+      // Refused before any fetch. Undo the push so Back still means what the
+      // reader thinks it means.
+      while (state.stack.length > stackBefore) state.stack.pop();
+      state.historyDepth = depthBefore;
+    } else if (state.navRestorePoint) {
+      // navigateTo captured its restore point after this push. If the request
+      // fails, the push has to go too, or Back lands on a page that never
+      // loaded and appears to do nothing.
+      state.navRestorePoint.stackLength = stackBefore;
+      state.navRestorePoint.historyDepth = depthBefore;
+    }
   }
 
   function navigateTo(url, headersText) {
+    // Remember what is actually on screen. performRequest can refuse (another
+    // request in flight) or fail, and either way the reader must not be left
+    // looking at page A's data under page B's URL and crumb.
+    var restorePoint = {
+      url: state.url,
+      urlInput: dom.urlInput.value,
+      headersInput: dom.headersInput.value,
+      headersText: state.headersText,
+      stackLength: state.stack.length,
+      historyDepth: state.historyDepth
+    };
+
     dom.urlInput.value = url;
     if (typeof headersText === 'string') dom.headersInput.value = headersText;
     state.activeRequestId = null;
     state.showRaw = false;
     state.stagePref = true;
     markDirty();
-    performRequest(false);
+
+    if (performRequest(false) === false) {
+      rollbackNavigation(restorePoint);
+      return false;
+    }
+    state.navRestorePoint = restorePoint;
+    return true;
+  }
+
+  function rollbackNavigation(point) {
+    if (!point) return;
+    dom.urlInput.value = point.urlInput;
+    dom.headersInput.value = point.headersInput;
+    state.url = point.url;
+    state.headersText = point.headersText;
+    state.headers = parseHeaders(point.headersText);
+    while (state.stack.length > point.stackLength) state.stack.pop();
+    state.historyDepth = point.historyDepth;
+    if (state.stage) {
+      dom.stageCrumb.textContent = hostOf(state.url) +
+        (state.stack.length ? ' · ' + state.stack.length + ' back' : '');
+      dom.stageCrumb.title = state.url;
+    }
   }
 
   var ACTION_ICONS = {
@@ -3173,6 +3332,9 @@
       panes[i].className = panes[i].getAttribute('data-pane') === tab ? 'tab-pane is-active' : 'tab-pane';
     }
     if (tab === 'interface') scheduleTimelineLayout();
+    // Build the heavy panes on demand — they are skipped while hidden.
+    if (tab === 'raw' && state.rawPaneDirty) renderRawPane();
+    if (tab === 'schema' && state.schemaPaneDirty) renderSchemaPane();
     savePrefs();
   }
 
@@ -3255,7 +3417,10 @@
     if (!url) { toast('Enter a URL before saving.', 'error'); return; }
 
     var list = getSavedRequests();
-    var headers = parseHeaders(dom.headersInput.value);
+    // Saved requests live in localStorage, which outlives the tab. Strip the
+    // credential headers the same way prefs does; the user re-enters them.
+    var split = redactSecretHeaders(parseHeaders(dom.headersInput.value));
+    var headers = split.safe;
     var now = new Date().toISOString();
 
     var existing = null;
@@ -3285,6 +3450,9 @@
     setSavedRequests(list);
     renderSavedList();
     savePrefs();
+    if (split.redacted.length) {
+      toast(split.redacted.join(', ') + ' not saved — credentials stay in this session.', 'warn');
+    }
   }
 
   function loadSavedRequest(id) {
@@ -3328,6 +3496,40 @@
     }
   }
 
+  // The destructive action users reach for to remove their credentials. It has
+  // to clear the in-memory state too: savePrefs() runs on the next pane change,
+  // tab change or `beforeunload`, and would otherwise write the header text
+  // straight back out of state.
+  function clearAllData() {
+    try {
+      window.localStorage.removeItem(STORE.requests);
+      window.localStorage.removeItem(STORE.specs);
+      window.localStorage.removeItem(STORE.snaps);
+      window.localStorage.removeItem(STORE.prefs);
+    } catch (err) { /* ignore */ }
+    invalidateSnapshotCache();
+    setSessionHeaders('');
+
+    state.activeRequestId = null;
+    state.diff = null;
+    state.changedCount = 0;
+    state.headersText = '';
+    state.headers = {};
+    state.url = '';
+    state.stack = [];
+    if (dom.headersInput) dom.headersInput.value = '';
+    if (dom.urlInput) dom.urlInput.value = '';
+
+    // Write a clean prefs object now rather than waiting for the next
+    // savePrefs to serialise whatever is still in memory.
+    setPrefs({ onboarded: true });
+
+    renderSavedList();
+    renderChangesPane();
+    renderStorageSummary();
+    updateMeta();
+  }
+
   function renderStorageSummary() {
     var requests = getSavedRequests().length;
     var specs = Object.keys(getSchemaSpecs()).length;
@@ -3350,6 +3552,30 @@
   }
 
   /* ── Headers ───────────────────────────────────────────────────────────── */
+
+  // Header names whose values are credentials. Matched case-insensitively
+  // against the whole name, so `x-api-key` matches but `x-api-version` does not.
+  var SECRET_HEADER = /^(authorization|proxy-authorization|cookie|set-cookie|x-api-key|api-key|apikey|x-auth-token|auth-token|x-access-token|access-token|x-csrf-token|x-session-token|token|secret|x-secret)$/i;
+
+  function sameOrigin(a, b) {
+    try { return new URL(a).origin === new URL(b).origin; } catch (err) { return false; }
+  }
+
+  // Splits a header map into the part that is safe to persist and the names of
+  // the credentials that were withheld. Credentials live in the session only.
+  function redactSecretHeaders(headers) {
+    var safe = {}, redacted = [];
+    var names = Object.keys(headers || {});
+    for (var i = 0; i < names.length; i += 1) {
+      if (SECRET_HEADER.test(names[i].trim())) redacted.push(names[i]);
+      else safe[names[i]] = headers[names[i]];
+    }
+    return { safe: safe, redacted: redacted };
+  }
+
+  function hasSecretHeader(text) {
+    return redactSecretHeaders(parseHeaders(text)).redacted.length > 0;
+  }
 
   function parseHeaders(text) {
     var headers = {};
@@ -3431,24 +3657,26 @@
     return error;
   }
 
+  // Returns false when the request was refused before any fetch started, so
+  // navigateTo can roll back the stack push and URL-bar write it already did.
   function performRequest(isAuto) {
-    if (state.inFlight) return;
+    if (state.inFlight) return false;
 
     var url = dom.urlInput.value.trim();
     if (!url) {
       toast('Enter an API URL first.', 'error');
-      return;
+      return false;
     }
     var parsed;
     try {
       parsed = new URL(url);
     } catch (err) {
       toast('That URL is not valid.', 'error');
-      return;
+      return false;
     }
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       toast('Only http and https URLs are supported.', 'error');
-      return;
+      return false;
     }
 
     state.inFlight = true;
@@ -3521,8 +3749,12 @@
         });
 
         touchSavedRequest(url);
-        renderRawPane();
-        renderSchemaPane();
+        // These two panes stringify the whole body and build ~1500 spans. On a
+        // 10s auto-refresh that ran every tick for tabs nobody was looking at.
+        state.rawPaneDirty = true;
+        state.schemaPaneDirty = true;
+        if (state.tab === 'raw') renderRawPane();
+        if (state.tab === 'schema') renderSchemaPane();
         renderChangesPane();
         updateMeta();
 
@@ -3534,15 +3766,25 @@
       })
       .then(function () {
         state.dirtySinceSend = false;
-        if (state.refreshIntervalMs) startTimer();
+        state.navRestorePoint = null;   // the navigation committed
+        // A pending Generate prompt is waiting on the reader. Ticking behind it
+        // re-renders the prompt (re-enabling the button they just pressed) and
+        // spends another request per tick.
+        if (state.refreshIntervalMs && !state.pendingGenerate) startTimer();
       })
       .catch(function (err) { handleRequestFailure(err, isAuto); })
-      .then(function () {
-        state.inFlight = false;
-        dom.sendBtn.disabled = false;
-        updateMeta();
-        savePrefs();
-      });
+      // Both arms, not a trailing .then: if handleRequestFailure itself throws
+      // this must still run, or inFlight stays true, the send button stays
+      // disabled, and every later request returns at the in-flight guard —
+      // the app is silently bricked until reload.
+      .then(finishRequest, finishRequest);
+  }
+
+  function finishRequest() {
+    state.inFlight = false;
+    if (dom.sendBtn) dom.sendBtn.disabled = false;
+    updateMeta();
+    savePrefs();
   }
 
   function handleRequestFailure(err, isAuto) {
@@ -3556,6 +3798,13 @@
     }
 
     toast(title, 'error');
+
+    // A failed navigation must not leave the URL bar, crumb and request key
+    // describing a page that never loaded while page A's data is on screen.
+    if (state.navRestorePoint) {
+      rollbackNavigation(state.navRestorePoint);
+      state.navRestorePoint = null;
+    }
 
     if (state.data && state.spec) {
       // The loading state cleared the pane — put the last good interface back
@@ -3611,11 +3860,13 @@
 
   function generateInterfaceNow() {
     if (!state.data || !state.schemaHash) return;
+    if (state.generating) return;       // one model call at a time
     showInterfaceLoading('Designing an interface…');
     callGemini(state.url, { hash: state.schemaHash, schema: state.schema });
   }
 
   function callGemini(url, print) {
+    state.generating = true;
     var providerId = getSessionProvider();
     var provider = getProvider(providerId);
     var model = (dom.modelName.value || '').trim() || provider.defaultModel;
@@ -3629,6 +3880,15 @@
       model: model,
       apiKey: apiKey
     }).then(function (rawSpec) {
+      // An auto-refresh tick can land while the model is thinking and replace
+      // state.data with a differently shaped body. Caching this spec under the
+      // stale print.hash, or applying it to the new data, is how a plan for one
+      // shape ends up rendering another.
+      if (state.schemaHash !== print.hash) {
+        throw wrapError('Response changed while the interface was being designed',
+                        'The data was refreshed mid-request. Press Generate again for the new shape.');
+      }
+
       var normalized = normalizeSpec(rawSpec);
       if (!normalized) throw wrapError(provider.label + ' returned an unusable spec', 'Falling back to a heuristic interface.');
 
@@ -3655,7 +3915,8 @@
       applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
       showAlert(title, message);
       toast(title, 'error');
-    });
+    }).then(function () { state.generating = false; },
+            function () { state.generating = false; });
   }
 
   /* ── Auto-refresh ──────────────────────────────────────────────────────── */
@@ -3742,7 +4003,13 @@
     });
 
     dom.stageBack.addEventListener('click', goBack);
-    window.addEventListener('popstate', function () { if (state.stage) goBack(); });
+    window.addEventListener('popstate', function (event) {
+      var depth = (event.state && event.state.imagoDepth) || 0;
+      if (depth >= state.historyDepth) return;   // forward, or not one of ours
+      var steps = state.historyDepth - depth;
+      state.historyDepth = depth;
+      if (state.stage) stepBack(steps);
+    });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.stage && !event.defaultPrevented) goBack();
     });
@@ -3828,19 +4095,7 @@
 
     dom.clearStorageBtn.addEventListener('click', function () {
       if (!window.confirm('Clear all saved requests, cached interfaces and snapshots?')) return;
-      try {
-        window.localStorage.removeItem(STORE.requests);
-        window.localStorage.removeItem(STORE.specs);
-        window.localStorage.removeItem(STORE.snaps);
-        window.localStorage.removeItem(STORE.prefs);
-      } catch (err) { /* ignore */ }
-      state.activeRequestId = null;
-      state.diff = null;
-      state.changedCount = 0;
-      renderSavedList();
-      renderChangesPane();
-      renderStorageSummary();
-      updateMeta();
+      clearAllData();
       toast('All saved data cleared.', 'ok');
     });
 
@@ -3886,7 +4141,17 @@
     var prefs = getPrefs();
 
     if (prefs.lastUrl) dom.urlInput.value = prefs.lastUrl;
-    if (prefs.lastHeadersText) dom.headersInput.value = prefs.lastHeadersText;
+    // Older builds persisted headers to localStorage. Migrate them into the
+    // session once, then scrub the durable copy so the credentials stop
+    // surviving a browser restart.
+    if (prefs.lastHeadersText) {
+      setSessionHeaders(prefs.lastHeadersText);
+      delete prefs.lastHeadersText;
+      setPrefs(prefs);
+    }
+    var sessionHeaders = getSessionHeaders();
+    if (sessionHeaders) dom.headersInput.value = sessionHeaders;
+    state.headersText = sessionHeaders;
     state.activeRequestId = prefs.activeRequestId || null;
     state.url = prefs.lastUrl || '';
     state.refreshIntervalMs = Number(prefs.refreshIntervalMs) || 0;
@@ -3950,6 +4215,57 @@
     if (prefs.onboarded) showView('app');
     else showView('landing');
   }
+
+  /* ── Test seam ─────────────────────────────────────────────────────────
+     This file is one IIFE with no module boundary, so the unit suite has no
+     other way in: the pure helpers plus the state/dom objects the tests assert
+     against are hung off one object here.
+
+     This grants no capability an attacker did not already have. Everything
+     reachable through it — including getSessionKey — reads browser storage on
+     the same origin, which any script running in this page can read directly.
+     It is a convenience for tests, not a trust boundary. See TESTING.md.
+     ────────────────────────────────────────────────────────────────────── */
+  window.__imago = {
+    state: state, dom: dom, STORE: STORE, SESSION: SESSION,
+    // pure helpers
+    parsePath: parsePath, canonPath: canonPath, getByPath: getByPath,
+    isUrl: isUrl, isImageUrl: isImageUrl, formatValue: formatValue,
+    formatBytes: formatBytes, byteLength: byteLength, humanize: humanize,
+    deriveSchema: deriveSchema, mergeSchemas: mergeSchemas,
+    stableStringify: stableStringify, hashString: hashString,
+    fingerprint: fingerprint, flatten: flatten, diffData: diffData,
+    normalizeSpec: normalizeSpec, normalizeActions: normalizeActions,
+    buildFallbackSpec: buildFallbackSpec, deriveActions: deriveActions,
+    escapeHtml: escapeHtml, highlightJson: highlightJson,
+    parseHeaders: parseHeaders, headersToText: headersToText,
+    endpointTitle: endpointTitle, hostOf: hostOf,
+    sameOrigin: sameOrigin, redactSecretHeaders: redactSecretHeaders,
+    // storage
+    readJSON: readJSON, writeJSON: writeJSON,
+    getPrefs: getPrefs, setPrefs: setPrefs, savePrefs: savePrefs,
+    getSnapshots: getSnapshots, setSnapshots: setSnapshots,
+    invalidateSnapshotCache: invalidateSnapshotCache,
+    getSessionHeaders: getSessionHeaders, setSessionHeaders: setSessionHeaders,
+    hasSecretHeader: hasSecretHeader, minimalSpec: minimalSpec,
+    rollbackNavigation: rollbackNavigation, finishRequest: finishRequest,
+    pushSnapshot: pushSnapshot, getSnapshotsFor: getSnapshotsFor,
+    getSchemaSpecs: getSchemaSpecs, getSavedRequests: getSavedRequests,
+    getSessionKey: getSessionKey, setSessionKey: setSessionKey,
+    getSessionProvider: getSessionProvider,
+    // behaviour
+    applySpec: applySpec, performRequest: performRequest,
+    goBack: goBack, stepBack: stepBack, pushHistory: pushHistory,
+    followUrl: followUrl, navigateTo: navigateTo,
+    handleRequestFailure: handleRequestFailure,
+    renderRawPane: renderRawPane, renderSchemaPane: renderSchemaPane,
+    setActiveTab: setActiveTab, enterStage: enterStage, leaveStage: leaveStage,
+    restoreFromSnapshot: restoreFromSnapshot, currentRequestKey: currentRequestKey,
+    clearAllData: clearAllData,
+    callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,
+    resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs,
+    init: init
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
