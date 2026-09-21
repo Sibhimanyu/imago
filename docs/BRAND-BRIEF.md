@@ -1,244 +1,194 @@
-# Imago — brand & logo brief
+# Imago brand handoff
 
-**This document is self-contained.** You can be handed only this file and have
-everything you need. Nothing here assumes you can see the codebase.
+This is the branding handoff for the current accepted identity. It is written
+for another agent or designer who needs to continue the product without
+reopening the logo exploration.
 
----
+Visual source of truth: `brand/identity.html`
 
-## 1. What Imago is
+Current preview: `http://127.0.0.1:5275/brand/identity.html` when the local
+server is running from this repo.
 
-Imago is a browser-only API playground, live at
-<https://imago-gxabbdoh.onslate.in>.
+Tagline: **APIs become interfaces.**
 
-You paste a GET endpoint. It fetches the JSON, works out the *shape* of the
-response, asks an LLM to design an interface for that shape, and renders it with
-its own components. It remembers every interpretation it makes, and it watches
-endpoints change over time.
+## Product
 
-Most API tools stop at pretty-printed JSON. Imago reads the JSON and builds the
-view the data deserves — a Pokémon becomes a profile with stat bars and type
-badges; a weather endpoint becomes metrics and a temperature chart; a book search
-becomes a table.
+Imago is a browser-only API playground. A user pastes a public GET endpoint,
+Imago fetches the JSON, understands the response shape, asks an LLM to design
+the right interface for that shape, and renders the result in the browser.
 
-The three things it does:
+Most API tools stop at formatted JSON. Imago tries to show the interface already
+latent inside the response: a Pokemon endpoint becomes a profile with stats, a
+weather endpoint becomes metrics and a chart, a book search becomes a table.
 
-| | |
+The three product ideas:
+
+| Idea | Meaning |
 |---|---|
-| **Explore** | Fetches any public GET endpoint |
-| **Remember** | Caches how it interpreted each response shape, so the same structure is never re-analysed |
-| **Watch** | Auto-refreshes and highlights exactly which values changed since the last fetch |
+| Explore | Fetch any public GET endpoint in the browser |
+| Remember | Cache the interpretation of a response shape |
+| Watch | Refresh and highlight exact value changes |
 
-Tagline in use: **"APIs become interfaces."**
+## Name
 
-### What the name means
+Imago means image in Latin. In biology, an imago is the final adult form reached
+after metamorphosis. That is the brand idea: raw API responses arrive at their
+finished visible form.
 
-*Imago* — Latin for **image**; in entomology, the **final, fully-formed adult
-stage** an insect reaches after metamorphosis. Raw JSON goes in; its finished
-form comes out. The name was chosen over "Morph" (too crowded in AI dev tooling)
-and "Depict" (clear but plain).
+Important nuance: Imago is about the final formed view, not generic motion. The
+logo should feel like an interface has been revealed from the response, not like
+data is simply flying across the screen.
 
-The name carries a transformation idea, but note the emphasis: an imago is the
-**arrival**, not the process. It is the butterfly, not the chrysalis.
+## Accepted Identity
 
-### Audience
+The accepted mark is called **Reveal**.
 
-Developers, and the people grading this as a coursework submission. It should
-read as a real product, not a student project. Confident and quiet, not loud.
+It has two roles in one abstract construction:
 
----
+1. Incoming API fields enter from the left.
+2. Those fields become one rounded interface body.
+3. A precise aperture is cut from the body, representing the usable window or
+   view found inside the response.
 
-## 2. The job to be done
+The mark is intentionally abstract. Do not literalize it with braces, brackets,
+screens, stars, arrows, eyes, or gradients.
 
-Deliver an identity for Imago. You may refine the current mark or replace it
-entirely — the current one is a considered starting point, not a constraint.
+### Imago Mark SVG
 
-**Deliverables**
-
-1. **Primary mark** — as SVG, on a `0 0 32 32` viewBox, single colour, using
-   `fill="currentColor"` (see §5 for why this matters).
-2. **App-icon lockup** — the mark on a dark rounded tile (`rx="8"` on the same
-   32×32 grid), mark in white.
-3. **Wordmark treatment** — typeface, weight, tracking. See §4 for the
-   constraint that rules out custom lettering in the product UI.
-4. **Three lockups** — icon+wordmark on light; mark+wordmark on ink; wordmark
-   alone.
-5. **Rationale** — one paragraph. Why this mark, for this product, with this name.
-6. **Rejection notes** — what you tried and discarded, so the next person doesn't
-   repeat it.
-
-**Optional, if it strengthens the system**
-
-- Refined colour roles (current ones in `BRAND-SYSTEM.md` are functional, not sacred)
-- A social/OG image direction (1200×630)
-- Illustration or motif language for empty states
-
----
-
-## 3. Hard constraints
-
-These are not preferences. Breaking any of them breaks the product.
-
-1. **Must survive 16px.** The favicon is a real surface. If detail dies at 16px,
-   the mark dies. Test at 96 / 40 / 24 / 16 before falling in love with it.
-2. **SVG only, hand-authorable.** The app ships with **zero external
-   dependencies** — no icon fonts, no image CDN, no webfont request. The mark is
-   inlined into the HTML as an SVG symbol. A raster logo cannot be used as the
-   primary mark. (A PNG is fine for the OG social image only.)
-3. **Single colour, inheriting `currentColor`.** The same mark is drawn in ink on
-   paper, in white on ink, and inside a dark tile. No gradients, no multi-colour
-   fills, no effects that assume a background.
-4. **Light-first.** The product is a warm-paper light theme (`#f6f5f1`). There is
-   no dark mode. Do not design a mark that only works glowing on black.
-5. **Geometry on a 32-unit grid**, so it stays crisp at 16px and 32px. Avoid
-   sub-pixel strokes; prefer filled shapes over thin strokes — strokes below
-   ~2.2 units disappear at small sizes.
-6. **No emoji, no mascots, no gradients-as-personality.** See the voice rules in
-   `BRAND-SYSTEM.md`.
-
----
-
-## 4. Typography constraint
-
-The product uses **one family only**: Inter, falling back to the system UI stack
-(`-apple-system`, `Segoe UI`, `Roboto`). There is deliberately **no webfont
-request** — the first paint must never be blocked.
-
-This means:
-
-- The **wordmark in the product UI** must be settable in Inter/system. It is live
-  text, not an image.
-- You may design a **custom or drawn wordmark for marketing surfaces** (OG image,
-  slides, print), but it cannot be the in-app wordmark unless it can be
-  reproduced with a system-available family.
-
-Current wordmark: Inter Semibold (600), `letter-spacing: -0.021em`, sentence case
-— "Imago".
-
----
-
-## 5. Where the identity lives in the code
-
-You do not need to edit code — but knowing this shapes what is cheap to change
-and what is expensive.
-
-The mark is defined **once** in `index.html` as two SVG symbols, and every logo on
-every page is a `<use>` reference to them:
-
-```html
-<svg width="0" height="0" aria-hidden="true" style="position:absolute">
-  <symbol id="imagoMark" viewBox="0 0 32 32" fill="currentColor">
-    <!-- bare mark: inherits colour from CSS -->
-  </symbol>
-  <symbol id="imagoIcon" viewBox="0 0 32 32">
-    <rect width="32" height="32" rx="8" fill="var(--mark-tile, #1b1b19)"/>
-    <g fill="var(--mark-ink, #fff)"
-       transform="translate(16 16) scale(.78) translate(-16 -16)">
-      <!-- same mark, scaled to sit inside the tile -->
-    </g>
-  </symbol>
-</svg>
-```
-
-**Consequence:** every logo *inside the app* updates from this one block.
-Supplying the new mark as raw SVG children on a 32×32 viewBox is all that is
-needed for it. Anything that cannot be expressed that way (raster, multi-layer,
-gradient) is expensive or impossible.
-
-The geometry is additionally duplicated in four standalone files that nothing
-keeps in sync — `favicon.svg`, `assets/imago-mark.svg`, `assets/imago-icon.svg`,
-`assets/imago-logo.svg` — plus `brand/og.html` for the social image. So a new
-mark is **one block plus five copies**. There is no build step to deduplicate
-them, because the project ships with zero dependencies by design.
-
-Full wiring instructions and a checklist: `CODE-INTEGRATION.md`.
-
----
-
-## 6. What has already been tried — and why it was rejected
-
-Four concepts were designed as real SVG and tested at 96/40/24/16px. **Do not
-re-run these dead ends.** Rendered comparison sheets are in `brand/marks.html`
-and `brand/round2.html` (open in a browser).
-
-### A · Braces `{ ▪ }` — rejected: not ownable
-JSON braces holding a solid formed block. Says "data becomes interface"
-literally. First pass used organic curved braces which collapsed into a blob at
-16px; a geometric second pass (`A2`) fixed legibility completely.
-
-**Why it lost:** braces are the single most-used metaphor in developer tooling.
-It reads well and means the right thing, but it could belong to any of a hundred
-products. Legible, not ownable.
-
-### B · Emergence — **currently shipping**
-
-Three loose rows on the left resolving into one solid pane on the right. Rows grow
-toward the pane so the eye travels left→right, in the direction of the
-transformation. The pane carries a knocked-out **aperture**, so it reads as a
-rendered view containing an image rather than a blank block.
+Use this geometry for the product mark on a `0 0 32 32` viewBox:
 
 ```svg
-<rect x="5.4" y="8.55" width="4.7" height="2.7" rx="1.35"/>
-<rect x="5.4" y="14.2" width="6.8" height="2.7" rx="1.35"/>
-<rect x="5.4" y="19.85" width="9.1" height="2.7" rx="1.35"/>
-<path fill-rule="evenodd" d="M21.9 7.1h1.35a3.65 3.65 0 0 1 3.65 3.65v10.5a3.65 3.65 0 0 1-3.65 3.65H21.9a3.65 3.65 0 0 1-3.65-3.65v-10.5A3.65 3.65 0 0 1 21.9 7.1Zm.35 6.55h1.35c.72 0 1.3.58 1.3 1.3v3.1c0 .72-.58 1.3-1.3 1.3h-1.35c-.72 0-1.3-.58-1.3-1.3v-3.1c0-.72.58-1.3 1.3-1.3Z"/>
+<rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/>
 ```
 
-**Why it won:** the only candidate that depicts what the product actually does,
-it is asymmetric (more memorable than a brace pair or a rectangle), and it holds
-at 16px.
+### Meaning
 
-**Where it still might be beaten:** it can read as a generic "list view" or
-"layout" icon. The aperture was added specifically to answer the criticism that
-the first version depicted the *process* (rows → block) while the name means the
-*arrival* — the aperture is the finished image. Judge whether that fully lands.
-A mark that captures arrival more directly would still be a win.
+The two horizontal fields are API response fields. Their overlap with the larger
+rounded body makes the mark feel like one connected transformation, not separate
+decorative lines. The aperture on the right is the interface window. It is a
+knockout, not a drawn panel, because the product is revealing a view already
+contained inside the data.
 
-An earlier variant hollowed the whole block with a large knockout; it closed up
-below 24px and just became muddier. The current aperture is smaller and offset,
-which survives better — verify any knockout at 16px.
+Use this explanation in human-facing brand copy:
 
-### C · Wings — rejected: failed outright
-Two wings either side of a body, doubling as angle brackets `< >`. The most
-on-name concept.
+> Imago turns incoming API structure into a usable window. The mark shows the
+> response entering as fields, joining into one interface body, and revealing the
+> view inside.
 
-**Why it failed:** it does not read as wings. At 96px it is a split circle; below
-24px it collapses to a featureless blob. An opacity difference between the wings
-also looked washed out and broke the single-colour rule. **The butterfly idea is
-right for the name — this execution was wrong. It is worth another attempt by
-someone better at it, but naive wing shapes do not survive small sizes.**
+Keep the phrasing plain. Do not over-explain the logo in the UI.
 
-### D · Frame — rejected: reads as UI chrome
-A rounded window, left pane empty, right pane filled — "half raw, half rendered".
-The most refined and most legible at small sizes.
+## Mascot: Amigo
 
-**Why it lost:** it is very close to the macOS "show sidebar" icon. Adding rows to
-the empty pane (`D2`) to differentiate it just made it cluttered at 16px. It
-reads as a UI control, not a brand.
+The mascot is **Amigo**.
 
----
+Amigo is not a separate cartoon character and not a rotated Imago mark. It is a
+controlled derivation of the same design DNA:
 
-## 7. Acceptance criteria
+- same rounded body logic
+- same internal aperture
+- same soft, abstract geometry
+- incoming fields from Imago become centered legs
 
-A proposal is done when:
+Amigo stands for help, companionship, and system guidance. It can appear in
+loading, empty, onboarding, success, and error states. It should not replace the
+Imago logo in navigation, favicons, app icons, or product identification.
 
-1. The mark is supplied as SVG children on a `0 0 32 32` viewBox.
-2. It is legible and distinct at **16px** — shown, not asserted.
-3. It works in one colour: ink on paper, white on ink, and inside a dark tile.
-4. It does not read as a generic list, layout, sidebar, or settings icon.
-5. It is not a brace pair, unless the rationale beats §6A.
-6. The wordmark is settable in Inter/system, or is clearly scoped to marketing
-   surfaces only.
-7. It carries some relationship to *arrival at a finished form* — the meaning of
-   the name — or makes an argued case for a different idea.
-8. Rationale and rejection notes are included.
+### Amigo SVG
 
-## 8. Useful context files
+Use this geometry for the mascot on a `0 0 32 32` viewBox:
 
-| File | What it is |
+```svg
+<g fill="currentColor">
+  <rect x="9" y="21.5" width="6" height="8.5" rx="3"/>
+  <rect x="17" y="21.5" width="6" height="8.5" rx="3"/>
+  <path fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z"/>
+</g>
+```
+
+### Mascot Description
+
+Use this description when handing the mascot to another agent:
+
+> Amigo is the Imago system standing up to help. The product mark shows API
+> fields entering from the side and becoming a window. The mascot takes that
+> same body and aperture, then centers the fields into two legs so the abstract
+> form can behave like a companion without becoming a cartoon.
+
+Rules:
+
+- No eyes, mouth, arms, hands, shoes, hats, speech bubbles, or facial features.
+- No animal, robot, or human body. It must stay abstract.
+- No extra colours. Amigo inherits `currentColor`.
+- No rotation of the Imago mark as a shortcut.
+- No mascot in the product wordmark.
+- Use Amigo sparingly, mostly where the app is explaining, waiting, or recovering.
+
+If a reclining or horizontal Amigo pose is ever needed, the rationale is:
+
+> Amigo rests in the same horizontal flow as the incoming API stream, then stands
+> when the app has something useful to show.
+
+That pose is optional. The current accepted mascot is the upright, centered-leg
+version.
+
+## Voice
+
+Plain, precise, and calm.
+
+Good:
+
+- "Schema already known: reused cached interface, no Gemini call."
+- "The browser could not reach this endpoint. It may not send CORS headers."
+- "Large response: only a compact sample goes to Gemini."
+
+Bad:
+
+- "Awesome, we magically transformed your API."
+- "Oops, something went wrong."
+- "Loading your amazing data."
+
+Rules:
+
+- No emoji.
+- No exclamation marks.
+- Use exact numbers when available.
+- Admit browser/API/LLM limits directly.
+- Lowercase the tagline only in compact chrome: `apis become interfaces`.
+- Use sentence case in prose and headlines: "APIs become interfaces."
+
+## What Not To Reopen
+
+These directions were explored and rejected:
+
+- Braces or JSON brackets: meaningful but too generic for developer tools.
+- Butterfly wings: on-name, but naive wing geometry collapses at small sizes.
+- Literal browser frame: readable, but too close to sidebar/layout icons.
+- Loose rows plus pane: good product story, but less ownable than Reveal.
+- Over-refined row/window variants: they made the mark more literal and less
+  distinctive. Keep the current `brand/identity.html` version.
+
+## Files
+
+| File | Purpose |
 |---|---|
-| `docs/BRAND-SYSTEM.md` | Current colour, type, voice and motion rules — the system a new mark must live inside |
-| `docs/CODE-INTEGRATION.md` | Exactly how to wire a new mark into the product |
-| `brand/marks.html` | Round 1 candidates, rendered at all sizes — open in a browser |
-| `brand/round2.html` | Round 2 refinements |
-| `brand/system.html` | The current brand board |
-| `brand/og.html` | Source for the 1200×630 social image |
+| `brand/identity.html` | Visual source of truth for logo, mascot, sizes, lockups |
+| `assets/imago-mark.svg` | Bare Imago mark |
+| `assets/imago-icon.svg` | Imago mark on dark rounded tile |
+| `assets/imago-logo.svg` | Mark plus wordmark export |
+| `assets/amigo-mascot.svg` | Amigo mascot export |
+| `favicon.svg` | Browser favicon |
+| `brand/og.html` | Source for `og.png` |
+| `docs/BRAND-SYSTEM.md` | Brand rules |
+| `docs/CODE-INTEGRATION.md` | How to update the code if the identity changes |
+| `DESIGN.md` | Agent-facing design handoff |
+
+## Acceptance Standard
+
+Future brand work should preserve:
+
+1. The Reveal mark as the Imago product identity.
+2. The Amigo mascot as a derived companion, not a separate illustration style.
+3. One-colour SVG geometry using `currentColor`.
+4. Legibility at 16px.
+5. Warm-paper product UI, quiet typography, and semantic colour.
+6. The core story: APIs become interfaces.

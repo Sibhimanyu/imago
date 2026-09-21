@@ -16,18 +16,130 @@
   };
 
   var SESSION = {
-    key: 'imago.geminiKey',
-    model: 'imago.modelName'
+    key: 'imago.apiKey',
+    legacyKey: 'imago.geminiKey',   // pre-multi-provider builds
+    model: 'imago.modelName',
+    provider: 'imago.provider'
   };
 
-  var DEFAULT_MODEL = 'gemini-2.5-flash-lite';
-  var GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  /* ── Providers ──────────────────────────────────────────────────────────────
+     Imago only ever asks a model for a small JSON plan, so any provider that
+     can be pinned to JSON works. Each entry owns its endpoint, auth header,
+     request body and response shape; nothing else in the app knows the
+     difference. Model ids churn, so every default is editable in Settings and
+     carries a fallback hint rather than being hard-coded as the only option.
+     ---------------------------------------------------------------------- */
+
+  var PROVIDERS = {
+    gemini: {
+      id: 'gemini',
+      label: 'Google Gemini',
+      keyPrefix: 'AIza',
+      keyHint: 'aistudio.google.com/apikey',
+      defaultModel: 'gemini-2.5-flash-lite',
+      modelHint: 'gemini-3.5-flash',
+      endpoint: function (model) {
+        return 'https://generativelanguage.googleapis.com/v1beta/models/' +
+               encodeURIComponent(model) + ':generateContent';
+      },
+      headers: function (apiKey) {
+        return { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey };
+      },
+      body: function (model, prompt, schema) {
+        return {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json', responseSchema: schema }
+        };
+      },
+      // Used when the model family rejects responseSchema.
+      plainBody: function (model, prompt, schema) {
+        return {
+          contents: [{ parts: [{ text: prompt + '\n\nReturn only valid JSON matching this schema:\n' +
+                                       JSON.stringify(schema) }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        };
+      },
+      extract: function (payload) {
+        if (!payload || !payload.candidates || !payload.candidates.length) return '';
+        var candidate = payload.candidates[0];
+        if (!candidate.content || !candidate.content.parts) return '';
+        var chunks = [];
+        for (var i = 0; i < candidate.content.parts.length; i += 1) {
+          var part = candidate.content.parts[i];
+          if (part && typeof part.text === 'string') chunks.push(part.text);
+        }
+        return chunks.join('');
+      }
+    },
+
+    groq: {
+      id: 'groq',
+      label: 'Groq',
+      keyPrefix: 'gsk_',
+      keyHint: 'console.groq.com/keys',
+      // Groq deprecated llama-3.3-70b-versatile and llama-3.1-8b-instant for
+      // free and developer tiers on 2026-06-17. gpt-oss-20b is the documented
+      // migration target and honours json_schema; the 120b has reported cases
+      // of ignoring it, so it is the hint rather than the default.
+      defaultModel: 'openai/gpt-oss-20b',
+      modelHint: 'openai/gpt-oss-120b',
+      endpoint: function () { return 'https://api.groq.com/openai/v1/chat/completions'; },
+      headers: function (apiKey) {
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };
+      },
+      body: function (model, prompt, schema) {
+        return {
+          model: model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.2,
+          // strict:false on purpose. Strict mode demands additionalProperties
+          // false and every property in required; the UI spec has optional
+          // fields per component type, so strict would reject the schema.
+          response_format: {
+            type: 'json_schema',
+            json_schema: { name: 'imago_ui_spec', schema: schema, strict: false }
+          }
+        };
+      },
+      plainBody: function (model, prompt, schema) {
+        return {
+          model: model,
+          messages: [{ role: 'user', content: prompt +
+            '\n\nReturn only valid JSON matching this schema:\n' + JSON.stringify(schema) }],
+          temperature: 0.2,
+          response_format: { type: 'json_object' }
+        };
+      },
+      extract: function (payload) {
+        if (!payload || !payload.choices || !payload.choices.length) return '';
+        var msg = payload.choices[0].message;
+        return msg && typeof msg.content === 'string' ? msg.content : '';
+      }
+    }
+  };
+
+  var PROVIDER_IDS = ['gemini', 'groq'];
+  var DEFAULT_PROVIDER = 'gemini';
+
+  function getProvider(id) { return PROVIDERS[id] || PROVIDERS[DEFAULT_PROVIDER]; }
+
+  // Key prefixes are distinctive enough to pick the provider for the user.
+  function detectProvider(key) {
+    var k = String(key || '').trim();
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      var p = PROVIDERS[PROVIDER_IDS[i]];
+      if (p.keyPrefix && k.indexOf(p.keyPrefix) === 0) return p.id;
+    }
+    return '';
+  }
+
+  var DEFAULT_MODEL = PROVIDERS[DEFAULT_PROVIDER].defaultModel;
 
   var MAX_SNAPSHOTS = 10;
   var MAX_SNAPSHOT_BYTES = 1024 * 1024;  // refuse to store bodies fatter than this
   var LARGE_RESPONSE_BYTES = 500 * 1024; // warn + trim sample above this
   var SAMPLE_CHAR_LIMIT = 10000;
-  var MAX_COMPONENTS = 12;
+  var MAX_COMPONENTS = 20;
   var MAX_ROWS = 10;
 
   var DEMOS = [
@@ -40,8 +152,14 @@
   ];
 
   var COMPONENT_TYPES = ['title', 'text', 'metric', 'image', 'badges', 'list',
-                         'table', 'statBars', 'chart', 'link', 'jsonBlock', 'section'];
+                         'table', 'statBars', 'chart', 'link', 'jsonBlock', 'section',
+                         'keyValue', 'gauge', 'timeline'];
   var LAYOUTS = ['profile', 'dashboard', 'table', 'list', 'article', 'timeline', 'raw'];
+  var EMPHASIS = ['hero', 'normal', 'quiet'];
+  // What a generated page can let the reader *do*. `follow` opens a URL found
+  // in the response as the next generative page; the rest drive Imago itself.
+  var ACTION_TYPES = ['follow', 'refresh', 'watch', 'raw'];
+  var MAX_ACTIONS = 6;
 
   var IMAGO_UI_SPEC_JSON_SCHEMA = {
     type: 'object',
@@ -49,6 +167,20 @@
       title: { type: 'string' },
       subtitle: { type: 'string' },
       layout: { type: 'string', enum: LAYOUTS },
+      actions: {
+        type: 'array',
+        maxItems: MAX_ACTIONS,
+        items: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ACTION_TYPES },
+            label: { type: 'string' },
+            path: { type: 'string' },
+            interval: { type: 'number' }
+          },
+          required: ['type', 'label']
+        }
+      },
       components: {
         type: 'array',
         maxItems: MAX_COMPONENTS,
@@ -64,6 +196,18 @@
             labelPath: { type: 'string' },
             valuePath: { type: 'string' },
             max: { type: 'number' },
+            emphasis: { type: 'string', enum: EMPHASIS },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  label: { type: 'string' },
+                  path: { type: 'string' }
+                },
+                required: ['label', 'path']
+              }
+            },
             columns: {
               type: 'array',
               items: {
@@ -111,7 +255,11 @@
     view: 'landing',
     pane: 'playground',
     pendingGenerate: false,
-    warnedNoKey: false
+    warnedNoKey: false,
+    stage: false,          // the generated page owns the screen
+    stagePref: true,       // false once the reader pressed Back to the controls
+    stack: [],             // urls behind the current page, for Back
+    showRaw: false
   };
 
   var dom = {};
@@ -181,11 +329,37 @@
     prefs.activePane = state.pane;
     prefs.lastUrl = state.url;
     prefs.lastHeadersText = state.headersText;
+    prefs.stage = state.stagePref;
     setPrefs(prefs);
   }
 
   function getSessionKey() {
-    try { return window.sessionStorage.getItem(SESSION.key) || ''; } catch (e) { return ''; }
+    try {
+      var k = window.sessionStorage.getItem(SESSION.key);
+      if (k) return k;
+      // Migrate a key stored by a pre-multi-provider build.
+      var legacy = window.sessionStorage.getItem(SESSION.legacyKey);
+      if (legacy) {
+        window.sessionStorage.setItem(SESSION.key, legacy);
+        window.sessionStorage.removeItem(SESSION.legacyKey);
+        return legacy;
+      }
+      return '';
+    } catch (e) { return ''; }
+  }
+
+  function getSessionProvider() {
+    try {
+      var p = window.sessionStorage.getItem(SESSION.provider);
+      if (p && PROVIDERS[p]) return p;
+    } catch (e) { /* ignore */ }
+    return detectProvider(getSessionKey()) || DEFAULT_PROVIDER;
+  }
+
+  function setSessionProvider(id) {
+    try {
+      if (PROVIDERS[id]) window.sessionStorage.setItem(SESSION.provider, id);
+    } catch (e) { /* ignore */ }
   }
   function setSessionKey(value) {
     try {
@@ -325,6 +499,295 @@
       return new window.TextEncoder().encode(str).length;
     }
     return str.length;
+  }
+
+
+  /* ── Value semantics ───────────────────────────────────────────────────────
+     A generative UI that prints "2026-09-20T08:03:52+02:00" or "44,036" has
+     only moved the JSON around. Before anything is rendered, every scalar is
+     classified from the value *and* its key, then formatted for a human. The
+     untouched value always survives as the element's title attribute.
+     ---------------------------------------------------------------------- */
+
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  var RE_ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+  var RE_ISO_DT = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/;
+  var RE_CLOCK = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp]\.?[Mm]\.?)?$/;
+  var RE_HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+  var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  var RE_KEY_PERCENT = /(percent|percentage|pct|illumination|humidity|probability|saturation|lightness|battery|progress|score_pct)/;
+  var RE_KEY_SECONDS = /(^|_)(seconds|secs?|duration|day_length|length|elapsed|uptime|runtime|ttl|expires_in)(_|$)/;
+  var RE_KEY_MILLIS = /(^|_)(ms|millis|milliseconds|latency|duration_ms|response_time)(_|$)/;
+  var RE_KEY_BYTES = /(^|_)(bytes|size|filesize|content_length|length_bytes)(_|$)/;
+  var RE_KEY_LAT = /(^|_)(lat|latitude)(_|$)/;
+  var RE_KEY_LNG = /(^|_)(lng|lon|long|longitude)(_|$)/;
+  // Transport and bookkeeping fields. Still shown, never as the headline.
+  var RE_KEY_YEAR = /(^|_)(year|yr|founded|published_year)(_|$)/;
+  var RE_KEY_NOISE = /(generationtime|utc_offset|timezone_abbreviation|interval|elevation|^id$|_id$|etag|checksum|revision|version|request|cursor|offset|page|limit|status_code|copyright|licen[cs]e|attribution)/;
+  var RE_KEY_ANGLE = /(azimuth|altitude|bearing|heading|declination|elevation_angle)/;
+  var RE_KEY_TIME = /(^|_)(at|time|timestamp|date|epoch|created|updated|modified|published|expires)(_|$)/;
+  var RE_KEY_TEMP = /(^|_)(temp|temperature|feels_like|dew_point)/;
+  var RE_KEY_MONEY = /(^|_)(price|cost|amount|total|balance|revenue|salary|fee)(_|$)/;
+
+  function lastSegment(path) {
+    var segments = parsePath(path);
+    return segments.length ? String(segments[segments.length - 1]) : '';
+  }
+
+  // The key carries most of the meaning; the model's label is a weaker hint.
+  function keyHint(component) {
+    var key = component && component.path ? lastSegment(component.path) : '';
+    if (!key && component && component.label) key = component.label;
+    return String(key).toLowerCase().replace(/[\s-]+/g, '_');
+  }
+
+  function offsetLabel(offset) {
+    if (!offset) return '';
+    if (offset === 'Z') return 'UTC';
+    return 'UTC' + offset.replace(/(\d{2}):?(\d{2})/, function (m, h, mi) {
+      return mi === '00' ? h.replace(/^0/, '') : h.replace(/^0/, '') + ':' + mi;
+    });
+  }
+
+  function weekdayOf(y, m, d) {
+    return DAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  }
+
+  // Formatted from the string's own parts, never through the local timezone:
+  // a sunrise at 08:03+02:00 must not drift to 11:33 because the reader is in
+  // another country.
+  function formatIsoDateTime(value) {
+    var m = RE_ISO_DT.exec(String(value).trim());
+    if (!m) return null;
+    var y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    var offset = offsetLabel(m[7]);
+    return {
+      primary: m[4] + ':' + m[5],
+      secondary: weekdayOf(y, mo, d) + ' ' + d + ' ' + MONTHS[mo - 1] + ' ' + y +
+                 (offset ? ' · ' + offset : ''),
+      sortable: true
+    };
+  }
+
+  function formatIsoDate(value) {
+    var m = RE_ISO_DATE.exec(String(value).trim());
+    if (!m) return null;
+    var y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    return { primary: d + ' ' + MONTHS[mo - 1] + ' ' + y, secondary: weekdayOf(y, mo, d) };
+  }
+
+  function formatDuration(totalSeconds) {
+    var s = Math.abs(Math.round(totalSeconds));
+    var days = Math.floor(s / 86400);
+    var hours = Math.floor((s % 86400) / 3600);
+    var minutes = Math.floor((s % 3600) / 60);
+    var seconds = s % 60;
+    var parts = [];
+    if (days) parts.push(days + 'd');
+    if (hours) parts.push(hours + 'h');
+    if (minutes && parts.length < 2) parts.push(minutes + 'm');
+    if (!parts.length) parts.push(seconds + 's');
+    return (totalSeconds < 0 ? '−' : '') + parts.join(' ');
+  }
+
+  function formatNumber(value) {
+    if (!isFinite(value)) return String(value);
+    if (Math.abs(value) >= 1000) return value.toLocaleString();
+    if (Math.abs(value) < 1 && value !== 0) return String(Math.round(value * 10000) / 10000);
+    return String(Math.round(value * 100) / 100);
+  }
+
+  function inferKind(value, component) {
+    if (value === undefined) return 'empty';
+    if (value === null) return 'null';
+    if (Array.isArray(value)) return 'array';
+    if (isPlainObject(value)) return 'object';
+    if (typeof value === 'boolean') return 'boolean';
+
+    var key = keyHint(component);
+    var unit = component && component.unit ? String(component.unit).trim() : '';
+
+    if (typeof value === 'number') {
+      if (!isFinite(value)) return 'number';
+      if (unit === '%' || (RE_KEY_PERCENT.test(key) && value >= 0 && value <= 100)) return 'percent';
+      if (RE_KEY_BYTES.test(key)) return 'bytes';
+      if (RE_KEY_LAT.test(key) || RE_KEY_LNG.test(key) || RE_KEY_ANGLE.test(key)) return 'coordinate';
+      if (RE_KEY_TIME.test(key)) {
+        if (value > 1e11) return 'epochMs';
+        if (value > 1e8) return 'epoch';
+      }
+      if (RE_KEY_YEAR.test(key) && value >= 1000 && value <= 3000 && value % 1 === 0) return 'year';
+      if (RE_KEY_MILLIS.test(key)) return 'durationMs';
+      if (RE_KEY_SECONDS.test(key)) return 'duration';
+      if (RE_KEY_TEMP.test(key)) return 'temperature';
+      if (RE_KEY_MONEY.test(key)) return 'money';
+      return 'number';
+    }
+
+    if (typeof value === 'string') {
+      var text = value.trim();
+      if (!text) return 'empty';
+      if (isImageUrl(text)) return 'image';
+      if (isUrl(text)) return 'url';
+      if (RE_HEX.test(text)) return 'color';
+      if (RE_EMAIL.test(text)) return 'email';
+      if (RE_ISO_DT.test(text)) return 'datetime';
+      if (RE_ISO_DATE.test(text)) return 'date';
+      if (RE_CLOCK.test(text)) return 'clock';
+      if (text.length > 140 || text.indexOf('\n') !== -1) return 'prose';
+      return 'string';
+    }
+
+    return 'string';
+  }
+
+  // One place decides what a value looks like. Everything on screen — cards,
+  // fact strips, timelines, table cells — reads from this.
+  function describeValue(value, component) {
+    var kind = inferKind(value, component);
+    var unit = component && component.unit ? String(component.unit).trim() : '';
+    var out = { kind: kind, primary: '', secondary: '', unit: '', ratio: null, href: '', raw: value };
+
+    switch (kind) {
+      case 'empty':   out.primary = '—'; break;
+      case 'null':    out.primary = '—'; out.secondary = 'null'; break;
+      case 'boolean': out.primary = value ? 'Yes' : 'No'; break;
+
+      case 'datetime': {
+        var dt = formatIsoDateTime(value);
+        if (dt) { out.primary = dt.primary; out.secondary = dt.secondary; }
+        else { out.primary = String(value); }
+        break;
+      }
+      case 'date': {
+        var dd = formatIsoDate(value);
+        if (dd) { out.primary = dd.primary; out.secondary = dd.secondary; }
+        else { out.primary = String(value); }
+        break;
+      }
+      case 'epoch':
+      case 'epochMs': {
+        var ms = kind === 'epoch' ? value * 1000 : value;
+        var iso = new Date(ms).toISOString().replace(/\.\d+Z$/, 'Z');
+        var ed = formatIsoDateTime(iso);
+        out.primary = ed ? ed.primary : String(value);
+        out.secondary = ed ? ed.secondary : '';
+        break;
+      }
+      case 'clock':   out.primary = String(value).trim(); break;
+      case 'year':    out.primary = String(value); break;
+
+      case 'duration':
+        out.primary = formatDuration(value);
+        out.secondary = formatNumber(value) + ' seconds';
+        break;
+      case 'durationMs':
+        out.primary = value < 1000 ? formatNumber(value) + ' ms' : formatDuration(value / 1000);
+        if (value >= 1000) out.secondary = formatNumber(value) + ' ms';
+        break;
+
+      case 'percent':
+        out.primary = formatNumber(value);
+        out.unit = '%';
+        out.ratio = Math.max(0, Math.min(1, value / 100));
+        break;
+
+      case 'bytes':   out.primary = formatBytes(value); out.secondary = formatNumber(value) + ' bytes'; break;
+      case 'coordinate': out.primary = formatNumber(value) + '°'; break;
+      case 'temperature': out.primary = formatNumber(value); out.unit = unit; break;
+      case 'money':   out.primary = formatNumber(value); out.unit = unit; break;
+      case 'number':  out.primary = formatNumber(value); out.unit = unit; break;
+
+      case 'image':
+      case 'url':     out.primary = String(value); out.href = String(value); break;
+      case 'email':   out.primary = String(value); out.href = 'mailto:' + String(value); break;
+      case 'color':   out.primary = String(value).toUpperCase(); break;
+      case 'prose':   out.primary = String(value); break;
+      case 'array': {
+        var scalars = [];
+        for (var a = 0; a < value.length && a < 4; a += 1) {
+          if (value[a] === null || typeof value[a] === 'object') { scalars = null; break; }
+          scalars.push(describeValue(value[a], { path: component && component.path }).primary);
+        }
+        if (scalars && scalars.length) {
+          var shown = scalars.slice(0, 3);
+          out.primary = shown.join(', ');
+          if (value.length > shown.length) out.primary += ' +' + (value.length - shown.length);
+          if (value.length > 1) out.secondary = value.length + ' items';
+        } else {
+          out.primary = value.length + (value.length === 1 ? ' item' : ' items');
+        }
+        break;
+      }
+      case 'object':  out.primary = Object.keys(value).length + ' fields'; break;
+      default:        out.primary = String(value); if (unit) out.unit = unit;
+    }
+
+    if (!out.unit && unit && ['datetime', 'date', 'duration', 'bytes', 'percent'].indexOf(kind) === -1) {
+      out.unit = unit;
+    }
+    return out;
+  }
+
+  function rawTitle(value) {
+    if (value === undefined) return '';
+    if (typeof value === 'string') return value;
+    try { return JSON.stringify(value); } catch (err) { return String(value); }
+  }
+
+  // size: 'hero' | 'metric' | 'fact' | 'inline'
+  function renderScalar(value, component, size) {
+    var info = describeValue(value, component);
+    var wrap = el('div', 'val val-' + size + ' kind-' + info.kind);
+    var main = el('div', 'val-main');
+
+    if (info.kind === 'color') {
+      var swatch = el('span', 'val-swatch');
+      swatch.style.background = String(value);
+      main.appendChild(swatch);
+    }
+
+    if (info.href) {
+      var a = el('a', 'val-link', info.primary);
+      a.href = info.href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      main.appendChild(a);
+    } else {
+      main.appendChild(el('span', 'val-text', info.primary));
+    }
+    if (info.unit) main.appendChild(el('span', 'val-unit', info.unit));
+    wrap.appendChild(main);
+
+    if (info.ratio !== null) {
+      var meter = el('div', 'val-meter');
+      var fill = el('div', 'val-meter-fill');
+      fill.style.width = (info.ratio * 100).toFixed(1) + '%';
+      meter.appendChild(fill);
+      wrap.appendChild(meter);
+    }
+
+    // In a dense key/value sheet the date under every time is noise; the raw
+    // value is still one hover away.
+    var datelike = ['datetime', 'date', 'epoch', 'epochMs'].indexOf(info.kind) !== -1;
+    if (info.secondary && !(size === 'inline' && datelike)) {
+      wrap.appendChild(el('div', 'val-sub', info.secondary));
+    }
+
+    var title = rawTitle(value);
+    if (title && title !== info.primary) wrap.title = title;
+    return wrap;
+  }
+
+  // Short values sit in a dense fact strip; anything tall or wide earns a card.
+  function isCompactKind(kind) {
+    return ['boolean', 'datetime', 'date', 'clock', 'duration', 'durationMs', 'percent',
+            'bytes', 'coordinate', 'temperature', 'money', 'number', 'string', 'color',
+            'email', 'epoch', 'epochMs', 'empty', 'null'].indexOf(kind) !== -1;
   }
 
   /* ── Schema fingerprinting ─────────────────────────────────────────────── */
@@ -469,7 +932,7 @@
     return false;
   }
 
-  /* ── Gemini: UI spec generation ────────────────────────────────────────── */
+  /* ── Model providers: UI spec generation ────────────────────────────────────────── */
 
   function compactSample(data) {
     // Trim big arrays before serialising so the prompt stays small.
@@ -500,24 +963,58 @@
       schemaJson = schemaJson.slice(0, SAMPLE_CHAR_LIMIT) + '\n…truncated…';
     }
     return [
-      'You are Imago, a JSON-to-interface planner.',
+      'You are Imago. You turn a JSON response into a plan for an interface a',
+      'person would actually want to read. Return ONLY a JSON object matching',
+      'the UI spec schema. No HTML, CSS, JavaScript, Markdown or commentary.',
       '',
-      'You receive a JSON response schema and a small sample.',
-      'Return ONLY a JSON object matching the provided UI spec schema.',
-      'Do not return HTML, CSS, JavaScript, Markdown, comments, or explanation.',
-      '',
-      'Choose components from the allowed component list only:',
+      'Allowed component types:',
       COMPONENT_TYPES.join(', ') + '.',
-      'Prefer fields that would be meaningful to a human inspecting this API response.',
-      'Use exact dot paths into the JSON. For arrays, use paths that point to the array',
-      'and configure item fields when needed.',
-      'Do not invent fields.',
-      'If the response is an array, design around the array items.',
-      'If an image URL exists, include it.',
-      'If numeric stats exist, use statBars or metrics.',
-      'If an array of numbers varies over time or position, use a chart.',
-      'If URL strings exist, use link components.',
-      'Keep the UI under ' + MAX_COMPONENTS + ' components.',
+      '',
+      'Rules that matter most:',
+      '1. Every path must exist in the schema, written as exact dot notation',
+      '   (e.g. "results.sunrise"). Never invent a field.',
+      '2. title, text, metric, gauge, link and image may only point at a single',
+      '   value. Never point one at an object or an array — use keyValue, table,',
+      '   badges, list, chart or timeline for those.',
+      '3. Never leave path empty on a value component. An empty path means the',
+      '   whole response body and renders as meaningless field counts.',
+      '4. Do not show the same field twice, and do not add a container card for',
+      '   an object whose fields you already list individually.',
+      '5. Use "section" components to group the page into two or three labelled',
+      '   areas when the data has distinct parts.',
+      '6. Use "keyValue" (optionally with items: [{label, path}]) for a cluster',
+      '   of related small fields instead of one card per field.',
+      '7. Use "timeline" with items: [{label, path}] when three or more fields',
+      '   are timestamps of the same day or sequence.',
+      '8. Use "gauge" for a 0-100 value such as a percentage, with max set.',
+      '9. Use "chart" for numeric series, "statBars" for named numeric scores,',
+      '   "table" for arrays of objects, "badges" for short arrays of strings.',
+      '10. Mark the one or two fields a reader came for with emphasis: "hero".',
+      '    Mark background detail with emphasis: "quiet". Everything else',
+      '    defaults to normal.',
+      '11. Set "unit" when a number has one (%, °C, km, ms). Do not restate the',
+      '    unit inside the label.',
+      '12. Order components by importance. The first components are the answer.',
+      '13. Timestamps, durations and byte counts are formatted for you — pass',
+      '    the raw field and let the renderer handle it.',
+      '',
+      'The plan is the whole page, not a panel. Choose layout deliberately:',
+      '"profile" for one entity with an image, "dashboard" for measurements,',
+      '"table" or "list" for collections, "article" for long text, "timeline"',
+      'when the story is a sequence of moments, "raw" only when nothing else fits.',
+      '',
+      'actions are what the reader can do next (up to ' + MAX_ACTIONS + '):',
+      '- { type: "follow", path, label } for every field whose value is a URL to',
+      '  a related resource or the next/previous page. path must point at the',
+      '  URL string itself. Label it by what it leads to ("Species", "Next page").',
+      '- { type: "refresh", label } when the data changes over time.',
+      '- { type: "watch", interval: 10|30|60, label } for live data such as',
+      '  weather, prices or status.',
+      '- { type: "raw", label } is always acceptable as the last action.',
+      '',
+      'title should name the thing the response is about, in human words.',
+      'subtitle is one short line of context, not the URL.',
+      'Keep the plan under ' + MAX_COMPONENTS + ' components.',
       '',
       'API URL:',
       options.url,
@@ -530,20 +1027,8 @@
     ].join('\n');
   }
 
-  function extractGeminiText(payload) {
-    if (!payload || !payload.candidates || !payload.candidates.length) return '';
-    var candidate = payload.candidates[0];
-    if (!candidate.content || !candidate.content.parts) return '';
-    var chunks = [];
-    for (var i = 0; i < candidate.content.parts.length; i += 1) {
-      var part = candidate.content.parts[i];
-      if (part && typeof part.text === 'string') chunks.push(part.text);
-    }
-    return chunks.join('');
-  }
-
   function parseModelJson(text) {
-    if (!text) throw new Error('Gemini returned an empty response.');
+    if (!text) throw new Error('The model returned an empty response.');
     var trimmed = String(text).trim()
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```$/, '')
@@ -557,24 +1042,21 @@
       if (start !== -1 && end > start) {
         return JSON.parse(trimmed.slice(start, end + 1));
       }
-      throw new Error('Gemini did not return valid JSON.');
+      throw new Error('The model did not return valid JSON.');
     }
   }
 
-  function geminiRequest(model, apiKey, body) {
-    var endpoint = GEMINI_BASE + encodeURIComponent(model) + ':generateContent';
-    return fetch(endpoint, {
+  function llmRequest(provider, model, apiKey, body) {
+    return fetch(provider.endpoint(model), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
-      },
+      headers: provider.headers(apiKey),
       body: JSON.stringify(body)
     }).then(function (response) {
       return response.text().then(function (text) {
         var payload = null;
         try { payload = JSON.parse(text); } catch (e) { /* non-JSON error body */ }
         if (!response.ok) {
+          // Gemini and Groq both nest the human-readable reason under `error`.
           var message = payload && payload.error && payload.error.message
             ? payload.error.message
             : 'HTTP ' + response.status;
@@ -589,42 +1071,24 @@
 
   function generateSpec(options) {
     var prompt = buildImagoPrompt(options);
+    var provider = getProvider(options.provider);
+    var model = options.model;
+    var apiKey = options.apiKey;
 
-    // Primary: Gemini structured output. responseMimeType + responseSchema are
-    // the parameter names the generateContent REST API actually accepts.
-    var structuredBody = {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: IMAGO_UI_SPEC_JSON_SCHEMA
-      }
-    };
+    function ask(bodyFn) {
+      return llmRequest(provider, model, apiKey, bodyFn(model, prompt, IMAGO_UI_SPEC_JSON_SCHEMA))
+        .then(function (payload) { return parseModelJson(provider.extract(payload)); });
+    }
 
-    return geminiRequest(options.model, options.apiKey, structuredBody)
-      .then(function (payload) {
-        return parseModelJson(extractGeminiText(payload));
-      })
-      .catch(function (err) {
-        // Auth and rate-limit failures will not be fixed by retrying, so
-        // surface them rather than burning a second call.
-        if (err && (err.status === 401 || err.status === 403 || err.status === 429)) throw err;
-        // Otherwise the model family may reject responseSchema — retry in
-        // plain JSON mode with the contract inlined in the prompt.
-        var plainBody = {
-          contents: [{
-            parts: [{
-              text: prompt +
-                '\n\nReturn only valid JSON matching this schema:\n' +
-                JSON.stringify(IMAGO_UI_SPEC_JSON_SCHEMA)
-            }]
-          }],
-          generationConfig: { responseMimeType: 'application/json' }
-        };
-        return geminiRequest(options.model, options.apiKey, plainBody)
-          .then(function (payload) {
-            return parseModelJson(extractGeminiText(payload));
-          });
-      });
+    // Primary: ask the provider to pin the response to the UI spec schema.
+    return ask(provider.body).catch(function (err) {
+      // Auth and rate-limit failures will not be fixed by retrying, so surface
+      // them rather than burning a second call.
+      if (err && (err.status === 401 || err.status === 403 || err.status === 429)) throw err;
+      // Otherwise the model family may reject the schema parameter, or return
+      // prose despite it. Retry in plain JSON mode with the contract inlined.
+      return ask(provider.plainBody);
+    });
   }
 
   /* ── Spec validation / normalisation ───────────────────────────────────── */
@@ -636,10 +1100,13 @@
       title: typeof spec.title === 'string' && spec.title.trim() ? spec.title.trim() : 'Response',
       subtitle: typeof spec.subtitle === 'string' ? spec.subtitle.trim() : '',
       layout: LAYOUTS.indexOf(spec.layout) !== -1 ? spec.layout : 'dashboard',
+      actions: normalizeActions(spec.actions),
       components: []
     };
 
     var raw = Array.isArray(spec.components) ? spec.components : [];
+    var seenPaths = {};
+
     for (var i = 0; i < raw.length && out.components.length < MAX_COMPONENTS; i += 1) {
       var candidate = raw[i];
       if (!isPlainObject(candidate)) continue;
@@ -647,16 +1114,25 @@
 
       var component = {
         type: candidate.type,
-        path: typeof candidate.path === 'string' ? candidate.path : '',
-        label: typeof candidate.label === 'string' ? candidate.label : ''
+        path: typeof candidate.path === 'string' ? candidate.path.trim() : '',
+        label: typeof candidate.label === 'string' ? candidate.label.trim() : ''
       };
       if (typeof candidate.unit === 'string') component.unit = candidate.unit;
       if (typeof candidate.alt === 'string') component.alt = candidate.alt;
       if (typeof candidate.itemPath === 'string') component.itemPath = candidate.itemPath;
       if (typeof candidate.labelPath === 'string') component.labelPath = candidate.labelPath;
       if (typeof candidate.valuePath === 'string') component.valuePath = candidate.valuePath;
+      if (EMPHASIS.indexOf(candidate.emphasis) !== -1) component.emphasis = candidate.emphasis;
       if (typeof candidate.max === 'number' && isFinite(candidate.max) && candidate.max > 0) {
         component.max = candidate.max;
+      }
+      if (Array.isArray(candidate.items)) {
+        component.items = candidate.items.filter(function (item) {
+          return isPlainObject(item) && typeof item.path === 'string' && item.path;
+        }).map(function (item) {
+          return { label: typeof item.label === 'string' ? item.label : humanize(item.path), path: item.path };
+        }).slice(0, 12);
+        if (!component.items.length) delete component.items;
       }
       if (Array.isArray(candidate.columns)) {
         component.columns = candidate.columns.filter(function (col) {
@@ -668,72 +1144,450 @@
       if (component.type === 'table' && (!component.columns || !component.columns.length)) {
         component.columns = null; // renderer will infer columns from the data
       }
+
+      if (component.type === 'section') {
+        if (!component.label) continue;
+        out.components.push(component);
+        continue;
+      }
+
+      // A component with no path resolves to the entire response body, which
+      // is how a card ends up reading "{27 fields}". Only an explicit raw
+      // block is allowed to address the root.
+      if (!component.path && !component.items && ROOT_OK_TYPES.indexOf(component.type) === -1) continue;
+
+      var key = component.type + '@' + canonPath(component.path);
+      if (seenPaths[key]) continue;
+      seenPaths[key] = true;
+
       out.components.push(component);
     }
 
-    return out.components.length ? out : null;
+    out.components = pruneContainers(out.components);
+    out.components = assignEmphasis(out.components);
+
+    var meaningful = out.components.filter(function (component) {
+      return component.type !== 'section';
+    });
+    return meaningful.length ? out : null;
   }
 
-  /* ── Fallback spec (no key, Gemini failure, or invalid spec) ───────────── */
+  function normalizeActions(raw) {
+    if (!Array.isArray(raw)) return [];
+    var out = [];
+    var seen = {};
+    for (var i = 0; i < raw.length && out.length < MAX_ACTIONS; i += 1) {
+      var candidate = raw[i];
+      if (!isPlainObject(candidate) || ACTION_TYPES.indexOf(candidate.type) === -1) continue;
+      var action = {
+        type: candidate.type,
+        label: typeof candidate.label === 'string' ? candidate.label.trim() : ''
+      };
+      if (candidate.type === 'follow') {
+        if (typeof candidate.path !== 'string' || !candidate.path.trim()) continue;
+        action.path = candidate.path.trim();
+      }
+      if (candidate.type === 'watch') {
+        var interval = Number(candidate.interval);
+        action.interval = [10, 30, 60].indexOf(interval) !== -1 ? interval : 30;
+      }
+      if (!action.label) action.label = action.type === 'follow' ? humanize(lastSegment(action.path)) : humanize(action.type);
+      var key = action.type + '@' + (action.path || '');
+      if (seen[key]) continue;
+      seen[key] = true;
+      out.push(action);
+    }
+    return out;
+  }
+
+  // If the plan points a plain value component at an object that other
+  // components already address field by field, the container card is pure
+  // duplication — drop it and keep the detail.
+  function pruneContainers(components) {
+    var scalarish = ['text', 'metric', 'title', 'gauge', 'link'];
+    return components.filter(function (component) {
+      if (component.type === 'section' || !component.path) return true;
+      if (scalarish.indexOf(component.type) === -1) return true;
+      var prefix = canonPath(component.path) + '.';
+      for (var i = 0; i < components.length; i += 1) {
+        var other = components[i];
+        if (other === component || !other.path) continue;
+        if (canonPath(other.path).indexOf(prefix) === 0) return false;
+      }
+      return true;
+    });
+  }
+
+  // Someone has to decide what the headline is. If the plan does not say, the
+  // first couple of measured values lead.
+  function assignEmphasis(components) {
+    var heroes = 0;
+    var i;
+    for (i = 0; i < components.length; i += 1) {
+      if (components[i].emphasis !== 'hero') continue;
+      heroes += 1;
+      if (heroes > 3) components[i].emphasis = 'normal';
+    }
+    if (heroes) return components;
+
+    // An explicit emphasis anywhere means the plan already ranked itself.
+    for (i = 0; i < components.length; i += 1) {
+      if (components[i].emphasis) return components;
+    }
+
+    var promoted = 0;
+    for (i = 0; i < components.length && promoted < 2; i += 1) {
+      var candidate = components[i];
+      if (candidate.type !== 'metric' && candidate.type !== 'gauge') continue;
+      if (RE_KEY_NOISE.test(canonPath(candidate.path).toLowerCase())) continue;
+      candidate.emphasis = 'hero';
+      promoted += 1;
+    }
+    return components;
+  }
+
+  /* ── Fallback spec (no key, provider failure, or invalid spec) ───────────── */
+
+  // With more structures than fit on a page, show the ones that say something
+  // about the thing itself — stats and types before internal move tables.
+  var RE_KEY_INTERESTING = /(stat|type|score|rating|metric|summary|current|result|price|category|tag|genre|ingredient)/;
+  var RE_KEY_BULK = /(past|deprecated|legacy|index|indices|moves|forms|encounter|sprite|image|icon|internal|meta|raw|log|debug|_url|href)/;
+  var BLOCK_INTEREST = { statBars: 6, chart: 5, timeline: 5, badges: 3, table: 2, keyValue: 2, list: 1 };
+
+  function rankBlocks(blocks) {
+    return blocks.map(function (block, index) {
+      var key = String(block.path || '').toLowerCase();
+      var score = BLOCK_INTEREST[block.type] || 1;
+      if (RE_KEY_INTERESTING.test(key)) score += 4;
+      if (RE_KEY_BULK.test(key)) score -= 5;
+      if (RE_KEY_NOISE.test(key)) score -= 3;
+      return { block: block, index: index, score: score };
+    }).sort(function (a, b) {
+      return b.score - a.score || a.index - b.index;
+    }).map(function (entry) { return entry.block; });
+  }
+
+  // An array of { name, value } objects is a ranking, and a ranking reads as
+  // bars. Anything more ambiguous stays a table.
+  var RE_STAT_VALUE = /^(base_stat|value|count|amount|score|total|power|rating|points|votes|weight|percent|percentage)$/;
+
+  // A short array of { name, slot } objects is a set of labels. A table of one
+  // row and two columns is not worth the chrome.
+  function labelOnlyArray(rows) {
+    if (!rows.length || rows.length > 8) return '';
+    var RE_TRIVIAL = /^(slot|index|order|position|rank|is_[a-z_]+|url|href)$/;
+    var namePath = '';
+    for (var i = 0; i < rows.length; i += 1) {
+      var row = rows[i];
+      if (!isPlainObject(row)) return '';
+      var own = namePathIn(row);
+      var path = own;
+      if (!path) {
+        var wrapper = Object.keys(row).filter(function (key) {
+          return isPlainObject(row[key]) && namePathIn(row[key]);
+        })[0];
+        if (!wrapper) return '';
+        path = wrapper + '.' + namePathIn(row[wrapper]);
+      }
+      if (namePath && namePath !== path) return '';
+      namePath = path;
+
+      var extras = Object.keys(row).filter(function (key) {
+        if (path.indexOf(key) === 0) return false;
+        return !RE_TRIVIAL.test(key.toLowerCase());
+      });
+      if (extras.length) return '';
+    }
+    return namePath;
+  }
+
+  function statBarsShape(rows) {
+    if (rows.length < 2 || rows.length > 12) return null;
+    var sample = rows[0];
+    var numeric = Object.keys(sample).filter(function (key) {
+      return typeof sample[key] === 'number' && isFinite(sample[key]);
+    });
+    if (!numeric.length) return null;
+
+    var valueKey = null;
+    for (var i = 0; i < numeric.length; i += 1) {
+      if (RE_STAT_VALUE.test(numeric[i].toLowerCase())) { valueKey = numeric[i]; break; }
+    }
+    // A slot, index or rank is a position, not a quantity worth drawing.
+    var RE_POSITION = /^(slot|index|order|position|rank|level|page|number|no|id|game_index)$/;
+    if (!valueKey && numeric.length === 1 && !RE_POSITION.test(numeric[0].toLowerCase())) {
+      valueKey = numeric[0];
+    }
+    if (!valueKey) return null;
+
+    var labelPath = namePathIn(sample);
+    if (!labelPath) {
+      var wrapper = Object.keys(sample).filter(function (key) {
+        return isPlainObject(sample[key]) && namePathIn(sample[key]);
+      })[0];
+      if (!wrapper) return null;
+      labelPath = wrapper + '.' + namePathIn(sample[wrapper]);
+    }
+
+    var max = 0;
+    for (var r = 0; r < rows.length; r += 1) {
+      var n = rows[r] ? rows[r][valueKey] : 0;
+      if (typeof n === 'number' && isFinite(n)) max = Math.max(max, n);
+    }
+    return { labelPath: labelPath, valuePath: valueKey, max: max > 0 ? max : 1 };
+  }
+
+  // "…/v2?lat=…" is not a title. Prefer the last segment that says something,
+  // and fall back to the service's own name.
+  function endpointTitle(url) {
+    if (!url) return '';
+    var noise = /^(v\d+|api|json|data|index|latest|current|query|search|get)$/i;
+    try {
+      var parsed = new URL(url);
+      var segments = parsed.pathname.split('/').filter(Boolean)
+        .map(function (part) { return decodeURIComponent(part).replace(/\.(json|xml)$/i, ''); })
+        .filter(function (part) { return part && !noise.test(part); });
+      if (segments.length) return humanize(segments[segments.length - 1]);
+      var host = parsed.hostname.replace(/^(www|api)\./, '').split('.');
+      return humanize(host[0]);
+    } catch (err) {
+      return deriveName(url);
+    }
+  }
 
   function buildFallbackSpec(data, url) {
-    var root = data;
-    var prefix = '';
-    if (Array.isArray(data)) {
-      if (isPlainObject(data[0])) { root = data[0]; prefix = '[0].'; }
-    }
-
     var components = [];
     var title = 'Response';
+    var subtitle = '';
 
-    if (isPlainObject(root)) {
-      var keys = Object.keys(root);
-      var titleKey = null;
-      var titleCandidates = ['name', 'title', 'id'];
-      for (var t = 0; t < titleCandidates.length; t += 1) {
-        if (typeof root[titleCandidates[t]] === 'string' || typeof root[titleCandidates[t]] === 'number') {
-          titleKey = titleCandidates[t];
-          break;
-        }
-      }
-      if (!titleKey) {
-        for (var s = 0; s < keys.length; s += 1) {
-          if (typeof root[keys[s]] === 'string') { titleKey = keys[s]; break; }
-        }
-      }
-      if (titleKey) title = String(root[titleKey]);
-
-      // First image anywhere shallow in the object.
-      var imagePath = findFirstImagePath(root, prefix, 0);
-      if (imagePath) {
-        components.push({ type: 'image', path: imagePath, label: 'Image', alt: title });
-      }
-
-      var added = 0;
-      for (var i = 0; i < keys.length && added < 6; i += 1) {
-        var key = keys[i];
-        if (key === titleKey) continue;
-        var value = root[key];
-        if (value === null || typeof value === 'object') continue;
-        components.push({
-          type: typeof value === 'number' ? 'metric' : (isUrl(value) ? 'link' : 'text'),
-          path: prefix + key,
-          label: humanize(key)
-        });
-        added += 1;
-      }
+    if (Array.isArray(data)) {
+      title = data.length + (data.length === 1 ? ' item' : ' items');
+      components.push(isPlainObject(data[0])
+        ? { type: 'table', path: '', label: 'Items' }
+        : { type: 'badges', path: '', label: 'Items' });
+      return { title: title, subtitle: subtitle, layout: 'table', components: components,
+               actions: deriveActions(data, url) };
     }
 
-    if (!components.length) {
-      components.push({ type: 'jsonBlock', path: '', label: 'Response' });
+    if (!isPlainObject(data)) {
+      return {
+        title: 'Response', subtitle: subtitle, layout: 'raw',
+        components: [{ type: 'text', path: '', label: 'Value' }],
+        actions: deriveActions(data, url)
+      };
     }
+
+    var keys = Object.keys(data);
+    var i;
+
+    // Title: a human-readable name if the payload has one, else the endpoint.
+    var titleKey = null;
+    var titleCandidates = ['name', 'title', 'label', 'id'];
+    for (i = 0; i < titleCandidates.length; i += 1) {
+      var value = data[titleCandidates[i]];
+      if (typeof value === 'string' && value.trim()) { titleKey = titleCandidates[i]; break; }
+    }
+    title = titleKey ? String(data[titleKey]) : endpointTitle(url) || 'Response';
+
+    var imagePath = findFirstImagePath(data, '', 0);
+    if (imagePath) components.push({ type: 'image', path: imagePath, label: 'Image', alt: title });
+
+    // Moments in time read as a sequence, not as sixteen separate strings.
+    var moments = [];
+    for (i = 0; i < keys.length; i += 1) {
+      if (typeof data[keys[i]] === 'string' && RE_ISO_DT.test(data[keys[i]])) {
+        moments.push({ label: humanize(keys[i]), path: keys[i] });
+      }
+    }
+    var momentKeys = {};
+    if (moments.length >= 3) {
+      components.push({ type: 'timeline', path: '', label: 'Sequence', items: moments });
+      for (i = 0; i < moments.length; i += 1) momentKeys[moments[i].path] = true;
+    }
+
+    var facts = [];
+    var blocks = [];
+
+    // Many APIs bury the answer one level down under "current" or "results".
+    // Those fields belong on the surface, not inside a card.
+    var HOISTABLE = /^(current|now|latest|today|main|summary|result|results|data|attributes|properties)$/;
+    var hoisted = '';
+    for (i = 0; i < keys.length; i += 1) {
+      var child = data[keys[i]];
+      if (!HOISTABLE.test(keys[i]) || !isPlainObject(child)) continue;
+      var childKeys = Object.keys(child).filter(function (k) {
+        return child[k] !== null && typeof child[k] !== 'object';
+      });
+      if (childKeys.length < 2) continue;
+      hoisted = keys[i];
+      // Open-Meteo and friends ship the units in a parallel object; a number
+      // without its unit is only half an answer.
+      var units = isPlainObject(data[hoisted + '_units']) ? data[hoisted + '_units']
+                : (isPlainObject(data.units) ? data.units : null);
+      for (var c = 0; c < childKeys.length && c < 8; c += 1) {
+        var childPath = hoisted + '.' + childKeys[c];
+        var childValue = child[childKeys[c]];
+        var childKind = inferKind(childValue, { path: childPath });
+        var fact = {
+          __noise: RE_KEY_NOISE.test(childKeys[c].toLowerCase()),
+          __kind: childKind,
+          type: HERO_KINDS.indexOf(childKind) !== -1 && childKind !== 'datetime' ? 'metric' : 'text',
+          path: childPath,
+          label: humanize(childKeys[c])
+        };
+        var unit = units ? units[childKeys[c]] : null;
+        if (typeof unit === 'string' && unit && unit.length <= 8 && !/^iso/i.test(unit)) {
+          fact.unit = unit;
+        }
+        facts.push(fact);
+      }
+      break;
+    }
+
+    for (i = 0; i < keys.length; i += 1) {
+      var key = keys[i];
+      if (key === titleKey || momentKeys[key] || key === hoisted) continue;
+      var v = data[key];
+      var label = humanize(key);
+
+      if (v === null || v === undefined) continue;
+
+      if (Array.isArray(v)) {
+        if (!v.length) continue;
+        if (isPlainObject(v[0])) {
+          var bars = statBarsShape(v);
+          var namesOnly = bars ? '' : labelOnlyArray(v);
+          if (bars) {
+            blocks.push({ type: 'statBars', path: key, label: label,
+                          labelPath: bars.labelPath, valuePath: bars.valuePath, max: bars.max });
+          } else if (namesOnly) {
+            blocks.push({ type: 'badges', path: key, label: label, itemPath: namesOnly });
+          } else {
+            blocks.push({ type: 'table', path: key, label: label });
+          }
+        }
+        else if (allNumbers(v) && v.length >= 4) blocks.push({ type: 'chart', path: key, label: label });
+        else blocks.push({ type: 'badges', path: key, label: label });
+        continue;
+      }
+
+      if (isPlainObject(v)) {
+        if (!Object.keys(v).length) continue;
+        blocks.push({ type: 'keyValue', path: key, label: label });
+        continue;
+      }
+
+      if (imagePath && canonPath(imagePath) === key) continue;
+
+      var kind = inferKind(v, { path: key });
+      facts.push({
+        __noise: RE_KEY_NOISE.test(key.toLowerCase()),
+        type: kind === 'number' || kind === 'percent' || kind === 'duration' ||
+              kind === 'bytes' || kind === 'money' || kind === 'temperature' ? 'metric' : 'text',
+        path: key,
+        label: label,
+        __kind: kind
+      });
+    }
+
+    // Two headline values, chosen by how much they say, not by key order.
+    function heroRank(fact) {
+      if (fact.__noise) return 99;
+      var index = HERO_KINDS.indexOf(fact.__kind);
+      return index === -1 ? 99 : index;
+    }
+    var ranked = facts.slice().sort(function (a, b) {
+      return heroRank(a) - heroRank(b);
+    });
+    var promoted = 0;
+    for (i = 0; i < ranked.length && promoted < 2; i += 1) {
+      if (heroRank(ranked[i]) === 99) break;
+      ranked[i].emphasis = 'hero';
+      promoted += 1;
+    }
+    // Bookkeeping fields sink to the end of the sheet.
+    facts.sort(function (a, b) { return (a.__noise ? 1 : 0) - (b.__noise ? 1 : 0); });
+    for (i = 0; i < facts.length; i += 1) {
+      if (facts[i].__noise && facts[i].emphasis !== 'hero') facts[i].emphasis = 'quiet';
+      delete facts[i].__kind;
+      delete facts[i].__noise;
+    }
+
+    var actions = deriveActions(data, url);
+    var covered = {};
+    for (i = 0; i < actions.length; i += 1) {
+      if (actions[i].type === 'follow') covered[canonPath(actions[i].path)] = true;
+    }
+    facts = facts.filter(function (fact) { return !covered[canonPath(fact.path)]; });
+
+    components = components.concat(facts.slice(0, 12)).concat(rankBlocks(blocks).slice(0, 8));
+
+    if (!components.length) components.push({ type: 'jsonBlock', path: '', label: 'Response' });
+
+    var layout = 'dashboard';
+    if (imagePath && facts.length) layout = 'profile';
+    else if (moments.length >= 3 && facts.length < 4) layout = 'timeline';
+    else if (!facts.length && blocks.length && blocks[0].type === 'table') layout = 'table';
 
     return {
       title: title,
-      subtitle: url || '',
-      layout: 'dashboard',
-      components: components.slice(0, MAX_COMPONENTS)
+      subtitle: subtitle,
+      layout: layout,
+      components: components.slice(0, MAX_COMPONENTS),
+      actions: actions
     };
+  }
+
+  // Where can the reader go from here? Any URL in the body is a door; the
+  // paging keys are the front door. Live-looking data earns a watch action.
+  var RE_KEY_PAGING = /^(next|next_page|next_url|nextpage|previous|prev|prev_page|previous_url|self|first|last)$/;
+  // Deliberately narrow: "rate" would match capture_rate, "status" any enum.
+  var RE_LIVE_HINT = /(^|[_./?&-])(current|weather|forecast|prices?|quotes?|health|live|latest|now|ticker|exchange)([_./?&=-]|$)/i;
+
+  function deriveActions(data, url) {
+    var actions = [];
+    var seen = {};
+
+    function follow(path, label) {
+      if (actions.length >= MAX_ACTIONS - 2 || seen[path]) return;
+      seen[path] = true;
+      actions.push({ type: 'follow', path: path, label: label });
+    }
+
+    function scan(node, prefix, depth) {
+      if (!isPlainObject(node) || depth > 1) return;
+      var keys = Object.keys(node);
+      // Paging first: those are the links a reader reaches for.
+      keys.sort(function (a, b) {
+        return (RE_KEY_PAGING.test(b) ? 1 : 0) - (RE_KEY_PAGING.test(a) ? 1 : 0);
+      });
+      for (var i = 0; i < keys.length; i += 1) {
+        var key = keys[i];
+        var value = node[key];
+        var path = prefix ? prefix + '.' + key : key;
+        if (typeof value === 'string' && isUrl(value) && !isImageUrl(value) && value !== url) {
+          if (/\.(ogg|mp3|wav|mp4|webm|pdf|zip)$/i.test(value.split('?')[0])) continue;
+          var label = RE_KEY_PAGING.test(key)
+            ? (/^(next|next_page|next_url|nextpage)$/.test(key) ? 'Next page'
+              : /^(previous|prev|prev_page|previous_url)$/.test(key) ? 'Previous page'
+              : humanize(key))
+            : humanize((prefix ? lastSegment(prefix) : key).replace(/_?(url|href|link|uri)$/i, '') || key);
+          follow(path, label);
+        } else if (isPlainObject(value)) {
+          scan(value, path, depth + 1);
+        }
+      }
+    }
+    scan(data, '', 0);
+
+    var live = RE_LIVE_HINT.test(String(url || '')) ||
+               (isPlainObject(data) && Object.keys(data).some(function (k) {
+                 return RE_LIVE_HINT.test(k) || (typeof data[k] === 'string' && RE_ISO_DT.test(data[k]));
+               }));
+    if (live) actions.push({ type: 'watch', interval: 30, label: 'Watch' });
+    actions.push({ type: 'refresh', label: 'Refresh' });
+    actions.push({ type: 'raw', label: 'Raw JSON' });
+    return actions.slice(0, MAX_ACTIONS);
   }
 
   // Key order is not preference order: PokeAPI lists front_shiny before
@@ -772,6 +1626,15 @@
     return '';
   }
 
+  // API keys are written for parsers. These are the ones worth spelling out.
+  var LABEL_WORDS = {
+    tzid: 'timezone', tz: 'timezone', lat: 'latitude', lng: 'longitude',
+    lon: 'longitude', utc: 'UTC', url: 'URL', uri: 'URI', id: 'ID', ids: 'IDs',
+    api: 'API', ip: 'IP', uuid: 'UUID', sku: 'SKU', iso: 'ISO', html: 'HTML',
+    json: 'JSON', px: 'px', pct: 'percent', qty: 'quantity', num: 'number',
+    avg: 'average', min: 'minimum', max: 'maximum', desc: 'description'
+  };
+
   function humanize(key) {
     // Sentence case, so snake_case and camelCase labels read the same way.
     // All-caps words are left alone so acronyms survive (URL, ID, HP).
@@ -781,7 +1644,9 @@
       .split(/\s+/)
       .filter(Boolean)
       .map(function (word) {
-        return /^[A-Z0-9]{2,}$/.test(word) ? word : word.toLowerCase();
+        if (/^[A-Z0-9]{2,}$/.test(word)) return word;   // acronyms survive
+        var lower = word.toLowerCase();
+        return LABEL_WORDS[lower] || lower;
       });
     if (!words.length) return '';
     words[0] = words[0].replace(/^./, function (c) { return c.toUpperCase(); });
@@ -795,107 +1660,582 @@
 
   // How much of the 12-column grid each component type earns.
   var COMPONENT_SPAN = {
-    table: 12, jsonBlock: 12, chart: 12,
-    list: 6, statBars: 6,
-    image: 4, metric: 4, text: 4, title: 4, badges: 4, link: 4
+    table: 12, jsonBlock: 12, chart: 12, timeline: 12,
+    keyValue: 6, list: 6, statBars: 6, badges: 6, link: 6, prose: 12,
+    image: 4, metric: 4, gauge: 4, text: 4, title: 12
   };
+
+  // Types that always own a card of their own; everything else can be folded
+  // into a fact strip when its value turns out to be short.
+  var BLOCK_TYPES = ['table', 'jsonBlock', 'chart', 'timeline', 'keyValue',
+                     'list', 'statBars', 'badges', 'image'];
 
   // Stat bars read better as a ranked spectrum than as one flat accent colour.
   var STAT_COLORS = ['#ef6b6b', '#f5a623', '#f5ce47', '#5b9bd5', '#6aa9e0', '#4fa96a'];
 
-  function renderSpec(spec, data, diffMap) {
-    var host = dom.interfaceOut;
-    clear(host);
+  var HERO_KINDS = ['percent', 'duration', 'durationMs', 'bytes', 'money',
+                    'temperature', 'number', 'datetime'];
 
-    var head = el('div', 'spec-head');
-    head.appendChild(el('h3', 'spec-title', spec.title));
-    if (spec.subtitle) head.appendChild(el('p', 'spec-subtitle', spec.subtitle));
-    head.appendChild(el('span', 'spec-layout', 'layout: ' + spec.layout));
-    host.appendChild(head);
+  /* ── Reconciling the plan with the data ────────────────────────────────────
+     The model plans against a schema, not against the response, so it will
+     occasionally point a "text" at an object or a "chart" at a string. The
+     renderer treats the plan as a suggestion and picks the component the value
+     can actually support — this is why no card ever reads "{27 fields}".
+     ---------------------------------------------------------------------- */
 
-    var grid = el('div', 'spec-grid layout-' + spec.layout);
-    var rendered = 0;
+  var STRUCTURAL_TYPES = ['table', 'list', 'statBars', 'chart', 'badges',
+                          'keyValue', 'timeline', 'jsonBlock'];
 
-    for (var i = 0; i < spec.components.length; i += 1) {
-      var node = renderComponent(spec.components[i], data, diffMap);
-      if (node) { grid.appendChild(node); rendered += 1; }
+  // Only components that render a structure may address the whole body.
+  var ROOT_OK_TYPES = STRUCTURAL_TYPES;
+
+  function allNumbers(list) {
+    for (var i = 0; i < list.length; i += 1) {
+      if (typeof list[i] !== 'number' || !isFinite(list[i])) return false;
     }
-
-    if (!rendered) {
-      grid.appendChild(renderComponent(
-        { type: 'jsonBlock', path: '', label: 'Response' }, data, diffMap
-      ));
-    }
-
-    host.appendChild(grid);
+    return list.length > 0;
   }
 
+  function looksLikeDateTimeMap(value) {
+    var keys = Object.keys(value);
+    var hits = 0;
+    for (var i = 0; i < keys.length; i += 1) {
+      if (typeof value[keys[i]] === 'string' && RE_ISO_DT.test(value[keys[i]])) hits += 1;
+    }
+    return keys.length >= 2 && hits === keys.length;
+  }
+
+  function resolveType(component, value) {
+    var type = component.type;
+    var kind = inferKind(value, component);
+
+    if (type === 'timeline' && (component.items || Array.isArray(value) || isPlainObject(value))) {
+      return 'timeline';
+    }
+
+    if (kind === 'object') {
+      if (!Object.keys(value).length) return 'text';
+      if (looksLikeDateTimeMap(value) && Object.keys(value).length >= 3) return 'timeline';
+      if (STRUCTURAL_TYPES.indexOf(type) !== -1) return type;
+      return 'keyValue';
+    }
+
+    if (kind === 'array') {
+      if (!value.length) return 'text';
+      if (STRUCTURAL_TYPES.indexOf(type) !== -1) return type;
+      if (isPlainObject(value[0])) return 'table';
+      if (allNumbers(value) && value.length >= 4) return 'chart';
+      return 'badges';
+    }
+
+    // Scalar from here on: a structural component has nothing to chew on.
+    if (STRUCTURAL_TYPES.indexOf(type) !== -1) type = 'text';
+    if (kind === 'image') return 'image';
+    if (type === 'image') return kind === 'url' ? 'link' : 'text';
+    if (kind === 'url' && type !== 'link') return 'link';
+    if (kind === 'prose') return 'prose';
+    if (kind === 'percent' && (type === 'metric' || type === 'gauge')) return 'gauge';
+    if (type === 'gauge') return 'metric';
+    return type;
+  }
+
+  /* ── Component rendering ───────────────────────────────────────────────── */
+
+  // Returns { node, weight, span } — weight decides whether this earns a card
+  // ('block'), a hero card ('hero') or a cell in the fact strip ('fact').
   function renderComponent(component, data, diffMap) {
     var value = component.path ? getByPath(data, component.path) : data;
+    var type = resolveType(component, value);
+    var kind = inferKind(value, component);
+    var changed = pathTouchedByDiff(component.path, diffMap);
 
-    if (component.type === 'section') {
-      return el('h4', 'comp-section-heading', component.label || 'Section');
+    // Short scalars never get a card of their own.
+    var isFact = BLOCK_TYPES.indexOf(type) === -1 && type !== 'prose' &&
+                 isCompactKind(kind) && component.emphasis !== 'hero';
+    var isHero = !isFact && (component.emphasis === 'hero') && isCompactKind(kind);
+
+    if (component.path && value === undefined) {
+      if (component.emphasis === 'quiet') return null;
+      return {
+        weight: 'fact', span: 4,
+        node: factCell(component, el('div', 'val val-fact kind-empty', '—'), changed, 'Not in this response')
+      };
     }
 
-    var span = COMPONENT_SPAN[component.type] || 4;
-    var box = el('div', 'comp' + (span !== 4 ? ' span-' + span : ''));
-
-    if (component.label) box.appendChild(el('span', 'comp-label', component.label));
-
-    if (pathTouchedByDiff(component.path, diffMap)) {
-      box.className += ' is-changed';
-      box.appendChild(el('span', 'comp-flag', 'CHANGED'));
-    }
-
-    var missing = (value === undefined) ||
-                  (value === null && component.type !== 'text' && component.type !== 'title');
-
-    if (missing && component.type !== 'jsonBlock') {
-      box.appendChild(el('p', 'comp-missing', 'No data at "' + component.path + '"'));
-      return box;
+    if (isFact || isHero) {
+      var scalar = renderScalar(value, component, isHero ? 'hero' : 'fact');
+      if (isHero) {
+        return { weight: 'hero', span: 4, node: cardFor(component, scalar, changed, 'comp-hero') };
+      }
+      return { weight: 'fact', span: 4, node: factCell(component, scalar, changed, '') };
     }
 
     var body;
-    switch (component.type) {
-      case 'title':    body = renderTitle(value); break;
-      case 'text':     body = renderText(value); break;
-      case 'metric':   body = renderMetric(value, component); break;
+    switch (type) {
+      case 'title':    body = renderHeadline(value, component); break;
+      case 'prose':
+      case 'text':     body = renderScalar(value, component, 'metric'); break;
+      case 'metric':   body = renderScalar(value, component, 'metric'); break;
+      case 'gauge':    body = renderGauge(value, component); break;
+      case 'link':     body = renderScalar(value, component, 'metric'); break;
       case 'image':    body = renderImage(value, component); break;
       case 'badges':   body = renderBadges(value, component); break;
       case 'list':     body = renderList(value, component); break;
       case 'table':    body = renderTable(value, component); break;
+      case 'keyValue': body = renderKeyValue(value, component); break;
+      case 'timeline': body = renderTimeline(value, component, data); break;
       case 'statBars': body = renderStatBars(value, component); break;
       case 'chart':    body = renderChart(value, component); break;
-      case 'link':     body = renderLink(value, component); break;
       case 'jsonBlock':body = renderJsonBlock(value); break;
-      default:         return null;
+      default:         body = renderScalar(value, component, 'metric');
     }
 
     if (!body) {
-      box.appendChild(el('p', 'comp-missing', 'Nothing to show here.'));
-      return box;
+      // Whatever the plan asked for, the value could not support it — show the
+      // value itself rather than an apology.
+      body = isPlainObject(value) || Array.isArray(value)
+        ? renderJsonBlock(value)
+        : renderScalar(value, component, 'metric');
+      type = 'jsonBlock';
+    }
+
+    var span = COMPONENT_SPAN[type] || 6;
+    if (type === 'keyValue' && body.childElementCount > 8) span = 12;
+    return { weight: 'block', span: span, node: cardFor(component, body, changed, '') };
+  }
+
+  function cardFor(component, body, changed, extraClass) {
+    var box = el('div', 'comp' + (extraClass ? ' ' + extraClass : ''));
+    if (component.label) box.appendChild(el('span', 'comp-label', component.label));
+    if (changed) {
+      box.className += ' is-changed';
+      box.appendChild(el('span', 'comp-flag', 'CHANGED'));
     }
     box.appendChild(body);
     return box;
   }
 
-  function renderTitle(value) {
-    return el('div', 'comp-title-value', formatValue(value));
+  function factCell(component, body, changed, note) {
+    var cell = el('div', 'fact' + (changed ? ' is-changed' : '') +
+                        (component.emphasis === 'quiet' ? ' is-quiet' : ''));
+    cell.appendChild(el('span', 'fact-label', component.label || humanize(lastSegment(component.path))));
+    cell.appendChild(body);
+    if (note) cell.appendChild(el('span', 'fact-note', note));
+    return cell;
   }
 
-  function renderText(value) {
-    if (isPlainObject(value) || Array.isArray(value)) return renderJsonBlock(value);
-    return el('div', 'comp-text-value', formatValue(value));
+  function renderHeadline(value, component) {
+    var info = describeValue(value, component);
+    return el('div', 'comp-title-value', info.primary);
   }
 
-  function renderMetric(value, component) {
-    var wrap = el('div', 'comp-metric');
-    var line = el('div', 'comp-metric-value', formatValue(value));
-    if (component.unit) {
-      line.appendChild(el('span', 'comp-metric-unit', component.unit));
+  /* ── Layout assembly ───────────────────────────────────────────────────────
+     Hierarchy is the whole difference between an interface and a wall of
+     boxes: headline numbers first, then a dense fact sheet, then the wide
+     structures. Sections from the plan split that arrangement into groups.
+     ---------------------------------------------------------------------- */
+
+  // Which tier leads depends on the layout the plan chose. A collection page
+  // opens with its table; a profile opens with its picture; a dashboard opens
+  // with its numbers.
+  var STRUCTURE_FIRST = ['table', 'list', 'timeline', 'raw', 'article'];
+
+  function renderSpecBody(spec, data, diffMap) {
+    var frag = document.createDocumentFragment();
+    var body = el('div', 'spec-body layout-' + (spec.layout || 'dashboard'));
+    frag.appendChild(body);
+    var structureFirst = STRUCTURE_FIRST.indexOf(spec.layout) !== -1;
+    var profile = spec.layout === 'profile';
+    var groups = [{ label: '', items: [] }];
+
+    for (var i = 0; i < spec.components.length; i += 1) {
+      var component = spec.components[i];
+      if (component.type === 'section') {
+        groups.push({ label: component.label || 'Section', items: [] });
+      } else {
+        groups[groups.length - 1].items.push(component);
+      }
     }
-    wrap.appendChild(line);
+
+    var anyRendered = false;
+
+    for (var g = 0; g < groups.length; g += 1) {
+      var group = groups[g];
+      if (!group.items.length) continue;
+
+      var heroes = [], facts = [], blocks = [];
+      for (var c = 0; c < group.items.length; c += 1) {
+        var result = renderComponent(group.items[c], data, diffMap);
+        if (!result) continue;
+        if (result.weight === 'hero') heroes.push(result);
+        else if (result.weight === 'fact') facts.push(result);
+        else blocks.push(result);
+      }
+      if (!heroes.length && !facts.length && !blocks.length) continue;
+
+      // A lone fact next to nothing else looks lost — promote it to a card.
+      if (!heroes.length && facts.length && facts.length < 2 && blocks.length) {
+        // keep it in the strip; a single-cell strip still reads fine
+      }
+
+      var section = el('section', 'spec-section');
+      if (group.label) section.appendChild(el('h4', 'spec-section-head', group.label));
+
+      var heroRow = null, strip = null, grid = null;
+      var h, f, b;
+
+      if (heroes.length) {
+        heroRow = el('div', 'hero-row');
+        for (h = 0; h < heroes.length; h += 1) heroRow.appendChild(heroes[h].node);
+      }
+      if (facts.length) {
+        strip = el('div', 'fact-strip');
+        for (f = 0; f < facts.length; f += 1) strip.appendChild(facts[f].node);
+      }
+
+      // A profile leads with its picture beside the numbers and facts.
+      var portrait = null;
+      if (profile && g === 0) {
+        for (b = 0; b < blocks.length; b += 1) {
+          if (blocks[b].node.querySelector('.comp-image')) { portrait = blocks.splice(b, 1)[0]; break; }
+        }
+      }
+
+      if (blocks.length) {
+        // Within structure-first layouts the timeline / table still leads.
+        if (structureFirst) {
+          blocks.sort(function (x, y) {
+            var lead = spec.layout === 'timeline' ? 'timeline' : (spec.layout === 'article' ? 'prose' : 'table');
+            var xs = x.node.querySelector('.timeline, .comp-table, .kind-prose') ? 0 : 1;
+            var ys = y.node.querySelector('.timeline, .comp-table, .kind-prose') ? 0 : 1;
+            void lead;
+            return xs - ys;
+          });
+        }
+        grid = el('div', 'spec-grid');
+        for (b = 0; b < blocks.length; b += 1) {
+          if (blocks[b].span !== 4) blocks[b].node.className += ' span-' + blocks[b].span;
+          grid.appendChild(blocks[b].node);
+        }
+      }
+
+      if (portrait) {
+        var profileGrid = el('div', 'profile-grid');
+        profileGrid.appendChild(portrait.node);
+        var main = el('div', 'profile-main');
+        if (heroRow) main.appendChild(heroRow);
+        if (strip) main.appendChild(strip);
+        if (!heroRow && !strip && grid) { main.appendChild(grid); grid = null; }
+        profileGrid.appendChild(main);
+        section.appendChild(profileGrid);
+        if (grid) section.appendChild(grid);
+      } else if (structureFirst) {
+        if (grid) section.appendChild(grid);
+        if (heroRow) section.appendChild(heroRow);
+        if (strip) section.appendChild(strip);
+      } else {
+        if (heroRow) section.appendChild(heroRow);
+        if (strip) section.appendChild(strip);
+        if (grid) section.appendChild(grid);
+      }
+
+      body.appendChild(section);
+      anyRendered = true;
+    }
+
+    if (!anyRendered) {
+      var fallbackSection = el('section', 'spec-section');
+      var fallbackGrid = el('div', 'spec-grid');
+      var raw = renderComponent({ type: 'jsonBlock', path: '', label: 'Response' }, data, diffMap);
+      raw.node.className += ' span-12';
+      fallbackGrid.appendChild(raw.node);
+      fallbackSection.appendChild(fallbackGrid);
+      body.appendChild(fallbackSection);
+    }
+
+    return frag;
+  }
+
+  /* ── Key/value, gauge and timeline ─────────────────────────────────────── */
+
+  function flattenScalars(node, prefix, depth, out) {
+    var keys = Object.keys(node);
+    for (var i = 0; i < keys.length && out.length < 24; i += 1) {
+      var key = keys[i];
+      var value = node[key];
+      var path = prefix ? prefix + '.' + key : key;
+      if (isPlainObject(value) && depth < 2 && Object.keys(value).length) {
+        flattenScalars(value, path, depth + 1, out);
+      } else {
+        out.push({ path: path, key: key, label: humanize(path.replace(/\./g, ' ')), value: value });
+      }
+    }
+    return out;
+  }
+
+  function renderKeyValue(value, component) {
+    var rows = [];
+
+    if (Array.isArray(component.items) && component.items.length) {
+      for (var i = 0; i < component.items.length; i += 1) {
+        var item = component.items[i];
+        var itemValue = item.path ? getByPath(value, item.path) : value;
+        if (itemValue === undefined) continue;
+        rows.push({ path: item.path, label: item.label || humanize(lastSegment(item.path)), value: itemValue });
+      }
+    } else if (isPlainObject(value)) {
+      flattenScalars(value, '', 0, rows);
+    } else if (Array.isArray(value)) {
+      for (var a = 0; a < value.length && a < MAX_ROWS; a += 1) {
+        rows.push({ path: String(a), label: '#' + (a + 1), value: value[a] });
+      }
+    }
+
+    if (!rows.length) return null;
+
+    var wrap = el('div', 'kv');
+    for (var r = 0; r < rows.length; r += 1) {
+      var row = rows[r];
+      var line = el('div', 'kv-row');
+      line.appendChild(el('span', 'kv-key', row.label));
+      var hint = { path: row.path, label: row.label, unit: component.unit };
+      var spark = Array.isArray(row.value) && row.value.length >= 4 && allNumbers(row.value)
+        ? renderSparkline(row.value)
+        : null;
+      line.appendChild(spark || renderScalar(row.value, hint, 'inline'));
+      wrap.appendChild(line);
+    }
     return wrap;
+  }
+
+  // A series inside a key/value sheet says more as a shape than as "24 items".
+  function renderSparkline(numbers) {
+    var points = numbers.slice(0, 120);
+    var min = Math.min.apply(null, points);
+    var max = Math.max.apply(null, points);
+    if (max === min) max = min + 1;
+
+    var W = 120, H = 22;
+    var coords = [];
+    for (var i = 0; i < points.length; i += 1) {
+      var x = (i / (points.length - 1)) * W;
+      var y = H - ((points[i] - min) / (max - min)) * (H - 3) - 1.5;
+      coords.push(x.toFixed(1) + ',' + y.toFixed(1));
+    }
+
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('class', 'spark-svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    var line = document.createElementNS(svgNS, 'polyline');
+    line.setAttribute('class', 'spark-line');
+    line.setAttribute('points', coords.join(' '));
+    svg.appendChild(line);
+
+    var wrap = el('div', 'spark');
+    wrap.appendChild(svg);
+    wrap.appendChild(el('span', 'spark-range',
+      formatNumber(min) + '–' + formatNumber(max) + ' · ' + numbers.length));
+    wrap.title = numbers.slice(0, 24).join(', ') + (numbers.length > 24 ? ' …' : '');
+    return wrap;
+  }
+
+  function renderGauge(value, component) {
+    if (typeof value !== 'number' || !isFinite(value)) return null;
+    var info = describeValue(value, component);
+    var max = component.max && isFinite(component.max) && component.max > 0
+      ? component.max
+      : (info.kind === 'percent' ? 100 : Math.max(value, 1));
+    var ratio = Math.max(0, Math.min(1, value / max));
+
+    var wrap = el('div', 'gauge');
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('class', 'gauge-svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', (component.label || 'Value') + ': ' + info.primary + (info.unit || ''));
+
+    var circumference = 2 * Math.PI * 42;
+    var track = document.createElementNS(svgNS, 'circle');
+    track.setAttribute('class', 'gauge-track');
+    track.setAttribute('cx', '50'); track.setAttribute('cy', '50'); track.setAttribute('r', '42');
+    svg.appendChild(track);
+
+    var arc = document.createElementNS(svgNS, 'circle');
+    arc.setAttribute('class', 'gauge-arc');
+    arc.setAttribute('cx', '50'); arc.setAttribute('cy', '50'); arc.setAttribute('r', '42');
+    arc.setAttribute('stroke-dasharray', circumference.toFixed(1));
+    arc.setAttribute('stroke-dashoffset', (circumference * (1 - ratio)).toFixed(1));
+    svg.appendChild(arc);
+    wrap.appendChild(svg);
+
+    var center = el('div', 'gauge-center');
+    center.appendChild(el('span', 'gauge-value', info.primary));
+    if (info.unit) center.appendChild(el('span', 'gauge-unit', info.unit));
+    wrap.appendChild(center);
+    return wrap;
+  }
+
+  function timelineEntries(value, component, data) {
+    var entries = [];
+
+    function push(label, raw) {
+      if (typeof raw !== 'string' || !RE_ISO_DT.test(raw)) return;
+      var ms = Date.parse(raw);
+      if (isNaN(ms)) return;
+      var shown = formatIsoDateTime(raw);
+      entries.push({ label: label, ms: ms, time: shown ? shown.primary : raw, raw: raw });
+    }
+
+    if (Array.isArray(component.items) && component.items.length) {
+      for (var i = 0; i < component.items.length; i += 1) {
+        var item = component.items[i];
+        push(item.label || humanize(lastSegment(item.path)), getByPath(data, item.path));
+      }
+    } else if (Array.isArray(value)) {
+      for (var a = 0; a < value.length; a += 1) {
+        var entry = value[a];
+        if (isPlainObject(entry)) {
+          var label = component.labelPath ? getByPath(entry, component.labelPath) : ('#' + (a + 1));
+          push(formatValue(label), component.valuePath ? getByPath(entry, component.valuePath) : null);
+        } else {
+          push('#' + (a + 1), entry);
+        }
+      }
+    } else if (isPlainObject(value)) {
+      var flat = flattenScalars(value, '', 0, []);
+      for (var f = 0; f < flat.length; f += 1) push(flat[f].label, flat[f].value);
+    }
+
+    entries.sort(function (x, y) { return x.ms - y.ms; });
+
+    // Two names for the same instant (first light / astronomical twilight
+    // begin) are one moment, not two marks on top of each other.
+    var merged = [];
+    for (var m = 0; m < entries.length; m += 1) {
+      var previous = merged[merged.length - 1];
+      if (previous && previous.ms === entries[m].ms) {
+        if (previous.label.indexOf(entries[m].label) === -1) {
+          previous.label += ' · ' + entries[m].label;
+        }
+      } else {
+        merged.push(entries[m]);
+      }
+    }
+    return merged;
+  }
+
+  function renderTimeline(value, component, data) {
+    var entries = timelineEntries(value, component, data);
+    if (entries.length < 2) return null;
+    if (entries.length > 12) {
+      // Keep the shape of the sequence: sample evenly, but never lose the ends.
+      var sampled = [];
+      var step = (entries.length - 1) / 11;
+      for (var k = 0; k < 12; k += 1) sampled.push(entries[Math.round(k * step)]);
+      entries = sampled;
+    }
+
+    var first = entries[0].ms;
+    var last = entries[entries.length - 1].ms;
+    var range = last - first || 1;
+
+    var wrap = el('div', 'timeline');
+    var rail = el('div', 'timeline-rail');
+    rail.appendChild(el('div', 'timeline-track'));
+
+    for (var i = 0; i < entries.length; i += 1) {
+      var entry = entries[i];
+      var pct = 4 + ((entry.ms - first) / range) * 92;  // inset so the ends do not clip
+      var mark = el('div', 'timeline-mark');
+      mark.style.left = pct.toFixed(2) + '%';
+      mark.setAttribute('data-pct', pct.toFixed(3));
+      mark.appendChild(el('span', 'timeline-dot'));
+      var tag = el('span', 'timeline-tag');
+      tag.appendChild(el('span', 'timeline-time', entry.time));
+      tag.appendChild(el('span', 'timeline-name', entry.label));
+      mark.appendChild(tag);
+      mark.title = entry.raw;
+      rail.appendChild(mark);
+    }
+
+    wrap.appendChild(rail);
+    wrap.appendChild(el('p', 'more-note',
+      'Spans ' + formatDuration((last - first) / 1000) + ' · ' + entries.length + ' points'));
+    return wrap;
+  }
+
+  // Times cluster — dawn happens four times in twenty minutes — so labels are
+  // packed into lanes above and below the rail only once the real widths are
+  // known. Runs after insertion, and again whenever the column resizes.
+  // Widths only exist once the pane is on screen, so the pass is deferred and
+  // repeated whenever the interface becomes visible again.
+  function scheduleTimelineLayout() {
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(function () { layoutTimelines(dom.interfaceOut); });
+    } else {
+      window.setTimeout(function () { layoutTimelines(dom.interfaceOut); }, 0);
+    }
+  }
+
+  function layoutTimelines(root) {
+    var rails = (root || document).querySelectorAll('.timeline-rail');
+    for (var r = 0; r < rails.length; r += 1) {
+      var rail = rails[r];
+      var width = rail.clientWidth;
+      if (!width) continue;
+
+      var marks = rail.querySelectorAll('.timeline-mark');
+      var laneEnds = [];
+      var rowStep = 0;
+      var i;
+
+      for (i = 0; i < marks.length; i += 1) {
+        var mark = marks[i];
+        var tag = mark.querySelector('.timeline-tag');
+        if (!tag) continue;
+        var tagWidth = tag.offsetWidth || 74;
+        rowStep = Math.max(rowStep, tag.offsetHeight + 10);
+
+        var center = (parseFloat(mark.getAttribute('data-pct')) / 100) * width;
+        var left = center - tagWidth / 2;
+        var right = center + tagWidth / 2;
+
+        var lane = 0;
+        while (laneEnds[lane] !== undefined && left < laneEnds[lane] + 8) lane += 1;
+        laneEnds[lane] = right;
+
+        var below = lane % 2 === 1;
+        var row = Math.floor(lane / 2);
+        mark.setAttribute('data-lane', String(lane));
+        tag.setAttribute('data-row', String(row));
+        tag.style.top = 'auto';
+        tag.style.bottom = 'auto';
+        tag.__row = row;
+        tag.__below = below;
+      }
+
+      if (!rowStep) rowStep = 40;
+      var above = 0, below = 0;
+      for (i = 0; i < marks.length; i += 1) {
+        var t = marks[i].querySelector('.timeline-tag');
+        if (!t) continue;
+        var offset = 14 + t.__row * rowStep;
+        if (t.__below) { t.style.top = offset + 'px'; below = Math.max(below, t.__row + 1); }
+        else { t.style.bottom = offset + 'px'; above = Math.max(above, t.__row + 1); }
+      }
+
+      // The rail is only as tall as the lanes in use, and the track sits where
+      // those lanes leave it — no dead space under a one-sided timeline.
+      var aboveHeight = 14 + above * rowStep;
+      var belowHeight = 14 + below * rowStep;
+      rail.style.height = (aboveHeight + belowHeight) + 'px';
+      var track = rail.querySelector('.timeline-track');
+      if (track) { track.style.top = aboveHeight + 'px'; }
+      for (i = 0; i < marks.length; i += 1) marks[i].style.top = aboveHeight + 'px';
+    }
   }
 
   function renderImage(value, component) {
@@ -920,20 +2260,28 @@
   function renderBadges(value, component) {
     var items = Array.isArray(value) ? value : [value];
     if (!items.length) return null;
+    var outer = document.createElement('div');
     var wrap = el('div', 'badge-wrap');
     var shown = items.slice(0, 20);
     for (var i = 0; i < shown.length; i += 1) {
       var entry = shown[i];
       var text = component.itemPath ? getByPath(entry, component.itemPath) : entry;
       if (text === undefined || text === null) text = entry;
-      wrap.appendChild(el('span', 'badge', formatValue(text)));
+      var badge = el('span', 'badge', describeValue(text, { path: component.itemPath || component.path }).primary);
+      badge.title = rawTitle(text);
+      wrap.appendChild(badge);
     }
-    return wrap;
+    outer.appendChild(wrap);
+    if (items.length > shown.length) {
+      outer.appendChild(el('p', 'more-note',
+        '+ ' + (items.length - shown.length) + ' more of ' + items.length));
+    }
+    return outer;
   }
 
   function renderList(value, component) {
     var items = Array.isArray(value) ? value : (isPlainObject(value) ? Object.keys(value).map(function (k) {
-      return k + ': ' + formatValue(value[k]);
+      return humanize(k) + ': ' + describeValue(value[k], { path: k }).primary;
     }) : [value]);
     if (!items.length) return null;
 
@@ -944,13 +2292,82 @@
       var entry = shown[i];
       var text = component.itemPath ? getByPath(entry, component.itemPath) : entry;
       if (text === undefined || text === null) text = entry;
-      ul.appendChild(el('li', null, formatValue(text)));
+      var li = el('li', null, describeValue(text, { path: component.itemPath || component.path }).primary);
+      li.title = rawTitle(text);
+      ul.appendChild(li);
     }
     wrap.appendChild(ul);
     if (items.length > shown.length) {
       wrap.appendChild(el('p', 'more-note', '+ ' + (items.length - shown.length) + ' more of ' + items.length));
     }
     return wrap;
+  }
+
+  // Key order in a JSON object is an implementation detail. A table should
+  // lead with what identifies the row, not with whichever internal id the
+  // serialiser happened to emit first.
+  function columnScore(key, rows) {
+    var lower = String(key).toLowerCase().replace(/\.(name|title|label)$/, '');
+    var score = 0;
+    if (/\.(name|title|label)$/.test(String(key).toLowerCase())) score += 9;
+    if (/^(title|name|label|headline|question|word|summary)$/.test(lower)) score += 12;
+    else if (/(title|name|label)/.test(lower)) score += 5;
+    if (/(author|artist|creator|owner|publisher|brand|category|type|status|state|country|city|language)/.test(lower)) score += 3;
+    if (/(year|count|total|price|amount|rating|score|size|duration|date)/.test(lower)) score += 2;
+    if (/(^_|_key$|_i$|^id$|_id$|key$|hash|guid|uuid|slug|cover|thumbnail|internal|seed|ia$|lending|ebook|availability)/.test(lower)) score -= 6;
+    if (RE_KEY_NOISE.test(lower)) score -= 4;
+
+    var present = 0, longText = 0;
+    var sampled = Math.min(rows.length, 5);
+    for (var i = 0; i < sampled; i += 1) {
+      var v = rows[i] ? getByPath(rows[i], key) : undefined;
+      if (v === undefined || v === null) continue;
+      present += 1;
+      if (typeof v === 'string' && (v.length > 70 || isUrl(v))) longText += 1;
+    }
+    if (!present) return -Infinity;
+    score += (present / sampled) * 2;
+    score -= longText;
+    return score;
+  }
+
+  // { name, url } wrappers are everywhere in REST payloads. The name is the
+  // column a reader wants; the wrapper is not.
+  function namePathIn(node) {
+    if (!isPlainObject(node)) return '';
+    var preferred = ['name', 'title', 'label', 'display_name', 'short_name'];
+    for (var i = 0; i < preferred.length; i += 1) {
+      if (typeof node[preferred[i]] === 'string' && node[preferred[i]]) return preferred[i];
+    }
+    return '';
+  }
+
+  function chooseColumns(rows) {
+    var sample = rows[0];
+    var keys = [];
+    Object.keys(sample).forEach(function (key) {
+      var value = sample[key];
+      if (isPlainObject(value)) {
+        var nested = namePathIn(value);
+        if (nested) keys.push({ path: key + '.' + nested, label: humanize(key) });
+        return;
+      }
+      if (Array.isArray(value) && value.length && typeof value[0] === 'object') return;
+      keys.push({ path: key, label: humanize(key) });
+    });
+
+    var scored = keys.map(function (entry, index) {
+      return { key: entry.path, label: entry.label, index: index, score: columnScore(entry.path, rows) };
+    }).filter(function (entry) { return entry.score !== -Infinity; });
+
+    scored.sort(function (a, b) { return b.score - a.score || a.index - b.index; });
+    var picked = scored.slice(0, 6);
+    // Keep the best column first, then restore the payload's own order.
+    var lead = picked[0];
+    var rest = picked.slice(1).sort(function (a, b) { return a.index - b.index; });
+    return (lead ? [lead] : []).concat(rest).map(function (entry) {
+      return { label: entry.label, path: entry.key };
+    });
   }
 
   function renderTable(value, component) {
@@ -964,11 +2381,7 @@
       if (!isPlainObject(sample)) {
         return renderList(rows, component);
       }
-      columns = Object.keys(sample).filter(function (key) {
-        return sample[key] === null || typeof sample[key] !== 'object';
-      }).slice(0, 6).map(function (key) {
-        return { label: humanize(key), path: key };
-      });
+      columns = chooseColumns(rows);
     }
     if (!columns.length) return renderJsonBlock(rows);
 
@@ -990,8 +2403,9 @@
       var tr = document.createElement('tr');
       for (var k = 0; k < columns.length; k += 1) {
         var cellValue = getByPath(shown[r], columns[k].path);
-        var td = el('td', null, cellValue === undefined ? '—' : formatValue(cellValue));
-        td.title = cellValue === undefined ? '' : formatValue(cellValue);
+        var cell = describeValue(cellValue, { path: columns[k].path, label: columns[k].label });
+        var td = el('td', null, cellValue === undefined ? '—' : cell.primary);
+        td.title = rawTitle(cellValue);
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
@@ -1046,7 +2460,8 @@
       track.appendChild(fill);
       bar.appendChild(track);
 
-      bar.appendChild(el('span', 'statbar-val', formatValue(raw)));
+      bar.appendChild(el('span', 'statbar-val',
+        describeValue(raw, { path: component.valuePath || component.path, unit: component.unit }).primary));
       wrap.appendChild(bar);
     }
     return wrap.childNodes.length ? wrap : null;
@@ -1219,6 +2634,7 @@
     dom.landingView.hidden = name !== 'landing';
     dom.setupView.hidden = name !== 'setup';
     dom.appView.hidden = name !== 'app';
+    if (name === 'app') scheduleTimelineLayout();
     window.scrollTo(0, 0);
   }
 
@@ -1241,9 +2657,36 @@
 
   /* ── Meta row / key pill ───────────────────────────────────────────────── */
 
+  // Keeps the provider select, hints and model default in step. Called on
+  // boot, when the provider changes, and when a key is pasted.
+  function syncProviderUi(opts) {
+    var id = getSessionProvider();
+    var provider = getProvider(id);
+    if (dom.providerSelect) dom.providerSelect.value = id;
+    if (dom.providerHint) {
+      dom.providerHint.innerHTML = 'Get a free key at <span class="mono">' + provider.keyHint +
+        '</span>. Pasting a key below switches this automatically.';
+    }
+    if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
+
+    // Only rewrite the model box when it is empty or still holds another
+    // provider's default, so a hand-typed model is never clobbered.
+    if (dom.modelName) {
+      var current = (dom.modelName.value || '').trim();
+      var isOtherDefault = false;
+      for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+        if (current === PROVIDERS[PROVIDER_IDS[i]].defaultModel) isOtherDefault = true;
+      }
+      if (!current || (isOtherDefault && current !== provider.defaultModel) || (opts && opts.force)) {
+        dom.modelName.value = provider.defaultModel;
+        setSessionModel(provider.defaultModel);
+      }
+    }
+  }
+
   function setKeyStatus() {
     var hasKey = !!getSessionKey();
-    dom.keyStatus.textContent = hasKey ? 'Key ready' : 'No key';
+    dom.keyStatus.textContent = hasKey ? getProvider(getSessionProvider()).label + ' ready' : 'No key';
     dom.keyStatus.setAttribute('data-state', hasKey ? 'ready' : 'missing');
   }
 
@@ -1268,9 +2711,13 @@
       dom.nextChip.hidden = false;
       dom.stNextRefresh.textContent = remaining + 's';
       dom.liveCount.textContent = '· ' + remaining + 's';
+      dom.stageLive.hidden = false;
+      dom.stageLiveCount.textContent = '· ' + remaining + 's';
     } else {
       dom.nextChip.hidden = true;
       dom.liveCount.textContent = '';
+      dom.stageLive.hidden = true;
+      dom.stageLiveCount.textContent = '';
     }
   }
 
@@ -1446,9 +2893,8 @@
         chip.type = 'button';
         chip.setAttribute('data-url', demo.url);
         chip.addEventListener('click', function () {
-          dom.urlInput.value = demo.url;
-          markDirty();
-          performRequest(false);
+          state.stack = [];
+          navigateTo(demo.url);
         });
         chips.appendChild(chip);
       })(DEMOS[i]);
@@ -1476,7 +2922,7 @@
     box.appendChild(spark);
     box.appendChild(el('p', 'empty-title', 'Ready to generate'));
     box.appendChild(el('p', 'empty-body',
-      'Imago will read this response and design an interface that fits it. This shape is new, so it takes one Gemini call — after that it is remembered.'));
+      'Imago will read this response and design an interface that fits it. This shape is new, so it takes one model call — after that it is remembered.'));
 
     var btn = el('button', 'btn btn-dark btn-lg', 'Generate interface');
     btn.type = 'button';
@@ -1516,25 +2962,204 @@
 
     clear(dom.interfaceOut);
 
-    var lead = el('div', 'spec-lead');
-    var leadText = el('div');
-    leadText.appendChild(el('h3', 'spec-title', spec.title));
-    if (spec.subtitle) leadText.appendChild(el('p', 'spec-sub', spec.subtitle));
-    lead.appendChild(leadText);
-    lead.appendChild(dom.cacheBadge);   // moves the badge node into the lead
-    dom.interfaceOut.appendChild(lead);
+    // The page header the plan asked for: title, one line of context, and
+    // what the reader can do next. Off stage the source badge sits here; on
+    // stage it moves to the stage bar.
+    var head = el('header', 'stage-head');
+    var headTop = el('div', 'stage-head-top');
+    headTop.appendChild(el('h1', 'stage-title', spec.title));
+    headTop.appendChild(dom.cacheBadge);
+    head.appendChild(headTop);
+    if (spec.subtitle) head.appendChild(el('p', 'stage-sub', spec.subtitle));
+    var actions = renderActions(spec.actions || [], state.data);
+    if (actions) head.appendChild(actions);
+    dom.interfaceOut.appendChild(head);
 
-    var grid = el('div', 'spec-grid');
-    var rendered = 0;
-    for (var i = 0; i < spec.components.length; i += 1) {
-      var node = renderComponent(spec.components[i], state.data, state.diff);
-      if (node) { grid.appendChild(node); rendered += 1; }
-    }
-    if (!rendered) {
-      grid.appendChild(renderComponent({ type: 'jsonBlock', path: '', label: 'Response' }, state.data, state.diff));
-    }
-    dom.interfaceOut.appendChild(grid);
+    dom.interfaceOut.appendChild(renderSpecBody(spec, state.data, state.diff));
+
+    if (state.showRaw) dom.interfaceOut.appendChild(renderRawSection());
+
+    dom.stageSource.textContent = dom.cacheBadge.textContent;
+    dom.stageSource.setAttribute('data-kind', source);
+    if (state.stagePref) enterStage();
+
+    scheduleTimelineLayout();
     updateMeta();
+  }
+
+  /* ── Stage ─────────────────────────────────────────────────────────────────
+     The generated page is the interface. Once a plan renders, the request bar,
+     tabs and app navigation step out of the way; a single Back control remains.
+     Following a link in the data pushes a new page; Back pops it, and from the
+     first page Back returns to the controls.
+     ---------------------------------------------------------------------- */
+
+  function enterStage() {
+    state.stage = true;
+    state.stagePref = true;
+    document.body.classList.add('is-stage');
+    dom.stageBar.hidden = false;
+    dom.stageCrumb.textContent = hostOf(state.url) + (state.stack.length ? ' · ' + state.stack.length + ' back' : '');
+    dom.stageCrumb.title = state.url;
+    if (state.pane !== 'playground') setAppPane('playground');
+    if (state.tab !== 'interface') setActiveTab('interface');
+    savePrefs();
+  }
+
+  function leaveStage() {
+    state.stage = false;
+    state.stagePref = false;
+    document.body.classList.remove('is-stage');
+    dom.stageBar.hidden = true;
+    savePrefs();
+    window.scrollTo(0, 0);
+    if (dom.urlInput) dom.urlInput.focus();
+  }
+
+  function goBack() {
+    if (!state.stage) return;
+    if (state.stack.length) {
+      var previous = state.stack.pop();
+      dom.urlInput.value = previous.url;
+      if (typeof previous.headersText === 'string') dom.headersInput.value = previous.headersText;
+      state.headersText = previous.headersText || '';
+      state.headers = parseHeaders(state.headersText);
+      state.activeRequestId = null;
+      state.showRaw = false;
+      state.stagePref = true;
+      markDirty();
+      state.dirtySinceSend = false;
+      if (!restoreFromSnapshot(previous.url)) performRequest(false);
+      else if (state.refreshIntervalMs) startTimer();
+      savePrefs();
+      return;
+    }
+    leaveStage();
+  }
+
+  function followUrl(url) {
+    if (!isUrl(url)) { toast('That field is not a URL.', 'error'); return; }
+    if (state.url) state.stack.push({ url: state.url, headersText: state.headersText });
+    if (state.stack.length > 30) state.stack.shift();
+    try { window.history.pushState({ imagoDepth: state.stack.length }, ''); } catch (e) { /* ignore */ }
+    navigateTo(url, state.headersText);
+  }
+
+  function navigateTo(url, headersText) {
+    dom.urlInput.value = url;
+    if (typeof headersText === 'string') dom.headersInput.value = headersText;
+    state.activeRequestId = null;
+    state.showRaw = false;
+    state.stagePref = true;
+    markDirty();
+    performRequest(false);
+  }
+
+  var ACTION_ICONS = {
+    follow:  ['M3 8h9', 'M8.5 4l4 4-4 4'],
+    refresh: ['M13.5 8a5.5 5.5 0 1 1-1.6-3.9', 'M13.5 2.5v3h-3'],
+    watch:   ['M8 2.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z', 'M8 5v3.2l2.2 1.3'],
+    raw:     ['M5.5 4.5 2 8l3.5 3.5', 'M10.5 4.5 14 8l-3.5 3.5']
+  };
+
+  function actionIcon(type) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('width', '13'); svg.setAttribute('height', '13');
+    svg.setAttribute('aria-hidden', 'true');
+    var paths = ACTION_ICONS[type] || ACTION_ICONS.follow;
+    for (var i = 0; i < paths.length; i += 1) {
+      var path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', paths[i]);
+      path.setAttribute('stroke', 'currentColor');
+      path.setAttribute('stroke-width', '1.6');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+    }
+    return svg;
+  }
+
+  // The next page of a collection is the one link worth shouting about.
+  function isPagingAction(action) {
+    return /^(next|previous|prev)( page)?$/i.test(action.label || '') ||
+           RE_KEY_PAGING.test(lastSegment(action.path || ''));
+  }
+
+  function renderActions(actions, data) {
+    if (!actions.length) return null;
+    var row = el('div', 'action-row');
+    var rendered = 0;
+
+    for (var i = 0; i < actions.length; i += 1) {
+      var action = actions[i];
+      var btn = el('button', 'action-btn action-' + action.type);
+      btn.type = 'button';
+
+      if (action.type === 'follow') {
+        var target = getByPath(data, action.path);
+        if (!isUrl(target) || isImageUrl(target)) continue;   // the plan guessed wrong; skip quietly
+        btn.appendChild(document.createTextNode(action.label));
+        btn.appendChild(actionIcon('follow'));
+        btn.title = target;
+        if (isPagingAction(action)) btn.className += ' is-primary';
+        btn.addEventListener('click', (function (href) {
+          return function () { followUrl(href); };
+        })(target));
+      } else if (action.type === 'refresh') {
+        btn.appendChild(actionIcon('refresh'));
+        btn.appendChild(document.createTextNode(action.label));
+        btn.addEventListener('click', function () { performRequest(false); });
+      } else if (action.type === 'watch') {
+        var on = state.refreshIntervalMs > 0;
+        btn.appendChild(actionIcon('watch'));
+        btn.appendChild(document.createTextNode(on
+          ? 'Watching · ' + (state.refreshIntervalMs / 1000) + 's'
+          : action.label + ' · ' + action.interval + 's'));
+        if (on) btn.className += ' is-on';
+        btn.addEventListener('click', (function (interval) {
+          return function () {
+            state.refreshIntervalMs = state.refreshIntervalMs ? 0 : interval * 1000;
+            syncRefreshUi();
+            if (state.refreshIntervalMs && state.data && !state.dirtySinceSend) startTimer();
+            else stopTimer();
+            savePrefs();
+            applySpec(state.spec, state.specSource);   // re-render so the button reflects it
+          };
+        })(action.interval || 30));
+      } else if (action.type === 'raw') {
+        btn.appendChild(actionIcon('raw'));
+        btn.appendChild(document.createTextNode(state.showRaw ? 'Hide raw' : action.label));
+        if (state.showRaw) btn.className += ' is-on';
+        btn.addEventListener('click', function () {
+          state.showRaw = !state.showRaw;
+          applySpec(state.spec, state.specSource);
+          if (state.showRaw) {
+            var raw = dom.interfaceOut.querySelector('.stage-raw');
+            if (raw && raw.scrollIntoView) raw.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      } else {
+        continue;
+      }
+
+      row.appendChild(btn);
+      rendered += 1;
+    }
+    return rendered ? row : null;
+  }
+
+  function renderRawSection() {
+    var section = el('section', 'spec-section stage-raw');
+    section.appendChild(el('h4', 'spec-section-head', 'Raw response'));
+    var grid = el('div', 'spec-grid');
+    var raw = renderComponent({ type: 'jsonBlock', path: '', label: state.url || 'Response' }, state.data, state.diff);
+    raw.node.className += ' span-12';
+    grid.appendChild(raw.node);
+    section.appendChild(grid);
+    return section;
   }
 
   /* ── Tabs ──────────────────────────────────────────────────────────────── */
@@ -1555,6 +3180,7 @@
     for (i = 0; i < panes.length; i += 1) {
       panes[i].className = panes[i].getAttribute('data-pane') === tab ? 'tab-pane is-active' : 'tab-pane';
     }
+    if (tab === 'interface') scheduleTimelineLayout();
     savePrefs();
   }
 
@@ -1920,7 +3546,7 @@
         updateMeta();
 
         if (state.byteSize > LARGE_RESPONSE_BYTES) {
-          toast('Large response (' + formatBytes(state.byteSize) + ') — only a compact sample goes to Gemini.');
+          toast('Large response (' + formatBytes(state.byteSize) + ') — only a compact sample goes to ' + getProvider(getSessionProvider()).label + '.');
         }
 
         return resolveSpec(url, print, false);
@@ -1956,6 +3582,7 @@
       applySpec(state.spec, state.specSource);
       showAlert(isAuto ? 'Auto-refresh failed' : title, detail);
     } else {
+      if (state.stage) leaveStage();
       dom.interfaceHead.hidden = true;
       clear(dom.interfaceOut);
       var box = el('div', 'empty');
@@ -1965,7 +3592,7 @@
     }
   }
 
-  /* ── Spec resolution: cache → (explicit) Gemini → fallback ─────────────── */
+  /* ── Spec resolution: cache → (explicit) model call → fallback ─────────────── */
 
   function resolveSpec(url, print, userTriggered) {
     var cache = getSchemaSpecs();
@@ -1986,13 +3613,13 @@
       applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
       if (!state.warnedNoKey) {
         state.warnedNoKey = true;
-        toast('No Gemini key — showing a heuristic fallback. Add a key in Settings.');
+        toast('No API key — showing a heuristic fallback. Add a Gemini or Groq key in Settings.');
       }
       return Promise.resolve();
     }
 
     if (!userTriggered) {
-      // A brand new shape costs a Gemini call, so ask before spending it.
+      // A brand new shape costs a model call, so ask before spending it.
       state.pendingGenerate = true;
       showGeneratePrompt();
       return Promise.resolve();
@@ -2008,18 +3635,21 @@
   }
 
   function callGemini(url, print) {
-    var model = (dom.modelName.value || '').trim() || DEFAULT_MODEL;
+    var providerId = getSessionProvider();
+    var provider = getProvider(providerId);
+    var model = (dom.modelName.value || '').trim() || provider.defaultModel;
     var apiKey = getSessionKey();
 
     return generateSpec({
       url: url,
       schema: print.schema,
       sample: compactSample(state.data),
+      provider: providerId,
       model: model,
       apiKey: apiKey
     }).then(function (rawSpec) {
       var normalized = normalizeSpec(rawSpec);
-      if (!normalized) throw wrapError('Gemini returned an unusable spec', 'Falling back to a heuristic interface.');
+      if (!normalized) throw wrapError(provider.label + ' returned an unusable spec', 'Falling back to a heuristic interface.');
 
       var store = getSchemaSpecs();
       store[print.hash] = {
@@ -2032,13 +3662,13 @@
       toast('Interface generated and remembered as ' + print.hash, 'ok');
     }).catch(function (err) {
       var message = err && err.message ? err.message : String(err);
-      var title = 'Gemini request failed';
-      if (err && err.status === 401) title = 'Gemini rejected the API key';
-      else if (err && err.status === 403) title = 'Gemini access forbidden';
-      else if (err && err.status === 429) title = 'Gemini rate limit reached';
+      var title = provider.label + ' request failed';
+      if (err && err.status === 401) title = provider.label + ' rejected the API key';
+      else if (err && err.status === 403) title = provider.label + ' access forbidden';
+      else if (err && err.status === 429) title = provider.label + ' rate limit reached';
       else if (err && err.status === 404) {
         title = 'Model not found';
-        message += ' — try setting the model to gemini-3.5-flash in Settings.';
+        message += ' — try setting the model to ' + provider.modelHint + ' in Settings.';
       }
 
       applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
@@ -2084,6 +3714,12 @@
   /* ── Events ────────────────────────────────────────────────────────────── */
 
   function wireEvents() {
+    var relayoutHandle = null;
+    window.addEventListener('resize', function () {
+      if (relayoutHandle) window.clearTimeout(relayoutHandle);
+      relayoutHandle = window.setTimeout(scheduleTimelineLayout, 140);
+    });
+
     dom.landingStart.addEventListener('click', function () {
       showView(getSessionKey() ? 'app' : 'setup');
     });
@@ -2097,6 +3733,9 @@
       if (key) {
         setSessionKey(key);
         dom.geminiKey.value = key;
+        var detected = detectProvider(key);
+        if (detected) setSessionProvider(detected);
+        syncProviderUi({ force: true });
         setKeyStatus();
         toast('Key saved for this session.', 'ok');
       }
@@ -2115,7 +3754,16 @@
 
     dom.reqForm.addEventListener('submit', function (event) {
       event.preventDefault();
+      state.stack = [];          // a typed URL starts a new trail
+      state.stagePref = true;
+      state.showRaw = false;
       performRequest(false);
+    });
+
+    dom.stageBack.addEventListener('click', goBack);
+    window.addEventListener('popstate', function () { if (state.stage) goBack(); });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && state.stage && !event.defaultPrevented) goBack();
     });
     dom.urlInput.addEventListener('input', function () {
       state.activeRequestId = null;
@@ -2164,8 +3812,26 @@
       }
     });
 
+    dom.providerSelect.addEventListener('change', function () {
+      setSessionProvider(dom.providerSelect.value);
+      syncProviderUi({ force: true });
+      setKeyStatus();
+      toast('Provider set to ' + getProvider(dom.providerSelect.value).label + '.');
+    });
+
     dom.geminiKey.addEventListener('input', function () {
-      setSessionKey(dom.geminiKey.value.trim());
+      var key = dom.geminiKey.value.trim();
+      // Read the provider BEFORE storing the key: getSessionProvider() falls
+      // back to detecting from the stored key, so reading it after would always
+      // equal the detected value and the UI would never sync.
+      var before = getSessionProvider();
+      setSessionKey(key);
+      var detected = detectProvider(key);
+      if (detected) setSessionProvider(detected);
+      syncProviderUi({ force: !!detected });
+      if (detected && detected !== before) {
+        toast('Detected a ' + getProvider(detected).label + ' key.', 'ok');
+      }
       setKeyStatus();
     });
     dom.modelName.addEventListener('input', function () {
@@ -2174,6 +3840,7 @@
     dom.clearKeyBtn.addEventListener('click', function () {
       dom.geminiKey.value = '';
       setSessionKey('');
+      syncProviderUi();
       setKeyStatus();
       toast('Key cleared for this session.');
     });
@@ -2212,7 +3879,9 @@
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
                'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'modelName',
-               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast'];
+               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast',
+               'providerSelect', 'providerHint', 'modelHint',
+               'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource'];
     for (var i = 0; i < ids.length; i += 1) dom[ids[i]] = qs(ids[i]);
   }
 
@@ -2226,8 +3895,9 @@
   function restoreSession() {
     var key = getSessionKey();
     if (key) dom.geminiKey.value = key;
-    dom.modelName.value = getSessionModel() || DEFAULT_MODEL;
+    dom.modelName.value = getSessionModel() || getProvider(getSessionProvider()).defaultModel;
     setSessionModel(dom.modelName.value);
+    syncProviderUi();
     setKeyStatus();
   }
 
@@ -2239,26 +3909,33 @@
     state.activeRequestId = prefs.activeRequestId || null;
     state.url = prefs.lastUrl || '';
     state.refreshIntervalMs = Number(prefs.refreshIntervalMs) || 0;
+    state.stagePref = prefs.stage !== false;
     syncRefreshUi();
 
     setAppPane(['playground', 'saved', 'settings'].indexOf(prefs.activePane) !== -1 ? prefs.activePane : 'playground');
     setActiveTab(prefs.activeTab || 'interface');
     renderSavedList();
 
-    var snapshot = latestSnapshotWithData(currentRequestKey());
-    if (!snapshot) {
+    if (!restoreFromSnapshot(state.url)) {
       dom.tabBar.hidden = true;
       showInterfaceEmpty();
       updateMeta();
-      return;
     }
+  }
 
-    // Rehydrate from the newest stored snapshot so a reload lands the user back
-    // where they were without spending a request.
+  // Rebuild a page from its newest stored snapshot without spending a request.
+  // Used on reload, and by Back — a browser does not refetch history either.
+  function restoreFromSnapshot(url) {
+    var snapshot = latestSnapshotWithData(url ? hashString(url) : '');
+    if (!snapshot) return false;
+
+    state.url = url;
     state.data = snapshot.data;
-    state.dataUrl = state.url;
+    state.dataUrl = url;
     state.status = snapshot.status;
     state.lastCheckedAt = new Date(snapshot.fetchedAt).getTime();
+    state.diff = null;
+    state.changedCount = 0;
     try {
       state.rawText = JSON.stringify(snapshot.data);
       state.byteSize = byteLength(state.rawText);
@@ -2276,9 +3953,10 @@
     var entry = getSchemaSpecs()[print.hash];
     var normalized = entry && entry.spec ? normalizeSpec(entry.spec) : null;
     if (normalized) applySpec(normalized, 'cache');
-    else applySpec(normalizeSpec(buildFallbackSpec(snapshot.data, state.url)), 'fallback');
+    else applySpec(normalizeSpec(buildFallbackSpec(snapshot.data, url)), 'fallback');
 
     updateMeta();
+    return true;
   }
 
   function init() {

@@ -30,10 +30,10 @@
      assets/*.svg and brand/og.html — nothing syncs them. See
      docs/CODE-INTEGRATION.md for the full checklist. -->
 <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
-  <symbol id="imagoMark" viewBox="0 0 32 32" fill="currentColor"><rect x="5.4" y="8.55" width="4.7" height="2.7" rx="1.35"/><rect x="5.4" y="14.2" width="6.8" height="2.7" rx="1.35"/><rect x="5.4" y="19.85" width="9.1" height="2.7" rx="1.35"/><path fill-rule="evenodd" d="M21.9 7.1h1.35a3.65 3.65 0 0 1 3.65 3.65v10.5a3.65 3.65 0 0 1-3.65 3.65H21.9a3.65 3.65 0 0 1-3.65-3.65v-10.5A3.65 3.65 0 0 1 21.9 7.1Zm.35 6.55h1.35c.72 0 1.3.58 1.3 1.3v3.1c0 .72-.58 1.3-1.3 1.3h-1.35c-.72 0-1.3-.58-1.3-1.3v-3.1c0-.72.58-1.3 1.3-1.3Z"/></symbol>
+  <symbol id="imagoMark" viewBox="0 0 32 32" fill="currentColor"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></symbol>
   <symbol id="imagoIcon" viewBox="0 0 32 32">
     <rect width="32" height="32" rx="8" fill="var(--mark-tile, #1b1b19)"/>
-    <g fill="var(--mark-ink, #fff)" transform="translate(16 16) scale(.82) translate(-16 -16)"><rect x="5.4" y="8.55" width="4.7" height="2.7" rx="1.35"/><rect x="5.4" y="14.2" width="6.8" height="2.7" rx="1.35"/><rect x="5.4" y="19.85" width="9.1" height="2.7" rx="1.35"/><path fill-rule="evenodd" d="M21.9 7.1h1.35a3.65 3.65 0 0 1 3.65 3.65v10.5a3.65 3.65 0 0 1-3.65 3.65H21.9a3.65 3.65 0 0 1-3.65-3.65v-10.5A3.65 3.65 0 0 1 21.9 7.1Zm.35 6.55h1.35c.72 0 1.3.58 1.3 1.3v3.1c0 .72-.58 1.3-1.3 1.3h-1.35c-.72 0-1.3-.58-1.3-1.3v-3.1c0-.72.58-1.3 1.3-1.3Z"/></g>
+    <g fill="var(--mark-ink, #fff)" transform="translate(16 16) scale(.78) translate(-16 -16)"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g>
   </symbol>
 </svg>
 
@@ -90,7 +90,7 @@
         <svg class="fw-sun" viewBox="0 0 24 24" width="34" height="34"><circle cx="12" cy="12" r="5" fill="#f5b52e"/><g stroke="#f5b52e" stroke-width="1.8" stroke-linecap="round"><path d="M12 1.6v2.6M12 19.8v2.6M22.4 12h-2.6M4.2 12H1.6M19.3 4.7l-1.8 1.8M6.5 17.5l-1.8 1.8M19.3 19.3l-1.8-1.8M6.5 6.5L4.7 4.7"/></g></svg>
       </div>
       <div class="float-card float-poke">
-        <span class="fp-icon">⚡</span>
+        <span class="fp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M13 2.5 5.5 13.2h5.2l-.7 8.3 7.5-10.7h-5.2l.7-8.3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
         <div><b>Pikachu</b><span>Electric</span></div>
         <div class="fp-sprite"></div>
       </div>
@@ -98,7 +98,7 @@
         <span class="fr-icon">
           <svg viewBox="0 0 16 16" width="22" height="22"><path fill="#1b1b19" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
         </span>
-        <div><b>facebook/react</b><span>★ 219k &nbsp; ⑂ 43k</span></div>
+        <div><b>facebook/react</b><span class="repo-stats"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4l-3.8 2 .7-4.3-3.1-3 4.3-.6L8 1.6Z" fill="currentColor"/></svg>219k<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M5 3.2v3.1c0 1 .8 1.8 1.8 1.8h2.4c1 0 1.8.8 1.8 1.8v1M5 3.2a1.4 1.4 0 1 0 0-.1ZM11 3.2a1.4 1.4 0 1 0 0-.1ZM11 12.8a1.4 1.4 0 1 0 0-.1Z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>43k</span></div>
       </div>
     </div>
   </main>
@@ -111,13 +111,13 @@
       <svg width="44" height="44"><use href="#imagoIcon"/></svg>
     </span>
     <h2 class="setup-title">Let's get started</h2>
-    <p class="setup-sub">Add your Gemini API key to generate interfaces.</p>
+    <p class="setup-sub">Add a Gemini or Groq API key to generate interfaces.</p>
 
     <div class="key-field">
       <span class="key-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
       </span>
-      <input type="password" id="setupKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+      <input type="password" id="setupKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
     </div>
     <p class="setup-note">Your key stays in this browser session only. We don't store it.</p>
 
@@ -126,7 +126,7 @@
       <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <button type="button" class="link-btn setup-later" id="setupLater">I'll add it later</button>
-    <p class="setup-hint">Get a free key at <span class="mono">aistudio.google.com/apikey</span></p>
+    <p class="setup-hint">Free keys: <span class="mono">aistudio.google.com/apikey</span> or <span class="mono">console.groq.com/keys</span></p>
   </div>
 </div>
 
@@ -148,10 +148,24 @@
     </nav>
 
     <div class="appbar-right">
-      <span class="key-pill" id="keyStatus" data-state="missing" title="Gemini key status">No key</span>
+      <span class="key-pill" id="keyStatus" data-state="missing" title="Model provider key status">No key</span>
       <span class="avatar" id="avatar" aria-hidden="true">S</span>
     </div>
   </header>
+
+  <!-- Stage bar: the only chrome that survives once a generated page takes
+       over the screen. Everything else on the page is decided by the plan. -->
+  <div class="stagebar" id="stageBar" hidden>
+    <button type="button" class="stage-back" id="stageBack" aria-label="Back">
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13 8H4M7.5 4l-4 4 4 4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+    <span class="stage-crumb" id="stageCrumb"></span>
+    <span class="stage-right">
+      <span class="live-pill" id="stageLive" hidden><span class="live-dot"></span>Live<span class="live-count" id="stageLiveCount"></span></span>
+      <span class="badge-chip" id="stageSource"></span>
+    </span>
+  </div>
 
   <main class="app-main">
 
@@ -270,12 +284,21 @@
       <div class="pane-head"><h2 class="pane-title">Settings</h2></div>
 
       <div class="card settings-card">
-        <h3 class="sub-head">Gemini API key</h3>
+        <h3 class="sub-head">Model provider</h3>
+        <select id="providerSelect" class="text-input" aria-label="Model provider">
+          <option value="gemini">Google Gemini</option>
+          <option value="groq">Groq</option>
+        </select>
+        <p class="muted-note" id="providerHint">Get a free key at <span class="mono">aistudio.google.com/apikey</span>. Pasting a key below switches this automatically.</p>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">API key</h3>
         <div class="key-field">
           <span class="key-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
           </span>
-          <input type="password" id="geminiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+          <input type="password" id="geminiKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
         </div>
         <p class="muted-note">Stored in <span class="mono">sessionStorage</span> only — cleared when you close this tab, never written to localStorage.</p>
         <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear key</button>
@@ -284,7 +307,7 @@
       <div class="card settings-card">
         <h3 class="sub-head">Model</h3>
         <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off">
-        <p class="muted-note">If this model is unavailable, try <span class="mono">gemini-3.5-flash</span>.</p>
+        <p class="muted-note">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
       </div>
 
       <div class="card settings-card">

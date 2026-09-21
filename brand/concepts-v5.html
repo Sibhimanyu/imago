@@ -1,0 +1,96 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Imago — identity study 05</title><style>
+:root{--ink:#1b1b19;--bg:#f6f5f1;--card:#fff;--line:#e7e5df;--muted:#8a8981;--m2:#a8a79f}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:13.5px/1.6 "Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,sans-serif;padding:38px 44px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:27px;letter-spacing:-.03em}
+.sub{color:var(--muted);margin-top:6px;max-width:64ch}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:30px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hero{height:210px;display:grid;place-items:center}
+.body{padding:20px 22px 22px;border-top:1px solid var(--line)}
+.tag{font:10.5px ui-monospace,Menlo,monospace;color:var(--m2);letter-spacing:.08em}
+h3{font-size:17px;margin-top:6px;letter-spacing:-.02em}
+.see{margin-top:12px;font-size:12.5px}
+.see b{display:inline-block;width:88px;color:var(--muted);font-weight:500}
+.sizes{display:flex;align-items:flex-end;gap:20px;margin-top:18px;padding-top:16px;border-top:1px solid #f0eee9}
+.s{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cap{font:9.5px ui-monospace,Menlo,monospace;color:#bdbbb3}
+.tile{background:var(--ink);border-radius:8px;display:grid;place-items:center}
+.locks{display:flex;gap:10px;margin-top:16px}
+.lk{flex:1;display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+.lk.dk{background:var(--ink);border-color:var(--ink);color:#fff}
+.lk span{font-size:15px;font-weight:600;letter-spacing:-.021em}
+.foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+</style></head><body><div class="wrap">
+
+<h1>Meaning you can see, not read.</h1>
+<p class="sub">Four directions. Each encodes the product in the geometry itself, so the mark still says something with the caption removed. Every one is single-colour, one path, on the 32-unit grid, and tested at 16px.</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="foot"><span>Imago / identity study 05</span><span>single colour · 32×32 · evenodd · 16px tested</span></div>
+
+<script>
+// rounded-rect as path data, so nothing is mis-hand-computed
+function rr(x,y,w,h,r){
+  return `M${x+r} ${y} h${w-2*r} a${r} ${r} 0 0 1 ${r} ${r} v${h-2*r} a${r} ${r} 0 0 1 ${-r} ${r} h${-(w-2*r)} a${r} ${r} 0 0 1 ${-r} ${-r} v${-(h-2*r)} a${r} ${r} 0 0 1 ${r} ${-r} Z`;
+}
+
+const CONCEPTS = [
+  {
+    tag:'01 / COUNTERFORM',
+    name:'Inside the data',
+    see:'A solid block with a small card cut out of it.',
+    mean:'The response is the mass; the interface is the space Imago opens inside it. Figure-ground does the whole job.',
+    d: rr(4,4,24,24,7) + rr(9,9.5,14,7.5,2) + rr(9,19.5,10,2.6,1.3)
+  },
+  {
+    tag:'02 / BUILT FRAME',
+    name:'Made of fields',
+    see:'A window whose left edge is broken into three segments.',
+    mean:'The frame is literally built out of the incoming response rows. The interface is made of the data, not placed next to it.',
+    d: rr(4,4,24,24,7) + rr(8.6,8.6,14.8,14.8,3.6) + rr(3.4,11.2,5.1,2.9,1.2) + rr(3.4,17.9,5.1,2.9,1.2)
+  },
+  {
+    tag:'03 / HELD VALUE',
+    name:'Rows, window, value',
+    see:'Rows feeding a body, a window in it, and one value sitting inside the window.',
+    mean:'The full sentence: response goes in, a view opens, and something readable is actually in it. The content inside is what makes it an interface instead of a hole.',
+    d: rr(10,5,18,22,6) + rr(13.6,10.4,10.8,11.2,3) + rr(15.8,14.4,6.4,3.2,1.6)
+        + rr(2,8.4,8,2.9,1.45) + rr(4,14.55,6,2.9,1.45) + rr(6,20.7,4,2.9,1.45)
+  },
+  {
+    tag:'04 / LINEAGE FIX',
+    name:'Landscape aperture',
+    see:'The current mark, with a screen-shaped window and three graduated rows flush to the body.',
+    mean:'Keeps what shipped. The aperture goes landscape so it reads as a view instead of a keyhole, and three flush rows read as fields feeding in instead of two prongs.',
+    d: rr(10,6,18,20,5.5) + rr(14.2,12.4,10,7.2,2.2)
+        + rr(2,9.1,8,2.8,1.4) + rr(4,14.6,6,2.8,1.4) + rr(6,20.1,4,2.8,1.4)
+  }
+];
+
+const sizes=[96,40,24,16];
+grid.innerHTML = CONCEPTS.map(c=>{
+  const svg=(s,fill)=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32"><path fill-rule="evenodd" fill="${fill||'currentColor'}" d="${c.d}"/></svg>`;
+  return `<div class="c">
+    <div class="hero">${svg(140)}</div>
+    <div class="body">
+      <div class="tag">${c.tag}</div>
+      <h3>${c.name}</h3>
+      <p class="see"><b>You see</b>${c.see}</p>
+      <p class="see"><b>It means</b>${c.mean}</p>
+      <div class="sizes">
+        ${sizes.map(s=>`<div class="s">${svg(s)}<span class="cap">${s}</span></div>`).join('')}
+        <div class="s"><span class="tile" style="width:44px;height:44px">${svg(27,'#fff')}</span><span class="cap">tile</span></div>
+        <div class="s"><span class="tile" style="width:26px;height:26px">${svg(16,'#fff')}</span><span class="cap">tile 16</span></div>
+      </div>
+      <div class="locks">
+        <div class="lk">${svg(24)}<span>Imago</span></div>
+        <div class="lk dk">${svg(24,'#fff')}<span>Imago</span></div>
+      </div>
+    </div>
+  </div>`;
+}).join('');
+</script>
+</div></body></html>

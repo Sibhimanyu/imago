@@ -3,7 +3,7 @@
 **APIs become interfaces.**
 
 Imago is a browser-only API playground. You give it a GET endpoint; it fetches the
-JSON, works out what *shape* the response is, asks Gemini to design an interface for
+JSON, works out what *shape* the response is, asks a model to design an interface for
 that shape, and renders it with its own components. It remembers every interpretation
 it has made, and it watches endpoints change over time.
 
@@ -26,13 +26,13 @@ API URL
   → derive structural schema  (values replaced by their types)
   → hash that schema
   → seen this shape before?
-      yes → reuse the stored UI spec          (no Gemini call)
-      no  → ask (once) → Gemini returns a UI spec → store it
+      yes → reuse the stored UI spec          (no model call)
+      no  → ask (once) → the model returns a UI spec → store it
   → render the spec with local components
   → snapshot the response and diff it against the last one
 ```
 
-The important detail: **Gemini never returns HTML, CSS, or JavaScript.** It returns a
+The important detail: **the model never returns HTML, CSS, or JavaScript.** It returns a
 small structured JSON plan — which fields matter and how each should be represented —
 and Imago's own renderer turns that plan into DOM. Every value is written with
 `textContent`, so nothing from the API or the model is ever interpreted as markup.
@@ -45,7 +45,7 @@ A spec looks like this:
   "layout": "profile",
   "components": [
     { "type": "image",    "path": "sprites.front_default", "label": "Sprite" },
-    { "type": "metric",   "path": "height", "label": "Height" },
+    { "type": "metric",   "path": "height", "label": "Height", "emphasis": "hero" },
     { "type": "badges",   "path": "types",  "label": "Types", "itemPath": "type.name" },
     { "type": "statBars", "path": "stats",  "label": "Base stats",
       "labelPath": "stat.name", "valuePath": "base_stat", "max": 255 }
@@ -54,8 +54,66 @@ A spec looks like this:
 ```
 
 The renderer supports `title`, `text`, `metric`, `image`, `badges`, `list`, `table`,
-`statBars`, `chart`, `link`, `jsonBlock`, and `section`. Anything else in a model
-response is discarded before rendering.
+`keyValue`, `gauge`, `timeline`, `statBars`, `chart`, `link`, `jsonBlock`, and
+`section`. Anything else in a model response is discarded before rendering.
+
+### The renderer does not trust the plan
+
+A plan is written against a *schema*, so it can be wrong about the response: a `text`
+aimed at an object, a `chart` aimed at a string, a path that resolves to nothing. The
+renderer reconciles every component against the value it actually found and renders
+what that value can support — an object becomes a key/value sheet, an array of objects
+becomes a table, an array of numbers becomes a chart. No card ever renders as
+`{27 fields}`.
+
+Two more passes run before anything is drawn:
+
+- **Meaning.** Every scalar is classified from its value *and* its key, then written
+  for a human: `2026-09-20T08:03:52+02:00` renders as **08:03** with the date beneath
+  it, `44036` under `day_length` renders as **12h 13m**, `64.51` under
+  `moon_illumination` renders as **64.51%** with a meter. The untouched value is always
+  one hover away in the element's `title`.
+- **Hierarchy.** Components are split into three tiers — one or two headline values,
+  a dense fact sheet, then the wide structures (tables, charts, timelines). A page of
+  identically sized cards is not an interface.
+
+`emphasis: "hero"` marks the field the reader came for; `emphasis: "quiet"` marks
+bookkeeping. If a plan says nothing, Imago ranks the fields itself.
+
+### The plan is the whole page
+
+Once a plan renders, it takes the screen. The request bar, tabs, meta chips and app
+navigation step aside; what remains is the generated page and a single **Back**
+control. The plan decides the page's `layout` (`profile`, `dashboard`, `table`, `list`,
+`article`, `timeline`, `raw`), its sections and hierarchy, and — through `actions` —
+what the reader can do next:
+
+```json
+"actions": [
+  { "type": "follow",  "path": "species.url", "label": "Species" },
+  { "type": "follow",  "path": "next",        "label": "Next page" },
+  { "type": "watch",   "interval": 30,        "label": "Watch" },
+  { "type": "refresh", "label": "Refresh" },
+  { "type": "raw",     "label": "Raw JSON" }
+]
+```
+
+`follow` opens a URL found in the response as the next generative page; Imago keeps a
+trail, so Back pops through the pages you followed and, from the first one, returns
+you to the controls (typing a new URL, headers, saving, settings). `watch` turns on
+auto-refresh at the given interval, `refresh` fetches now, `raw` reveals the JSON at
+the bottom of the page. A `follow` whose path does not hold a URL at render time is
+dropped silently. The browser's Back button and <kbd>Esc</kbd> do the same as Back.
+
+### When there is no key, or no model
+
+The fallback plan is not a last resort — it is the same renderer driven by local
+heuristics: it hoists a `current`/`results` object to the surface, pairs numbers with
+their `*_units` siblings, collects three or more timestamps into a timeline, turns
+named numeric arrays into stat bars, chooses table columns by what identifies a row
+(and follows `{ name, url }` wrappers to the name), sinks `generationtime_ms` and
+friends to the bottom of the page, picks a layout, and turns every URL in the body —
+paging keys first — into a `follow` action.
 
 ### Schema caching
 
@@ -67,7 +125,7 @@ Two responses with the same structure produce the same fingerprint:
 ```
 
 So refreshing an endpoint every 10 seconds for an hour is ~360 API calls and, if the
-shape never changes, **one** Gemini call. The cache is what makes auto-refresh cheap
+shape never changes, **one** model call. The cache is what makes auto-refresh cheap
 enough to be worth having.
 
 Because a new shape costs a real API call, Imago asks before spending one — a new
@@ -78,7 +136,7 @@ schema shows a **Generate interface** button rather than silently calling out.
 ## How this satisfies the assignment
 
 **Get something from the internet.** Imago fetches any public GET endpoint you give it
-with `fetch()`, and calls the Gemini REST API to interpret the response.
+with `fetch()`, and calls a model provider REST API to interpret the response.
 
 **Remember something.** In `localStorage`: your saved requests, the schema-to-interface
 mappings Imago has generated, response snapshots, and your session (URL, headers,
@@ -111,22 +169,36 @@ Then open <http://127.0.0.1:5173>.
 Use a real server rather than opening `index.html` as a `file://` URL — CORS behaves
 far more predictably from `http://127.0.0.1`.
 
-### Getting a Gemini API key
+### Getting an API key
 
-1. Go to <https://aistudio.google.com/apikey>.
-2. Create an API key.
-3. Paste it into the setup screen, or later under **Settings**.
+Imago supports two providers. Paste a key and it picks the right one from the key
+prefix; you can also choose explicitly in **Settings**.
 
-**Imago never stores your key in `localStorage`.** It lives in `sessionStorage` and is
-gone when you close the tab. There is no backend, so there is nowhere to hide a shared
-key — you use your own, and it stays on your machine.
+| Provider | Get a key | Default model | If that model is gone |
+|---|---|---|---|
+| Google Gemini | <https://aistudio.google.com/apikey> | `gemini-2.5-flash-lite` | `gemini-3.5-flash` |
+| Groq | <https://console.groq.com/keys> | `openai/gpt-oss-20b` | `openai/gpt-oss-120b` |
 
-The model field defaults to `gemini-2.5-flash-lite` and is editable. If that model is
-unavailable to you, try `gemini-3.5-flash`.
+Gemini keys start with `AIza`, Groq keys with `gsk_`, which is how the
+auto-detection works.
+
+Both providers are asked to pin their reply to the UI spec schema — Gemini
+through `responseMimeType` + `responseSchema`, Groq through
+`response_format: json_schema`. If a model family ignores that, Imago retries
+once in plain JSON mode with the schema inlined in the prompt.
+
+Groq note: `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` were deprecated
+for free and developer tiers on 17 June 2026, which is why the default is
+`openai/gpt-oss-20b`. The model field is editable, so a future rename costs you
+one edit rather than a new build.
+
+**Imago never stores your key in `localStorage`.** It lives in `sessionStorage`
+and is gone when you close the tab. There is no backend, so there is nowhere to
+hide a shared key — you use your own, and it stays on your machine.
 
 ### Without a key
 
-Imago still works. Without a key — or if Gemini fails, rate-limits, or returns
+Imago still works. Without a key — or if the provider fails, rate-limits, or returns
 something unusable — it falls back to a heuristic interface built from the response
 itself: it finds a title field, the most likely primary image, and the first handful of
 scalar fields. The badge beside the title always tells you which path you got:
@@ -163,7 +235,7 @@ app.js        everything else, in labelled sections
 ```
 
 `app.js` is organised as: constants → state → storage → DOM helpers → path utilities →
-schema fingerprinting → snapshot diffing → Gemini → spec validation → renderer →
+schema fingerprinting → snapshot diffing → providers → spec validation → renderer →
 views → saved requests → request flow → auto-refresh → events → bootstrap.
 
 ---
