@@ -35,17 +35,18 @@
   --line-soft:  #efedE8;
   --ink:        #1b1b19;
   --ink-2:      #45443f;
-  --muted:      #8a8981;
-  --muted-2:    #a8a79f;
+  --muted:      #66655f;   /* 5.4:1 on paper; captions must still be readable */
+  --muted-2:    #6f6e67;   /* 4.7:1 on paper; the step down is size, not lightness */
 
   --yellow:     #f5ce47;
   --yellow-bg:  #fdf3cd;
-  --yellow-ink: #8a6d12;
+  --yellow-ink: #6f570b;   /* 6.2:1 on yellow-bg */
   --yellow-line: #efe0a8;
   --green:      #4fa96a;
   --green-bg:   #e4f4e8;
   --red:        #d9534f;
   --red-bg:     #fbeaea;
+  --red-ink:    #a83e3a;   /* red text on red-bg: 5.3:1 */
   --blue:       #4f86c6;
   --blue-bg:    #e8f0fa;
 
@@ -115,7 +116,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 .btn-ghost { background: var(--card); color: var(--ink-2); border-color: var(--line); box-shadow: var(--sh-xs); }
 .btn-ghost:hover:not(:disabled) { border-color: #d6d3cb; color: var(--ink); }
-.btn-danger:hover:not(:disabled) { color: var(--red); border-color: #e6b9b7; background: var(--red-bg); }
+.btn-danger:hover:not(:disabled) { color: var(--red-ink); border-color: #e6b9b7; background: var(--red-bg); }
 
 .btn-lg { height: 44px; padding: 0 20px; font-size: 14.5px; }
 .btn-xs { height: 28px; padding: 0 9px; font-size: 12px; border-radius: var(--r-xs); }
