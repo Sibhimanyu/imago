@@ -48,6 +48,7 @@
   --red-bg:     #fbeaea;
   --red-ink:    #a83e3a;   /* red text on red-bg: 5.3:1 */
   --blue:       #4f86c6;
+  --link:       #3f6fb5;   /* the one link blue; 5.1:1 on white */
   --blue-bg:    #e8f0fa;
 
   --r-lg: 16px;
@@ -576,7 +577,6 @@ body.is-stage /* Wrapper the renderer puts around every generated layout. It car
    the visual weight lives on the children. */
 .spec-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-.spec-lead { display: none; }
 
 .stage-head { margin: 0 0 22px; }
 .stage-head-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
@@ -624,13 +624,6 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 
 /* ─── Generated interface ──────────────────────────────────────── */
 
-.spec-lead {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
-  margin-bottom: 20px;
-}
-.spec-lead > div { min-width: 0; }
-.spec-title { font-size: 21px; letter-spacing: -0.02em; }
-.spec-sub { margin-top: 4px; font-size: 13px; color: var(--muted); word-break: break-all; }
 
 .spec-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
 
@@ -687,7 +680,7 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 .val { min-width: 0; }
 .val-main { display: flex; align-items: baseline; gap: 5px; min-width: 0; flex-wrap: wrap; }
 .val-text { word-break: break-word; }
-.val-unit { font-size: .62em; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.val-unit { font-size: max(12px, .62em); color: var(--muted); font-weight: 500; letter-spacing: 0; }
 .val-sub { font-size: 12px; color: var(--muted-2); margin-top: 4px; line-height: 1.4; }
 /* Emitted by renderText/renderLink for plain values. Was shipping with no rule
    at all, so it inherited nothing and broke the reading rhythm. */
@@ -695,7 +688,7 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
   font-size: 14px; color: var(--ink-2); line-height: 1.55;
   word-break: break-word; white-space: pre-wrap;
 }
-.val-link { color: var(--blue); text-decoration: none; word-break: break-all; }
+.val-link { color: var(--link); text-decoration: none; word-break: break-all; }
 .val-link:hover { text-decoration: underline; }
 .val-swatch {
   width: 14px; height: 14px; border-radius: var(--r-2xs);
@@ -895,7 +888,7 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .statbar-fill { height: 100%; border-radius: 999px; transition: width .45s cubic-bezier(.4,.1,.2,1); }
 .statbar-val { font-size: 12.5px; font-weight: 600; color: var(--ink); width: 34px; text-align: right; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 
-.comp-link a { color: #3f6fb5; font-size: 13px; word-break: break-all; text-decoration: none; }
+.comp-link a { color: var(--link); font-size: 13px; word-break: break-all; text-decoration: none; }
 .comp-link a:hover { text-decoration: underline; }
 
 .comp-json pre {
@@ -946,10 +939,10 @@ table.comp-table tr:last-child td { border-bottom: none; }
 }
 .tok-key { color: #9a5b2d; }
 .tok-str { color: #3f7a4f; }
-.tok-num { color: #3f6fb5; }
-.tok-bool { color: #8a4fb5; }
+.tok-num { color: var(--link); }
+.tok-bool { color: var(--ink); font-weight: 600; }
 .tok-null { color: var(--muted-2); }
-.tok-punc { color: #a9a79f; }
+.tok-punc { color: var(--muted-2); }
 
 /* ─── Changes pane ─────────────────────────────────────────────── */
 
