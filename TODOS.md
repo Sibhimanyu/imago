@@ -7,41 +7,38 @@ review are fixed and listed under Completed.
 
 ## Accessibility
 
-### Tab lists are half-ARIA
-
-**What:** `role="tablist"`/`role="tab"` are set with no `aria-controls`, no
-`role="tabpanel"` on the panes, and no arrow-key handling.
-
-**Why:** Announced as tabs to a screen reader, then behaves like nothing. A
-keyboard user cannot move between tabs the way the role promises, which is
-worse than plain buttons would have been.
-
-**Context:** `index.html` around the `#tabBar` and the `.tab-pane` elements, and
-`setActiveTab()` in `app.js`. The design audit flagged this as its only High
-deferred item and deliberately left it: it is a structural change to markup and
-key handling, not a style fix, so it wants its own branch. Wire `aria-controls`
-to pane ids, give panes `role="tabpanel"` and `aria-labelledby`, and add
-Left/Right/Home/End key handling with `tabindex` roving.
-
-**Effort:** M
-**Priority:** P1
-**Depends on:** None
-
 ### Touch targets missed by the coarse-pointer rule
 
 **What:** The `@media (pointer: coarse)` block enumerates selectors and omits
-`.icon-btn` (32×32) and `.switch` (23px tall).
+`.icon-btn` (32x32) and `.switch` (23px tall).
 
-**Why:** `.icon-btn` is the run and delete control on every saved item — the
+**Why:** `.icon-btn` is the run and delete control on every saved item, so the
 two most consequential buttons in the list are the two below 44px on a phone.
 
-**Context:** `styles.css`, the coarse-pointer block near the top. Either add the
-two selectors or replace the enumerated list with a rule keyed off a class every
-interactive element carries, so the next control added cannot be missed the same
-way.
+**Context:** `styles.css`, the coarse-pointer block near the top. Either add
+the two selectors or key the rule off a class every interactive element
+carries, so the next control added cannot be missed the same way. Confirmed
+still present by /qa on 2026-09-22.
 
 **Effort:** S
 **Priority:** P2
+**Depends on:** None
+
+### 12 inline SVGs carry no aria-hidden or role
+
+**What:** 12 inline `<svg>` elements have neither `aria-hidden="true"`, a
+`role`, nor a `<title>`.
+
+**Why:** Decorative icons are exposed to assistive tech as unnamed graphics,
+adding noise between the labels that matter. The mark itself is labelled; these
+are the small UI glyphs.
+
+**Context:** `index.html` and the icon builders in `app.js` (`svgIcon`,
+`actionIcon`). A one-attribute sweep: `aria-hidden="true"` on anything purely
+decorative. Found by /qa on 2026-09-22 (ISSUE-008).
+
+**Effort:** S
+**Priority:** P3
 **Depends on:** None
 
 ## Frontend
@@ -80,22 +77,6 @@ existing token or justify it as art direction in DESIGN.md.
 **Priority:** P2
 **Depends on:** None
 
-### Stage crumb disappears on phones
-
-**What:** `.stage-crumb { display: none }` under 720px.
-
-**Why:** The crumb is the only thing saying which host you are on and how deep
-you are. The trunk test that FINDING-003 fixed on desktop still fails at phone
-width — a mark and a Back arrow are all that remain.
-
-**Context:** `styles.css` mobile block. It already has overflow and
-text-overflow set, so `flex: 1 1 auto; min-width: 0` should be enough to keep it
-with an ellipsis.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
 ### Dead width transitions on meters and bars
 
 **What:** `.val-meter-fill`, `.statbar-fill` and `.gauge-arc` declare
@@ -108,18 +89,6 @@ and no motion.
 
 **Context:** `styles.css`. Either delete all three, or reuse the fill node across
 renders and animate `transform: scaleX()` with `transform-origin: left`.
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
-### Tabs scroll horizontally on mobile with no affordance
-
-**What:** `.tabs` scrolls with a hidden scrollbar and no edge fade or arrow.
-
-**Why:** Tabs past the fold are invisible and undiscoverable.
-
-**Context:** `styles.css`. A mask-image edge fade is the cheapest fix.
 
 **Effort:** S
 **Priority:** P3
@@ -212,23 +181,6 @@ can never diverge.
 **Priority:** P3
 **Depends on:** None
 
-### Prototype keys silently drop fields
-
-**What:** Dedupe maps in `deriveActions` and the fact-sheet and timeline builders
-are bare object literals probed without a `hasOwnProperty` guard.
-
-**Why:** A response with a top-level key named `constructor`, `toString`,
-`valueOf` or `hasOwnProperty` hits the inherited member, which is truthy, so the
-field is dropped from the fact sheet and its follow action never appears. The
-data is in the response but never on screen, with no error.
-
-**Context:** `app.js`. `getByPath` was fixed this release; these maps were not.
-Use `Object.create(null)`.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
 ### Invalid request headers are misreported as a CORS failure
 
 **What:** `parseHeaders` accepts any `name: value` pair, so a forbidden or
@@ -241,6 +193,25 @@ failure".
 **Context:** `parseHeaders()` and `handleRequestFailure()` in `app.js`. Validate
 names against the RFC token charset and surface a distinct "Invalid header"
 error.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
+## Content
+
+### Empty response is labelled "not JSON" and its message dangles
+
+**What:** A 0-byte response renders `Imago renders JSON APIs. The endpoint
+returned 0 B starting with: ` — a clause with nothing after it.
+
+**Why:** The label is wrong (an empty body is not malformed JSON) and the
+sentence visibly runs out, which reads like a bug even though the request was
+handled correctly.
+
+**Context:** The not-JSON branch in `performRequest`'s response handling in
+`app.js`. Give a 0-byte body its own message and drop the "starting with"
+clause when there is no snippet. Found by /qa on 2026-09-22 (ISSUE-006).
 
 **Effort:** S
 **Priority:** P3
@@ -298,6 +269,37 @@ it, or accept it as defence-in-depth and leave the note.
 **Depends on:** None
 
 ## Completed
+
+### QA pass on v0.1.0.0 — six fixes
+
+**What:** Fixed by /qa on branch run-qa-checks, 2026-09-22. Health score
+87 → 99.
+
+- A field named `constructor` was silently dropped from every interface.
+  `humanize()` looked words up on a plain object, so the key hit
+  `Object.prototype.constructor`, the label became a function, and the fact was
+  lost. `LABEL_WORDS` is prototype-free now. (ISSUE-002)
+- The tabs claimed `role=tab`/`role=tablist` with `aria-controls` 0/5, no
+  `role=tabpanel`, no `aria-labelledby` and no `tabindex`, so arrow keys did
+  nothing. Fully wired, with Left/Right/Home/End and a roving tabindex. This
+  was the P1 accessibility item. (ISSUE-005)
+- `frame-ancestors` in the meta CSP is ignored by spec: it logged a console
+  error on every page load and provided no protection. (ISSUE-001)
+- The stage crumb was `display:none` on phones, so the stage bar gave no host
+  and no depth. (ISSUE-004)
+- The Headers tab sat 62px off a 375px viewport with no scroll affordance, so
+  the request-headers editor was undiscoverable on mobile. (ISSUE-003)
+- `#modelName` had no accessible name at all. (ISSUE-007)
+
+**Why:** One silent data-loss path, one accessibility contract that was
+announced but not implemented, and a console error on 100% of loads.
+
+**Context:** Report at `.gstack/qa-reports/qa-report-localhost-2026-09-22.md`.
+Every fix has a mutation-checked regression test; the suite went 55 → 64 tests.
+
+**Effort:** M
+**Priority:** P1
+**Completed:** v0.1.0.0 (2026-09-22)
 
 ### Ten critical findings from the pre-landing review
 
