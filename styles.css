@@ -614,7 +614,19 @@ body.is-stage .stage-head-top .badge-chip { display: none; }
 
 @media (max-width: 720px) {
   .stagebar { padding: 0 12px; gap: 10px; }
-  .stage-crumb { display: none; }
+  /* The crumb is the only thing naming the host and the depth. Hiding it left
+     the phone stage bar as just Back + Live, so "what am I looking at?" had no
+     answer. It already ellipsises, so let it shrink instead of disappear. */
+  .stage-crumb { flex: 1 1 auto; min-width: 0; }
+
+  /* The tab strip scrolls with its scrollbar hidden, so the last tab sat
+     off-screen with nothing to suggest it existed. Fade the right edge at the
+     widths where it actually overflows; the five tabs fit on desktop, so this
+     stays out of the way there. */
+  .tabs {
+    mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+  }
   .stage-title { font-size: 26px; }
   .profile-grid { grid-template-columns: 1fr; }
 }
