@@ -9,7 +9,10 @@
        in this file; app.js sets styles through the CSSOM, which CSP does not
        gate. connect-src allows https: because the whole point is fetching
        user-chosen API endpoints and a provider's completion endpoint. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https:; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+  <!-- frame-ancestors is deliberately absent: it is ignored when delivered via
+       <meta> and only logs an error. Clickjacking protection has to come from a
+       real response header (CSP frame-ancestors or X-Frame-Options) at the host. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https:; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imago — APIs become interfaces</title>
 <meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">
