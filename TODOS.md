@@ -270,6 +270,32 @@ it, or accept it as defence-in-depth and leave the note.
 
 ## Completed
 
+### Ollama, per-provider keys and connection tests — v0.2.0.0
+
+**What:** Ollama as a third provider, a key per provider, a Test button per
+provider, and a full-HTML render mode. Plus the fixes that made Ollama
+actually usable.
+
+**Why:** Generating with Ollama failed outright — the reply hit the model's
+default 4096-token context and came back truncated mid-JSON, reported as
+"returned an unusable spec". The connection test only pinged /api/tags, so it
+went green while the configured model (`qwen3`, not a real tag on a stock
+install) did not exist.
+
+**Context:** Ollama moved to its native /api/chat, where num_ctx and
+num_predict can be set and the schema is passed as `format`. The test now runs
+a real completion with the model that would be used. Settings reads the
+installed models and offers them. Verified end to end against a live server:
+gemma4:latest returns a generated plan in ~40s.
+
+Ollama from a hosted origin still needs `OLLAMA_ORIGINS=<origin> ollama serve`
+— Ollama's CORS rejects non-localhost origins by default (403 measured). The
+error message names the exact command with the real origin substituted.
+
+**Effort:** L
+**Priority:** P1
+**Completed:** v0.2.0.0 (2026-09-22)
+
 ### QA pass on v0.1.0.0 — six fixes
 
 **What:** Fixed by /qa on branch run-qa-checks, 2026-09-22. Health score

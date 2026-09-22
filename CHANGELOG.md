@@ -2,6 +2,52 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.2.0.0] - 2026-09-22
+
+Run Imago against a model on your own machine, keep a key for each provider,
+and check a provider works before you rely on it.
+
+### Added
+
+- **Ollama support.** Point Imago at a model running locally — no key, nothing
+  leaves your machine. Selecting Ollama reads the models you have pulled and
+  offers them, so you pick from what exists instead of typing a name and hoping.
+- **A key per provider.** Gemini and Groq keys are kept separately with their
+  own status, rather than one box you overwrite each time you switch.
+- **Test buttons.** One tiny call per provider tells you whether it actually
+  works, with the reason when it does not. A slow local model shows the seconds
+  ticking up, and a test that gets no answer gives up rather than hanging.
+- **Full HTML mode.** As an alternative to the structured plan, the model can
+  write the whole page. It renders sandboxed with scripts disabled.
+
+### Fixed
+
+- **Generating with Ollama failed outright.** The reply came back cut off
+  mid-sentence and Imago called the result unusable. It was running into the
+  model's default context limit; Imago now asks for the room a full interface
+  needs, and says plainly when a reply was cut short instead of blaming the
+  model.
+- **A passing Ollama test did not mean generating would work.** The test only
+  checked the server was up, so it went green while the selected model was not
+  installed. It now asks the model to answer, and names the models you do have
+  when the chosen one is missing.
+- **A rejected API key now says so**, whatever error the provider returns.
+  Gemini reports a bad key differently from Groq, and that read as a vague
+  "request failed".
+- **Ollama's own error messages reach you** — "model not found" used to appear
+  as a bare HTTP code.
+- The Settings page no longer leaves a dead gap with one card stranded below
+  it; the cards pack into two columns, or one on a narrow screen.
+- Fields named after JavaScript internals (a response with a key called
+  `constructor`) are no longer silently dropped from the interface.
+- The response tabs now work with the arrow keys and announce themselves
+  correctly to a screen reader.
+- The stage bar keeps naming the host on a phone, and the tab strip shows that
+  it scrolls.
+- The model field has a name assistive tech can read.
+- Removed a Content-Security-Policy directive that did nothing in a meta tag
+  and logged an error on every page load.
+
 ## [0.1.0.0] - 2026-09-22
 
 First tagged release. Paste an API URL and Imago turns the response into a
