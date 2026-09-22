@@ -1,0 +1,131 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+:root{--ink:#1b1b19;--bg:#f6f5f1;--line:#e7e5df;--muted:#8a8981}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,sans-serif;padding:34px 40px}
+h1{font-size:19px;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:13px;margin-bottom:26px}
+.row{display:grid;grid-template-columns:172px 1fr;gap:24px;padding:22px 0;border-top:1px solid var(--line);align-items:center}
+.meta b{display:block;font-size:14px;margin-bottom:3px}
+.meta span{font-size:12px;color:var(--muted);line-height:1.5}
+.specimens{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.cell{display:flex;flex-direction:column;align-items:center;gap:7px}
+.cap{font:10px/1 ui-monospace,Menlo,monospace;color:#b4b2aa}
+.chip{background:var(--ink);border-radius:9px;display:grid;place-items:center;color:#fff}
+.dk{background:var(--ink);padding:13px 17px;border-radius:10px;display:flex;align-items:center;gap:9px;color:#fff}
+.dk .word,.lock .word{font-size:16.5px;font-weight:600;letter-spacing:-.015em}
+.lock{display:flex;align-items:center;gap:9px}
+</style></head><body>
+<h1>Round 2 — refining the contenders</h1>
+<p class="sub">B and D developed; A repaired with geometric braces. Watch the 16px column.</p>
+
+<svg width="0" height="0" style="position:absolute">
+  <!-- A2 geometric braces -->
+  <symbol id="a2" viewBox="0 0 32 32">
+    <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.4 6h-1.2a2 2 0 0 0-2 2v4.6a2 2 0 0 1-2 2 2 2 0 0 1 2 2V21a2 2 0 0 0 2 2h1.2"/>
+      <path d="M19.6 6h1.2a2 2 0 0 1 2 2v4.6a2 2 0 0 0 2 2 2 2 0 0 0-2 2V21a2 2 0 0 1-2 2h-1.2"/>
+    </g>
+    <rect x="13.6" y="12.2" width="4.8" height="7.6" rx="1.7" fill="currentColor"/>
+  </symbol>
+
+  <!-- B1 original -->
+  <symbol id="b1" viewBox="0 0 32 32"><g fill="currentColor">
+    <rect x="4.8" y="9.3" width="9.2" height="2.9" rx="1.45"/>
+    <rect x="4.8" y="14.55" width="6.4" height="2.9" rx="1.45"/>
+    <rect x="4.8" y="19.8" width="9.2" height="2.9" rx="1.45"/>
+    <rect x="18.6" y="7.6" width="8.6" height="16.8" rx="3.2"/>
+  </g></symbol>
+
+  <!-- B2 graduated: scattered resolving into order -->
+  <symbol id="b2" viewBox="0 0 32 32"><g fill="currentColor">
+    <rect x="4.6" y="9.1" width="5.2" height="3" rx="1.5"/>
+    <rect x="4.6" y="14.5" width="7.6" height="3" rx="1.5"/>
+    <rect x="4.6" y="19.9" width="9.8" height="3" rx="1.5"/>
+    <rect x="18.8" y="7.4" width="8.6" height="17.2" rx="3.3"/>
+  </g></symbol>
+
+  <!-- B3 block carries structure -->
+  <symbol id="b3" viewBox="0 0 32 32">
+    <g fill="currentColor">
+      <rect x="4.6" y="9.1" width="5.2" height="3" rx="1.5"/>
+      <rect x="4.6" y="14.5" width="7.6" height="3" rx="1.5"/>
+      <rect x="4.6" y="19.9" width="9.8" height="3" rx="1.5"/>
+      <rect x="18.8" y="7.4" width="8.6" height="17.2" rx="3.3"/>
+    </g>
+    <rect x="21" y="13.4" width="4.2" height="5.2" rx="1.3" fill="var(--bg)" class="knock"/>
+  </symbol>
+
+  <!-- D2 frame, left pane hints at raw rows -->
+  <symbol id="d2" viewBox="0 0 32 32">
+    <rect x="5.4" y="5.4" width="21.2" height="21.2" rx="6.6" fill="none" stroke="currentColor" stroke-width="2.4"/>
+    <path d="M16 8.2h4.4a3.4 3.4 0 0 1 3.4 3.4v8.8a3.4 3.4 0 0 1-3.4 3.4H16z" fill="currentColor"/>
+    <g fill="currentColor"><rect x="9.2" y="12.6" width="4" height="1.9" rx=".95"/><rect x="9.2" y="17.4" width="2.6" height="1.9" rx=".95"/></g>
+  </symbol>
+
+  <!-- D3 tighter, heavier -->
+  <symbol id="d3" viewBox="0 0 32 32">
+    <rect x="4.8" y="6.6" width="22.4" height="18.8" rx="5" fill="none" stroke="currentColor" stroke-width="2.8"/>
+    <path d="M16.2 9.2h3.9a2.6 2.6 0 0 1 2.6 2.6v8.4a2.6 2.6 0 0 1-2.6 2.6h-3.9z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<div class="row"><div class="meta"><b>A2 · Braces, geometric</b><span>Squared-off braces so the silhouette holds. Still the most common metaphor in dev tooling.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#a2"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#a2"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#a2"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#a2"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#a2"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#a2"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+
+<div class="row"><div class="meta"><b>B1 · Emergence (original)</b><span>Even rows, then the block.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#b1"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#b1"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#b1"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#b1"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#b1"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#b1"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+
+<div class="row"><div class="meta"><b>B2 · Emergence, graduated</b><span>Rows grow toward the block, so the eye travels left→right. The transformation now has a direction.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#b2"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#b2"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#b2"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#b2"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#b2"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#b2"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+
+<div class="row"><div class="meta"><b>B3 · Graduated + knockout</b><span>B2 with the block hollowed, so it reads as a rendered card rather than a slab.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#b3"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#b3"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#b3"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#b3"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#b3"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#b3"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+
+<div class="row"><div class="meta"><b>D2 · Frame + raw rows</b><span>Adds two rows in the empty pane, so it stops reading as a sidebar toggle.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#d2"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#d2"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#d2"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#d2"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#d2"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#d2"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+
+<div class="row"><div class="meta"><b>D3 · Frame, landscape</b><span>Wider and heavier — more screen, less sidebar.</span></div>
+<div class="specimens">
+<div class="cell"><svg width="88" height="88"><use href="#d3"/></svg><span class="cap">88</span></div>
+<div class="cell"><svg width="40" height="40"><use href="#d3"/></svg><span class="cap">40</span></div>
+<div class="cell"><svg width="24" height="24"><use href="#d3"/></svg><span class="cap">24</span></div>
+<div class="cell"><svg width="16" height="16"><use href="#d3"/></svg><span class="cap">16</span></div>
+<div class="cell"><span class="chip" style="width:54px;height:54px"><svg width="33" height="33"><use href="#d3"/></svg></span><span class="cap">icon</span></div>
+<div class="cell"><span class="dk"><svg width="22" height="22"><use href="#d3"/></svg><span class="word">Imago</span></span><span class="cap">dark</span></div>
+</div></div>
+</body></html>

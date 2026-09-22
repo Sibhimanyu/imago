@@ -1,0 +1,9 @@
+{
+  "project_name": "imago",
+  "slate": [
+    {
+      "name": "imago",
+      "source": "dist"
+    }
+  ]
+}

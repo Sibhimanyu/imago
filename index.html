@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+  <!-- The app renders model-authored specs over third-party JSON and holds an
+       API key in sessionStorage, so the renderer runs behind a policy rather
+       than on trust alone. No inline script is allowed, and there is none.
+       `unsafe-inline` is granted to styles only, for the one style="" attribute
+       in this file; app.js sets styles through the CSSOM, which CSP does not
+       gate. connect-src allows https: because the whole point is fetching
+       user-chosen API endpoints and a provider's completion endpoint. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https:; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imago — APIs become interfaces</title>
+<meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">
+<meta name="theme-color" content="#f6f5f1">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Imago">
+<meta property="og:title" content="Imago — APIs become interfaces">
+<meta property="og:description" content="Paste an endpoint. Get a readable interface, not raw JSON. Imago reads the response shape, designs a view for it, and remembers it.">
+<meta property="og:url" content="https://imago-gxabbdoh.onslate.in/">
+<meta property="og:image" content="https://imago-gxabbdoh.onslate.in/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Imago — APIs become interfaces">
+<meta name="twitter:description" content="Paste an endpoint. Get a readable interface, not raw JSON.">
+<meta name="twitter:image" content="https://imago-gxabbdoh.onslate.in/og.png">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/imago-icon.svg">
+</head>
+<body>
+
+<!-- Brand marks. Every logo in the app is a <use> of these, so this block
+     drives the whole UI. Note the geometry is duplicated in favicon.svg,
+     assets/*.svg and brand/og.html — nothing syncs them. See
+     docs/CODE-INTEGRATION.md for the full checklist. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <symbol id="imagoMark" viewBox="0 0 32 32" fill="currentColor"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></symbol>
+  <symbol id="imagoIcon" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="8" fill="var(--mark-tile, #1b1b19)"/>
+    <g fill="var(--mark-ink, #fff)" transform="translate(16 16) scale(.78) translate(-16 -16)"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g>
+  </symbol>
+</svg>
+
+<!-- ══ Landing ══════════════════════════════════════════════════ -->
+<div class="view" id="landingView" hidden>
+  <header class="landing-bar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="26" height="26"><use href="#imagoIcon"/></svg>
+      </span>
+      <span class="brand-word">Imago</span>
+    </div>
+    <nav class="landing-nav">
+      <button type="button" class="link-btn" id="landingAbout">About</button>
+      <button type="button" class="link-btn" id="landingSkip">Open app</button>
+    </nav>
+  </header>
+
+  <main class="landing-main">
+    <div class="landing-copy">
+      <h1 class="landing-title">APIs become<br>interfaces.</h1>
+      <p class="landing-sub">Turn any API response into a visual interface.<br>Explore. Understand. Save. Watch it change.</p>
+      <button type="button" class="btn btn-dark btn-lg" id="landingStart">
+        Get started
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <ul class="landing-features">
+        <li>
+          <span class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+          </span>
+          <b>Connect</b><span>Any public API</span>
+        </li>
+        <li>
+          <span class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19"><rect x="3.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+          </span>
+          <b>See</b><span>A generated UI</span>
+        </li>
+        <li>
+          <span class="feat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 7v5.4l3.4 2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          </span>
+          <b>Track</b><span>Changes over time</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="landing-art" aria-hidden="true">
+      <div class="float-card float-weather">
+        <div class="fw-temp">28°C</div>
+        <div class="fw-city">Chennai</div>
+        <svg class="fw-sun" viewBox="0 0 24 24" width="34" height="34"><circle cx="12" cy="12" r="5" fill="#f5b52e"/><g stroke="#f5b52e" stroke-width="1.8" stroke-linecap="round"><path d="M12 1.6v2.6M12 19.8v2.6M22.4 12h-2.6M4.2 12H1.6M19.3 4.7l-1.8 1.8M6.5 17.5l-1.8 1.8M19.3 19.3l-1.8-1.8M6.5 6.5L4.7 4.7"/></g></svg>
+      </div>
+      <div class="float-card float-poke">
+        <span class="fp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M13 2.5 5.5 13.2h5.2l-.7 8.3 7.5-10.7h-5.2l.7-8.3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+        <div><b>Pikachu</b><span>Electric</span></div>
+        <div class="fp-sprite"></div>
+      </div>
+      <div class="float-card float-repo">
+        <span class="fr-icon">
+          <svg viewBox="0 0 16 16" width="22" height="22"><path fill="#1b1b19" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        </span>
+        <div><b>facebook/react</b><span class="repo-stats"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4l-3.8 2 .7-4.3-3.1-3 4.3-.6L8 1.6Z" fill="currentColor"/></svg>219k<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M5 3.2v3.1c0 1 .8 1.8 1.8 1.8h2.4c1 0 1.8.8 1.8 1.8v1M5 3.2a1.4 1.4 0 1 0 0-.1ZM11 3.2a1.4 1.4 0 1 0 0-.1ZM11 12.8a1.4 1.4 0 1 0 0-.1Z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>43k</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ Setup ════════════════════════════════════════════════════ -->
+<div class="view" id="setupView" hidden>
+  <div class="setup-card">
+    <span class="setup-mark" aria-hidden="true">
+      <svg width="44" height="44"><use href="#imagoIcon"/></svg>
+    </span>
+    <h2 class="setup-title">Let's get started</h2>
+    <p class="setup-sub">Add a Gemini or Groq API key to generate interfaces.</p>
+
+    <div class="key-field">
+      <span class="key-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
+      </span>
+      <input type="password" id="setupKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
+    </div>
+    <p class="setup-note">Your key stays in this browser session only. We don't store it.</p>
+
+    <button type="button" class="btn btn-dark btn-block btn-lg" id="setupContinue">
+      Continue
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="link-btn setup-later" id="setupLater">I'll add it later</button>
+    <p class="setup-hint">Free keys: <span class="mono">aistudio.google.com/apikey</span> or <span class="mono">console.groq.com/keys</span></p>
+  </div>
+</div>
+
+<!-- ══ App ══════════════════════════════════════════════════════ -->
+<div class="view" id="appView" hidden>
+
+  <header class="appbar">
+    <div class="brand" id="brandHome" role="button" tabindex="0">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="24" height="24"><use href="#imagoIcon"/></svg>
+      </span>
+      <span class="brand-word">Imago</span>
+    </div>
+
+    <nav class="appnav" id="appNav" role="tablist" aria-label="Sections">
+      <button type="button" role="tab" data-view="playground" class="is-active" aria-selected="true">Playground</button>
+      <button type="button" role="tab" data-view="saved" aria-selected="false">Saved</button>
+      <button type="button" role="tab" data-view="settings" aria-selected="false">Settings</button>
+    </nav>
+
+    <div class="appbar-right">
+      <span class="key-pill" id="keyStatus" data-state="missing" title="Model provider key status">No key</span>
+      <span class="avatar" id="avatar" aria-hidden="true">S</span>
+    </div>
+  </header>
+
+  <!-- Stage bar: the only chrome that survives once a generated page takes
+       over the screen. Everything else on the page is decided by the plan. -->
+  <div class="stagebar" id="stageBar" hidden>
+    <span class="stage-mark" aria-hidden="true"><svg width="22" height="22"><use href="#imagoIcon"/></svg></span>
+    <button type="button" class="stage-back" id="stageBack" aria-label="Back">
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13 8H4M7.5 4l-4 4 4 4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+    <span class="stage-crumb" id="stageCrumb"></span>
+    <span class="stage-right">
+      <span class="live-pill" id="stageLive" hidden><span class="live-dot"></span>Live<span class="live-count" id="stageLiveCount"></span></span>
+      <span class="badge-chip" id="stageSource"></span>
+    </span>
+  </div>
+
+  <main class="app-main">
+
+    <!-- ── Playground ──────────────────────────────────── -->
+    <section class="pane" id="panePlayground">
+
+      <form class="reqbar" id="reqForm" autocomplete="off" novalidate>
+        <span class="method-chip">GET</span>
+        <input type="url" id="urlInput" class="url-input" placeholder="Enter an API URL (e.g. https://pokeapi.co/api/v2/pokemon/pikachu)" spellcheck="false">
+        <button type="submit" class="btn btn-dark btn-go" id="sendBtn" aria-label="Send request">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+
+      <div class="reqtools">
+        <button type="button" class="btn btn-ghost" id="saveBtn">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2.5h7.5L13 5v8.5H3v-11Z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M5.5 2.5v4h5v-4M5.5 13.5v-4h5v4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/></svg>
+          Save
+        </button>
+
+        <div class="refresh-group">
+          <span class="refresh-label">Auto-refresh</span>
+          <button type="button" class="switch" id="refreshToggle" role="switch" aria-checked="false" aria-label="Toggle auto-refresh"><span class="switch-knob"></span></button>
+          <select id="refreshInterval" class="mini-select" aria-label="Refresh interval" disabled>
+            <option value="10000">10s</option>
+            <option value="30000" selected>30s</option>
+            <option value="60000">60s</option>
+          </select>
+        </div>
+
+        <span class="live-pill" id="livePill" hidden><span class="live-dot"></span>Live<span class="live-count" id="liveCount"></span></span>
+      </div>
+
+      <div class="runmeta" id="runMeta" hidden>
+        <span class="meta-chip">Last checked <b id="stLastChecked">—</b></span>
+        <span class="meta-chip">Size <b id="stSize">—</b></span>
+        <span class="meta-chip">Schema <b id="stCache">—</b></span>
+        <span class="meta-chip" id="changedChip">Changed <b id="stChanged">—</b></span>
+        <span class="meta-chip meta-next" id="nextChip" hidden>Next in <b id="stNextRefresh">—</b></span>
+      </div>
+
+      <div class="tabs" id="tabBar" role="tablist" hidden>
+        <button type="button" role="tab" data-tab="interface" class="is-active" aria-selected="true">Interface</button>
+        <button type="button" role="tab" data-tab="raw" aria-selected="false">Response</button>
+        <button type="button" role="tab" data-tab="schema" aria-selected="false">Schema</button>
+        <button type="button" role="tab" data-tab="changes" aria-selected="false">Changes</button>
+        <button type="button" role="tab" data-tab="headers" aria-selected="false">Headers</button>
+      </div>
+
+      <div class="panes">
+        <div class="tab-pane is-active" data-pane="interface">
+          <div class="card" id="interfaceCard">
+            <div class="card-head" id="interfaceHead" hidden>
+              <span class="card-title" id="interfaceTitle"></span>
+              <span class="badge-chip" id="cacheBadge" hidden></span>
+            </div>
+            <div id="interfaceOut" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="raw">
+          <div class="card card-code">
+            <div class="code-head">
+              <span class="code-label">Response</span>
+              <button type="button" class="btn btn-ghost btn-xs" id="copyRaw">Copy</button>
+            </div>
+            <div class="code-wrap"><pre id="rawOut" class="code"></pre></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="schema">
+          <div class="card card-code">
+            <div class="code-head"><span class="code-label">Structural schema</span><span class="hash-chip" id="schemaHashChip"></span></div>
+            <div class="code-wrap"><pre id="schemaOut" class="code"></pre></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="changes">
+          <div class="card">
+            <div id="changesOut"></div>
+            <div class="snap-block">
+              <h3 class="sub-head">Snapshots</h3>
+              <div id="snapshotsOut"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="headers">
+          <div class="card">
+            <label class="field-label" for="headersInput">Request headers</label>
+            <textarea id="headersInput" rows="5" spellcheck="false" placeholder="Authorization: Bearer ...&#10;X-Example: value"></textarea>
+            <p class="muted-note">One header per line, <span class="mono">Name: value</span>. Sent with every request to this endpoint.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Saved ───────────────────────────────────────── -->
+    <section class="pane" id="paneSaved" hidden>
+      <div class="pane-head">
+        <h2 class="pane-title">Saved</h2>
+        <button type="button" class="btn btn-dark" id="newRequestBtn">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          New request
+        </button>
+      </div>
+      <ul class="saved-list" id="savedList"></ul>
+      <div class="empty" id="savedEmpty">
+        <p class="empty-title">Nothing saved yet</p>
+        <p class="empty-body">Run a request in the Playground and press Save to keep it here.</p>
+      </div>
+    </section>
+
+    <!-- ── Settings ────────────────────────────────────── -->
+    <section class="pane" id="paneSettings" hidden>
+      <div class="pane-head"><h2 class="pane-title">Settings</h2></div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Model provider</h3>
+        <select id="providerSelect" class="text-input" aria-label="Model provider">
+          <option value="gemini">Google Gemini</option>
+          <option value="groq">Groq</option>
+        </select>
+        <p class="muted-note" id="providerHint">Get a free key at <span class="mono">aistudio.google.com/apikey</span>. Pasting a key below switches this automatically.</p>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">API key</h3>
+        <div class="key-field">
+          <span class="key-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
+          </span>
+          <input type="password" id="geminiKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
+        </div>
+        <p class="muted-note">Stored in <span class="mono">sessionStorage</span> only — cleared when you close this tab, never written to localStorage.</p>
+        <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear key</button>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Model</h3>
+        <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off">
+        <p class="muted-note">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Stored data</h3>
+        <p class="muted-note" id="storageSummary">—</p>
+        <button type="button" class="btn btn-ghost btn-danger" id="clearStorageBtn">Clear all saved data</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

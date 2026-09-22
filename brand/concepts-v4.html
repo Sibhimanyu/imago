@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Imago - meaningful abstraction</title>
+<style>
+  *{box-sizing:border-box} :root{--ink:#1b1b19;--paper:#f3f2ed;--panel:#fff;--line:#d7d5cc;--muted:#747169;--cyan:#4b9eb2;--coral:#df6b52;--lime:#a3b83e}
+  html,body{margin:0;min-height:100%;background:#22221f;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{padding:34px}.board{width:min(1536px,100%);min-height:980px;margin:auto;padding:46px 48px 38px;background:var(--paper)}
+  header{display:grid;grid-template-columns:1fr 460px;gap:40px;align-items:end;padding-bottom:28px;border-bottom:1px solid var(--line)}
+  .eyebrow,.label,.num{font:600 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+  h1{margin:10px 0 0;font-size:43px;line-height:1.02;font-weight:620;letter-spacing:-.035em}.intro{margin:0;color:#625f57;font-size:14px;line-height:1.55}
+  .thesis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:18px;background:var(--line);border:1px solid var(--line)}
+  .thesis div{background:#fff;padding:14px 18px;display:flex;align-items:center;gap:11px;font-size:12px}.thesis b{font-weight:650}.dot{width:8px;height:8px;border-radius:50%}.d1{background:var(--cyan)}.d2{background:var(--coral)}.d3{background:var(--lime)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}.concept{background:var(--panel);border:1px solid var(--line);min-width:0}
+  .hero{height:290px;position:relative;display:grid;place-items:center;border-bottom:1px solid var(--line)}.hero svg{width:172px;height:172px}.num{position:absolute;top:17px;left:18px}
+  .a{background:#eaf2f3}.b{background:#f7ece7}.c{background:#edf0e3}.body{padding:25px 26px 24px}h2{margin:0;font-size:25px;font-weight:630;letter-spacing:-.03em}.desc{height:61px;margin:9px 0 22px;color:#68655e;font-size:13px;line-height:1.48}
+  .anatomy{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:14px 0 18px;border-top:1px solid #e3e1da}.part{min-width:0}.part svg{display:block;width:28px;height:28px;margin-bottom:7px}.part b{display:block;font:600 9px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.09em}.part span{display:block;margin-top:4px;color:#8b887f;font-size:9px;line-height:1.25}
+  .scale{padding-top:15px;border-top:1px solid #e3e1da}.sizes{display:flex;align-items:end;gap:17px;margin-top:12px}.s{display:grid;justify-items:center;gap:5px}.s span{font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#99968d}
+  .lockups{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.lock{height:47px;border:1px solid #dedcd4;display:flex;align-items:center;gap:8px;padding:0 11px}.lock.dark{color:#fff;background:var(--ink);border-color:var(--ink)}.tile{width:29px;height:29px;border-radius:7px;background:var(--ink);color:#fff;display:grid;place-items:center}.word{font-size:14px;font-weight:600;letter-spacing:-.021em}
+  footer{display:flex;justify-content:space-between;margin-top:20px;padding-top:17px;border-top:1px solid var(--line);color:#77746c;font-size:11px}footer strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- Raw fields on the left, an I/body at centre, resolved wings on the right. -->
+  <symbol id="data-wing" viewBox="0 0 32 32">
+    <rect x="3.8" y="7.1" width="7.1" height="3.2" rx="1.6" fill="currentColor"/>
+    <rect x="3.8" y="14.4" width="9.2" height="3.2" rx="1.6" fill="currentColor"/>
+    <rect x="3.8" y="21.7" width="11.1" height="3.2" rx="1.6" fill="currentColor"/>
+    <rect x="15.4" y="4.8" width="3.2" height="22.4" rx="1.6" fill="currentColor"/>
+    <path d="M20 6.9 26.2 5a1.6 1.6 0 0 1 2 1.6v5.9a2.2 2.2 0 0 1-1.6 2.1L20 16.5V6.9Zm0 12.2 6.6-1.7a2.2 2.2 0 0 1 1.6 2.1v5.9a1.6 1.6 0 0 1-2 1.6L20 25.1v-6Z" fill="currentColor"/>
+  </symbol>
+
+  <!-- Four structured fields create an imago; their gap draws the letter I. -->
+  <symbol id="latent-i" viewBox="0 0 32 32">
+    <path d="M13.8 5.1 5.9 3.8A1.7 1.7 0 0 0 4 5.5v7.1a2 2 0 0 0 1.5 1.9l8.3 2.2V5.1Zm4.4 0 7.9-1.3A1.7 1.7 0 0 1 28 5.5v7.1a2 2 0 0 1-1.5 1.9l-8.3 2.2V5.1ZM13.8 19.2l-8.1-1.8A2 2 0 0 0 4 19.4v7.1a1.7 1.7 0 0 0 2 1.7l7.8-1.5v-7.5Zm4.4 0 8.1-1.8a2 2 0 0 1 1.7 2v7.1a1.7 1.7 0 0 1-2 1.7l-7.8-1.5v-7.5Z" fill="currentColor"/>
+    <rect x="14.8" y="6.7" width="2.4" height="18.6" rx="1.2" fill="currentColor"/>
+  </symbol>
+
+  <!-- Three source bands fold around one viewport and become a complete image. -->
+  <symbol id="resolved" viewBox="0 0 32 32">
+    <path fill="currentColor" fill-rule="evenodd" d="M8.4 4.7h15.2a3.7 3.7 0 0 1 3.7 3.7v15.2a3.7 3.7 0 0 1-3.7 3.7H8.4a3.7 3.7 0 0 1-3.7-3.7V8.4a3.7 3.7 0 0 1 3.7-3.7Zm7.9 6.3h4.3a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-4.3a1.5 1.5 0 0 1-1.5-1.5v-7a1.5 1.5 0 0 1 1.5-1.5Z"/>
+    <path d="M2.8 8.1h8v3.1h-8zM2.8 14.45h10.1v3.1H2.8zM2.8 20.8h8v3.1h-8z" fill="currentColor"/>
+  </symbol>
+</defs></svg>
+
+<main class="board">
+  <header><div><div class="eyebrow">Imago / identity study 04</div><h1>Meaning, without illustration.</h1></div><p class="intro">One semantic system, three reductions. The geometry does the explaining: source data is interpreted into a useful view, while the complete silhouette carries the name's final-form meaning.</p></header>
+  <section class="thesis"><div><span class="dot d1"></span><b>Raw structure</b>&nbsp; fields and response rows</div><div><span class="dot d2"></span><b>Interpretation</b>&nbsp; the hidden I at the centre</div><div><span class="dot d3"></span><b>Final form</b>&nbsp; interface and imago together</div></section>
+  <section class="grid">
+    <article class="concept"><div class="hero a"><span class="num">01 / Data Wing</span><svg><use href="#data-wing"/></svg></div><div class="body"><h2>Data Wing</h2><p class="desc">Raw rows form one wing; resolved interface planes form the other. The interpreter becomes the body of the imago.</p><div class="anatomy"><div class="part"><svg style="color:var(--cyan)"><use href="#data-wing"/></svg><b>Data</b><span>graduated rows</span></div><div class="part"><svg style="color:var(--coral)"><use href="#data-wing"/></svg><b>Interpreter</b><span>central I</span></div><div class="part"><svg style="color:var(--lime)"><use href="#data-wing"/></svg><b>Imago</b><span>formed wings</span></div></div><div class="scale"><span class="label">Reality check</span><div class="sizes"><div class="s"><svg width="48" height="48"><use href="#data-wing"/></svg><span>48</span></div><div class="s"><svg width="32" height="32"><use href="#data-wing"/></svg><span>32</span></div><div class="s"><svg width="24" height="24"><use href="#data-wing"/></svg><span>24</span></div><div class="s"><svg width="16" height="16"><use href="#data-wing"/></svg><span>16</span></div></div><div class="lockups"><div class="lock"><span class="tile"><svg width="19" height="19"><use href="#data-wing"/></svg></span><span class="word">Imago</span></div><div class="lock dark"><svg width="21" height="21"><use href="#data-wing"/></svg><span class="word">Imago</span></div></div></div></div></article>
+
+    <article class="concept"><div class="hero b"><span class="num">02 / Latent I</span><svg><use href="#latent-i"/></svg></div><div class="body"><h2>Latent I</h2><p class="desc">Four structured fields assemble into an emerged form. Their central seam reveals the I for Imago, interface, and interpretation.</p><div class="anatomy"><div class="part"><svg style="color:var(--cyan)"><use href="#latent-i"/></svg><b>Schema</b><span>four fields</span></div><div class="part"><svg style="color:var(--coral)"><use href="#latent-i"/></svg><b>Interface</b><span>latent I</span></div><div class="part"><svg style="color:var(--lime)"><use href="#latent-i"/></svg><b>Imago</b><span>final silhouette</span></div></div><div class="scale"><span class="label">Reality check</span><div class="sizes"><div class="s"><svg width="48" height="48"><use href="#latent-i"/></svg><span>48</span></div><div class="s"><svg width="32" height="32"><use href="#latent-i"/></svg><span>32</span></div><div class="s"><svg width="24" height="24"><use href="#latent-i"/></svg><span>24</span></div><div class="s"><svg width="16" height="16"><use href="#latent-i"/></svg><span>16</span></div></div><div class="lockups"><div class="lock"><span class="tile"><svg width="19" height="19"><use href="#latent-i"/></svg></span><span class="word">Imago</span></div><div class="lock dark"><svg width="21" height="21"><use href="#latent-i"/></svg><span class="word">Imago</span></div></div></div></div></article>
+
+    <article class="concept"><div class="hero c"><span class="num">03 / Resolved</span><svg><use href="#resolved"/></svg></div><div class="body"><h2>Resolved</h2><p class="desc">Three source bands enter a complete image with a useful viewport. The transformation is embedded, without using an arrow.</p><div class="anatomy"><div class="part"><svg style="color:var(--cyan)"><use href="#resolved"/></svg><b>Response</b><span>three bands</span></div><div class="part"><svg style="color:var(--coral)"><use href="#resolved"/></svg><b>View</b><span>clear aperture</span></div><div class="part"><svg style="color:var(--lime)"><use href="#resolved"/></svg><b>Memory</b><span>known shape</span></div></div><div class="scale"><span class="label">Reality check</span><div class="sizes"><div class="s"><svg width="48" height="48"><use href="#resolved"/></svg><span>48</span></div><div class="s"><svg width="32" height="32"><use href="#resolved"/></svg><span>32</span></div><div class="s"><svg width="24" height="24"><use href="#resolved"/></svg><span>24</span></div><div class="s"><svg width="16" height="16"><use href="#resolved"/></svg><span>16</span></div></div><div class="lockups"><div class="lock"><span class="tile"><svg width="19" height="19"><use href="#resolved"/></svg></span><span class="word">Imago</span></div><div class="lock dark"><svg width="21" height="21"><use href="#resolved"/></svg><span class="word">Imago</span></div></div></div></div></article>
+  </section>
+  <footer><span><strong>One mark, three readings:</strong> data / interface / final form</span><span>Single colour / 32 x 32 / 16px tested</span></footer>
+</main>
+</body>
+</html>
