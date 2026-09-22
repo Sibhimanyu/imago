@@ -145,10 +145,9 @@ where you were — with the last interface rebuilt from the stored snapshot, wit
 spending a request.
 
 Request headers are the exception. They are where an `Authorization: Bearer ...` goes,
-so they get the same treatment as your model key: `sessionStorage`, gone when the tab
-closes. Saving a request keeps its ordinary headers and drops the credential ones, and
-tells you which. Following a link out of a response never carries your headers to a
-different host.
+so they stay in `sessionStorage`, gone when the tab closes. Saving a request keeps
+its ordinary headers and drops the credential ones, and tells you which. Following
+a link out of a response never carries your headers to a different host.
 
 **React to time.** Auto-refresh at 10s / 30s / 60s with a live countdown and a pulsing
 Live indicator; a "last checked" clock that ages as you watch it; and snapshot
@@ -190,16 +189,40 @@ through a test seam, and jsdom has a few traps that are documented there.
 
 ### Getting an API key
 
-Imago supports two providers. Paste a key and it picks the right one from the key
-prefix; you can also choose explicitly in **Settings**.
+Imago supports three providers — two keyed, one local. The keyed providers have
+one key box each in **Settings → API keys**. Typing into a box selects that
+provider; the pill in the header shows what is active (`Google Gemini ready`,
+`No Groq key`, `No keys`) and opens Settings on click.
 
 | Provider | Get a key | Default model | If that model is gone |
 |---|---|---|---|
 | Google Gemini | <https://aistudio.google.com/apikey> | `gemini-2.5-flash-lite` | `gemini-3.5-flash` |
 | Groq | <https://console.groq.com/keys> | `openai/gpt-oss-20b` | `openai/gpt-oss-120b` |
+| Ollama (local) | none — runs on your machine | `qwen3` (type any pulled model) | any other pulled model |
 
-Gemini keys start with `AIza`, Groq keys with `gsk_`, which is how the
-auto-detection works.
+If the active provider has no key but the other one does, Imago switches over
+rather than spending a call that can only fail.
+
+**Settings → Connection tests** pings each provider with one tiny call and says
+inline what happened — `OK`, `rejected the API key`, or `Unreachable` for
+Ollama with the origins fix. A red test there means generating would fail too,
+so check it before blaming an endpoint for a failure.
+
+### Ollama
+
+Pick **Ollama (local)**, pull a model (`ollama pull qwen3`), type its name into
+the Model field, and generate — no key involved. The server address is editable
+in Settings (default `http://localhost:11434`).
+
+Two honest limits, both on the browser's side, not Imago's:
+
+- Imago must run on the **same machine** as Ollama, and the server must allow
+  the page's origin: `OLLAMA_ORIGINS=http://localhost:5173 ollama serve`
+  (add the hosted origin too if you use both).
+- From the **hosted site** (`*.onslate.in`) Chrome additionally demands a
+  Private-Network-Access header Ollama does not send (upstream issue
+  `ollama/ollama#7000`), so hosted-to-local calls fail there. Local
+  development server → local Ollama is the supported shape.
 
 Both providers are asked to pin their reply to the UI spec schema — Gemini
 through `responseMimeType` + `responseSchema`, Groq through
@@ -211,31 +234,38 @@ for free and developer tiers on 17 June 2026, which is why the default is
 `openai/gpt-oss-20b`. The model field is editable, so a future rename costs you
 one edit rather than a new build.
 
-**Imago never stores your key in `localStorage`.** It lives in `sessionStorage`
-and is gone when you close the tab. There is no backend, so there is nowhere to
-hide a shared key — you use your own, and it stays on your machine.
+**Imago stores your keys in this browser's `localStorage`** (`imago.key.gemini`,
+`imago.key.groq`), so they survive a restart. There is no backend, so there is
+nowhere to hide a shared key — you use your own, and it stays on your machine.
+The tradeoff is plain: anyone with access to this browser profile can read them.
+"Clear all keys" in Settings and "Clear all saved data" remove them.
 
 ### Without a key
 
-Imago still works. Without a key — or if the provider fails, rate-limits, or returns
-something unusable — it falls back to a heuristic interface built from the response
-itself: it finds a title field, the most likely primary image, and the first handful of
-scalar fields. The badge beside the title always tells you which path you got:
+Imago still works, and it says so plainly. Without a usable key it falls back to
+a heuristic interface built from the response itself — it finds a title field,
+the most likely primary image, and the first handful of scalar fields — with a
+banner naming the missing key, where to paste it, and where a free one lives.
+The badge beside the title always tells you which path you got:
 `Generated`, `From schema cache`, or `Fallback`.
 
 ---
 
 ## Demo endpoints
 
-Built into the empty state as one-click chips:
+Built into the Examples dropdown (empty state, and beside the request bar):
 
 | | |
 |---|---|
 | Pokémon | `https://pokeapi.co/api/v2/pokemon/pikachu` |
 | Weather | `https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1` |
-| Dictionary | `https://api.dictionaryapi.dev/api/v2/entries/en/imago` |
-| Books | `https://openlibrary.org/search.json?title=the+hobbit&limit=5` |
-| Sunset | `https://api.sunrise-sunset.org/json?lat=13.0827&lng=80.2707&formatted=0` |
+| Dictionary | `https://api.dictionaryapi.dev/api/v2/entries/en/hello` |
+| Currency | `https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,INR` |
+| Trivia | `https://opentdb.com/api.php?amount=5` |
+| Library | `https://openlibrary.org/search.json?title=the+hobbit&limit=5` |
+| Thirukkural | `https://tamil-kural-api.vercel.app/api/kural/1` |
+| Wikipedia | `https://en.wikipedia.org/api/rest_v1/page/summary/Chennai` |
+| Sunrise & Sunset | `https://api.sunrise-sunset.org/json?lat=13.0827&lng=80.2707&formatted=0` |
 | Charizard | `https://pokeapi.co/api/v2/pokemon/charizard` |
 
 Any CORS-friendly GET endpoint works. Optional request headers are supported under the

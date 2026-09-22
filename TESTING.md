@@ -25,7 +25,7 @@ So the bottom of `app.js` carries a **test seam**: a single
 and hands the seam back.
 
 The seam ships to the browser. That is deliberate and grants no new capability:
-everything reachable through it, `getSessionKey` included, reads same-origin
+everything reachable through it, `getActiveKey` included, reads same-origin
 browser storage that any script in the page can already read. It is a test
 convenience, not a trust boundary — so don't treat it as one, and don't put
 anything behind it that isn't already reachable.

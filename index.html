@@ -2,14 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-  <!-- The app renders model-authored specs over third-party JSON and holds an
-       API key in sessionStorage, so the renderer runs behind a policy rather
-       than on trust alone. No inline script is allowed, and there is none.
+  <!-- The app renders model-authored specs over third-party JSON and holds
+       model API keys in localStorage, so the renderer runs behind a policy
+       rather than on trust alone. No inline script is allowed, and there is none.
        `unsafe-inline` is granted to styles only, for the one style="" attribute
        in this file; app.js sets styles through the CSSOM, which CSP does not
        gate. connect-src allows https: because the whole point is fetching
-       user-chosen API endpoints and a provider's completion endpoint. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https:; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+       user-chosen API endpoints and a provider's completion endpoint, plus
+       plain-http localhost so the Ollama provider can reach a local server. -->
+  <!-- frame-ancestors is deliberately absent: it is ignored when delivered via
+       <meta> and only logs an error. Clickjacking protection has to come from a
+       real response header (CSP frame-ancestors or X-Frame-Options) at the host. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imago — APIs become interfaces</title>
 <meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">
@@ -119,15 +123,21 @@
       <svg width="44" height="44"><use href="#imagoIcon"/></svg>
     </span>
     <h2 class="setup-title">Let's get started</h2>
-    <p class="setup-sub">Add a Gemini or Groq API key to generate interfaces.</p>
+    <p class="setup-sub">Add a Gemini or Groq API key to generate interfaces. Either one works.</p>
 
     <div class="key-field">
       <span class="key-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
       </span>
-      <input type="password" id="setupKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
+      <input type="password" id="setupGeminiKey" placeholder="Gemini key (AIza…)" autocomplete="off" spellcheck="false" aria-label="Gemini API key">
     </div>
-    <p class="setup-note">Your key stays in this browser session only. We don't store it.</p>
+    <div class="key-field">
+      <span class="key-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
+      </span>
+      <input type="password" id="setupGroqKey" placeholder="Groq key (gsk_…)" autocomplete="off" spellcheck="false" aria-label="Groq API key">
+    </div>
+    <p class="setup-note">Keys are kept in this browser's local storage, so they survive a restart. Anyone with this browser profile can read them.</p>
 
     <button type="button" class="btn btn-dark btn-block btn-lg" id="setupContinue">
       Continue
@@ -195,6 +205,17 @@
           Save
         </button>
 
+        <div class="refresh-group" role="group" aria-label="Interface builder">
+          <span class="refresh-label">Build</span>
+          <button type="button" class="seg-btn is-active" id="builderPlanBtn" data-builder="spec" aria-pressed="true" title="Structured plan: the model returns JSON, Imago renders it">Structured</button>
+          <button type="button" class="seg-btn" id="builderHtmlBtn" data-builder="html" aria-pressed="false" title="Full HTML: the model writes the whole page, shown sandboxed">HTML</button>
+        </div>
+
+        <div class="refresh-group">
+          <label class="refresh-label" for="exampleSelect">Examples</label>
+          <select id="exampleSelect" class="mini-select example-bar-select" aria-label="Load an example API"></select>
+        </div>
+
         <div class="refresh-group">
           <span class="refresh-label">Auto-refresh</span>
           <button type="button" class="switch" id="refreshToggle" role="switch" aria-checked="false" aria-label="Toggle auto-refresh"><span class="switch-knob"></span></button>
@@ -216,16 +237,16 @@
         <span class="meta-chip meta-next" id="nextChip" hidden>Next in <b id="stNextRefresh">—</b></span>
       </div>
 
-      <div class="tabs" id="tabBar" role="tablist" hidden>
-        <button type="button" role="tab" data-tab="interface" class="is-active" aria-selected="true">Interface</button>
-        <button type="button" role="tab" data-tab="raw" aria-selected="false">Response</button>
-        <button type="button" role="tab" data-tab="schema" aria-selected="false">Schema</button>
-        <button type="button" role="tab" data-tab="changes" aria-selected="false">Changes</button>
-        <button type="button" role="tab" data-tab="headers" aria-selected="false">Headers</button>
+      <div class="tabs" id="tabBar" role="tablist" aria-label="Response views" hidden>
+        <button type="button" role="tab" id="tab-interface" aria-controls="pane-interface" data-tab="interface" class="is-active" aria-selected="true" tabindex="0">Interface</button>
+        <button type="button" role="tab" id="tab-raw" aria-controls="pane-raw" data-tab="raw" aria-selected="false" tabindex="-1">Response</button>
+        <button type="button" role="tab" id="tab-schema" aria-controls="pane-schema" data-tab="schema" aria-selected="false" tabindex="-1">Schema</button>
+        <button type="button" role="tab" id="tab-changes" aria-controls="pane-changes" data-tab="changes" aria-selected="false" tabindex="-1">Changes</button>
+        <button type="button" role="tab" id="tab-headers" aria-controls="pane-headers" data-tab="headers" aria-selected="false" tabindex="-1">Headers</button>
       </div>
 
       <div class="panes">
-        <div class="tab-pane is-active" data-pane="interface">
+        <div class="tab-pane is-active" data-pane="interface" id="pane-interface" role="tabpanel" aria-labelledby="tab-interface" tabindex="0">
           <div class="card" id="interfaceCard">
             <div class="card-head" id="interfaceHead" hidden>
               <span class="card-title" id="interfaceTitle"></span>
@@ -235,7 +256,7 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="raw">
+        <div class="tab-pane" data-pane="raw" id="pane-raw" role="tabpanel" aria-labelledby="tab-raw" tabindex="0">
           <div class="card card-code">
             <div class="code-head">
               <span class="code-label">Response</span>
@@ -245,14 +266,14 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="schema">
+        <div class="tab-pane" data-pane="schema" id="pane-schema" role="tabpanel" aria-labelledby="tab-schema" tabindex="0">
           <div class="card card-code">
             <div class="code-head"><span class="code-label">Structural schema</span><span class="hash-chip" id="schemaHashChip"></span></div>
             <div class="code-wrap"><pre id="schemaOut" class="code"></pre></div>
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="changes">
+        <div class="tab-pane" data-pane="changes" id="pane-changes" role="tabpanel" aria-labelledby="tab-changes" tabindex="0">
           <div class="card">
             <div id="changesOut"></div>
             <div class="snap-block">
@@ -262,7 +283,7 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="headers">
+        <div class="tab-pane" data-pane="headers" id="pane-headers" role="tabpanel" aria-labelledby="tab-headers" tabindex="0">
           <div class="card">
             <label class="field-label" for="headersInput">Request headers</label>
             <textarea id="headersInput" rows="5" spellcheck="false" placeholder="Authorization: Bearer ...&#10;X-Example: value"></textarea>
@@ -292,37 +313,80 @@
     <section class="pane" id="paneSettings" hidden>
       <div class="pane-head"><h2 class="pane-title">Settings</h2></div>
 
+      <div class="settings-grid">
       <div class="card settings-card">
         <h3 class="sub-head">Model provider</h3>
         <select id="providerSelect" class="text-input" aria-label="Model provider">
           <option value="gemini">Google Gemini</option>
           <option value="groq">Groq</option>
+          <option value="ollama">Ollama (local)</option>
         </select>
         <p class="muted-note" id="providerHint">Get a free key at <span class="mono">aistudio.google.com/apikey</span>. Pasting a key below switches this automatically.</p>
-      </div>
-
-      <div class="card settings-card">
-        <h3 class="sub-head">API key</h3>
-        <div class="key-field">
-          <span class="key-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
-          </span>
-          <input type="password" id="geminiKey" placeholder="Paste your Gemini or Groq API key" autocomplete="off" spellcheck="false">
+        <div id="ollamaServerGroup" hidden>
+          <label class="field-label" for="ollamaEndpoint">Ollama server</label>
+          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://localhost:11434">
+          <p class="muted-note">Same machine only. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
         </div>
-        <p class="muted-note">Stored in <span class="mono">sessionStorage</span> only — cleared when you close this tab, never written to localStorage.</p>
-        <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear key</button>
+        <label class="field-label" for="modelName">Model</label>
+        <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off" placeholder="Model name" list="modelOptions">
+        <datalist id="modelOptions"></datalist>
+        <p class="muted-note" id="modelNote">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
       </div>
 
       <div class="card settings-card">
-        <h3 class="sub-head">Model</h3>
-        <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off">
-        <p class="muted-note">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
+        <h3 class="sub-head">API keys</h3>
+        <div class="key-block">
+          <label class="field-label" for="geminiKey">Google Gemini <span class="mono">AIza…</span> <span class="key-status key-status-inline" id="geminiKeyStatus" data-state="missing">Not set</span></label>
+          <div class="key-field">
+            <span class="key-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
+            </span>
+            <input type="password" id="geminiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="key-meta">
+            <button type="button" class="btn btn-ghost btn-xs" id="geminiTestBtn">Test</button>
+            <span class="key-status" id="geminiTestStatus" data-state="missing">Not tested</span>
+          </div>
+        </div>
+        <div class="key-block">
+          <label class="field-label" for="groqKey">Groq <span class="mono">gsk_…</span> <span class="key-status key-status-inline" id="groqKeyStatus" data-state="missing">Not set</span></label>
+          <div class="key-field">
+            <span class="key-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
+            </span>
+            <input type="password" id="groqKey" placeholder="Paste your Groq API key" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="key-meta">
+            <button type="button" class="btn btn-ghost btn-xs" id="groqTestBtn">Test</button>
+            <span class="key-status" id="groqTestStatus" data-state="missing">Not tested</span>
+          </div>
+        </div>
+        <div class="key-block">
+          <span class="field-label">Ollama</span>
+          <div class="key-meta key-meta-plain">
+            <span class="muted-note">No key needed.</span>
+            <button type="button" class="btn btn-ghost btn-xs" id="ollamaTestBtn">Test</button>
+            <span class="key-status" id="ollamaTestStatus" data-state="missing">Not tested</span>
+          </div>
+        </div>
+        <p class="muted-note">Saved in this browser only — anyone with this profile can read them. Typing selects that provider.</p>
+        <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear all keys</button>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Interface</h3>
+        <select id="builderSelect" class="text-input" aria-label="Interface builder">
+          <option value="spec">Structured plan (default)</option>
+          <option value="html">Full HTML page</option>
+        </select>
+        <p class="muted-note">Full HTML renders sandboxed with scripts disabled. Applies to the next request.</p>
       </div>
 
       <div class="card settings-card">
         <h3 class="sub-head">Stored data</h3>
         <p class="muted-note" id="storageSummary">—</p>
         <button type="button" class="btn btn-ghost btn-danger" id="clearStorageBtn">Clear all saved data</button>
+      </div>
       </div>
     </section>
 
