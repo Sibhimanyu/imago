@@ -219,16 +219,16 @@
         <span class="meta-chip meta-next" id="nextChip" hidden>Next in <b id="stNextRefresh">—</b></span>
       </div>
 
-      <div class="tabs" id="tabBar" role="tablist" hidden>
-        <button type="button" role="tab" data-tab="interface" class="is-active" aria-selected="true">Interface</button>
-        <button type="button" role="tab" data-tab="raw" aria-selected="false">Response</button>
-        <button type="button" role="tab" data-tab="schema" aria-selected="false">Schema</button>
-        <button type="button" role="tab" data-tab="changes" aria-selected="false">Changes</button>
-        <button type="button" role="tab" data-tab="headers" aria-selected="false">Headers</button>
+      <div class="tabs" id="tabBar" role="tablist" aria-label="Response views" hidden>
+        <button type="button" role="tab" id="tab-interface" aria-controls="pane-interface" data-tab="interface" class="is-active" aria-selected="true" tabindex="0">Interface</button>
+        <button type="button" role="tab" id="tab-raw" aria-controls="pane-raw" data-tab="raw" aria-selected="false" tabindex="-1">Response</button>
+        <button type="button" role="tab" id="tab-schema" aria-controls="pane-schema" data-tab="schema" aria-selected="false" tabindex="-1">Schema</button>
+        <button type="button" role="tab" id="tab-changes" aria-controls="pane-changes" data-tab="changes" aria-selected="false" tabindex="-1">Changes</button>
+        <button type="button" role="tab" id="tab-headers" aria-controls="pane-headers" data-tab="headers" aria-selected="false" tabindex="-1">Headers</button>
       </div>
 
       <div class="panes">
-        <div class="tab-pane is-active" data-pane="interface">
+        <div class="tab-pane is-active" data-pane="interface" id="pane-interface" role="tabpanel" aria-labelledby="tab-interface" tabindex="0">
           <div class="card" id="interfaceCard">
             <div class="card-head" id="interfaceHead" hidden>
               <span class="card-title" id="interfaceTitle"></span>
@@ -238,7 +238,7 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="raw">
+        <div class="tab-pane" data-pane="raw" id="pane-raw" role="tabpanel" aria-labelledby="tab-raw" tabindex="0">
           <div class="card card-code">
             <div class="code-head">
               <span class="code-label">Response</span>
@@ -248,14 +248,14 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="schema">
+        <div class="tab-pane" data-pane="schema" id="pane-schema" role="tabpanel" aria-labelledby="tab-schema" tabindex="0">
           <div class="card card-code">
             <div class="code-head"><span class="code-label">Structural schema</span><span class="hash-chip" id="schemaHashChip"></span></div>
             <div class="code-wrap"><pre id="schemaOut" class="code"></pre></div>
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="changes">
+        <div class="tab-pane" data-pane="changes" id="pane-changes" role="tabpanel" aria-labelledby="tab-changes" tabindex="0">
           <div class="card">
             <div id="changesOut"></div>
             <div class="snap-block">
@@ -265,7 +265,7 @@
           </div>
         </div>
 
-        <div class="tab-pane" data-pane="headers">
+        <div class="tab-pane" data-pane="headers" id="pane-headers" role="tabpanel" aria-labelledby="tab-headers" tabindex="0">
           <div class="card">
             <label class="field-label" for="headersInput">Request headers</label>
             <textarea id="headersInput" rows="5" spellcheck="false" placeholder="Authorization: Bearer ...&#10;X-Example: value"></textarea>

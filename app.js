@@ -3330,6 +3330,10 @@
       var active = buttons[i].getAttribute('data-tab') === tab;
       buttons[i].className = active ? 'is-active' : '';
       buttons[i].setAttribute('aria-selected', active ? 'true' : 'false');
+      // Roving tabindex: a tablist is one Tab stop, and the arrow keys move
+      // within it. Without this the role promised keyboard behaviour the
+      // buttons did not have.
+      buttons[i].setAttribute('tabindex', active ? '0' : '-1');
     }
     var panes = document.querySelectorAll('.tab-pane');
     for (i = 0; i < panes.length; i += 1) {
@@ -4050,6 +4054,27 @@
     dom.tabBar.addEventListener('click', function (event) {
       var tab = event.target && event.target.getAttribute && event.target.getAttribute('data-tab');
       if (tab) setActiveTab(tab);
+    });
+
+    // The WAI-ARIA tablist keyboard contract: Left/Right move between tabs,
+    // Home/End jump to the ends. Focus follows selection, which is the right
+    // pattern here because switching a pane is cheap and has no side effects.
+    dom.tabBar.addEventListener('keydown', function (event) {
+      var keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+      if (keys.indexOf(event.key) === -1) return;
+      var buttons = [].slice.call(dom.tabBar.querySelectorAll('button'));
+      if (!buttons.length) return;
+      var current = buttons.indexOf(document.activeElement);
+      if (current === -1) return;
+      var next;
+      if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = buttons.length - 1;
+      else if (event.key === 'ArrowRight') next = (current + 1) % buttons.length;
+      else next = (current - 1 + buttons.length) % buttons.length;
+      event.preventDefault();
+      var tabName = buttons[next].getAttribute('data-tab');
+      if (tabName) setActiveTab(tabName);
+      buttons[next].focus();
     });
 
     dom.copyRaw.addEventListener('click', function () {
