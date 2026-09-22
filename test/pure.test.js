@@ -200,3 +200,45 @@ describe('diff display values', () => {
     }
   });
 });
+
+describe('humanize', () => {
+  // Regression: ISSUE-002 — a response field named `constructor` vanished from
+  // the rendered interface. humanize() looked the word up with
+  // `LABEL_WORDS[lower] || lower` on a plain object, so `constructor` resolved
+  // to Object.prototype.constructor (truthy), the label became a function, and
+  // .replace() threw inside humanize — losing the whole field.
+  // Found by /qa on 2026-09-22
+  // Report: .gstack/qa-reports/qa-report-localhost-2026-09-22.md
+  it('labels an ordinary key', () => {
+    expect(A.humanize('city')).toBe('City');
+    expect(A.humanize('base_stat')).toBe('Base stat');
+  });
+
+  it('spells out the abbreviations it knows', () => {
+    expect(A.humanize('tzid')).toBe('Timezone');
+    expect(A.humanize('url')).toBe('URL');
+  });
+
+  it('survives keys that collide with Object.prototype members', () => {
+    for (const key of ['constructor', 'toString', 'valueOf', 'hasOwnProperty', '__proto__']) {
+      let out;
+      expect(() => { out = A.humanize(key); }, `humanize(${key}) threw`).not.toThrow();
+      expect(typeof out, `humanize(${key}) returned ${typeof out}`).toBe('string');
+      expect(out.length).toBeGreaterThan(0);
+    }
+    expect(A.humanize('constructor')).toBe('Constructor');
+  });
+});
+
+describe('buildFallbackSpec key coverage', () => {
+  it('keeps a field named after an Object.prototype member', () => {
+    // The whole point of ISSUE-002: the field was in the response and in
+    // Object.keys, but no component addressed it, so it never reached the page.
+    const data = { name: 'Mixed probe', city: 'Chennai', constructor: 'SHOULD-APPEAR', status: 'OK' };
+    const spec = A.normalizeSpec(A.buildFallbackSpec(data, 'https://a.test/x'));
+    const paths = spec.components.map((c) => c.path);
+    expect(paths).toContain('constructor');
+    expect(paths).toContain('city');
+    expect(A.getByPath(data, 'constructor')).toBe('SHOULD-APPEAR');
+  });
+});
