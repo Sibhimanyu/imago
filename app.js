@@ -16,11 +16,18 @@
   };
 
   var SESSION = {
-    key: 'imago.apiKey',
-    headers: 'imago.lastHeaders',   // request headers: session-only, like the key
-    legacyKey: 'imago.geminiKey',   // pre-multi-provider builds
+    headers: 'imago.lastHeaders',   // request headers: session-only, like before
     model: 'imago.modelName',
     provider: 'imago.provider'
+  };
+
+  // Model keys live in localStorage, one slot per provider, so they survive a
+  // browser restart. Deliberate tradeoff: anyone with this browser profile can
+  // read them, and any script on this origin already could. Request headers
+  // stay session-only — they are per-endpoint secrets, not app credentials.
+  var KEYS = {
+    gemini: 'imago.key.gemini',
+    groq: 'imago.key.groq'
   };
 
   /* ── Providers ──────────────────────────────────────────────────────────────
@@ -58,6 +65,21 @@
           contents: [{ parts: [{ text: prompt + '\n\nReturn only valid JSON matching this schema:\n' +
                                        JSON.stringify(schema) }] }],
           generationConfig: { responseMimeType: 'application/json' }
+        };
+      },
+      // Free-text mode for the full-HTML builder: no responseSchema, plain
+      // text MIME so the model writes markup instead of JSON.
+      htmlBody: function (model, prompt) {
+        return {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'text/plain' }
+        };
+      },
+      // Minimal ping for the connection-tests card: costs ~5 tokens.
+      testBody: function (model) {
+        return {
+          contents: [{ parts: [{ text: 'Reply with exactly: ok' }] }],
+          generationConfig: { maxOutputTokens: 64 }
         };
       },
       extract: function (payload) {
@@ -111,18 +133,157 @@
           response_format: { type: 'json_object' }
         };
       },
+      // Free-text mode for the full-HTML builder: no response_format, so the
+      // model writes markup instead of JSON. Warmer than the spec path — a
+      // plan wants determinism, a page wants some design sense.
+      htmlBody: function (model, prompt) {
+        return {
+          model: model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7
+        };
+      },
+      // Minimal ping for the connection-tests card: costs a few tokens.
+      testBody: function (model) {
+        return {
+          model: model,
+          messages: [{ role: 'user', content: 'Reply with exactly: ok' }],
+          max_tokens: 64,
+          temperature: 0
+        };
+      },
       extract: function (payload) {
         if (!payload || !payload.choices || !payload.choices.length) return '';
         var msg = payload.choices[0].message;
         return msg && typeof msg.content === 'string' ? msg.content : '';
       }
+    },
+
+    // Ollama: your own machine as a provider. Keyless, and the endpoint is
+    // the user's server, so it comes from prefs (default: stock local install).
+    // Two wire details matter here. First, no Authorization header, ever:
+    // Ollama's CORS preflight only allows Origin/Content-Length/Content-Type,
+    // so an auth header fails before the request starts. Second, the same
+    // OpenAI shapes as Groq — /v1/chat/completions honours response_format
+    // locally, and the plain-JSON retry covers the models that ignore it.
+    ollama: {
+      id: 'ollama',
+      label: 'Ollama',
+      keyPrefix: '',
+      keyHint: '',
+      needsKey: false,
+      // A fallback only: whenever the server answers, the real installed list
+      // replaces this. Kept in step with modelHint so the UI never advertises
+      // one name and defaults to another.
+      defaultModel: 'llama3.1',
+      modelHint: 'llama3.1',
+      // Ollama's native API rather than its OpenAI-compatible one. The compat
+      // endpoint gives no way to set the context window, so generation ran
+      // into the model's 4096-token default and the spec came back truncated
+      // mid-string ("returned an unusable spec"). /api/chat takes `options`.
+      endpoint: function () { return ollamaBase() + '/api/chat'; },
+      headers: function () {
+        return { 'Content-Type': 'application/json' };
+      },
+      body: function (model, prompt, schema) {
+        return {
+          model: model,
+          stream: false,
+          format: schema,          // native structured output: no fences, no prose
+          options: OLLAMA_OPTIONS,
+          messages: [{ role: 'user', content: prompt }]
+        };
+      },
+      plainBody: function (model, prompt, schema) {
+        return {
+          model: model,
+          stream: false,
+          format: 'json',
+          options: OLLAMA_OPTIONS,
+          messages: [{ role: 'user', content: prompt +
+            '\n\nReturn only valid JSON matching this schema:\n' + JSON.stringify(schema) }]
+        };
+      },
+      htmlBody: function (model, prompt) {
+        return {
+          model: model,
+          stream: false,
+          options: { num_ctx: OLLAMA_OPTIONS.num_ctx, num_predict: OLLAMA_OPTIONS.num_predict, temperature: 0.7 },
+          messages: [{ role: 'user', content: prompt }]
+        };
+      },
+      testBody: function (model) {
+        return {
+          model: model,
+          stream: false,
+          options: { num_ctx: 2048, num_predict: 64, temperature: 0 },
+          messages: [{ role: 'user', content: 'Reply with exactly: ok' }]
+        };
+      },
+      extract: function (payload) {
+        var msg = payload && payload.message;
+        return msg && typeof msg.content === 'string' ? msg.content : '';
+      },
+      // Native replies say why they stopped. Truncation has a specific cure,
+      // so it must not be reported as the model being incapable.
+      truncated: function (payload) { return !!payload && payload.done_reason === 'length'; },
+      // Reasoning models put their thinking here.
+      thinking: function (payload) {
+        var msg = payload && payload.message;
+        return !!(msg && typeof msg.thinking === 'string' && msg.thinking.trim());
+      }
     }
   };
 
-  var PROVIDER_IDS = ['gemini', 'groq'];
+  // Imago's prompt is ~1.7k tokens and a full spec runs to a few thousand
+  // more. Ollama defaults to a 4096 context, which truncated the JSON exactly
+  // at the limit, so ask for room. num_predict is capped separately so a
+  // runaway model still stops.
+  var OLLAMA_OPTIONS = { num_ctx: 16384, num_predict: 8192, temperature: 0.2 };
+
+  var PROVIDER_IDS = ['gemini', 'groq', 'ollama'];
   var DEFAULT_PROVIDER = 'gemini';
 
   function getProvider(id) { return PROVIDERS[id] || PROVIDERS[DEFAULT_PROVIDER]; }
+
+  // Only Ollama opts out; every other provider needs a key unless it says so.
+  function providerNeedsKey(id) { return getProvider(id).needsKey !== false; }
+
+  // What Ollama actually has pulled. The old default was a guess ('qwen3'),
+  // and a guess that is wrong turns a green connection test into a failed
+  // generation — the test has to predict the thing it is testing.
+  var ollamaModels = null;        // null = never fetched, [] = fetched, none installed
+
+  function fetchOllamaModels() {
+    return fetch(ollamaBase() + '/api/tags', { method: 'GET', mode: 'cors' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        var list = (payload && Array.isArray(payload.models) ? payload.models : [])
+          .map(function (m) { return m && typeof m.name === 'string' ? m.name : ''; })
+          .filter(Boolean);
+        ollamaModels = list;
+        return list;
+      });
+  }
+
+  // Embedding models cannot answer a chat request, so they are never a
+  // sensible default even when they are the only thing installed.
+  function isChatModel(name) { return !/embed/i.test(name); }
+
+  function pickOllamaModel(list) {
+    var chat = (list || []).filter(isChatModel);
+    return chat.length ? chat[0] : '';
+  }
+
+  function ollamaBase() {
+    var base = '';
+    try { base = String(getPrefs().ollamaEndpoint || ''); } catch (e) { /* ignore */ }
+    base = base.trim().replace(/\/+$/, '');
+    return base || 'http://localhost:11434';
+  }
 
   // Key prefixes are distinctive enough to pick the provider for the user.
   function detectProvider(key) {
@@ -142,15 +303,59 @@
   var SAMPLE_CHAR_LIMIT = 10000;
   var MAX_COMPONENTS = 20;
   var MAX_ROWS = 10;
+  // Full-HTML builder caps. A generated page is rendered, never executed, but
+  // an unbounded doc would still wedge the frame and evict every snapshot
+  // from localStorage, so oversized docs render without being cached.
+  var MAX_HTML_BYTES = 256 * 1024;
+  var MAX_CACHED_HTML_BYTES = 100 * 1024;
 
+  // One-click examples for the picker. Every entry must be a keyless GET
+  // that answers from a browser (CORS-open). Key-gated APIs (TMDB, USDA,
+  // Unsplash, TinyURL, LibreTranslate) are deliberately excluded — a dead
+  // example is worse than no example.
   var DEMOS = [
     { name: 'Pokémon',    chip: 'Pokémon',    url: 'https://pokeapi.co/api/v2/pokemon/pikachu' },
     { name: 'Weather',    chip: 'Weather',    url: 'https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1' },
-    { name: 'Dictionary', chip: 'Dictionary', url: 'https://api.dictionaryapi.dev/api/v2/entries/en/imago' },
-    { name: 'Books',      chip: 'Books',      url: 'https://openlibrary.org/search.json?title=the+hobbit&limit=5' },
-    { name: 'Sunset',     chip: 'Sunset',     url: 'https://api.sunrise-sunset.org/json?lat=13.0827&lng=80.2707&formatted=0' },
+    { name: 'Dictionary', chip: 'Dictionary', url: 'https://api.dictionaryapi.dev/api/v2/entries/en/hello' },
+    { name: 'Currency',   chip: 'Currency',   url: 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,INR' },
+    { name: 'Trivia',     chip: 'Trivia',     url: 'https://opentdb.com/api.php?amount=5' },
+    { name: 'Library',    chip: 'Library',    url: 'https://openlibrary.org/search.json?title=the+hobbit&limit=5' },
+    { name: 'Thirukkural', chip: 'Thirukkural', url: 'https://tamil-kural-api.vercel.app/api/kural/1' },
+    { name: 'Wikipedia',  chip: 'Wikipedia',  url: 'https://en.wikipedia.org/api/rest_v1/page/summary/Chennai' },
+    { name: 'Sunrise & Sunset', chip: 'Sunset', url: 'https://api.sunrise-sunset.org/json?lat=13.0827&lng=80.2707&formatted=0' },
     { name: 'Charizard',  chip: 'Charizard',  url: 'https://pokeapi.co/api/v2/pokemon/charizard' }
   ];
+
+  // Fill a <select> with the DEMOS list behind a placeholder option. Shared
+  // by the empty-state picker and the persistent one beside the request bar,
+  // so the two can never drift apart.
+  function fillExampleSelect(select) {
+    if (!select) return select;
+    clear(select);
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Try an example…';
+    select.appendChild(placeholder);
+    for (var i = 0; i < DEMOS.length; i += 1) {
+      var option = document.createElement('option');
+      option.value = DEMOS[i].url;
+      option.textContent = DEMOS[i].name;
+      select.appendChild(option);
+    }
+    select.value = '';
+    return select;
+  }
+
+  // A picker selection behaves exactly like tapping a demo: drop any pushed
+  // pages and fetch the chosen endpoint. The picker resets to its
+  // placeholder so the same example can be picked twice in a row.
+  function pickExample(select) {
+    if (!select || !select.value) return false;
+    state.stack = [];
+    navigateTo(select.value);
+    select.value = '';
+    return true;
+  }
 
   var COMPONENT_TYPES = ['title', 'text', 'metric', 'image', 'badges', 'list',
                          'table', 'statBars', 'chart', 'link', 'jsonBlock', 'section',
@@ -232,6 +437,11 @@
 
   var state = {
     url: '',
+    builder: 'spec',   // 'spec' | 'html' — structured plan vs full-page HTML
+    html: null,
+    htmlSource: '',    // 'generated' | 'cache'
+    htmlBytes: -1,     // byteSize of the data the current page was built from
+    htmlUrl: '',
     headers: {},
     headersText: '',
     data: null,
@@ -354,6 +564,7 @@
     prefs.activeTab = state.tab;
     prefs.activePane = state.pane;
     prefs.lastUrl = state.url;
+    prefs.builder = state.builder;
     // Request headers are where users put `Authorization: Bearer ...`. They get
     // the same treatment as the API key: session storage, gone when the tab is.
     delete prefs.lastHeadersText;
@@ -374,19 +585,35 @@
     } catch (err) { /* private mode — headers simply do not persist */ }
   }
 
-  function getSessionKey() {
+  function getProviderKey(id) {
+    if (!PROVIDERS[id]) return '';
+    try { return window.localStorage.getItem(KEYS[id]) || ''; }
+    catch (e) { return ''; }
+  }
+
+  function setProviderKey(id, value) {
+    if (!PROVIDERS[id]) return;
     try {
-      var k = window.sessionStorage.getItem(SESSION.key);
-      if (k) return k;
-      // Migrate a key stored by a pre-multi-provider build.
-      var legacy = window.sessionStorage.getItem(SESSION.legacyKey);
-      if (legacy) {
-        window.sessionStorage.setItem(SESSION.key, legacy);
-        window.sessionStorage.removeItem(SESSION.legacyKey);
-        return legacy;
-      }
-      return '';
-    } catch (e) { return ''; }
+      if (value) window.localStorage.setItem(KEYS[id], value);
+      else window.localStorage.removeItem(KEYS[id]);
+    } catch (e) { /* private mode — key simply does not persist */ }
+  }
+
+  // The key that will actually be sent: the active provider's slot.
+  function getActiveKey() {
+    return getProviderKey(getSessionProvider());
+  }
+
+  function hasAnyKey() {
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      if (providerNeedsKey(PROVIDER_IDS[i]) && getProviderKey(PROVIDER_IDS[i])) return true;
+    }
+    return false;
+  }
+
+  // A provider is usable when it holds a key, or when it never needed one.
+  function providerUsable(id) {
+    return !providerNeedsKey(id) || !!getProviderKey(id);
   }
 
   function getSessionProvider() {
@@ -394,19 +621,21 @@
       var p = window.sessionStorage.getItem(SESSION.provider);
       if (p && PROVIDERS[p]) return p;
     } catch (e) { /* ignore */ }
-    return detectProvider(getSessionKey()) || DEFAULT_PROVIDER;
+    var prefs = getPrefs();
+    if (prefs.provider && PROVIDERS[prefs.provider]) return prefs.provider;
+    // No explicit choice: prefer the provider that actually has a key.
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      if (getProviderKey(PROVIDER_IDS[i])) return PROVIDER_IDS[i];
+    }
+    return DEFAULT_PROVIDER;
   }
 
   function setSessionProvider(id) {
-    try {
-      if (PROVIDERS[id]) window.sessionStorage.setItem(SESSION.provider, id);
-    } catch (e) { /* ignore */ }
-  }
-  function setSessionKey(value) {
-    try {
-      if (value) window.sessionStorage.setItem(SESSION.key, value);
-      else window.sessionStorage.removeItem(SESSION.key);
-    } catch (e) { /* session storage unavailable — key simply stays in the input */ }
+    if (!PROVIDERS[id]) return;
+    try { window.sessionStorage.setItem(SESSION.provider, id); } catch (e) { /* ignore */ }
+    var prefs = getPrefs();
+    prefs.provider = id;
+    setPrefs(prefs);
   }
   function getSessionModel() {
     try { return window.sessionStorage.getItem(SESSION.model) || ''; } catch (e) { return ''; }
@@ -1121,9 +1350,11 @@
         try { payload = JSON.parse(text); } catch (e) { /* non-JSON error body */ }
         if (!response.ok) {
           // Gemini and Groq both nest the human-readable reason under `error`.
-          var message = payload && payload.error && payload.error.message
-            ? payload.error.message
-            : 'HTTP ' + response.status;
+          // Gemini and Groq nest the reason under error.message; Ollama's
+          // native API returns error as a bare string.
+          var message = 'HTTP ' + response.status;
+          if (payload && payload.error && payload.error.message) message = payload.error.message;
+          else if (payload && typeof payload.error === 'string' && payload.error) message = payload.error;
           var error = new Error(message);
           error.status = response.status;
           throw error;
@@ -1131,6 +1362,24 @@
         return payload;
       });
     });
+  }
+
+  // One place that turns a provider failure into words, shared by the
+  // generation paths and the connection-tests card so all three agree.
+  function providerErrorText(provider, err) {
+    var message = err && err.message ? err.message : String(err);
+    var title = provider.label + ' request failed';
+    // Gemini answers a bad key with 400, not 401, so status alone would report
+    // the vaguer "request failed" for the single most common mistake.
+    var saysBadKey = /api[ _-]?key not valid|invalid api key|api key is invalid/i.test(message);
+    if ((err && err.status === 401) || saysBadKey) title = provider.label + ' rejected the API key';
+    else if (err && err.status === 403) title = provider.label + ' access forbidden';
+    else if (err && err.status === 429) title = provider.label + ' rate limit reached';
+    else if (err && err.status === 404) {
+      title = 'Model not found';
+      message += ' — try setting the model to ' + provider.modelHint + ' in Settings.';
+    }
+    return { title: title, message: message };
   }
 
   function generateSpec(options) {
@@ -1141,7 +1390,19 @@
 
     function ask(bodyFn) {
       return llmRequest(provider, model, apiKey, bodyFn(model, prompt, IMAGO_UI_SPEC_JSON_SCHEMA))
-        .then(function (payload) { return parseModelJson(provider.extract(payload)); });
+        .then(function (payload) {
+          // A spec cut off mid-string parses as garbage, and "the model
+          // returned an unusable spec" sends the reader after the wrong
+          // problem. Truncation has its own cure, so name it.
+          if (provider.truncated && provider.truncated(payload)) {
+            var err = new Error('The reply was cut off before the plan was complete. ' +
+                                'This model wrote more than the request allows — try a smaller ' +
+                                'response body, or a model that answers more concisely.');
+            err.truncated = true;
+            throw err;
+          }
+          return parseModelJson(provider.extract(payload));
+        });
     }
 
     // Primary: ask the provider to pin the response to the UI spec schema.
@@ -1149,10 +1410,136 @@
       // Auth and rate-limit failures will not be fixed by retrying, so surface
       // them rather than burning a second call.
       if (err && (err.status === 401 || err.status === 403 || err.status === 429)) throw err;
+      // A second identical call would be cut off at the same place.
+      if (err && err.truncated) throw err;
       // Otherwise the model family may reject the schema parameter, or return
       // prose despite it. Retry in plain JSON mode with the contract inlined.
       return ask(provider.plainBody);
     });
+  }
+
+  /* ── Full-HTML builder ───────────────────────────────────────────────────
+     The alternative to the JSON plan: the model writes the entire page and
+     Imago shows it verbatim. Verbatim does not mean trusted. The doc renders
+     in an opaque-origin sandboxed frame with scripts, forms and navigation
+     stripped (applyHtml), and the page CSP is inherited by srcdoc frames, so
+     inline scripts would not run even if the model wrote some. The model
+     controls markup and styling only — never behaviour, never the app.
+     ---------------------------------------------------------------------- */
+
+  function buildHtmlPrompt(options) {
+    var schemaJson = JSON.stringify(options.schema, null, 1) || '';
+    if (schemaJson.length > SAMPLE_CHAR_LIMIT) {
+      schemaJson = schemaJson.slice(0, SAMPLE_CHAR_LIMIT) + '\n…truncated…';
+    }
+    return [
+      'You are Imago. Turn this JSON API response into ONE complete,',
+      'self-contained HTML document a person would enjoy reading. Return ONLY',
+      'the HTML — no Markdown fences, no commentary.',
+      '',
+      'Hard rules:',
+      '1. A single document. All styling inline in one <style> block; no',
+      '   external stylesheets, fonts or scripts. Do not include <script> —',
+      '   scripts are disabled where this page runs, so anything behavioural',
+      '   must be plain HTML and CSS.',
+      '2. Write the real values from the sample into the markup. This page is',
+      '   a snapshot of this exact response, not a template — no {{placeholders}}.',
+      '3. Show images only with https URLs already present in the data. Never',
+      '   invent image URLs.',
+      '4. Every link uses target="_blank" rel="noopener". No <form> elements.',
+      '5. Keep it readable: system font stack, a max-width around 900px,',
+      '   generous whitespace. One <h1> naming the thing the response is about.',
+      '',
+      'API URL:',
+      options.url,
+      '',
+      'Schema:',
+      schemaJson,
+      '',
+      'Sample (this exact data is what the page must show):',
+      options.sample
+    ].join('\n');
+  }
+
+  function generateHtml(options) {
+    var prompt = buildHtmlPrompt(options);
+    var provider = getProvider(options.provider);
+    return llmRequest(provider, options.model, options.apiKey,
+        provider.htmlBody(options.model, prompt))
+      .then(function (payload) { return normalizeHtmlDoc(provider.extract(payload)); })
+      .then(function (doc) {
+        if (!doc) throw new Error('The model did not return a usable HTML document.');
+        return doc;
+      });
+  }
+
+  // Fences off, then a shape check: it must read as markup and fit the frame.
+  // Deliberately permissive about tags — the sandbox, not this regex, is the
+  // trust boundary — but strict about emptiness and size.
+  function normalizeHtmlDoc(text) {
+    if (!text) return null;
+    var doc = String(text).trim()
+      .replace(/^```(?:html)?\s*/i, '')
+      .replace(/\s*```$/, '')
+      .trim();
+    if (!doc || doc.length > MAX_HTML_BYTES) return null;
+    if (!/<\s*(html|body|main|section|article|div|table|h1)\b/i.test(doc)) return null;
+    return doc;
+  }
+
+  function applyHtml(html, source) {
+    state.html = html;
+    state.htmlSource = source;
+    state.htmlBytes = state.byteSize;
+    state.htmlUrl = state.url;
+    state.spec = null;
+    state.specSource = '';
+    state.pendingGenerate = false;
+
+    dom.interfaceHead.hidden = true;
+    dom.cacheBadge.hidden = false;
+    dom.cacheBadge.setAttribute('data-kind', source);
+    dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
+      : source === 'cache' ? 'From schema cache' : 'Fallback';
+
+    clear(dom.interfaceOut);
+
+    var head = el('header', 'stage-head');
+    var headTop = el('div', 'stage-head-top');
+    headTop.appendChild(el('h1', 'stage-title', endpointTitle(state.url) || 'Response'));
+    headTop.appendChild(dom.cacheBadge);
+    head.appendChild(headTop);
+    head.appendChild(el('p', 'stage-sub',
+      'A full page written by the model. Sandboxed: scripts disabled, links open in new tabs.'));
+
+    // Generated HTML is a snapshot of one response. Fresh data does not
+    // re-render into it, so say so and offer the way out.
+    var stale = el('div', 'html-stale');
+    stale.hidden = true;
+    stale.appendChild(el('span', null, 'The data changed since this page was generated.'));
+    var regen = el('button', 'btn btn-ghost btn-xs', 'Regenerate');
+    regen.type = 'button';
+    regen.addEventListener('click', function () { generateInterfaceNow(); });
+    stale.appendChild(regen);
+    head.appendChild(stale);
+    dom.interfaceOut.appendChild(head);
+
+    var frame = document.createElement('iframe');
+    frame.className = 'html-frame';
+    frame.title = 'Generated interface (sandboxed)';
+    // Opaque origin, scripts/forms/navigation stripped. allow-popups so the
+    // model's target=_blank links open; each carries rel=noopener, and a
+    // sandboxed opener is capability-less anyway. Never add allow-scripts
+    // with allow-same-origin — the frame could drop its own sandbox.
+    frame.setAttribute('sandbox', 'allow-popups');
+    frame.srcdoc = html;
+    dom.interfaceOut.appendChild(frame);
+
+    dom.stageSource.textContent = dom.cacheBadge.textContent;
+    dom.stageSource.setAttribute('data-kind', source);
+    if (state.stagePref) enterStage();
+
+    updateMeta();
   }
 
   /* ── Spec validation / normalisation ───────────────────────────────────── */
@@ -2726,11 +3113,36 @@
     var id = getSessionProvider();
     var provider = getProvider(id);
     if (dom.providerSelect) dom.providerSelect.value = id;
+    // The server address is Ollama-only clutter for everyone else.
+    if (dom.ollamaServerGroup) dom.ollamaServerGroup.hidden = id !== 'ollama';
+    if (dom.ollamaNoteOrigin) {
+      try { dom.ollamaNoteOrigin.textContent = window.location.origin; }
+      catch (e) { /* ignore */ }
+    }
     if (dom.providerHint) {
-      dom.providerHint.innerHTML = 'Get a free key at <span class="mono">' + provider.keyHint +
-        '</span>. Pasting a key below switches this automatically.';
+      if (providerNeedsKey(id)) {
+        dom.providerHint.innerHTML = 'Get a free key at <span class="mono">' + provider.keyHint +
+          '</span>. Typing into its field below selects it.';
+      } else {
+        dom.providerHint.innerHTML = 'Runs on your machine — no key needed. ' +
+          'Set the server address below; type a pulled model name into Model.';
+      }
     }
     if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
+
+    // Ollama is the one provider whose model list is knowable, so ask.
+    // Failure is silent here: the Test button is where errors belong.
+    if (id === 'ollama') {
+      if (ollamaModels) syncOllamaModelOptions(ollamaModels);
+      else fetchOllamaModels().then(syncOllamaModelOptions, function () { /* Test reports it */ });
+    } else if (dom.modelOptions) {
+      clear(dom.modelOptions);
+      if (dom.modelNote) {
+        dom.modelNote.innerHTML = 'If this model is unavailable, try <span class="mono" id="modelHint">' +
+          provider.modelHint + '</span>.';
+        dom.modelHint = qs('modelHint');
+      }
+    }
 
     // Only rewrite the model box when it is empty or still holds another
     // provider's default, so a hand-typed model is never clobbered.
@@ -2747,10 +3159,236 @@
     }
   }
 
+  function maskKey(key) {
+    var k = String(key || '');
+    return k.length <= 8 ? '••••' : '…' + k.slice(-4);
+  }
+
+  // One input owns one provider slot. Typing into it also selects that
+  // provider — the field you touched is the key you mean.
+  function storeKeyFromInput(input, id) {
+    var key = input.value.trim();
+    setProviderKey(id, key);
+    if (key) setSessionProvider(id);
+    syncProviderUi({ force: !!key });
+    syncKeyInputs();
+    setKeyStatus();
+    if (key) toast(getProvider(id).label + ' key saved on this device.', 'ok');
+  }
+
+  // DOM id convention for the per-provider key boxes: <id>Key / <id>KeyStatus,
+  // so a fourth provider is markup plus a PROVIDERS entry, nothing else.
+  function keyInputFor(id) { return dom[id + 'Key']; }
+  function keyStatusFor(id) { return dom[id + 'KeyStatus']; }
+
+  function syncKeyInputs() {
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      var input = keyInputFor(PROVIDER_IDS[i]);
+      if (input) input.value = getProviderKey(PROVIDER_IDS[i]);
+    }
+    syncKeyStatusLines();
+  }
+
+  function syncKeyStatusLines() {
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      var id = PROVIDER_IDS[i];
+      var line = keyStatusFor(id);
+      if (!line) continue;
+      var key = getProviderKey(id);
+      line.textContent = key ? 'Saved ' + maskKey(key) : 'Not set';
+      line.setAttribute('data-state', key ? 'ready' : 'missing');
+    }
+  }
+
   function setKeyStatus() {
-    var hasKey = !!getSessionKey();
-    dom.keyStatus.textContent = hasKey ? getProvider(getSessionProvider()).label + ' ready' : 'No key';
-    dom.keyStatus.setAttribute('data-state', hasKey ? 'ready' : 'missing');
+    var active = getSessionProvider();
+    var label = getProvider(active).label;
+    var text, ready, title;
+    if (providerUsable(active)) {
+      text = label + ' ready';
+      ready = true;
+      title = providerNeedsKey(active)
+        ? label + ' key saved — click for Settings'
+        : label + ' needs no key — click for Settings';
+    } else if (hasAnyKey()) {
+      text = 'No ' + label + ' key';
+      ready = false;
+      title = 'Click to add a key in Settings';
+    } else {
+      text = 'No keys';
+      ready = false;
+      title = 'Click to add a key in Settings';
+    }
+    dom.keyStatus.textContent = text;
+    dom.keyStatus.setAttribute('data-state', ready ? 'ready' : 'missing');
+    dom.keyStatus.title = title;
+    syncKeyStatusLines();
+  }
+
+  // The Settings testing box: one tiny call per provider, reported inline.
+  // Keyed providers ping the model (~5 tokens); Ollama lists its tags, which
+  // also proves the browser can reach the server at all.
+  // The model Ollama would actually be asked to generate with.
+  function currentOllamaModel() {
+    var typed = '';
+    if (getSessionProvider() === 'ollama' && dom.modelName) typed = (dom.modelName.value || '').trim();
+    if (typed) return typed;
+    return pickOllamaModel(ollamaModels) || PROVIDERS.ollama.defaultModel;
+  }
+
+  // Offer the models that exist, and never leave the box naming one that does
+  // not. Only touches the box when its value is not installed, so a
+  // deliberately typed model is left alone.
+  function syncOllamaModelOptions(list) {
+    if (!dom.modelOptions) return;
+    clear(dom.modelOptions);
+    var models = list || [];
+    for (var i = 0; i < models.length; i += 1) {
+      var option = document.createElement('option');
+      option.value = models[i];
+      dom.modelOptions.appendChild(option);
+    }
+    if (dom.modelNote) {
+      dom.modelNote.textContent = models.length
+        ? models.length + (models.length === 1 ? ' model' : ' models') + ' installed: ' + models.join(', ')
+        : 'No models installed. Run: ollama pull llama3.1';
+    }
+    if (getSessionProvider() !== 'ollama' || !dom.modelName) return;
+    var current = (dom.modelName.value || '').trim();
+    if (!models.length || models.indexOf(current) !== -1) return;
+    // Replace only our own guess, never a hand-typed model: if the reader
+    // chose it, a wrong name is worth an error they can act on rather than a
+    // silent substitution they never notice.
+    if (current && current !== PROVIDERS.ollama.defaultModel) return;
+    var pick = pickOllamaModel(models);
+    if (pick) { dom.modelName.value = pick; setSessionModel(pick); }
+  }
+
+  // A CORS rejection and a dead server both surface as a bare TypeError in the
+  // browser, so say what to do about either, naming this page's real origin.
+  function ollamaFailureText(err) {
+    var message = err && err.message ? err.message : String(err);
+    if (/not installed|no models/i.test(message)) return message;
+    var origin = 'this page';
+    try { origin = window.location.origin; } catch (e) { /* ignore */ }
+    return 'Unreachable — ' + ollamaBase() + ' did not answer. Start Ollama, and allow this page with: ' +
+           'OLLAMA_ORIGINS=' + origin + ' ollama serve';
+  }
+
+  // Long enough for a big local model to answer a one-word ping, short enough
+  // that a dead endpoint does not hang the button forever.
+  var TEST_TIMEOUT_MS = 90000;
+
+  function testProvider(id) {
+    var provider = getProvider(id);
+    var btn = dom[id + 'TestBtn'];
+    var line = dom[id + 'TestStatus'];
+    if (!btn || !line) return Promise.resolve();
+    if (providerNeedsKey(id) && !getProviderKey(id)) {
+      line.textContent = 'Add a ' + provider.label + ' key first.';
+      line.setAttribute('data-state', 'missing');
+      return Promise.resolve();
+    }
+    btn.disabled = true;
+    line.textContent = 'Testing…';
+    line.setAttribute('data-state', 'missing');
+    var started = Date.now();
+    var done = false;
+
+    // A local 35B model answered a one-word ping in 35 seconds. With only a
+    // static "Testing…" that is indistinguishable from a hang, so count up,
+    // and give up rather than spin forever.
+    var ticker = window.setInterval(function () {
+      if (done) return;
+      line.textContent = 'Testing… ' + Math.round((Date.now() - started) / 1000) + 's';
+    }, 1000);
+
+    function finish(ok, text) {
+      if (done) return;
+      done = true;
+      window.clearInterval(ticker);
+      btn.disabled = false;
+      line.textContent = text;
+      line.setAttribute('data-state', ok ? 'ready' : 'missing');
+    }
+    window.setTimeout(function () {
+      finish(false, 'Timed out after ' + Math.round(TEST_TIMEOUT_MS / 1000) + 's. A large local model can be slower — try a smaller one.');
+    }, TEST_TIMEOUT_MS);
+    function elapsed() { return (Date.now() - started) + ' ms'; }
+
+    if (id === 'ollama') {
+      // Reachability alone is not a useful answer: /api/tags returning 200
+      // while the chosen model is not installed is exactly how a green test
+      // preceded a failed generation. Prove the model can answer.
+      return fetchOllamaModels()
+        .then(function (list) {
+          syncOllamaModelOptions(list);
+          if (!list.length) {
+            finish(false, 'Reachable, but no models installed. Run: ollama pull llama3.1');
+            return null;
+          }
+          var wanted = currentOllamaModel();
+          if (list.indexOf(wanted) === -1) {
+            finish(false, 'Model "' + wanted + '" is not installed. Installed: ' + list.join(', '));
+            return null;
+          }
+          return llmRequest(provider, wanted, '', provider.testBody(wanted))
+            .then(function (payload) {
+              if (!provider.extract(payload) && !providerThinking(payload)) throw emptyReplyError(payload);
+              finish(true, 'OK · ' + wanted + ' · ' + elapsed());
+            });
+        })
+        .catch(function (err) {
+          finish(false, ollamaFailureText(err));
+        });
+    }
+
+    // Test the model the user would actually generate with: the box value
+    // when this provider is active, otherwise its default.
+    var model = provider.defaultModel;
+    if (getSessionProvider() === id && dom.modelName) {
+      var typed = dom.modelName.value.trim();
+      if (typed) model = typed;
+    }
+    return llmRequest(provider, model, getProviderKey(id), provider.testBody(model))
+      .then(function (payload) {
+        // Reasoning models sometimes answer with thinking and no final text.
+        // For a connectivity ping, thinking still proves the key and the
+        // model work — only true silence is a failure.
+        if (!provider.extract(payload) && !providerThinking(payload)) {
+          throw emptyReplyError(payload);
+        }
+        finish(true, 'OK · ' + model + ' · ' + elapsed());
+      })
+      .catch(function (err) {
+        var info = providerErrorText(provider, err);
+        finish(false, info.title + (info.message ? ' — ' + info.message : ''));
+      });
+  }
+
+  // Any thinking trace on the first choice, whatever the provider names it.
+  function providerThinking(payload) {
+    try {
+      var msg = payload && payload.choices && payload.choices[0] &&
+                payload.choices[0].message;
+      if (!msg) return '';
+      if (typeof msg.reasoning_content === 'string' && msg.reasoning_content) {
+        return msg.reasoning_content;
+      }
+      return typeof msg.reasoning === 'string' ? msg.reasoning : '';
+    } catch (e) { return ''; }
+  }
+
+  // "Empty reply" alone sends the user nowhere. The finish reason almost
+  // always names the cause: `length` means the budget cut the answer off,
+  // `stop` with no text means the model itself stayed silent.
+  function emptyReplyError(payload) {
+    var reason = '';
+    try {
+      var choice = payload && payload.choices && payload.choices[0];
+      if (choice && choice.finish_reason) reason = ' (finish_reason ' + choice.finish_reason + ')';
+    } catch (e) { /* ignore */ }
+    return new Error('Empty reply' + reason + '.');
   }
 
   function updateMeta() {
@@ -2781,6 +3419,13 @@
       dom.liveCount.textContent = '';
       dom.stageLive.hidden = true;
       dom.stageLiveCount.textContent = '';
+    }
+
+    // A generated page is a snapshot: flag it the moment fresh data lands.
+    var staleBar = dom.interfaceOut.querySelector('.html-stale');
+    if (staleBar) {
+      staleBar.hidden = !(state.builder === 'html' && state.htmlBytes >= 0 && state.data &&
+        (state.url !== state.htmlUrl || state.byteSize !== state.htmlBytes));
     }
   }
 
@@ -2952,20 +3597,13 @@
       'Enter an API endpoint and Imago will turn the response into a readable interface.'));
     box.appendChild(el('p', 'chip-row-label', 'Try an example'));
 
-    var chips = el('div', 'chip-row');
-    for (var i = 0; i < DEMOS.length; i += 1) {
-      (function (demo) {
-        var chip = el('button', 'chip', demo.chip);
-        chip.type = 'button';
-        chip.setAttribute('data-url', demo.url);
-        chip.addEventListener('click', function () {
-          state.stack = [];
-          navigateTo(demo.url);
-        });
-        chips.appendChild(chip);
-      })(DEMOS[i]);
-    }
-    box.appendChild(chips);
+    var picker = el('div', 'example-picker');
+    var select = el('select', 'example-select');
+    select.setAttribute('aria-label', 'Try an example API');
+    fillExampleSelect(select);
+    select.addEventListener('change', function () { pickExample(select); });
+    picker.appendChild(select);
+    box.appendChild(picker);
     dom.interfaceOut.appendChild(box);
   }
 
@@ -3514,9 +4152,14 @@
       window.localStorage.removeItem(STORE.specs);
       window.localStorage.removeItem(STORE.snaps);
       window.localStorage.removeItem(STORE.prefs);
+      for (var ki = 0; ki < PROVIDER_IDS.length; ki += 1) {
+        window.localStorage.removeItem(KEYS[PROVIDER_IDS[ki]]);
+      }
     } catch (err) { /* ignore */ }
     invalidateSnapshotCache();
     setSessionHeaders('');
+    syncKeyInputs();
+    setKeyStatus();
 
     state.activeRequestId = null;
     state.diff = null;
@@ -3832,7 +4475,46 @@
 
   /* ── Spec resolution: cache → (explicit) model call → fallback ─────────────── */
 
+  // The no-key state, said plainly and in one place: which provider's key is
+  // missing, where to put it, where a free one comes from, and what still
+  // works without it. Called after the fallback renders, since applySpec
+  // clears the pane the alert lives in.
+  function noKeyAlert() {
+    var provider = getProvider(getSessionProvider());
+    showAlert('No ' + provider.label + ' key',
+      'Paste one in Settings → API keys (free at ' + provider.keyHint + '). ' +
+      'Saved interfaces and cached pages keep working; only generating new ones needs a key.');
+    if (!state.warnedNoKey) {
+      state.warnedNoKey = true;
+      toast('No ' + provider.label + ' key — showing a heuristic fallback.', 'warn');
+    }
+  }
+
+  // The active provider has no key but another one does: switch to it rather
+  // than spending a call that can only 401. Returns true when a usable key
+  // is now active.
+  function useKeyedProvider() {
+    var active = getSessionProvider();
+    // A keyless provider (Ollama) is usable as-is; a keyed one only with its
+    // key. Fallback re-homes to a *keyed* provider that has one — never to
+    // Ollama uninvited, or every keyless user would bounce into localhost.
+    if (providerUsable(active)) return true;
+    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
+      if (providerNeedsKey(PROVIDER_IDS[i]) && getProviderKey(PROVIDER_IDS[i])) {
+        setSessionProvider(PROVIDER_IDS[i]);
+        syncProviderUi({ force: true });
+        setKeyStatus();
+        toast('Switched to ' + getProvider(PROVIDER_IDS[i]).label + ' — it has a key.', 'ok');
+        return true;
+      }
+    }
+    return false;
+  }
+
   function resolveSpec(url, print, userTriggered) {
+    if (state.builder === 'html') {
+      return resolveHtml(url, print, userTriggered);
+    }
     var cache = getSchemaSpecs();
     var cached = cache[print.hash];
 
@@ -3847,12 +4529,9 @@
       }
     }
 
-    if (!getSessionKey()) {
+    if (!useKeyedProvider()) {
       applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
-      if (!state.warnedNoKey) {
-        state.warnedNoKey = true;
-        toast('No API key — showing a heuristic fallback. Add a Gemini or Groq key in Settings.');
-      }
+      noKeyAlert();
       return Promise.resolve();
     }
 
@@ -3866,11 +4545,135 @@
     return callGemini(url, print);
   }
 
+  // One switch, two controls (the playground toggle and the Settings
+  // select). Every change routes through here so they can never disagree.
+  function syncBuilderUi() {
+    if (dom.builderSelect) dom.builderSelect.value = state.builder;
+    var pairs = [[dom.builderPlanBtn, 'spec'], [dom.builderHtmlBtn, 'html']];
+    for (var i = 0; i < pairs.length; i += 1) {
+      var btn = pairs[i][0], mode = pairs[i][1];
+      if (!btn) continue;
+      var on = state.builder === mode;
+      btn.className = on ? 'seg-btn is-active' : 'seg-btn';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+  }
+
+  function setBuilder(mode, silent) {
+    state.builder = mode === 'html' ? 'html' : 'spec';
+    savePrefs();
+    syncBuilderUi();
+    if (!silent) {
+      toast(state.builder === 'html'
+        ? 'Full-HTML builder on — the model writes the whole page, sandboxed.'
+        : 'Structured-plan builder on.');
+    }
+    // Re-resolve what is on screen so the switch is visible immediately:
+    // a remembered artefact applies, otherwise the generate prompt.
+    if (state.data && state.schemaHash) {
+      resolveSpec(state.url, { hash: state.schemaHash, schema: state.schema }, false);
+    }
+  }
+
+  // HTML-mode twin of the spec cache path above: same honesty rules (cache,
+  // then key check, then ask before spending), different artefact.
+  function resolveHtml(url, print, userTriggered) {
+    var cache = getSchemaSpecs();
+    var cached = cache[print.hash];
+
+    if (cached && cached.html) {
+      var doc = normalizeHtmlDoc(cached.html);
+      if (doc) {
+        cached.lastUsedAt = new Date().toISOString();
+        cache[print.hash] = cached;
+        setSchemaSpecs(cache);
+        applyHtml(doc, 'cache');
+        return Promise.resolve();
+      }
+    }
+
+    if (!useKeyedProvider()) {
+      applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
+      noKeyAlert();
+      return Promise.resolve();
+    }
+
+    if (!userTriggered) {
+      state.pendingGenerate = true;
+      showGeneratePrompt();
+      return Promise.resolve();
+    }
+
+    return callHtml(url, print);
+  }
+
   function generateInterfaceNow() {
     if (!state.data || !state.schemaHash) return;
     if (state.generating) return;       // one model call at a time
+    // A pressed button with no key behind it would only 401: say so instead.
+    if (!useKeyedProvider()) {
+      applySpec(normalizeSpec(buildFallbackSpec(state.data, state.url)), 'fallback');
+      noKeyAlert();
+      return;
+    }
+    if (state.builder === 'html') {
+      showInterfaceLoading('Writing a full HTML page…');
+      callHtml(state.url, { hash: state.schemaHash, schema: state.schema });
+      return;
+    }
     showInterfaceLoading('Designing an interface…');
     callGemini(state.url, { hash: state.schemaHash, schema: state.schema });
+  }
+
+  function callHtml(url, print) {
+    state.generating = true;
+    var providerId = getSessionProvider();
+    var provider = getProvider(providerId);
+    var model = (dom.modelName.value || '').trim() || provider.defaultModel;
+    var apiKey = getActiveKey();
+
+    return generateHtml({
+      url: url,
+      schema: print.schema,
+      sample: compactSample(state.data),
+      provider: providerId,
+      model: model,
+      apiKey: apiKey
+    }).then(function (doc) {
+      // Same mid-flight race as the spec path: a refresh landing while the
+      // model writes must not file the page under a shape it never saw.
+      if (state.schemaHash !== print.hash) {
+        throw wrapError('Response changed while the page was being written',
+                        'The data was refreshed mid-request. Press Regenerate for the new shape.');
+      }
+
+      var store = getSchemaSpecs();
+      var entry = store[print.hash] || {
+        hash: print.hash, schema: print.schema,
+        sourceUrl: url, createdAt: new Date().toISOString()
+      };
+      // A page can be several times fatter than a plan. Cache it only while
+      // it fits — an oversized doc still renders, it just is not remembered.
+      if (doc.length <= MAX_CACHED_HTML_BYTES) {
+        entry.html = doc;
+        entry.model = model;
+        entry.lastUsedAt = new Date().toISOString();
+        store[print.hash] = entry;
+        setSchemaSpecs(store);
+      } else {
+        toast('Page too large to remember — it will be rewritten next time.', 'warn');
+      }
+
+      applyHtml(doc, 'generated');
+      toast('Page generated' + (doc.length <= MAX_CACHED_HTML_BYTES ? ' and remembered as ' + print.hash : ''), 'ok');
+    }).catch(function (err) {
+      var htmlInfo = providerErrorText(provider, err);
+
+      applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
+      showAlert(htmlInfo.title, htmlInfo.message);
+      toast(htmlInfo.title, 'error');
+    }).then(function () { state.generating = false; },
+            function () { state.generating = false; });
   }
 
   function callGemini(url, print) {
@@ -3878,7 +4681,7 @@
     var providerId = getSessionProvider();
     var provider = getProvider(providerId);
     var model = (dom.modelName.value || '').trim() || provider.defaultModel;
-    var apiKey = getSessionKey();
+    var apiKey = getActiveKey();
 
     return generateSpec({
       url: url,
@@ -3910,19 +4713,11 @@
       applySpec(normalized, 'generated');
       toast('Interface generated and remembered as ' + print.hash, 'ok');
     }).catch(function (err) {
-      var message = err && err.message ? err.message : String(err);
-      var title = provider.label + ' request failed';
-      if (err && err.status === 401) title = provider.label + ' rejected the API key';
-      else if (err && err.status === 403) title = provider.label + ' access forbidden';
-      else if (err && err.status === 429) title = provider.label + ' rate limit reached';
-      else if (err && err.status === 404) {
-        title = 'Model not found';
-        message += ' — try setting the model to ' + provider.modelHint + ' in Settings.';
-      }
+      var info = providerErrorText(provider, err);
 
       applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
-      showAlert(title, message);
-      toast(title, 'error');
+      showAlert(info.title, info.message);
+      toast(info.title, 'error');
     }).then(function () { state.generating = false; },
             function () { state.generating = false; });
   }
@@ -3961,6 +4756,12 @@
     if (on) dom.refreshInterval.value = String(state.refreshIntervalMs);
   }
 
+  // Setup and settings inputs share the <id>Key convention: setup boxes are
+  // setup<CapitalisedId>Key, settings boxes are <id>Key.
+  function setupKeyInputFor(id) {
+    return dom['setup' + id.charAt(0).toUpperCase() + id.slice(1) + 'Key'];
+  }
+
   /* ── Events ────────────────────────────────────────────────────────────── */
 
   function wireEvents() {
@@ -3971,7 +4772,7 @@
     });
 
     dom.landingStart.addEventListener('click', function () {
-      showView(getSessionKey() ? 'app' : 'setup');
+      showView(hasAnyKey() ? 'app' : 'setup');
     });
     dom.landingSkip.addEventListener('click', function () { enterApp(); });
     dom.landingAbout.addEventListener('click', function () {
@@ -3979,28 +4780,44 @@
     });
 
     dom.setupContinue.addEventListener('click', function () {
-      var key = dom.setupKey.value.trim();
-      if (key) {
-        setSessionKey(key);
-        dom.geminiKey.value = key;
-        var detected = detectProvider(key);
-        if (detected) setSessionProvider(detected);
+      var lastFilled = '';
+      for (var ki = 0; ki < PROVIDER_IDS.length; ki += 1) {
+        var id = PROVIDER_IDS[ki];
+        var box = setupKeyInputFor(id);
+        var value = box ? box.value.trim() : '';
+        if (value) {
+          setProviderKey(id, value);
+          lastFilled = id;
+        }
+      }
+      // Last field wins the default — the key just typed is the one in use.
+      if (lastFilled) setSessionProvider(lastFilled);
+      if (lastFilled) {
         syncProviderUi({ force: true });
+        syncKeyInputs();
         setKeyStatus();
-        toast('Key saved for this session.', 'ok');
+        toast('Keys saved on this device.', 'ok');
       }
       enterApp();
     });
     dom.setupLater.addEventListener('click', function () { enterApp(); });
-    dom.setupKey.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') { event.preventDefault(); dom.setupContinue.click(); }
-    });
+    for (var si = 0; si < PROVIDER_IDS.length; si += 1) {
+      (function (input) {
+        if (!input) return;
+        input.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') { event.preventDefault(); dom.setupContinue.click(); }
+        });
+      })(setupKeyInputFor(PROVIDER_IDS[si]));
+    }
 
     dom.appNav.addEventListener('click', function (event) {
       var view = event.target && event.target.getAttribute && event.target.getAttribute('data-view');
       if (view) setAppPane(view);
     });
     dom.brandHome.addEventListener('click', function () { setAppPane('playground'); });
+    // The pill is the fastest route to the keys: one click opens Settings.
+    dom.keyStatus.addEventListener('click', function () { setAppPane('settings'); });
+    dom.keyStatus.style.cursor = 'pointer';
 
     dom.reqForm.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -4027,6 +4844,12 @@
     });
 
     dom.saveBtn.addEventListener('click', saveCurrentRequest);
+    if (dom.exampleSelect) {
+      fillExampleSelect(dom.exampleSelect);
+      dom.exampleSelect.addEventListener('change', function () {
+        pickExample(dom.exampleSelect);
+      });
+    }
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
       dom.urlInput.value = '';
@@ -4095,35 +4918,48 @@
       setKeyStatus();
       toast('Provider set to ' + getProvider(dom.providerSelect.value).label + '.');
     });
+    if (dom.ollamaEndpoint) {
+      dom.ollamaEndpoint.addEventListener('input', function () {
+        var prefs = getPrefs();
+        prefs.ollamaEndpoint = dom.ollamaEndpoint.value.trim();
+        setPrefs(prefs);
+      });
+    }
 
-    dom.geminiKey.addEventListener('input', function () {
-      var key = dom.geminiKey.value.trim();
-      // Read the provider BEFORE storing the key: getSessionProvider() falls
-      // back to detecting from the stored key, so reading it after would always
-      // equal the detected value and the UI would never sync.
-      var before = getSessionProvider();
-      setSessionKey(key);
-      var detected = detectProvider(key);
-      if (detected) setSessionProvider(detected);
-      syncProviderUi({ force: !!detected });
-      if (detected && detected !== before) {
-        toast('Detected a ' + getProvider(detected).label + ' key.', 'ok');
-      }
-      setKeyStatus();
-    });
+    for (var wi = 0; wi < PROVIDER_IDS.length; wi += 1) {
+      (function (id) {
+        var input = keyInputFor(id);
+        if (input) input.addEventListener('input', function () { storeKeyFromInput(input, id); });
+        var testBtn = dom[id + 'TestBtn'];
+        if (testBtn) testBtn.addEventListener('click', function () { testProvider(id); });
+      })(PROVIDER_IDS[wi]);
+    }
     dom.modelName.addEventListener('input', function () {
       setSessionModel(dom.modelName.value.trim());
     });
+    if (dom.builderSelect) {
+      dom.builderSelect.addEventListener('change', function () {
+        setBuilder(dom.builderSelect.value);
+      });
+    }
+    var segBtns = [[dom.builderPlanBtn, 'spec'], [dom.builderHtmlBtn, 'html']];
+    for (var bi = 0; bi < segBtns.length; bi += 1) {
+      (function (btn, mode) {
+        if (btn) btn.addEventListener('click', function () { setBuilder(mode); });
+      })(segBtns[bi][0], segBtns[bi][1]);
+    }
     dom.clearKeyBtn.addEventListener('click', function () {
-      dom.geminiKey.value = '';
-      setSessionKey('');
+      for (var ci = 0; ci < PROVIDER_IDS.length; ci += 1) {
+        setProviderKey(PROVIDER_IDS[ci], '');
+      }
+      syncKeyInputs();
       syncProviderUi();
       setKeyStatus();
-      toast('Key cleared for this session.');
+      toast('All keys cleared.');
     });
 
     dom.clearStorageBtn.addEventListener('click', function () {
-      if (!window.confirm('Clear all saved requests, cached interfaces and snapshots?')) return;
+      if (!window.confirm('Clear all saved requests, cached interfaces, snapshots and API keys?')) return;
       clearAllData();
       toast('All saved data cleared.', 'ok');
     });
@@ -4137,15 +4973,20 @@
 
   function cacheDom() {
     var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout',
-               'setupKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
-               'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
-               'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
+                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
+                'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
+                'exampleSelect', 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stCache', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
                'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
-               'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'modelName',
-               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast',
-               'providerSelect', 'providerHint', 'modelHint',
+                'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
+                'geminiKeyStatus', 'groqKeyStatus', 'modelName',
+                'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
+                'builderPlanBtn', 'builderHtmlBtn',
+                'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
+                'ollamaTestBtn', 'ollamaTestStatus', 'modelOptions', 'modelNote',
+                'providerSelect', 'providerHint', 'modelHint', 'ollamaEndpoint',
+                'ollamaServerGroup', 'ollamaNoteOrigin',
                'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource'];
     for (var i = 0; i < ids.length; i += 1) dom[ids[i]] = qs(ids[i]);
   }
@@ -4157,9 +4998,35 @@
     showView('app');
   }
 
+  // One-time move from the old single session key: file it under the provider
+  // its prefix names, then drop the session copies so they stop shadowing.
+  function migrateLegacyKeys() {
+    var moved = false;
+    try {
+      var slots = [window.sessionStorage.getItem('imago.apiKey'),
+                   window.sessionStorage.getItem('imago.geminiKey')];
+      for (var i = 0; i < slots.length; i += 1) {
+        var legacy = slots[i];
+        if (!legacy) continue;
+        var id = detectProvider(legacy) || DEFAULT_PROVIDER;
+        if (!getProviderKey(id)) setProviderKey(id, legacy);
+        moved = true;
+      }
+      window.sessionStorage.removeItem('imago.apiKey');
+      window.sessionStorage.removeItem('imago.geminiKey');
+    } catch (e) { /* ignore */ }
+    return moved;
+  }
+
   function restoreSession() {
-    var key = getSessionKey();
-    if (key) dom.geminiKey.value = key;
+    if (migrateLegacyKeys()) toast('Your saved key was moved to the new per-provider store.', 'ok');
+    // The OpenCode provider was removed; drop its slot if one was ever stored.
+    try { window.localStorage.removeItem('imago.key.opencode'); } catch (e) { /* ignore */ }
+    syncKeyInputs();
+    if (dom.ollamaEndpoint) {
+      try { dom.ollamaEndpoint.value = String(getPrefs().ollamaEndpoint || ''); }
+      catch (e) { /* ignore */ }
+    }
     dom.modelName.value = getSessionModel() || getProvider(getSessionProvider()).defaultModel;
     setSessionModel(dom.modelName.value);
     syncProviderUi();
@@ -4168,6 +5035,9 @@
 
   function restoreLastView() {
     var prefs = getPrefs();
+
+    state.builder = prefs.builder === 'html' ? 'html' : 'spec';
+    syncBuilderUi();
 
     if (prefs.lastUrl) dom.urlInput.value = prefs.lastUrl;
     // Older builds persisted headers to localStorage. Migrate them into the
@@ -4225,6 +5095,21 @@
     renderSchemaPane();
     renderChangesPane();
 
+    if (state.builder === 'html') {
+      var htmlEntry = getSchemaSpecs()[print.hash];
+      var cachedDoc = htmlEntry && htmlEntry.html ? normalizeHtmlDoc(htmlEntry.html) : null;
+      if (cachedDoc) applyHtml(cachedDoc, 'cache');
+      else if (useKeyedProvider()) {
+        state.pendingGenerate = true;
+        showGeneratePrompt();
+      } else {
+        applySpec(normalizeSpec(buildFallbackSpec(snapshot.data, url)), 'fallback');
+        noKeyAlert();
+      }
+      updateMeta();
+      return true;
+    }
+
     var entry = getSchemaSpecs()[print.hash];
     var normalized = entry && entry.spec ? normalizeSpec(entry.spec) : null;
     if (normalized) applySpec(normalized, 'cache');
@@ -4251,7 +5136,7 @@
      against are hung off one object here.
 
      This grants no capability an attacker did not already have. Everything
-     reachable through it — including getSessionKey — reads browser storage on
+     reachable through it — including getActiveKey — reads browser storage on
      the same origin, which any script running in this page can read directly.
      It is a convenience for tests, not a trust boundary. See TESTING.md.
      ────────────────────────────────────────────────────────────────────── */
@@ -4280,8 +5165,16 @@
     rollbackNavigation: rollbackNavigation, finishRequest: finishRequest,
     pushSnapshot: pushSnapshot, getSnapshotsFor: getSnapshotsFor,
     getSchemaSpecs: getSchemaSpecs, getSavedRequests: getSavedRequests,
-    getSessionKey: getSessionKey, setSessionKey: setSessionKey,
-    getSessionProvider: getSessionProvider,
+    getActiveKey: getActiveKey, getProviderKey: getProviderKey,
+    setProviderKey: setProviderKey, hasAnyKey: hasAnyKey,
+    getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
+    getProvider: getProvider,
+    // examples
+    DEMOS: DEMOS, fillExampleSelect: fillExampleSelect, pickExample: pickExample,
+    // full-html builder
+    normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
+    applyHtml: applyHtml, setBuilder: setBuilder,
+    testProvider: testProvider, providerErrorText: providerErrorText,
     // behaviour
     applySpec: applySpec, performRequest: performRequest,
     goBack: goBack, stepBack: stepBack, pushHistory: pushHistory,
@@ -4289,6 +5182,7 @@
     handleRequestFailure: handleRequestFailure,
     renderRawPane: renderRawPane, renderSchemaPane: renderSchemaPane,
     setActiveTab: setActiveTab, enterStage: enterStage, leaveStage: leaveStage,
+    updateMeta: updateMeta,
     restoreFromSnapshot: restoreFromSnapshot, currentRequestKey: currentRequestKey,
     clearAllData: clearAllData,
     callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,

@@ -87,7 +87,7 @@ describe('credentials are never replayed cross-origin', () => {
   });
 });
 
-describe('credentials are not persisted to localStorage', () => {
+describe('credentials: headers stay session-only, model keys persist per provider', () => {
   it('savePrefs keeps header text out of the durable store', async () => {
     const app = await boot();
     app.state.headersText = 'Authorization: Bearer SECRET';
@@ -97,7 +97,7 @@ describe('credentials are not persisted to localStorage', () => {
     expect(app.window.sessionStorage.getItem('imago.lastHeaders')).toContain('SECRET');
   });
 
-  it('migrates a legacy localStorage copy into the session and scrubs it', async () => {
+  it('migrates a legacy localStorage header copy into the session and scrubs it', async () => {
     const app = await boot({
       local: { 'imago.preferences': { onboarded: true, lastHeadersText: 'Authorization: Bearer OLD' } }
     });
@@ -116,6 +116,27 @@ describe('credentials are not persisted to localStorage', () => {
     const raw = app.window.localStorage.getItem('imago.savedRequests') || '';
     expect(raw).not.toContain('SECRET');
     expect(raw).toContain('application/json');
+  });
+
+  it('persists each provider key in its own localStorage slot', async () => {
+    const app = await boot();
+    app.setProviderKey('gemini', 'AIzaGEM');
+    app.setProviderKey('groq', 'gsk_GROQ');
+    expect(app.window.localStorage.getItem('imago.key.gemini')).toBe('AIzaGEM');
+    expect(app.window.localStorage.getItem('imago.key.groq')).toBe('gsk_GROQ');
+    // The active key follows the active provider, never a neighbour slot.
+    app.setSessionProvider('groq');
+    expect(app.getActiveKey()).toBe('gsk_GROQ');
+    app.setSessionProvider('gemini');
+    expect(app.getActiveKey()).toBe('AIzaGEM');
+  });
+
+  it('moves a legacy single session key into its provider slot', async () => {
+    const app = await boot({ session: { 'imago.apiKey': 'gsk_OLD' } });
+    // init() already ran restoreSession during boot.
+    expect(app.window.localStorage.getItem('imago.key.groq')).toBe('gsk_OLD');
+    expect(app.window.sessionStorage.getItem('imago.apiKey')).toBeNull();
+    expect(app.dom.groqKey.value).toBe('gsk_OLD');
   });
 });
 
@@ -275,7 +296,7 @@ describe('a model call that races a refresh is discarded', () => {
     const app = await boot();
     app.state.data = { a: 1 };
     app.state.schemaHash = 'NEWHASH';        // an auto-refresh already moved the shape
-    app.setSessionKey('AIzaTESTKEY');
+    app.setProviderKey('gemini', 'AIzaTESTKEY');
 
     app.window.fetch = jsonFetch({
       candidates: [{ content: { parts: [{ text: JSON.stringify({
@@ -298,7 +319,7 @@ describe('a model call that races a refresh is discarded', () => {
     const app = await boot();
     app.state.data = { a: 1 };
     app.state.schemaHash = 'SAMEHASH';
-    app.setSessionKey('AIzaTESTKEY');
+    app.setProviderKey('gemini', 'AIzaTESTKEY');
 
     app.window.fetch = jsonFetch({
       candidates: [{ content: { parts: [{ text: JSON.stringify({

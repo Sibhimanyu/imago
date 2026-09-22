@@ -170,6 +170,13 @@ input:focus, textarea:focus, select:focus {
 }
 .muted-note { font-size: 12.5px; color: var(--muted); margin-top: 9px; line-height: 1.55; }
 
+/* Per-provider key status under each key field. */
+.key-status { font-size: 12.5px; margin-top: 7px; color: var(--muted); }
+.key-status[data-state="ready"] { color: #2f7a48; }
+.key-status[data-state="missing"] { color: var(--yellow-ink); }
+.settings-card .key-field { margin-top: 0; }
+.setup-card .key-field + .key-field { margin-top: 12px; }
+
 /* ═══ Landing ════════════════════════════════════════════════════ */
 
 #landingView { min-height: 100vh; display: flex; flex-direction: column; }
@@ -485,6 +492,53 @@ input:focus, textarea:focus, select:focus {
 
 .chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
 .chip-row-label { font-size: 12.5px; color: var(--muted); margin-top: 26px; }
+
+/* ─── Example picker ───────────────────────────────────────────── */
+
+.example-picker { display: flex; justify-content: center; margin-top: 14px; }
+.example-select {
+  width: auto; max-width: 280px;
+  padding: 7px 10px; font-size: 13px;
+  border-radius: var(--r-xs);
+  background: var(--card);
+  cursor: pointer;
+}
+.example-bar-select { max-width: 150px; }
+
+/* ─── Builder segmented toggle ─────────────────────────────── */
+
+.seg-btn {
+  font-family: inherit; font-size: 12.5px; font-weight: 500;
+  color: var(--muted);
+  background: var(--card); border: 1px solid var(--line);
+  padding: 5px 12px; cursor: pointer;
+  transition: color .15s ease, background .15s ease;
+}
+.seg-btn:first-of-type { border-radius: 999px 0 0 999px; }
+.seg-btn:last-of-type { border-radius: 0 999px 999px 0; margin-left: -1px; }
+.seg-btn.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ─── Full-HTML builder ──────────────────────────────────────── */
+
+.html-frame {
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: #fff;
+  margin-top: 18px;
+}
+.html-stale {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 8px 12px;
+  font-size: 12.5px;
+  color: var(--yellow-ink);
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow-line);
+  border-radius: var(--r-xs);
+}
+.html-stale[hidden] { display: none; }
 .chip {
   font-family: inherit; font-size: 12.5px; font-weight: 500;
   color: var(--ink-2);
@@ -1016,8 +1070,44 @@ table.comp-table tr:last-child td { border-bottom: none; }
 
 /* ─── Settings ─────────────────────────────────────────────────── */
 
-.settings-card { margin-bottom: 16px; max-width: 560px; }
-.settings-card .btn { margin-top: 14px; }
+/* Four cards of very different heights. A row-based grid aligned them to the
+   tallest row, which left a large dead gap under the two short cards and
+   orphaned the last one on a row of its own. Columns pack by height instead,
+   so the cards flow into whatever space is there. */
+.settings-grid {
+  /* Two deliberate columns on a wide screen, one on a narrow one. Column
+     balancing settles on two anyway once the tall keys card sets the height,
+     so ask for two and use the full width rather than leaving a third empty. */
+  column-width: 440px;
+  column-gap: 16px;
+}
+.settings-grid > .settings-card {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-bottom: 16px;
+  display: inline-block;   /* Safari needs this to honour break-inside */
+  width: 100%;
+}
+.settings-card { margin-bottom: 0; max-width: none; }
+.settings-card > .btn { margin-top: 14px; }
+
+/* Key blocks read as rows: label, field, then status + test on one line. */
+.key-block + .key-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+.key-meta { display: flex; align-items: center; gap: 10px; margin-top: 7px; flex-wrap: wrap; }
+.key-meta .key-status { margin-top: 0; }
+.key-meta .btn { margin-top: 0; }
+.key-meta-plain .muted-note { margin-top: 0; }
+/* Key status inside the row label: muted suffix, not a second row. */
+.key-status-inline { display: inline; margin: 0 0 0 6px; font-weight: 500; }
+/* Breathing room between stacked sections inside a card. */
+.settings-card .field-label { margin-top: 16px; }
+.key-block > .field-label:first-child { margin-top: 0; }
+#ollamaServerGroup { margin-top: 16px; }
+#ollamaServerGroup .field-label { margin-top: 0; }
 .text-input { font-family: var(--mono); }
 
 /* ─── Toast ────────────────────────────────────────────────────── */
