@@ -1187,3 +1187,65 @@ table.comp-table tr:last-child td { border-bottom: none; }
   .diff-vals { white-space: normal; }
   .code { font-size: 12px; }
 }
+
+/* ─── Settings: try-it chat ────────────────────────────────────── */
+
+/* Screen-reader-only label: the input has a visible placeholder, but a
+   placeholder is not a name. */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+.chat-meta { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.chat-meta .key-status { margin-top: 0; }
+.chat-meta .btn { margin-top: 0; margin-left: auto; }
+
+/* Bounded so a long exchange scrolls inside the card instead of stretching
+   the settings column past everything beside it. */
+.chat-log {
+  margin-top: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--card-2);
+  padding: 10px 12px;
+}
+.chat-log > .muted-note:only-child { margin: 0; }
+
+.chat-turn { margin: 0 0 10px; }
+.chat-turn:last-child { margin-bottom: 0; }
+.chat-role {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  letter-spacing: .02em; margin: 0 0 2px;
+}
+.chat-text {
+  font-size: 13.5px; line-height: 1.5; color: var(--ink);
+  margin: 0; white-space: pre-wrap; word-break: break-word;
+}
+.chat-turn[data-role="you"] .chat-text { color: var(--ink-2); }
+.chat-turn[data-role="error"] .chat-role,
+.chat-turn[data-role="error"] .chat-text { color: var(--red-ink); }
+
+/* A reasoning model answers with thought and no text. Showing it is the
+   difference between "it works" and "it returned nothing". */
+.chat-thinking {
+  font-size: 12.5px; line-height: 1.5; color: var(--muted);
+  margin: 4px 0 0; white-space: pre-wrap;
+  border-left: 2px solid var(--line); padding-left: 8px;
+}
+
+.chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.chat-form .text-input { flex: 1 1 auto; min-width: 0; margin-top: 0; }
+.chat-form .btn { margin-top: 0; flex: 0 0 auto; }
+.chat-thinking-wrap { margin-top: 4px; }
+.chat-thinking-toggle {
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  list-style: none; display: inline-block;
+}
+.chat-thinking-toggle::-webkit-details-marker { display: none; }
+.chat-thinking-toggle::before { content: "▸ "; }
+.chat-thinking-wrap[open] .chat-thinking-toggle::before { content: "▾ "; }
+.chat-thinking-toggle:hover { color: var(--ink-2); }

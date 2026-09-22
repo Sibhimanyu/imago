@@ -75,6 +75,16 @@
           generationConfig: { responseMimeType: 'text/plain' }
         };
       },
+      // Multi-turn for the try-it console. Gemini calls the assistant "model"
+      // and carries history in contents[].
+      chatBody: function (model, turns) {
+        return {
+          contents: turns.map(function (t) {
+            return { role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.text }] };
+          }),
+          generationConfig: { maxOutputTokens: 1024 }
+        };
+      },
       // Minimal ping for the connection-tests card: costs ~5 tokens.
       testBody: function (model) {
         return {
@@ -141,6 +151,13 @@
           model: model,
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7
+        };
+      },
+      chatBody: function (model, turns) {
+        return {
+          model: model,
+          messages: turns.map(function (t) { return { role: t.role, content: t.text }; }),
+          max_tokens: 1024
         };
       },
       // Minimal ping for the connection-tests card: costs a few tokens.
@@ -210,6 +227,14 @@
           stream: false,
           options: { num_ctx: OLLAMA_OPTIONS.num_ctx, num_predict: OLLAMA_OPTIONS.num_predict, temperature: 0.7 },
           messages: [{ role: 'user', content: prompt }]
+        };
+      },
+      chatBody: function (model, turns) {
+        return {
+          model: model,
+          stream: false,
+          options: { num_ctx: OLLAMA_OPTIONS.num_ctx, num_predict: 1024, temperature: 0.7 },
+          messages: turns.map(function (t) { return { role: t.role, content: t.text }; })
         };
       },
       testBody: function (model) {
@@ -3168,6 +3193,7 @@
       }
     }
     if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
+    syncChatTarget();
 
     // Ollama is the one provider whose model list is knowable, so ask.
     // Failure is silent here: the Test button is where errors belong.
@@ -3338,6 +3364,147 @@
   // Long enough for a big local model to answer a one-word ping, short enough
   // that a dead endpoint does not hang the button forever.
   var TEST_TIMEOUT_MS = 90000;
+
+  /* ── Try-it console ──────────────────────────────────────────────────────
+     A real conversation against the configured provider, through the same
+     llmRequest the interface builder uses. A connection test proves reachability;
+     this proves the thing you are about to rely on actually answers you.
+     ---------------------------------------------------------------------- */
+
+  var chatTurns = [];        // [{ role: 'user' | 'assistant', text }]
+  var chatBusy = false;
+
+  // Which provider and model a message would go to right now.
+  function chatTarget() {
+    var id = getSessionProvider();
+    var provider = getProvider(id);
+    var model = provider.defaultModel;
+    if (dom.modelName) {
+      var typed = (dom.modelName.value || '').trim();
+      if (typed) model = typed;
+    }
+    return { id: id, provider: provider, model: model };
+  }
+
+  function syncChatTarget() {
+    if (!dom.chatTarget) return;
+    var t = chatTarget();
+    var ready = !providerNeedsKey(t.id) || !!getProviderKey(t.id);
+    dom.chatTarget.textContent = t.provider.label + ' · ' + t.model;
+    dom.chatTarget.setAttribute('data-state', ready ? 'ready' : 'missing');
+    if (dom.chatSendBtn) dom.chatSendBtn.disabled = chatBusy;
+  }
+
+  function renderChatLog() {
+    if (!dom.chatLog) return;
+    clear(dom.chatLog);
+    if (!chatTurns.length) {
+      dom.chatLog.appendChild(el('p', 'muted-note', 'Nothing sent yet.'));
+      return;
+    }
+    for (var i = 0; i < chatTurns.length; i += 1) {
+      var turn = chatTurns[i];
+      var wrap = el('div', 'chat-turn');
+      wrap.setAttribute('data-role', turn.role === 'user' ? 'you' : (turn.error ? 'error' : 'reply'));
+      wrap.appendChild(el('p', 'chat-role',
+        turn.role === 'user' ? 'You' : (turn.error ? 'Failed' : (turn.label || 'Reply'))));
+      if (turn.text) wrap.appendChild(el('p', 'chat-text', turn.text));
+      // A reasoning model can answer with thought and no text. Hiding that
+      // makes a working model look silent, which is the whole trap.
+      if (turn.thinking) {
+        if (!turn.text) wrap.appendChild(el('p', 'chat-text', '(no text — it answered with thinking only)'));
+        // Collapsed: a reasoning trace is often longer than the answer and
+        // would bury it, but hiding it outright is what made a working model
+        // look silent in the first place.
+        var details = el('details', 'chat-thinking-wrap');
+        details.appendChild(el('summary', 'chat-thinking-toggle', 'Thinking'));
+        details.appendChild(el('p', 'chat-thinking', turn.thinking));
+        if (!turn.text) details.open = true;
+        wrap.appendChild(details);
+      }
+      dom.chatLog.appendChild(wrap);
+    }
+    dom.chatLog.scrollTop = dom.chatLog.scrollHeight;
+  }
+
+  function pushChatTurn(turn) {
+    chatTurns.push(turn);
+    renderChatLog();
+  }
+
+  // The thinking trace, whatever the provider calls it.
+  function chatThinkingOf(provider, payload) {
+    try {
+      if (typeof provider.thinking === 'function' && provider.thinking(payload)) {
+        return (payload.message && payload.message.thinking) || '';
+      }
+      var msg = payload && payload.choices && payload.choices[0] && payload.choices[0].message;
+      if (!msg) return '';
+      if (typeof msg.reasoning_content === 'string') return msg.reasoning_content;
+      return typeof msg.reasoning === 'string' ? msg.reasoning : '';
+    } catch (e) { return ''; }
+  }
+
+  function sendChat(text) {
+    var message = String(text || '').trim();
+    if (!message || chatBusy) return Promise.resolve();
+    var t = chatTarget();
+    if (providerNeedsKey(t.id) && !getProviderKey(t.id)) {
+      pushChatTurn({ role: 'assistant', error: true, text: 'Add a ' + t.provider.label + ' key first.' });
+      return Promise.resolve();
+    }
+
+    pushChatTurn({ role: 'user', text: message });
+    chatBusy = true;
+    syncChatTarget();
+    var started = Date.now();
+    var pending = { role: 'assistant', label: 'Thinking…', text: '' };
+    pushChatTurn(pending);
+    var ticker = window.setInterval(function () {
+      pending.label = 'Thinking… ' + Math.round((Date.now() - started) / 1000) + 's';
+      renderChatLog();
+    }, 1000);
+
+    function settle(patch) {
+      window.clearInterval(ticker);
+      chatBusy = false;
+      chatTurns[chatTurns.length - 1] = patch;
+      renderChatLog();
+      syncChatTarget();
+    }
+
+    // Only the turns that actually carry text; a failed turn is not context.
+    var history = chatTurns.filter(function (turn) { return turn.text && !turn.error && turn !== pending; })
+      .map(function (turn) { return { role: turn.role, text: turn.text }; });
+
+    return llmRequest(t.provider, t.model, getProviderKey(t.id), t.provider.chatBody(t.model, history))
+      .then(function (payload) {
+        var reply = t.provider.extract(payload);
+        var thinking = chatThinkingOf(t.provider, payload);
+        if (!reply && !thinking) throw emptyReplyError(payload);
+        settle({
+          role: 'assistant',
+          label: t.model + ' · ' + (Date.now() - started) + ' ms',
+          text: reply,
+          thinking: thinking
+        });
+      })
+      .catch(function (err) {
+        var info = t.id === 'ollama'
+          ? { title: ollamaFailureText(err), message: '' }
+          : providerErrorText(t.provider, err);
+        settle({
+          role: 'assistant', error: true,
+          text: info.title + (info.message ? ' — ' + info.message : '')
+        });
+      });
+  }
+
+  function clearChat() {
+    chatTurns = [];
+    renderChatLog();
+    syncChatTarget();
+  }
 
   function testProvider(id) {
     var provider = getProvider(id);
@@ -4902,6 +5069,13 @@
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && state.stage && !event.defaultPrevented) goBack();
     });
+    if (dom.modelName) {
+      dom.modelName.addEventListener('input', function () {
+        setSessionModel(dom.modelName.value.trim());
+        syncChatTarget();
+      });
+    }
+
     dom.urlInput.addEventListener('input', function () {
       state.activeRequestId = null;
       markDirty();
@@ -5022,6 +5196,17 @@
       toast('All keys cleared.');
     });
 
+    if (dom.chatForm) {
+      dom.chatForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var text = dom.chatInput ? dom.chatInput.value : '';
+        if (!text.trim() || chatBusy) return;
+        if (dom.chatInput) dom.chatInput.value = '';
+        sendChat(text);
+      });
+    }
+    if (dom.chatClearBtn) dom.chatClearBtn.addEventListener('click', clearChat);
+
     dom.clearStorageBtn.addEventListener('click', function () {
       if (!window.confirm('Clear all saved requests, cached interfaces, snapshots and API keys?')) return;
       clearAllData();
@@ -5049,6 +5234,7 @@
                 'builderPlanBtn', 'builderHtmlBtn',
                 'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
                 'ollamaTestBtn', 'ollamaTestStatus', 'modelOptions', 'modelNote',
+               'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
                 'providerSelect', 'providerHint', 'modelHint', 'ollamaEndpoint',
                 'ollamaServerGroup', 'ollamaNoteOrigin',
                'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource'];
@@ -5225,6 +5411,8 @@
     getSnapshots: getSnapshots, setSnapshots: setSnapshots,
     invalidateSnapshotCache: invalidateSnapshotCache,
     fetchOllamaModels: fetchOllamaModels, ollamaBase: ollamaBase, ollamaAltBase: ollamaAltBase,
+    sendChat: sendChat, clearChat: clearChat, chatTarget: chatTarget,
+    chatTurns: function () { return chatTurns; },
     getSessionHeaders: getSessionHeaders, setSessionHeaders: setSessionHeaders,
     hasSecretHeader: hasSecretHeader, minimalSpec: minimalSpec,
     rollbackNavigation: rollbackNavigation, finishRequest: finishRequest,
