@@ -1239,7 +1239,7 @@
   function normalizeActions(raw) {
     if (!Array.isArray(raw)) return [];
     var out = [];
-    var seen = {};
+    var seen = Object.create(null);   // keys come from the response body
     for (var i = 0; i < raw.length && out.length < MAX_ACTIONS; i += 1) {
       var candidate = raw[i];
       if (!isPlainObject(candidate) || ACTION_TYPES.indexOf(candidate.type) === -1) continue;
@@ -1467,7 +1467,7 @@
         moments.push({ label: humanize(keys[i]), path: keys[i] });
       }
     }
-    var momentKeys = {};
+    var momentKeys = Object.create(null);   // keys come from the response body
     if (moments.length >= 3) {
       components.push({ type: 'timeline', path: '', label: 'Sequence', items: moments });
       for (i = 0; i < moments.length; i += 1) momentKeys[moments[i].path] = true;
@@ -1582,7 +1582,7 @@
     }
 
     var actions = deriveActions(data, url);
-    var covered = {};
+    var covered = Object.create(null);   // keys come from the response body
     for (i = 0; i < actions.length; i += 1) {
       if (actions[i].type === 'follow') covered[canonPath(actions[i].path)] = true;
     }
@@ -1614,7 +1614,7 @@
 
   function deriveActions(data, url) {
     var actions = [];
-    var seen = {};
+    var seen = Object.create(null);   // keys come from the response body
 
     function follow(path, label) {
       if (actions.length >= MAX_ACTIONS - 2 || seen[path]) return;
@@ -1695,13 +1695,17 @@
   }
 
   // API keys are written for parsers. These are the ones worth spelling out.
-  var LABEL_WORDS = {
+  // Prototype-free: the keys probed against this table are response field
+  // names, so a field called `constructor` or `toString` would otherwise
+  // resolve to an Object.prototype member, come back truthy, and be used as
+  // the label. That lost the whole field from the rendered interface.
+  var LABEL_WORDS = Object.assign(Object.create(null), {
     tzid: 'timezone', tz: 'timezone', lat: 'latitude', lng: 'longitude',
     lon: 'longitude', utc: 'UTC', url: 'URL', uri: 'URI', id: 'ID', ids: 'IDs',
     api: 'API', ip: 'IP', uuid: 'UUID', sku: 'SKU', iso: 'ISO', html: 'HTML',
     json: 'JSON', px: 'px', pct: 'percent', qty: 'quantity', num: 'number',
     avg: 'average', min: 'minimum', max: 'maximum', desc: 'description'
-  };
+  });
 
   function humanize(key) {
     // Sentence case, so snake_case and camelCase labels read the same way.
