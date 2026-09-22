@@ -255,7 +255,7 @@
   var ollamaModels = null;        // null = never fetched, [] = fetched, none installed
 
   function fetchOllamaModels() {
-    return fetch(ollamaBase() + '/api/tags', { method: 'GET', mode: 'cors' })
+    return ollamaFetch(ollamaBase() + '/api/tags', { method: 'GET', mode: 'cors' })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
@@ -278,11 +278,49 @@
     return chat.length ? chat[0] : '';
   }
 
+  // 127.0.0.1, not localhost. `localhost` resolves to ::1 before 127.0.0.1 on
+  // a default macOS install, and Ollama listens on IPv4 only
+  // (`TCP 127.0.0.1:11434 (LISTEN)`), so ::1 refuses the connection. curl
+  // hides this by falling back to IPv4; browsers do not reliably do the same,
+  // which shows up as "did not answer" against a server that is plainly up.
+  var OLLAMA_DEFAULT_BASE = 'http://127.0.0.1:11434';
+
   function ollamaBase() {
     var base = '';
     try { base = String(getPrefs().ollamaEndpoint || ''); } catch (e) { /* ignore */ }
     base = base.trim().replace(/\/+$/, '');
-    return base || 'http://localhost:11434';
+    return base || OLLAMA_DEFAULT_BASE;
+  }
+
+  // The other spelling of the same machine. Used only as a retry, so a wrong
+  // guess about which loopback form works costs one extra request, not a
+  // failed session.
+  function ollamaAltBase(base) {
+    if (/\/\/localhost(:|\/|$)/i.test(base)) return base.replace(/\/\/localhost/i, '//127.0.0.1');
+    if (/\/\/127\.0\.0\.1(:|\/|$)/.test(base)) return base.replace('//127.0.0.1', '//localhost');
+    return '';
+  }
+
+  // Fetch an absolute Ollama URL, and if the connection itself fails, retry
+  // the other loopback spelling before giving up. Used by every Ollama call
+  // — the model list and the generation request both go through here.
+  function ollamaFetch(url, init) {
+    return fetch(url, init).catch(function (err) {
+      var base = ollamaBase();
+      var alt = ollamaAltBase(base);
+      if (!alt || url.indexOf(base) !== 0) throw err;
+      return fetch(alt + url.slice(base.length), init).then(function (response) {
+        // The alternate spelling works: remember it so every later call and
+        // the Settings field agree with reality.
+        try {
+          var prefs = getPrefs();
+          prefs.ollamaEndpoint = alt;
+          setPrefs(prefs);
+          if (dom.ollamaEndpoint) dom.ollamaEndpoint.value = alt;
+        } catch (e) { /* ignore */ }
+        return response;
+      });
+    });
   }
 
   // Key prefixes are distinctive enough to pick the provider for the user.
@@ -1340,7 +1378,8 @@
   }
 
   function llmRequest(provider, model, apiKey, body) {
-    return fetch(provider.endpoint(model), {
+    var send = provider.id === 'ollama' ? ollamaFetch : fetch;
+    return send(provider.endpoint(model), {
       method: 'POST',
       headers: provider.headers(apiKey),
       body: JSON.stringify(body)
@@ -3269,8 +3308,29 @@
   function ollamaFailureText(err) {
     var message = err && err.message ? err.message : String(err);
     if (/not installed|no models/i.test(message)) return message;
+    // A server that answered and then failed on the content is not
+    // unreachable, and saying so sends the user off restarting a process that
+    // was fine the whole time. Only a connection failure earns that word:
+    // fetch rejects with a TypeError, everything else carries a status.
+    var connectionFailed = (err instanceof TypeError) ||
+                           /failed to fetch|networkerror|load failed|connection refused/i.test(message);
+    if (!connectionFailed) return message;
     var origin = 'this page';
-    try { origin = window.location.origin; } catch (e) { /* ignore */ }
+    var secure = false;
+    try {
+      origin = window.location.origin;
+      secure = window.location.protocol === 'https:';
+    } catch (e) { /* ignore */ }
+
+    // An https page reaching an http server on the same machine is a browser
+    // policy call, not something the page can fix. Chrome exempts loopback;
+    // Safari does not, so there the only cure is to run Imago over http.
+    if (secure) {
+      return 'Unreachable — ' + ollamaBase() + ' did not answer. Two things to check: ' +
+             'Ollama must allow this page (OLLAMA_ORIGINS=' + origin + ' ollama serve), and ' +
+             'some browsers (Safari) refuse an https page talking to a local http server at all. ' +
+             'If it still fails in Safari, run Imago from http://localhost instead.';
+    }
     return 'Unreachable — ' + ollamaBase() + ' did not answer. Start Ollama, and allow this page with: ' +
            'OLLAMA_ORIGINS=' + origin + ' ollama serve';
   }
@@ -3334,7 +3394,7 @@
           }
           return llmRequest(provider, wanted, '', provider.testBody(wanted))
             .then(function (payload) {
-              if (!provider.extract(payload) && !providerThinking(payload)) throw emptyReplyError(payload);
+              if (!provider.extract(payload) && !providerThinking(payload, provider)) throw emptyReplyError(payload);
               finish(true, 'OK · ' + wanted + ' · ' + elapsed());
             });
         })
@@ -3355,7 +3415,7 @@
         // Reasoning models sometimes answer with thinking and no final text.
         // For a connectivity ping, thinking still proves the key and the
         // model work — only true silence is a failure.
-        if (!provider.extract(payload) && !providerThinking(payload)) {
+        if (!provider.extract(payload) && !providerThinking(payload, provider)) {
           throw emptyReplyError(payload);
         }
         finish(true, 'OK · ' + model + ' · ' + elapsed());
@@ -3367,8 +3427,12 @@
   }
 
   // Any thinking trace on the first choice, whatever the provider names it.
-  function providerThinking(payload) {
+  function providerThinking(payload, provider) {
     try {
+      // Ollama's native API puts the trace at message.thinking, not under
+      // choices[]. Without this a reasoning model's ping looks like silence,
+      // and the test fails against a server that answered 200.
+      if (provider && typeof provider.thinking === 'function' && provider.thinking(payload)) return 'thinking';
       var msg = payload && payload.choices && payload.choices[0] &&
                 payload.choices[0].message;
       if (!msg) return '';
@@ -5160,6 +5224,7 @@
     getPrefs: getPrefs, setPrefs: setPrefs, savePrefs: savePrefs,
     getSnapshots: getSnapshots, setSnapshots: setSnapshots,
     invalidateSnapshotCache: invalidateSnapshotCache,
+    fetchOllamaModels: fetchOllamaModels, ollamaBase: ollamaBase, ollamaAltBase: ollamaAltBase,
     getSessionHeaders: getSessionHeaders, setSessionHeaders: setSessionHeaders,
     hasSecretHeader: hasSecretHeader, minimalSpec: minimalSpec,
     rollbackNavigation: rollbackNavigation, finishRequest: finishRequest,
