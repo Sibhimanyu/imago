@@ -139,10 +139,16 @@ schema shows a **Generate interface** button rather than silently calling out.
 with `fetch()`, and calls a model provider REST API to interpret the response.
 
 **Remember something.** In `localStorage`: your saved requests, the schema-to-interface
-mappings Imago has generated, response snapshots, and your session (URL, headers,
-active tab and pane, refresh interval, whether you've onboarded). Reload the page and
-you land back where you were — with the last interface rebuilt from the stored
-snapshot, without spending a request.
+mappings Imago has generated, response snapshots, and your session (URL, active tab and
+pane, refresh interval, whether you've onboarded). Reload the page and you land back
+where you were — with the last interface rebuilt from the stored snapshot, without
+spending a request.
+
+Request headers are the exception. They are where an `Authorization: Bearer ...` goes,
+so they get the same treatment as your model key: `sessionStorage`, gone when the tab
+closes. Saving a request keeps its ordinary headers and drops the credential ones, and
+tells you which. Following a link out of a response never carries your headers to a
+different host.
 
 **React to time.** Auto-refresh at 10s / 30s / 60s with a live countdown and a pulsing
 Live indicator; a "last checked" clock that ages as you watch it; and snapshot
@@ -157,8 +163,8 @@ Memory and time are the product.
 
 ## Running it
 
-No build step, no npm, no framework, no external dependency of any kind. Any static
-server works:
+No build step, no framework, and nothing the browser has to download but the three
+files in this repo. Any static server works:
 
 ```bash
 python3 -m http.server 5173
@@ -168,6 +174,19 @@ Then open <http://127.0.0.1:5173>.
 
 Use a real server rather than opening `index.html` as a `file://` URL — CORS behaves
 far more predictably from `http://127.0.0.1`.
+
+### Tests
+
+npm is used for the test suite only; nothing it installs is shipped.
+
+```bash
+npm install
+npm test
+```
+
+Vitest and jsdom, run against the same `app.js` the browser gets. See
+[TESTING.md](TESTING.md) before adding tests — `app.js` is a single IIFE reached
+through a test seam, and jsdom has a few traps that are documented there.
 
 ### Getting an API key
 
@@ -232,11 +251,13 @@ silently.
 index.html    landing, onboarding, and app shell
 styles.css    design system and all three layouts
 app.js        everything else, in labelled sections
+test/         vitest suite (not shipped)
+publish.sh    assembles dist/ for deployment
 ```
 
 `app.js` is organised as: constants → state → storage → DOM helpers → path utilities →
 schema fingerprinting → snapshot diffing → providers → spec validation → renderer →
-views → saved requests → request flow → auto-refresh → events → bootstrap.
+views → saved requests → request flow → auto-refresh → events → bootstrap → test seam.
 
 ---
 
