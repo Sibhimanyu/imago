@@ -363,3 +363,74 @@ describe('a follow that fails leaves no phantom entry', () => {
     expect(app.dom.urlInput.value).toBe('https://a.test/one');
   });
 });
+
+describe('the tablist keeps the contract its role makes', () => {
+  // Regression: ISSUE-005 — role=tablist/role=tab were set with aria-controls
+  // 0/5, no role=tabpanel on any pane, no aria-labelledby, and every tabindex
+  // null, so arrow keys did nothing and a screen reader got no panel
+  // relationship. Announced as tabs, behaved like loose buttons.
+  // Found by /qa on 2026-09-22
+  // Report: .gstack/qa-reports/qa-report-localhost-2026-09-22.md
+  const tabs = (app) => [...app.window.document.querySelectorAll('#tabBar button')];
+  const panes = (app) => [...app.window.document.querySelectorAll('.tab-pane')];
+
+  it('points every tab at a pane that exists', async () => {
+    const app = await boot();
+    const bs = tabs(app);
+    expect(bs.length).toBe(5);
+    for (const b of bs) {
+      const id = b.getAttribute('aria-controls');
+      expect(id, `${b.textContent.trim()} has no aria-controls`).toBeTruthy();
+      expect(app.window.document.getElementById(id), `aria-controls=${id} resolves to nothing`).toBeTruthy();
+      expect(b.id, 'tab needs an id so its pane can point back').toBeTruthy();
+    }
+  });
+
+  it('labels every pane with its tab', async () => {
+    const app = await boot();
+    for (const p of panes(app)) {
+      expect(p.getAttribute('role')).toBe('tabpanel');
+      const by = p.getAttribute('aria-labelledby');
+      expect(by, 'pane has no aria-labelledby').toBeTruthy();
+      expect(app.window.document.getElementById(by)).toBeTruthy();
+    }
+  });
+
+  it('keeps exactly one tab in the tab order and marks it selected', async () => {
+    const app = await boot();
+    app.setActiveTab('schema');
+    const bs = tabs(app);
+    const focusable = bs.filter((b) => b.getAttribute('tabindex') === '0');
+    const selected = bs.filter((b) => b.getAttribute('aria-selected') === 'true');
+    expect(focusable).toHaveLength(1);
+    expect(selected).toHaveLength(1);
+    expect(focusable[0].getAttribute('data-tab')).toBe('schema');
+    expect(selected[0].getAttribute('data-tab')).toBe('schema');
+  });
+
+  it('moves between tabs on Left/Right/Home/End, wrapping at the ends', async () => {
+    const app = await boot();
+    const bs = tabs(app);
+    const key = (k, from) => {
+      from.focus();
+      from.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      return app.state.tab;
+    };
+    expect(key('ArrowRight', bs[0])).toBe('raw');
+    expect(key('ArrowRight', bs[1])).toBe('schema');
+    expect(key('ArrowLeft', bs[2])).toBe('raw');
+    expect(key('End', bs[1])).toBe('headers');
+    expect(key('Home', bs[4])).toBe('interface');
+    expect(key('ArrowRight', bs[4]), 'should wrap past the last tab').toBe('interface');
+    expect(key('ArrowLeft', bs[0]), 'should wrap before the first tab').toBe('headers');
+  });
+
+  it('ignores keys that are not part of the contract', async () => {
+    const app = await boot();
+    app.setActiveTab('interface');
+    const bs = tabs(app);
+    bs[0].focus();
+    bs[0].dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    expect(app.state.tab).toBe('interface');
+  });
+});
