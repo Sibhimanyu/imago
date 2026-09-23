@@ -514,7 +514,8 @@
     rawPaneDirty: true,    // body changed since the Raw pane was last built
     schemaPaneDirty: true,
     detailsOpen: Object.create(null),   // endpoint hash → Details left open
-    sharedSpec: null,      // { url, spec } from a share link, used once        // a fetch succeeded — distinct from `data` being falsy
+    sharedSpec: null,      // { url, spec } from a share link, used once
+    unseenChanges: 0,      // changes Watch found while the tab was hidden        // a fetch succeeded — distinct from `data` being falsy
   };
 
   var dom = {};
@@ -5033,6 +5034,7 @@
           state.diff = diffData(baseline, data);
           state.changedCount = Object.keys(state.diff).length;
         }
+        if (isAuto && state.changedCount > 0) noteWatchedChange(url);
 
         pushSnapshot(requestKey, {
           id: 'snap_' + startedAt.toString(36),
@@ -5575,6 +5577,7 @@
       var on = dom.refreshToggle.getAttribute('aria-checked') === 'true';
       state.refreshIntervalMs = on ? 0 : Number(dom.refreshInterval.value);
       syncRefreshUi();
+      if (!on) offerNotifications();
       if (state.refreshIntervalMs && state.data && !state.dirtySinceSend) startTimer();
       else stopTimer();
       savePrefs();
@@ -5905,6 +5908,67 @@
     return true;
   }
 
+  /* ── Watch alerts ─────────────────────────────────────────────────────
+     Watch used to be useful only while you were looking at the tab. When a
+     watched fetch changes something while the tab is in the background, the
+     tab title carries the count ("(3) Forecast — Imago"), and, if you allowed
+     it, a notification says what changed. Nothing asks for permission until
+     you turn Watch on, and then only once, as an offer in a toast. */
+
+  var baseTitle = '';
+
+  function describeChange(diff) {
+    var paths = Object.keys(diff || {});
+    if (!paths.length) return '';
+    var e = diff[paths[0]];
+    var name = humanize(lastSegment(paths[0]));
+    var text = e.type === 'changed' ? name + ': ' + formatValue(e.before) + ' → ' + formatValue(e.after)
+      : e.type === 'added' ? name + ' appeared' : name + ' was removed';
+    if (paths.length > 1) text += ' (and ' + (paths.length - 1) + ' more)';
+    return text;
+  }
+
+  function noteWatchedChange(url) {
+    if (!document.hidden) return;
+    var name = (state.spec && state.spec.title) || hostOf(url) || 'Imago';
+    state.unseenChanges += state.changedCount;
+    document.title = '(' + state.unseenChanges + ') ' + name + ' — Imago';
+    if (window.Notification && window.Notification.permission === 'granted') {
+      try {
+        var n = new window.Notification(name + ' changed', {
+          body: describeChange(state.diff),
+          tag: 'imago-' + hashString(url),   // one notification per endpoint, replaced each time
+          icon: 'favicon.svg'
+        });
+        n.onclick = function () { window.focus(); n.close(); };
+      } catch (err) { /* some browsers only allow notifications from a service worker */ }
+    }
+  }
+
+  function clearUnseen() {
+    if (document.hidden) return;
+    state.unseenChanges = 0;
+    if (baseTitle) document.title = baseTitle;
+  }
+
+  // Offered once, when Watch is turned on: a toast, never a bare prompt.
+  function offerNotifications() {
+    if (!window.Notification || window.Notification.permission !== 'default') return;
+    var prefs = getPrefs();
+    if (prefs.notifyAsked) return;
+    prefs.notifyAsked = true;
+    setPrefs(prefs);
+    toast('Watching. Want a notification when it changes while you are in another tab?', null, {
+      label: 'Notify me',
+      run: function () {
+        var answer = window.Notification.requestPermission();
+        if (answer && answer.then) answer.then(function (result) {
+          toast(result === 'granted' ? 'You will be notified when it changes.' : 'No notifications. The tab title still shows changes.', result === 'granted' ? 'ok' : null);
+        });
+      }
+    });
+  }
+
   /* ── Share links ──────────────────────────────────────────────────────
      A link that reopens this page for someone else: the endpoint and the
      layout, and nothing else. No headers, no keys, no response body (the
@@ -5988,6 +6052,9 @@
 
   function init() {
     cacheDom();
+    baseTitle = document.title;
+    document.addEventListener('visibilitychange', clearUnseen);
+    window.addEventListener('focus', clearUnseen);
     wireEvents();
     restoreSession();
     restoreLastView();
@@ -6042,7 +6109,7 @@
     getProvider: getProvider,
     // examples
     DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
-    parseCurl: parseCurl, shellWords: shellWords, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
+    parseCurl: parseCurl, shellWords: shellWords, describeChange: describeChange, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,
