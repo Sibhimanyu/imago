@@ -42,6 +42,18 @@ describe('buildHtmlPrompt', () => {
     expect(prompt).toContain('https://x.test/api');
     expect(prompt).toContain('no {{placeholders}}');
   });
+
+  // The old brief (system font, 900px column, "enjoy reading") produced
+  // pages that looked like rendered Markdown. The prompt now asks for an
+  // app screen, and must not bring the narrow-document constraint back.
+  it('asks for a designed interface, not a document', async () => {
+    const app = await boot();
+    const prompt = app.buildHtmlPrompt({ url: 'https://x.test/api', schema: {}, sample: '{}' });
+    expect(prompt).toContain('designed app screen, not a document');
+    expect(prompt).toContain('Commit to a visual direction');
+    expect(prompt).toContain('read like a Markdown file, redesign it');
+    expect(prompt).not.toMatch(/max-width around 900px/);
+  });
 });
 
 describe('applyHtml', () => {
