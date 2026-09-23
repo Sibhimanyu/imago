@@ -4224,6 +4224,7 @@
     if (!point) return;
     setUrlInput(point.urlInput);
     dom.headersInput.value = point.headersInput;
+    syncHeadersChip();
     state.url = point.url;
     state.headersText = point.headersText;
     state.headers = parseHeaders(point.headersText);
@@ -4722,6 +4723,134 @@
     return headers;
   }
 
+  /* ── curl import ────────────────────────────────────────────────────────
+     API docs and every browser's dev tools ("Copy as cURL") hand out curl
+     commands, not URLs. Pasting one fills the URL and the headers. Imago only
+     runs GETs, so a command that sends a body or another method is refused
+     with a reason instead of being run as something it is not. */
+
+  // Headers the browser sets itself and refuses to let a page send.
+  var BROWSER_OWNED_HEADERS = /^(accept-encoding|connection|content-length|cookie|host|origin|referer|user-agent|keep-alive|te|trailer|transfer-encoding|upgrade|via|dnt|priority|sec-.*|proxy-.*)$/i;
+  var CURL_NO_ARG = /^(--compressed|-s|--silent|-S|--show-error|-L|--location|-k|--insecure|-i|--include|-v|--verbose|-f|--fail|-g|--globoff|-#|--progress-bar|-N|--no-buffer|--http1\.1|--http2|--http2-prior-knowledge|--tlsv1\.2|--tr-encoding|-Z|--parallel)$/;
+  var CURL_WITH_ARG = /^(-o|--output|-m|--max-time|--connect-timeout|-w|--write-out|--retry|--retry-delay|-x|--proxy|--cacert|-E|--cert|--key|-e|--referer|-A|--user-agent|-b|--cookie|-c|--cookie-jar|--resolve|-T|--upload-file)$/;
+
+  // Split a shell command into words: single quotes are literal, double
+  // quotes honour backslash escapes, $'…' decodes \n \t \' \\, and a trailing
+  // backslash (or a Windows ^) continues the line.
+  function shellWords(text) {
+    var src = String(text).replace(/\\\r?\n/g, ' ').replace(/\^\r?\n/g, ' ');
+    var words = [], cur = '', has = false, i = 0;
+    while (i < src.length) {
+      var ch = src[i];
+      if (/\s/.test(ch)) { if (has) { words.push(cur); cur = ''; has = false; } i += 1; continue; }
+      has = true;
+      if (ch === "'") {
+        var end = src.indexOf("'", i + 1);
+        if (end === -1) end = src.length;
+        cur += src.slice(i + 1, end); i = end + 1;
+      } else if (ch === '$' && src[i + 1] === "'") {
+        i += 2;
+        while (i < src.length && src[i] !== "'") {
+          if (src[i] === '\\' && i + 1 < src.length) {
+            var e = src[i + 1];
+            cur += e === 'n' ? '\n' : e === 't' ? '\t' : e === 'r' ? '\r' : e;
+            i += 2;
+          } else { cur += src[i]; i += 1; }
+        }
+        i += 1;
+      } else if (ch === '"') {
+        i += 1;
+        while (i < src.length && src[i] !== '"') {
+          if (src[i] === '\\' && i + 1 < src.length && /["\\$`]/.test(src[i + 1])) { cur += src[i + 1]; i += 2; }
+          else { cur += src[i]; i += 1; }
+        }
+        i += 1;
+      } else if (ch === '\\' && i + 1 < src.length) {
+        cur += src[i + 1]; i += 2;
+      } else { cur += ch; i += 1; }
+    }
+    if (has) words.push(cur);
+    return words;
+  }
+
+  function looksLikeCurl(text) {
+    return /^\s*curl(\.exe)?\s/i.test(String(text || ''));
+  }
+
+  // → { url, headers, dropped: [names], error } ; error is set when the
+  // command cannot be run as a GET.
+  function parseCurl(text) {
+    var words = shellWords(text);
+    var out = { url: '', headers: {}, dropped: [], error: '' };
+    if (!words.length || !/^curl(\.exe)?$/i.test(words[0])) { out.error = 'That is not a curl command.'; return out; }
+    var method = '', body = false, get = false, query = [];
+    function addHeader(raw) {
+      var idx = raw.indexOf(':');
+      if (idx <= 0) return;
+      var name = raw.slice(0, idx).trim();
+      var value = raw.slice(idx + 1).trim();
+      if (!name || !value) return;
+      if (BROWSER_OWNED_HEADERS.test(name)) { out.dropped.push(name); return; }
+      out.headers[name] = value;
+    }
+    for (var i = 1; i < words.length; i += 1) {
+      var w = words[i];
+      // curl also takes a short option glued to its value: -XPOST, -H'A: b'.
+      var glued = /^-([XHduAbeo])(.+)$/.exec(w);
+      if (glued) { w = '-' + glued[1]; words.splice(i + 1, 0, glued[2]); }
+      var eq = /^(--[\w-]+)=(.*)$/.exec(w);
+      var opt = eq ? eq[1] : w;
+      var arg = function () { return eq ? eq[2] : words[++i]; };
+      if (opt === '-H' || opt === '--header') addHeader(arg() || '');
+      else if (opt === '-X' || opt === '--request') method = String(arg() || '').toUpperCase();
+      else if (/^(-d|--data|--data-raw|--data-binary|--data-ascii|--data-urlencode|--json|-F|--form)$/.test(opt)) { query.push(arg() || ''); body = true; }
+      else if (opt === '-G' || opt === '--get') get = true;
+      else if (opt === '-I' || opt === '--head') method = 'HEAD';
+      else if (opt === '-u' || opt === '--user') {
+        var cred = arg() || '';
+        try { out.headers.Authorization = 'Basic ' + window.btoa(cred); } catch (err) { out.error = 'The -u credentials could not be encoded.'; }
+      }
+      else if (opt === '--url') out.url = arg() || '';
+      else if (opt === '-b' || opt === '--cookie') { arg(); out.dropped.push('Cookie'); }
+      else if (opt === '-A' || opt === '--user-agent') { arg(); out.dropped.push('User-Agent'); }
+      else if (CURL_WITH_ARG.test(opt)) arg();
+      else if (CURL_NO_ARG.test(opt) || /^-/.test(opt)) { /* flags that change nothing a browser can do */ }
+      else if (!out.url) out.url = w;
+    }
+    if (!out.url) { out.error = 'No URL found in that curl command.'; return out; }
+    if (get && query.length) {
+      out.url += (out.url.indexOf('?') === -1 ? '?' : '&') + query.join('&');
+      body = false;
+    }
+    if (method && method !== 'GET') { out.error = 'That command sends a ' + method + '. Imago only runs GET requests.'; return out; }
+    if (body) { out.error = 'That command sends a request body (a POST). Imago only runs GET requests.'; return out; }
+    return out;
+  }
+
+  // Fill the command bar from a curl command. Returns true when it did.
+  function importCurl(text) {
+    var parsed = parseCurl(text);
+    if (parsed.error) { toast(parsed.error, 'error'); return false; }
+    setUrlInput(parsed.url);
+    dom.headersInput.value = headersToText(parsed.headers);
+    markDirty();
+    syncHeadersChip();
+    var n = Object.keys(parsed.headers).length;
+    var msg = 'Imported from curl' + (n ? ': ' + n + (n === 1 ? ' header' : ' headers') : '') + '.';
+    if (parsed.dropped.length) msg += ' Left out ' + parsed.dropped.join(', ') + ' (the browser sets those itself).';
+    toast(msg, 'ok');
+    return true;
+  }
+
+  // The headers live in Inspect → Headers, out of sight; the chip in the
+  // command bar says they are there and opens them.
+  function syncHeadersChip() {
+    if (!dom.headersChip) return;
+    var n = Object.keys(parseHeaders(dom.headersInput.value)).length;
+    dom.headersChip.hidden = n === 0;
+    dom.headersChip.textContent = n + (n === 1 ? ' header' : ' headers');
+  }
+
   function headersToText(headers) {
     if (!headers) return '';
     return Object.keys(headers).map(function (name) {
@@ -4776,6 +4905,7 @@
   /* ── Request flow ──────────────────────────────────────────────────────── */
 
   function markDirty() {
+    syncHeadersChip();   // every path that changes the headers box ends here
     state.dirtySinceSend = true;
     if (state.refreshIntervalMs) stopTimer();
   }
@@ -4806,6 +4936,12 @@
     }
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       toast('Only http and https URLs are supported.', 'error');
+      return false;
+    }
+
+    var problem = headerProblem(parseHeaders(dom.headersInput.value));
+    if (problem) {
+      toast(problem, 'error');
       return false;
     }
 
@@ -4904,7 +5040,9 @@
         // spends another request per tick.
         if (state.refreshIntervalMs && !state.pendingGenerate) startTimer();
       })
-      .catch(function (err) { handleRequestFailure(err, isAuto); })
+      .catch(function (err) {
+        return explainFailure(err, url, state.headers).then(function (why) { handleRequestFailure(why, isAuto); });
+      })
       // Both arms, not a trailing .then: if handleRequestFailure itself throws
       // this must still run, or inFlight stays true, the send button stays
       // disabled, and every later request returns at the in-flight guard —
@@ -4919,15 +5057,53 @@
     savePrefs();
   }
 
+  // A header fetch would throw on, caught before sending. It used to throw a
+  // TypeError that the failure handler reported as the endpoint being down.
+  var HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+  function headerProblem(headers) {
+    var names = Object.keys(headers || {});
+    for (var i = 0; i < names.length; i += 1) {
+      var name = names[i];
+      if (!HEADER_NAME.test(name)) return '"' + name + '" is not a valid header name. Check Inspect → Headers.';
+      if (/[\r\n\0]/.test(headers[name])) return 'The ' + name + ' header has a line break in its value.';
+      if (BROWSER_OWNED_HEADERS.test(name)) return 'Browsers do not let a page send ' + name + '. Remove it from Inspect → Headers.';
+    }
+    return '';
+  }
+
+  // "Failed to fetch" is all a browser says, whether you are offline, the
+  // server is down, or the server refused a web page (CORS). One extra probe
+  // tells the last two apart: a no-cors GET, with no headers and no cookies,
+  // succeeds (opaquely) when the server answered at all. Resolves to an error
+  // with a title and detail the reader can act on.
+  function explainFailure(err, url, headers) {
+    var isNetwork = err && !err.title && err.message && /failed to fetch|networkerror|load failed/i.test(err.message);
+    if (!isNetwork) return Promise.resolve(err);
+    var host = hostOf(url) || 'the server';
+    if (window.navigator && window.navigator.onLine === false) {
+      return Promise.resolve(wrapError('You are offline',
+        'Connect and try again. Pages you opened before still show from their last snapshot.'));
+    }
+    var probe = fetch(url, { method: 'GET', mode: 'no-cors', credentials: 'omit', cache: 'no-store' });
+    var timeout = new Promise(function (resolve, reject) { window.setTimeout(function () { reject(new Error('timeout')); }, 6000); });
+    return Promise.race([probe, timeout]).then(function () {
+      var sent = Object.keys(headers || {});
+      var detail = host + ' answered, but its response does not include the CORS headers a web page needs to ' +
+        'read it. Imago runs entirely in your browser, so it cannot read this API directly.';
+      detail += sent.length
+        ? ' It may be the headers: sending ' + sent.join(', ') + ' makes the browser ask the API for permission ' +
+          'first, and this API refused. If the endpoint works without them, remove them in Inspect → Headers.'
+        : ' Look for a public or browser-facing endpoint in its docs, or put a CORS proxy you control in front of it.';
+      return wrapError('This API does not allow browser apps', detail);
+    }, function () {
+      return wrapError('Could not reach ' + host,
+        'Check the address. The server may be down, or blocked on this network.');
+    });
+  }
+
   function handleRequestFailure(err, isAuto) {
     var title = err && err.title ? err.title : 'Request failed';
     var detail = err && err.detail ? err.detail : (err && err.message ? err.message : String(err));
-
-    if (err && !err.title && err.message && /failed to fetch|networkerror|load failed/i.test(err.message)) {
-      title = 'Network or CORS failure';
-      detail = 'The browser could not reach this endpoint. It may be offline, or it may not send ' +
-               'CORS headers that allow browser access. Try one of the examples to confirm Imago itself is working.';
-    }
 
     toast(title, 'error');
 
@@ -5324,10 +5500,24 @@
 
     dom.reqForm.addEventListener('submit', function (event) {
       event.preventDefault();
+      if (looksLikeCurl(dom.urlInput.value) && !importCurl(dom.urlInput.value)) return;
       state.stack = [];          // a typed URL starts a new trail
       state.stagePref = true;
       performRequest(false);
     });
+    // Pasting a curl command runs it, the way pasting a URL and pressing
+    // Enter would. The box is a single line, so a multi-line command would
+    // otherwise arrive with its newlines stripped.
+    dom.urlInput.addEventListener('paste', function (event) {
+      var text = event.clipboardData && event.clipboardData.getData('text');
+      if (!looksLikeCurl(text)) return;
+      event.preventDefault();
+      if (!importCurl(text)) return;
+      state.stack = [];
+      state.stagePref = true;
+      performRequest(false);
+    });
+    if (dom.headersChip) dom.headersChip.addEventListener('click', function () { setActiveTab('headers'); });
 
     dom.stageBack.addEventListener('click', goBack);
     window.addEventListener('popstate', function (event) {
@@ -5560,7 +5750,7 @@
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
-               'inspectorHead', 'inspectorClose', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
+               'inspectorHead', 'inspectorClose', 'headersChip', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                 'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
                 'geminiKeyStatus', 'groqKeyStatus', 'modelName',
                 'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
@@ -5641,6 +5831,7 @@
     }
     var sessionHeaders = getSessionHeaders();
     if (sessionHeaders) dom.headersInput.value = sessionHeaders;
+    syncHeadersChip();
     state.headersText = sessionHeaders;
     state.activeRequestId = prefs.activeRequestId || null;
     state.url = prefs.lastUrl || '';
@@ -5768,6 +5959,7 @@
     getProvider: getProvider,
     // examples
     DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
+    parseCurl: parseCurl, shellWords: shellWords, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,

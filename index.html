@@ -217,7 +217,8 @@
 
     <form class="reqbar cmdbar" id="reqForm" autocomplete="off" novalidate>
       <span class="method-chip">GET</span>
-      <input type="url" id="urlInput" class="url-input" placeholder="Paste an API URL, e.g. https://pokeapi.co/api/v2/pokemon/pikachu" spellcheck="false" aria-label="API URL">
+      <input type="url" id="urlInput" class="url-input" placeholder="Paste an API URL or a curl command" spellcheck="false" aria-label="API URL or curl command">
+      <button type="button" class="headers-chip" id="headersChip" hidden aria-label="Request headers">0 headers</button>
       <button type="submit" class="btn btn-dark btn-go" id="sendBtn" aria-label="Send request">
         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>

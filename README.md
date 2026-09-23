@@ -80,6 +80,15 @@ Two more passes run before anything is drawn:
 `emphasis: "hero"` marks the field the reader came for; `emphasis: "quiet"` marks
 bookkeeping. If a plan says nothing, Imago ranks the fields itself.
 
+### Paste a curl command
+
+The command bar takes a URL or a curl command: whatever API docs or your
+browser's dev tools ("Copy as cURL") hand you. Pasting one runs it: the URL goes
+in the box and the headers go in Inspect → Headers, with a chip in the command
+bar saying how many are set. `-u` becomes Basic auth, `-G -d` becomes a query
+string, and headers the browser sets itself (Cookie, User-Agent, …) are left out
+and named. Headers stay in this tab's session.
+
 ### One screen
 
 Imago is one screen. The command bar (paste a URL) sits on top, your saved endpoints
@@ -311,7 +320,13 @@ views → saved requests → request flow → auto-refresh → events → bootst
 ## Limits
 
 GET only. No POST/PUT/PATCH, no OAuth, no cookies, no GraphQL or WebSockets, no
-collections or environments. Imago is not trying to be Postman — the whole idea is the
+collections or environments. A pasted curl command that sends a body or another
+method is refused with the reason.
+
+It runs in the browser, so an API has to allow web pages (CORS). When a fetch
+fails, Imago sends one no-cors probe (no headers, no cookies) to tell "this API
+refuses web pages" apart from "this server is unreachable", and says which, and
+whether your headers are the likely cause. Imago is not trying to be Postman — the whole idea is the
 response-to-interface step, so everything else stays out of the way.
 
 Snapshots are capped at 10 per endpoint, and only the newest keeps its response body,

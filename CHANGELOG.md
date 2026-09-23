@@ -2,6 +2,33 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.6.0.0] - 2026-09-23
+
+Real APIs on the first try: bring the request the way your docs or dev tools
+give it to you, and when the browser cannot read an API, find out why.
+
+### Added
+
+- **Paste a curl command.** The command bar takes a URL or a curl command,
+  typed or pasted: whatever "Copy as cURL" or an API's docs hand you. The URL
+  and headers are filled in and the request runs. `-u` becomes Basic auth and
+  `-G -d` becomes a query string. Headers the browser sets itself (Cookie,
+  User-Agent and the like) are left out and named, and a command that is not a
+  GET is refused with the reason.
+- **A header count in the command bar.** When headers are set, a chip says how
+  many and opens them.
+
+### Fixed
+
+- **A failed fetch says what actually went wrong.** "This API does not allow
+  browser apps" (and whether your headers are the likely cause), "Could not
+  reach <host>", or "You are offline", in place of one "Network or CORS failure"
+  for all three. Telling them apart takes one extra no-cors request, sent
+  without your headers or cookies.
+- **A bad header is caught before sending.** An invalid header name, or one
+  the browser refuses to send, is named in place, instead of being reported as
+  the server being down.
+
 ## [0.5.0.0] - 2026-09-23
 
 Less on the screen, and every piece of it means one thing. The page you asked
