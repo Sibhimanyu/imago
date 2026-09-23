@@ -1306,6 +1306,11 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .saved-delete { position: absolute; right: 6px; opacity: 0; transition: opacity .12s ease; background: var(--card); }
 .saved-item:hover .saved-delete, .saved-delete:focus-visible { opacity: 1; }
 .saved-item:hover .saved-status { visibility: hidden; }
+/* Touch has no hover: keep delete visible and in the flow so a tap on the row never lands on it unseen */
+@media (hover: none) {
+  .saved-delete { position: static; opacity: 1; }
+  .saved-item:hover .saved-status { visibility: visible; }
+}
 .rail-empty { font-size: 12.5px; color: var(--muted); line-height: 1.5; padding: 2px 8px 10px; }
 .rail-examples { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-soft); }
 .rail-examples .rail-title { padding: 0 8px 4px; }
@@ -1344,12 +1349,12 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .history-count { color: var(--muted); }
 .history-hot { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
 .history-hot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
-.history-track { position: relative; display: flex; justify-content: space-between; align-items: center; height: 26px; margin-top: 6px; }
+.history-track { position: relative; display: flex; justify-content: space-between; align-items: center; height: 32px; margin-top: 6px; }
 .history-track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--line); transform: translateY(-50%); }
-.history-tick { position: relative; width: 16px; height: 26px; padding: 0; border: 0; background: none; cursor: pointer; }
+.history-tick { position: relative; min-width: 24px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; }
 .history-tick::after {
   content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 2px; height: 10px; background: rgba(111,110,103,.5);
+  width: 2px; height: 10px; background: var(--muted-2);
 }
 .history-tick.is-changed::after { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); }
 .history-tick.is-now::after { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--card); }
@@ -1463,7 +1468,7 @@ body.inspector-open .inspector { display: block; }
     max-width: none; height: auto; border-radius: 0; border: 0; border-top: 1px solid var(--line);
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--bg);
   }
-  .cmdbar .url-input { height: 44px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font-size: 14px; }
+  .cmdbar .url-input { height: 44px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font-size: 16px; }
   .cmdbar .btn-go { width: 44px; height: 44px; border-radius: 10px; }
   .cmdbar .method-chip { display: none; }
   #panePlayground.canvas { padding: 16px 18px 120px; }

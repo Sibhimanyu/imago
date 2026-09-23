@@ -1623,6 +1623,8 @@
     if (state.stagePref) enterStage();
 
     updateMeta();
+    renderHistory();
+    renderSavedList();
   }
 
   /* ── Spec validation / normalisation ───────────────────────────────────── */
@@ -4460,7 +4462,7 @@
     head.appendChild(el('span', 'history-title', 'History'));
     head.appendChild(el('span', 'history-count', list.length + ' fetches'));
     if (changedFetches) {
-      var hot = el('span', 'history-hot', changedFetches + (changedFetches === 1 ? ' changed something' : ' changed something'));
+      var hot = el('span', 'history-hot', changedFetches + ' changed something');
       head.appendChild(hot);
     }
     strip.appendChild(head);
@@ -5284,10 +5286,14 @@
     }
 
     dom.appNav.addEventListener('click', function (event) {
-      var view = event.target && event.target.getAttribute && event.target.getAttribute('data-view');
-      if (view) setAppPane(view);
+      // The Settings button wraps an icon and a label; a click lands on those.
+      var btn = event.target && event.target.closest && event.target.closest('[data-view]');
+      if (btn) setAppPane(btn.getAttribute('data-view'));
     });
     dom.brandHome.addEventListener('click', function () { setAppPane('playground'); });
+    dom.brandHome.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setAppPane('playground'); }
+    });
     if (dom.settingsClose) dom.settingsClose.addEventListener('click', function () { setAppPane('playground'); });
     if (dom.sheetScrim) dom.sheetScrim.addEventListener('click', function () { setAppPane('playground'); });
     if (dom.railClose) dom.railClose.addEventListener('click', function () { setAppPane('playground'); });
@@ -5624,6 +5630,9 @@
     renderSavedList();
 
     if (!restoreFromSnapshot(state.url)) {
+      // No body to show: an inspector reopened now would have no tab bar to
+      // close it with, and would cover the canvas on a phone.
+      setActiveTab('interface');
       dom.tabBar.hidden = true;
       showInterfaceEmpty();
       updateMeta();
