@@ -181,23 +181,6 @@ can never diverge.
 **Priority:** P3
 **Depends on:** None
 
-### Invalid request headers are misreported as a CORS failure
-
-**What:** `parseHeaders` accepts any `name: value` pair, so a forbidden or
-malformed header makes `fetch` throw a `TypeError` that the failure handler's
-`/failed to fetch|networkerror|load failed/i` heuristic labels "Network or CORS
-failure".
-
-**Why:** The user is told the endpoint is down when their own input is at fault.
-
-**Context:** `parseHeaders()` and `handleRequestFailure()` in `app.js`. Validate
-names against the RFC token charset and surface a distinct "Invalid header"
-error.
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
 ## Content
 
 ### Empty response is labelled "not JSON" and its message dangles
@@ -380,6 +363,15 @@ failure re-renders page A with URL B's history strip and rail highlight.
 **Depends on:** None
 
 ## Completed
+
+### Curl import and a plain CORS diagnosis — v0.6.0.0
+
+**What:** Paste a curl command into the command bar; a failed fetch says
+whether the API refuses web pages, the server is unreachable, or you are
+offline. Invalid and browser-owned headers are caught before sending (this
+closed "Invalid request headers are misreported as a CORS failure").
+
+**Completed:** v0.6.0.0 (2026-09-23)
 
 ### One-screen redesign and review fixes — v0.4.0.0
 
