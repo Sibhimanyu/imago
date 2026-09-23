@@ -513,7 +513,7 @@
     generating: false,     // a model call is in flight
     rawPaneDirty: true,    // body changed since the Raw pane was last built
     schemaPaneDirty: true,
-    hasData: false,        // a fetch succeeded — distinct from `data` being falsy
+    detailsOpen: Object.create(null),   // endpoint hash → Details left open        // a fetch succeeded — distinct from `data` being falsy
   };
 
   var dom = {};
@@ -1872,8 +1872,10 @@
           (RE_ISO_DT.test(arr[0]) || RE_ISO_DATE.test(arr[0]))) { timeLen = arr.length; break; }
     }
     if (timeLen < 0) return null;
+    // Nulls are gaps (Open-Meteo pads unfinished hours with them); a series
+    // with a gap used to be dropped from the page entirely.
     var numeric = keys.filter(function (k) {
-      return Array.isArray(node[k]) && node[k].length === timeLen && allNumbers(node[k]);
+      return Array.isArray(node[k]) && node[k].length === timeLen && numbersWithGaps(node[k]);
     });
     return numeric.length ? numeric : null;
   }
@@ -2003,9 +2005,12 @@
 
       var series = seriesKeys(v);
       if (series) {
-        for (var si = 0; si < series.length && si < 2; si += 1) {
-          blocks.push({ type: 'chart', path: key + '.' + series[si],
-                        label: label + ' ' + humanize(series[si]).toLowerCase() });
+        // Two charts lead; the rest go to Details rather than vanishing.
+        for (var si = 0; si < series.length; si += 1) {
+          var chart = { type: 'chart', path: key + '.' + series[si],
+                        label: label + ' ' + humanize(series[si]).toLowerCase() };
+          if (si >= 2) chart.emphasis = 'quiet';
+          blocks.push(chart);
         }
         continue;
       }
@@ -2187,12 +2192,16 @@
     avg: 'average', min: 'minimum', max: 'maximum', desc: 'description'
   });
 
+  var RE_MEASURE_HEIGHT = /((?:^|_)(?:temperature|humidity|dew_?point|wind_speed|wind_direction|wind_gusts|soil_temperature|soil_moisture))_\d+m$/;
+
   function humanize(key) {
     // Sentence case, so snake_case and camelCase labels read the same way.
     // All-caps words are left alone so acronyms survive (URL, ID, HP).
     // Weather APIs suffix the measuring height (temperature_2m,
     // wind_speed_10m); that is instrument detail, not the reader's label.
-    var base = String(key).replace(/_\d+m$/, '');
+    // Only after a weather measure: load_1m / load_5m / load_15m are minute
+    // windows, and stripping those made three fields read "Load".
+    var base = String(key).replace(RE_MEASURE_HEIGHT, '$1');
     var words = (base || String(key))
       .replace(/[_\-.]+/g, ' ')
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -2240,6 +2249,16 @@
 
   // Only components that render a structure may address the whole body.
   var ROOT_OK_TYPES = STRUCTURAL_TYPES;
+
+  function numbersWithGaps(list) {
+    var seen = 0;
+    for (var i = 0; i < list.length; i += 1) {
+      if (list[i] === null) continue;
+      if (typeof list[i] !== 'number' || !isFinite(list[i])) return false;
+      seen += 1;
+    }
+    return seen >= 2;
+  }
 
   function allNumbers(list) {
     for (var i = 0; i < list.length; i += 1) {
@@ -2395,10 +2414,14 @@
   // Bookkeeping (quiet fields, unit tables, generation times) is kept, but out
   // of the reader's way: it folds into a Details section at the foot of the
   // page instead of getting the same box as the values they came for.
-  function isBookkeeping(component) {
+  // data, when given, must show the "units" field is a unit table (an
+  // object). A plain value named units (sold units, units: 42) is data, and
+  // used to be tucked into Details even when it was the number the page is for.
+  function isBookkeeping(component, data) {
     if (component.emphasis === 'quiet') return true;
     var leaf = lastSegment(component.path || '').toLowerCase();
-    return /(^|_)units$/.test(leaf);
+    if (!/(^|_)units$/.test(leaf)) return false;
+    return data === undefined || isPlainObject(getByPath(data, component.path));
   }
 
   function renderSpecBody(spec, data, diffMap) {
@@ -2429,7 +2452,7 @@
       for (var c = 0; c < group.items.length; c += 1) {
         var result = renderComponent(group.items[c], data, diffMap);
         if (!result) continue;
-        if (isBookkeeping(group.items[c]) && result.weight !== 'hero') { tucked.push(result); continue; }
+        if (isBookkeeping(group.items[c], data) && result.weight !== 'hero') { tucked.push(result); continue; }
         if (result.weight === 'hero') heroes.push(result);
         else if (result.weight === 'fact') facts.push(result);
         else blocks.push(result);
@@ -2501,6 +2524,11 @@
 
     if (tucked.length) {
       var details = el('details', 'spec-details');
+      // The page is rebuilt on every refresh; with Watch on, an opened Details
+      // snapped shut every 10-60s. Its state is kept per endpoint.
+      var detailsKey = state.url ? hashString(state.url) : '';
+      if (state.detailsOpen[detailsKey]) details.open = true;
+      details.addEventListener('toggle', function () { state.detailsOpen[detailsKey] = details.open; });
       var summary = el('summary', 'spec-details-summary');
       summary.appendChild(el('span', 'spec-details-title', 'Details'));
       var names = [];
