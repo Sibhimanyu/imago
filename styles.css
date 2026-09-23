@@ -173,7 +173,7 @@ input:focus, textarea:focus, select:focus {
 /* Per-provider key status under each key field. */
 .key-status { font-size: 12.5px; margin-top: 7px; color: var(--muted); }
 .key-status[data-state="ready"] { color: #2f7a48; }
-.key-status[data-state="missing"] { color: var(--yellow-ink); }
+.key-status[data-state="missing"] { color: var(--muted); }
 .settings-card .key-field { margin-top: 0; }
 .setup-card .key-field + .key-field { margin-top: 12px; }
 
@@ -324,7 +324,7 @@ input:focus, textarea:focus, select:focus {
   white-space: nowrap;
 }
 .key-pill[data-state="ready"] { color: #2f7a48; background: var(--green-bg); border-color: #c6e5cf; }
-.key-pill[data-state="missing"] { color: var(--yellow-ink); background: var(--yellow-bg); border-color: var(--yellow-line); }
+/* A missing key is not a change, so it stays neutral (the default above). */
 
 .avatar {
   width: 30px; height: 30px; border-radius: 50%;
@@ -474,8 +474,10 @@ input:focus, textarea:focus, select:focus {
   border: 1px solid var(--line); color: var(--muted); background: var(--card-2);
   white-space: nowrap;
 }
-.badge-chip[data-kind="generated"] { color: #2f7a48; background: var(--green-bg); border-color: #c6e5cf; }
-.badge-chip[data-kind="fallback"]  { color: var(--yellow-ink); background: var(--yellow-bg); border-color: var(--yellow-line); }
+/* Provenance is information, not status: yellow means a value changed and
+   green means live/OK, so neither belongs here. Weight tells them apart. */
+.badge-chip[data-kind="generated"] { color: var(--ink); }
+.badge-chip[data-kind="fallback"]  { color: var(--muted); background: var(--card); }
 
 /* ─── Empty / loading / error states ───────────────────────────── */
 
