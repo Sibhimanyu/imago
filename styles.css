@@ -1648,3 +1648,10 @@ select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mon
 .headers-chip:hover { border-color: var(--ink-2); color: var(--ink); }
 .headers-chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .headers-chip[hidden] { display: none; }
+
+/* Phones: Save, Share and Inspect are icons (with their names kept for
+   assistive tech), so the toolbar stays one row. Four labelled buttons wrapped. */
+@media (max-width: 720px) {
+  .page-tools-right .btn .btn-label { display: none; }
+  .page-tools-right .btn { min-width: 44px; justify-content: center; padding-left: 0; padding-right: 0; }
+}

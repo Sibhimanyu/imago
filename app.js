@@ -513,7 +513,8 @@
     generating: false,     // a model call is in flight
     rawPaneDirty: true,    // body changed since the Raw pane was last built
     schemaPaneDirty: true,
-    detailsOpen: Object.create(null),   // endpoint hash → Details left open        // a fetch succeeded — distinct from `data` being falsy
+    detailsOpen: Object.create(null),   // endpoint hash → Details left open
+    sharedSpec: null,      // { url, spec } from a share link, used once        // a fetch succeeded — distinct from `data` being falsy
   };
 
   var dom = {};
@@ -1554,7 +1555,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Basic layout';
+      : source === 'cache' ? 'From schema cache' : source === 'shared' ? 'Shared layout' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -3783,6 +3784,7 @@
 
   function updateMeta() {
     if (dom.inspectBtn) dom.inspectBtn.disabled = !state.data;
+    if (dom.shareBtn) dom.shareBtn.disabled = !state.data;
     if (!state.data) { dom.runMeta.hidden = true; return; }
     dom.runMeta.hidden = false;
 
@@ -4083,7 +4085,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Basic layout';
+      : source === 'cache' ? 'From schema cache' : source === 'shared' ? 'Shared layout' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -5204,6 +5206,14 @@
   }
 
   function resolveSpec(url, print, userTriggered) {
+    // A page opened from a share link shows the layout it was shared with,
+    // once. It came out of a URL, so it is as untrusted as a model's plan and
+    // goes through the same normaliser; it is never written to the cache.
+    if (state.sharedSpec && state.sharedSpec.url === url) {
+      var shared = normalizeSpec(state.sharedSpec.spec);
+      state.sharedSpec = null;
+      if (shared) { applySpec(shared, 'shared'); return Promise.resolve(); }
+    }
     if (state.builder === 'html') {
       return resolveHtml(url, print, userTriggered);
     }
@@ -5546,6 +5556,7 @@
     });
 
     dom.saveBtn.addEventListener('click', saveCurrentRequest);
+    if (dom.shareBtn) dom.shareBtn.addEventListener('click', shareCurrentPage);
     // A new request starts from an empty command bar.
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
@@ -5740,7 +5751,7 @@
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
-               'inspectorHead', 'inspectorClose', 'headersChip', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
+               'inspectorHead', 'inspectorClose', 'headersChip', 'shareBtn', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                 'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
                 'geminiKeyStatus', 'groqKeyStatus', 'modelName',
                 'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
@@ -5894,11 +5905,93 @@
     return true;
   }
 
+  /* ── Share links ──────────────────────────────────────────────────────
+     A link that reopens this page for someone else: the endpoint and the
+     layout, and nothing else. No headers, no keys, no response body (the
+     recipient fetches fresh data). The layout is left out when it is the
+     basic one, which the recipient's browser rebuilds from the data anyway. */
+
+  var SHARE_PREFIX = '#share=';
+  var MAX_SHARE_CHARS = 8000;   // past this some chat apps cut the link
+
+  function toBase64Url(text) {
+    return window.btoa(unescape(encodeURIComponent(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function fromBase64Url(text) {
+    var b64 = String(text).replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    return decodeURIComponent(escape(window.atob(b64)));
+  }
+
+  // → { link, withLayout }
+  function buildShareLink() {
+    var payload = { v: 1, u: state.url };
+    var withLayout = !!state.spec && state.specSource !== 'fallback';
+    if (withLayout) payload.s = state.spec;
+    var base = window.location.origin + window.location.pathname;
+    var link = base + SHARE_PREFIX + toBase64Url(JSON.stringify(payload));
+    if (link.length > MAX_SHARE_CHARS && withLayout) {
+      withLayout = false;
+      link = base + SHARE_PREFIX + toBase64Url(JSON.stringify({ v: 1, u: state.url }));
+    }
+    return { link: link, withLayout: withLayout };
+  }
+
+  // → { url, spec|null } or null for no link; { error } for a damaged one.
+  function readShareLink(hash) {
+    if (!hash || hash.indexOf(SHARE_PREFIX) !== 0) return null;
+    try {
+      var payload = JSON.parse(fromBase64Url(hash.slice(SHARE_PREFIX.length)));
+      var url = payload && typeof payload.u === 'string' ? payload.u : '';
+      var parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('scheme');
+      return { url: url, spec: isPlainObject(payload.s) ? payload.s : null };
+    } catch (err) {
+      return { error: 'That share link is damaged, so it could not be opened.' };
+    }
+  }
+
+  function shareCurrentPage() {
+    if (!state.data || !state.url) return;
+    var built = buildShareLink();
+    var notes = [];
+    if (!built.withLayout && state.specSource !== 'fallback') notes.push('The layout was too big to fit, so the link has only the endpoint.');
+    if (Object.keys(state.headers || {}).length) notes.push('It leaves out this endpoint\'s headers, so it may not load for others.');
+    var done = function () { toast(['Link copied.'].concat(notes).join(' '), notes.length ? null : 'ok'); };
+    var failed = function () { toast('Could not copy the link. Allow clipboard access and try again.', 'error'); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(built.link).then(done, failed);
+      else failed();
+    } catch (err) { failed(); }
+    return built.link;
+  }
+
+  // Opening a share link: straight into the app, fetch with no headers, show
+  // the shared layout once. The link comes out of the address bar so a reload
+  // is an ordinary visit and the link is not kept in history.
+  function openShareLink() {
+    var shared = readShareLink(window.location.hash);
+    if (!shared) return false;
+    try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (err) { /* ignore */ }
+    var prefs = getPrefs();
+    prefs.onboarded = true;
+    setPrefs(prefs);
+    showView('app');
+    if (shared.error) { toast(shared.error, 'error'); return true; }
+    state.sharedSpec = shared.spec ? { url: shared.url, spec: shared.spec } : null;
+    state.stack = [];
+    toast('Opened a page shared from ' + (hostOf(shared.url) || 'a link') + '.');
+    navigateTo(shared.url, '');
+    return true;
+  }
+
   function init() {
     cacheDom();
     wireEvents();
     restoreSession();
     restoreLastView();
+    if (openShareLink()) return;
 
     var prefs = getPrefs();
     if (prefs.onboarded) showView('app');
@@ -5949,7 +6042,7 @@
     getProvider: getProvider,
     // examples
     DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
-    parseCurl: parseCurl, shellWords: shellWords, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
+    parseCurl: parseCurl, shellWords: shellWords, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,
