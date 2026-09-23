@@ -709,3 +709,30 @@ describe('one home per control', () => {
     expect(spec.actions).toEqual([{ type: 'follow', path: 'next', label: 'Next page' }]);
   });
 });
+
+describe('the line above the page speaks plainly', () => {
+  it('shows when and how big, no schema id, and a change count only when something changed', async () => {
+    const app = await boot();
+    app.state.data = { a: 1 };
+    app.state.byteSize = 1126;
+    app.state.schemaHash = 'sch_1t1u1v1';
+    app.state.lastCheckedAt = Date.now();
+    app.state.diff = null;
+    app.updateMeta();
+    const meta = app.dom.runMeta;
+    expect(meta.textContent).not.toContain('sch_1t1u1v1');
+    expect(meta.textContent).not.toContain('Schema');
+    expect(meta.textContent).toContain('1.1 KB');
+    expect(app.dom.changedChip.hidden).toBe(true);
+
+    app.state.diff = { changed: [] };
+    app.state.changedCount = 0;
+    app.updateMeta();
+    expect(app.dom.changedChip.hidden).toBe(true);
+
+    app.state.changedCount = 3;
+    app.updateMeta();
+    expect(app.dom.changedChip.hidden).toBe(false);
+    expect(app.dom.changedChip.textContent).toBe('3 changed');
+  });
+});

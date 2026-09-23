@@ -3710,15 +3710,13 @@
 
     dom.stLastChecked.textContent = state.lastCheckedAt ? formatRelative(state.lastCheckedAt) : '—';
     dom.stSize.textContent = state.byteSize ? formatBytes(state.byteSize) : '—';
-    dom.stCache.textContent = state.schemaHash || '—';
-
-    if (state.diff) {
-      dom.stChanged.textContent = String(state.changedCount);
-      dom.changedChip.className = state.changedCount > 0 ? 'meta-chip is-hot' : 'meta-chip';
-    } else {
-      dom.stChanged.textContent = '—';
-      dom.changedChip.className = 'meta-chip';
-    }
+    // Plain words only. The schema fingerprint lives in Inspect → Schema, and
+    // "Changed —" (no previous fetch yet) said nothing; the count shows only
+    // when something actually changed.
+    var changed = state.diff ? state.changedCount : 0;
+    dom.changedChip.hidden = !(changed > 0);
+    dom.stChanged.textContent = String(changed);
+    dom.changedChip.className = changed > 0 ? 'meta-chip is-hot' : 'meta-chip';
 
     if (state.refreshIntervalMs && state.nextRefreshAt) {
       var remaining = Math.max(0, Math.ceil((state.nextRefreshAt - Date.now()) / 1000));
@@ -5455,7 +5453,7 @@
                 'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
-               'stSize', 'stCache', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
+               'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
                'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                 'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
