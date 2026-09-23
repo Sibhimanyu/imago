@@ -428,7 +428,10 @@
   var EMPHASIS = ['hero', 'normal', 'quiet'];
   // What a generated page can let the reader *do*. `follow` opens a URL found
   // in the response as the next generative page; the rest drive Imago itself.
-  var ACTION_TYPES = ['follow', 'refresh', 'watch', 'raw'];
+  // Only links live on the page. Watch, refetch and the raw response each have
+  // one home in the toolbar (Watch, Go, Inspect); the page used to repeat all
+  // three as buttons, so a phone showed two rows of controls before any data.
+  var ACTION_TYPES = ['follow'];
   var MAX_ACTIONS = 6;
 
   var IMAGO_UI_SPEC_JSON_SCHEMA = {
@@ -539,7 +542,6 @@
     rawPaneDirty: true,    // body changed since the Raw pane was last built
     schemaPaneDirty: true,
     hasData: false,        // a fetch succeeded — distinct from `data` being falsy
-    showRaw: false
   };
 
   var dom = {};
@@ -1363,10 +1365,8 @@
       '- { type: "follow", path, label } for every field whose value is a URL to',
       '  a related resource or the next/previous page. path must point at the',
       '  URL string itself. Label it by what it leads to ("Species", "Next page").',
-      '- { type: "refresh", label } when the data changes over time.',
-      '- { type: "watch", interval: 10|30|60, label } for live data such as',
-      '  weather, prices or status.',
-      '- { type: "raw", label } is always acceptable as the last action.',
+      'Only follow actions: watching, refetching and the raw response are',
+      'already in the toolbar. No links worth following means an empty list.',
       '',
       'title should name the thing the response is about, in human words.',
       'subtitle is one short line of context, not the URL.',
@@ -1722,10 +1722,6 @@
       if (candidate.type === 'follow') {
         if (typeof candidate.path !== 'string' || !candidate.path.trim()) continue;
         action.path = candidate.path.trim();
-      }
-      if (candidate.type === 'watch') {
-        var interval = Number(candidate.interval);
-        action.interval = [10, 30, 60].indexOf(interval) !== -1 ? interval : 30;
       }
       if (!action.label) action.label = action.type === 'follow' ? humanize(lastSegment(action.path)) : humanize(action.type);
       var key = action.type + '@' + (action.path || '');
@@ -2129,17 +2125,15 @@
   }
 
   // Where can the reader go from here? Any URL in the body is a door; the
-  // paging keys are the front door. Live-looking data earns a watch action.
+  // paging keys are the front door.
   var RE_KEY_PAGING = /^(next|next_page|next_url|nextpage|previous|prev|prev_page|previous_url|self|first|last)$/;
-  // Deliberately narrow: "rate" would match capture_rate, "status" any enum.
-  var RE_LIVE_HINT = /(^|[_./?&-])(current|weather|forecast|prices?|quotes?|health|live|latest|now|ticker|exchange)([_./?&=-]|$)/i;
 
   function deriveActions(data, url) {
     var actions = [];
     var seen = Object.create(null);   // keys come from the response body
 
     function follow(path, label) {
-      if (actions.length >= MAX_ACTIONS - 2 || seen[path]) return;
+      if (actions.length >= MAX_ACTIONS || seen[path]) return;
       seen[path] = true;
       actions.push({ type: 'follow', path: path, label: label });
     }
@@ -2169,15 +2163,7 @@
       }
     }
     scan(data, '', 0);
-
-    var live = RE_LIVE_HINT.test(String(url || '')) ||
-               (isPlainObject(data) && Object.keys(data).some(function (k) {
-                 return RE_LIVE_HINT.test(k) || (typeof data[k] === 'string' && RE_ISO_DT.test(data[k]));
-               }));
-    if (live) actions.push({ type: 'watch', interval: 30, label: 'Watch' });
-    actions.push({ type: 'refresh', label: 'Refresh' });
-    actions.push({ type: 'raw', label: 'Raw JSON' });
-    return actions.slice(0, MAX_ACTIONS);
+    return actions;
   }
 
   // Key order is not preference order: PokeAPI lists front_shiny before
@@ -4064,7 +4050,6 @@
 
     dom.interfaceOut.appendChild(renderSpecBody(spec, state.data, state.diff));
 
-    if (state.showRaw) dom.interfaceOut.appendChild(renderRawSection());
 
     dom.stageSource.textContent = dom.cacheBadge.textContent;
     dom.stageSource.setAttribute('data-kind', source);
@@ -4139,7 +4124,6 @@
       state.headersText = previous.headersText || '';
       state.headers = parseHeaders(state.headersText);
       state.activeRequestId = null;
-      state.showRaw = false;
       state.stagePref = true;
       markDirty();
       state.dirtySinceSend = false;
@@ -4199,7 +4183,6 @@
     setUrlInput(url);
     if (typeof headersText === 'string') dom.headersInput.value = headersText;
     state.activeRequestId = null;
-    state.showRaw = false;
     state.stagePref = true;
     markDirty();
 
@@ -4224,10 +4207,7 @@
   }
 
   var ACTION_ICONS = {
-    follow:  ['M3 8h9', 'M8.5 4l4 4-4 4'],
-    refresh: ['M13.5 8a5.5 5.5 0 1 1-1.6-3.9', 'M13.5 2.5v3h-3'],
-    watch:   ['M8 2.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z', 'M8 5v3.2l2.2 1.3'],
-    raw:     ['M5.5 4.5 2 8l3.5 3.5', 'M10.5 4.5 14 8l-3.5 3.5']
+    follow:  ['M3 8h9', 'M8.5 4l4 4-4 4']
   };
 
   function actionIcon(type) {
@@ -4276,39 +4256,6 @@
         btn.addEventListener('click', (function (href) {
           return function () { followUrl(href); };
         })(target));
-      } else if (action.type === 'refresh') {
-        btn.appendChild(actionIcon('refresh'));
-        btn.appendChild(document.createTextNode(action.label));
-        btn.addEventListener('click', function () { performRequest(false); });
-      } else if (action.type === 'watch') {
-        var on = state.refreshIntervalMs > 0;
-        btn.appendChild(actionIcon('watch'));
-        btn.appendChild(document.createTextNode(on
-          ? 'Watching · ' + (state.refreshIntervalMs / 1000) + 's'
-          : action.label + ' · ' + action.interval + 's'));
-        if (on) btn.className += ' is-on';
-        btn.addEventListener('click', (function (interval) {
-          return function () {
-            state.refreshIntervalMs = state.refreshIntervalMs ? 0 : interval * 1000;
-            syncRefreshUi();
-            if (state.refreshIntervalMs && state.data && !state.dirtySinceSend) startTimer();
-            else stopTimer();
-            savePrefs();
-            applySpec(state.spec, state.specSource);   // re-render so the button reflects it
-          };
-        })(action.interval || 30));
-      } else if (action.type === 'raw') {
-        btn.appendChild(actionIcon('raw'));
-        btn.appendChild(document.createTextNode(state.showRaw ? 'Hide raw' : action.label));
-        if (state.showRaw) btn.className += ' is-on';
-        btn.addEventListener('click', function () {
-          state.showRaw = !state.showRaw;
-          applySpec(state.spec, state.specSource);
-          if (state.showRaw) {
-            var raw = dom.interfaceOut.querySelector('.stage-raw');
-            if (raw && raw.scrollIntoView) raw.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
       } else {
         continue;
       }
@@ -4317,17 +4264,6 @@
       rendered += 1;
     }
     return rendered ? row : null;
-  }
-
-  function renderRawSection() {
-    var section = el('section', 'spec-section stage-raw');
-    section.appendChild(el('h2', 'spec-section-head', 'Raw response'));
-    var grid = el('div', 'spec-grid');
-    var raw = renderComponent({ type: 'jsonBlock', path: '', label: state.url || 'Response' }, state.data, state.diff);
-    raw.node.className += ' span-12';
-    grid.appendChild(raw.node);
-    section.appendChild(grid);
-    return section;
   }
 
   /* ── Tabs ──────────────────────────────────────────────────────────────── */
@@ -5323,7 +5259,6 @@
       event.preventDefault();
       state.stack = [];          // a typed URL starts a new trail
       state.stagePref = true;
-      state.showRaw = false;
       performRequest(false);
     });
 

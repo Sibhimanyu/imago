@@ -623,7 +623,6 @@ input:focus, textarea:focus, select:focus {
 .action-btn.is-on { background: var(--green-bg); border-color: #c6e5cf; color: #2f7a48; }
 .action-btn.is-on svg { color: inherit; }
 
-.stage-raw { margin-top: 26px; }
 
 /* Layout shells — the plan's `layout` decides the page's shape. */
 .layout-article .spec-section { max-width: 760px; }

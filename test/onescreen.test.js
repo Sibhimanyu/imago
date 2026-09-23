@@ -685,3 +685,26 @@ describe('credentials stay with their endpoint', () => {
     expect(app.dom.headersInput.value).not.toContain('k');
   });
 });
+
+describe('one home per control', () => {
+  // Watch, refetch and the raw response each live in the toolbar. The page
+  // used to repeat them as buttons, which on a phone meant two rows of
+  // controls before any data.
+  it('the basic layout offers no Watch, Refresh or Raw JSON buttons', async () => {
+    const app = await boot();
+    app.state.url = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m';
+    app.state.data = WEATHER;
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec(WEATHER, app.state.url)), 'fallback');
+    expect(app.state.spec.actions).toEqual([]);
+    expect(app.dom.interfaceOut.querySelector('.action-row')).toBeNull();
+  });
+
+  it('a model plan cannot bring them back, but its links survive', async () => {
+    const app = await boot();
+    const spec = app.normalizeSpec({
+      title: 'T', layout: 'dashboard', components: [{ type: 'text', path: 'a' }],
+      actions: [{ type: 'watch', interval: 10 }, { type: 'refresh' }, { type: 'raw' }, { type: 'follow', path: 'next', label: 'Next page' }]
+    });
+    expect(spec.actions).toEqual([{ type: 'follow', path: 'next', label: 'Next page' }]);
+  });
+});
