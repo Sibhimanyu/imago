@@ -89,6 +89,15 @@ bar saying how many are set. `-u` becomes Basic auth, `-G -d` becomes a query
 string, and headers the browser sets itself (Cookie, User-Agent, …) are left out
 and named. Headers stay in this tab's session.
 
+### Share a page
+
+**Share** copies a link that opens the same page for someone else: the
+endpoint and its layout, so they see what you see even without a key of their
+own. The link never carries your headers, keys or the response itself; their
+browser fetches fresh data. A layout from a link is checked like a model's plan
+and is not saved into their cache. If the endpoint needed your headers, you are
+told the link may not load for others.
+
 ### One screen
 
 Imago is one screen. The command bar (paste a URL) sits on top, your saved endpoints

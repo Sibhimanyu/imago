@@ -2,6 +2,25 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.8.0.0] - 2026-09-23
+
+Pages you build can leave your browser.
+
+### Added
+
+- **Share a page.** Share copies a link that opens the same page for someone
+  else, with the endpoint and its layout, so they see what you see even without
+  a key. The link never carries your headers, keys or the response; their
+  browser fetches fresh data. A layout from a link is checked like a model's
+  plan and never saved into their cache, and the link is cleared from the
+  address bar once it is opened. If the endpoint needed your headers, you are
+  told the link may not load for others.
+
+### Changed
+
+- **On a phone, Save, Share and Inspect are icon buttons**, so the toolbar stays
+  on one row. They keep their names for screen readers.
+
 ## [0.7.0.0] - 2026-09-23
 
 The page you get without a key stops losing and mixing up fields.
