@@ -75,7 +75,7 @@ What is mirrored:
   from the real app, so they cannot drift from it. Never edit them by hand.
 - **The stamp.** `design/figma-sync.json` records a hash of the UI surface
   (`index.html` + `styles.css`) at the last sync, plus the Figma node ids.
-  `app.js` is not hashed (most of it is not UI); when a change to it alters
+  `js/` is not hashed (most of it is not UI); when a change to it alters
   what renders, sync anyway.
 
 After any UI change, before merging:

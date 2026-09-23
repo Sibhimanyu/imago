@@ -34,7 +34,8 @@ npm test
 ```
 
 Vitest + jsdom. Tests live in `test/`; read **TESTING.md** before adding any —
-`app.js` is a single IIFE reached through a `window.__imago` test seam, `boot()`
+the app is native ES modules in `js/` (entry `js/main.js`), which the harness
+bundles for jsdom and reaches through a `window.__imago` test seam, `boot()`
 is async and must be awaited, and jsdom has two traps (Storage is a Proxy, there
 is no layout) that the harness documents.
 
@@ -48,15 +49,19 @@ Expectations:
 - New conditional → test both paths. New error path → trigger it.
 - Never commit code that makes an existing test fail.
 
-`app.js` ships unbundled, so a syntax error is a blank page, not a build error.
-CI runs `node --check app.js` and `./publish.sh` alongside the suite.
+`js/` ships unbundled, so a syntax error or a missing import is a blank page,
+not a build error. CI runs `npm run check` (bundles `js/main.js` and checks every
+cross-module name is imported) and `./publish.sh` alongside the suite. A new
+top-level function another module uses must be added to its module's `export`
+list and imported where it is used; a helper the tests need goes on the seam in
+`js/main.js`.
 
 ## Figma stays in sync
 
 The code is the source of truth and the Figma file mirrors it. CI runs
 `npm run design:check`, which fails when `index.html`, `styles.css` or the
 tokens changed since the last Figma sync. Any change to what renders (including
-DOM built in `app.js`) must be carried into Figma in the same branch, using the
+DOM built in `js/`) must be carried into Figma in the same branch, using the
 steps in **DESIGN.md → Figma sync**: `design:tokens`, `design:shots`,
 `design:figma` → `use_figma` + `upload_assets`, then `design:stamp`. Never
 stamp without actually updating Figma.

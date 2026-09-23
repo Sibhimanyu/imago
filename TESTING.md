@@ -11,17 +11,18 @@ npm test          # one pass
 npm run test:watch
 ```
 
-Framework: **Vitest 2.1** with **jsdom 25**. No bundler, no transpile step —
-the suite loads the same `app.js` the browser gets.
+Framework: **Vitest 2.1** with **jsdom 25**. The browser loads `js/main.js` as
+native ES modules with no build step. jsdom cannot run module scripts, so
+`test/harness.js` bundles those same modules into one classic script with
+esbuild, once per test file, and evaluates it in each fresh jsdom. Same source,
+one packaging step, test-only.
 
-## How the suite reaches into app.js
+## How the suite reaches into the app
 
-`app.js` is one 4000-line IIFE with no module boundary, because it ships to the
-browser as a plain `<script>` with no build step. There is no export to import.
-
-So the bottom of `app.js` carries a **test seam**: a single
+The app is booted through the page, not imported: each test needs a fresh DOM
+and fresh module state. So `js/main.js` carries a **test seam**: a single
 `window.__imago = { ... }` object exposing the pure helpers plus the `state` and
-`dom` objects. `test/harness.js` builds a jsdom, evaluates `app.js` inside it,
+`dom` objects. `test/harness.js` builds a jsdom, evaluates the bundle inside it,
 and hands the seam back.
 
 The seam ships to the browser. That is deliberate and grants no new capability:
@@ -36,8 +37,8 @@ list of references; do not put logic in it.
 ### The harness gotcha that cost an afternoon
 
 `boot()` is **async** and must be awaited. It waits for the jsdom `load` event
-*before* evaluating `app.js`. Evaluate too early, while `document.readyState`
-is still `'loading'`, and `app.js` defers `init()` to `DOMContentLoaded` — then
+*before* evaluating the app. Evaluate too early, while `document.readyState`
+is still `'loading'`, and `main.js` defers `init()` to `DOMContentLoaded` — then
 runs it a second time when that fires, re-running `cacheDom()` and re-wiring
 every event handler behind the test's back. That double-init silently
 invalidated three regression tests before it was caught.
@@ -60,6 +61,7 @@ Two other jsdom traps the harness already handles:
 | `test/regressions.test.js` | One test per critical bug fixed, named after the behaviour that was broken. |
 | `test/onescreen.test.js` | The one-screen layout: inspector and Settings sheet, the trail, the history strip, the endpoint rail, first run without a key, and the basic layout (units, series, Details). |
 | `test/design-sync.test.js` | The Figma sync gate: token extraction from `:root`, the UI-surface hash, the Figma manifest against the screenshot list, and `design:check` run end to end in a sandbox copy. |
+| `test/modules.test.js` | The module check (`npm run check`): a name used without an import, an assignment to an import, duplicates, unreachable modules, and the shipped `js/` passing it. |
 
 `test/harness.js` also exports `jsonFetch(body)` for a one-shot fetch stub and
 `flush()` to drain pending promise jobs.
@@ -82,10 +84,10 @@ A passing suite does not prove the test would fail if the fix were removed.
 Break the fix on purpose and confirm the suite goes red:
 
 ```bash
-cp app.js /tmp/app.js.good
+cp js/request.js /tmp/request.js.good      # whichever module holds the fix
 # delete or invert the guard you are testing, then:
 npm test
-cp /tmp/app.js.good app.js
+cp /tmp/request.js.good js/request.js
 ```
 
 This caught three tests in this suite that passed no matter what the source

@@ -229,9 +229,10 @@ npm install
 npm test
 ```
 
-Vitest and jsdom, run against the same `app.js` the browser gets. See
-[TESTING.md](TESTING.md) before adding tests — `app.js` is a single IIFE reached
-through a test seam, and jsdom has a few traps that are documented there.
+Vitest and jsdom, run against the same modules the browser gets (bundled into one
+script for jsdom, which cannot run module scripts). See [TESTING.md](TESTING.md)
+before adding tests — the suite reaches the app through a test seam, and jsdom has
+a few traps that are documented there.
 
 ### Getting an API key
 
@@ -330,16 +331,40 @@ silently.
 ## Files
 
 ```
-index.html    landing, onboarding, and app shell
+index.html    landing and app shell
 styles.css    design system and all three layouts
-app.js        everything else, in labelled sections
+js/           the app, as native ES modules (no build step)
 test/         vitest suite (not shipped)
+scripts/      design sync, screenshots, the module check (not shipped)
 publish.sh    assembles dist/ for deployment
 ```
 
-`app.js` is organised as: constants → state → storage → DOM helpers → path utilities →
-schema fingerprinting → snapshot diffing → providers → spec validation → renderer →
-views → saved requests → request flow → auto-refresh → events → bootstrap → test seam.
+`js/main.js` is the entry point (`<script type="module">`). The modules, roughly in
+dependency order:
+
+| Module | What it holds |
+|---|---|
+| `config.js` | constants, the model providers, the example endpoints |
+| `state.js` | the one `state` object and the `dom` element cache |
+| `storage.js` | localStorage/sessionStorage: prefs, keys, saved requests, snapshots, cached plans |
+| `edits.js` | page edits: storage, and the edit bar and panel |
+| `util.js` | DOM helpers, path utilities, formatting |
+| `values.js` | value semantics: what a value is and how it reads |
+| `schema.js` | schema fingerprinting and snapshot diffing |
+| `llm.js` | model calls: plan generation and the full-HTML builder |
+| `spec.js` | plan validation and the basic (no-key) layout |
+| `render.js` | the renderer: components, layout, charts |
+| `ui.js` | toast, view routing, the meta row and key pill |
+| `chat.js` | the Settings try-it console |
+| `panes.js` | inspector panes, interface states, the stage and tabs |
+| `endpoints.js` | the endpoint rail and the history strip |
+| `request.js` | headers, curl import, snapshots, the request flow, plan resolution, auto-refresh |
+| `main.js` | events, bootstrap, Watch alerts, share links, the test seam |
+
+Modules import freely from each other (cycles are fine: everything shared is a
+function or an object). `npm run check` fails if a module uses a name another
+module declares without importing it, since without a build step that would
+only surface as a blank page.
 
 ---
 
