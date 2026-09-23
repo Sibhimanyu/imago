@@ -248,7 +248,11 @@ function statBarsShape(rows) {
 
 // "…/v2?lat=…" is not a title. Prefer the last segment that says something,
 // and fall back to the service's own name.
-function endpointTitle(url) {
+// raw: return the last path segment as written, for identifiers whose case
+// and hyphens are the point (a GitHub login, a package name).
+var RE_CODE_IDENTITY = /^(login|full_name|node_id|version|versions|dist-tags|repository|package|package_name|slug|sha)$/;
+
+function endpointTitle(url, raw) {
   if (!url) return '';
   var noise = /^(v\d+|api|json|data|index|latest|current|query|search|get)$/i;
   try {
@@ -256,7 +260,7 @@ function endpointTitle(url) {
     var segments = parsed.pathname.split('/').filter(Boolean)
       .map(function (part) { return decodeURIComponent(part).replace(/\.(json|xml)$/i, ''); })
       .filter(function (part) { return part && !noise.test(part); });
-    if (segments.length) return humanize(segments[segments.length - 1]);
+    if (segments.length) return raw ? segments[segments.length - 1] : humanize(segments[segments.length - 1]);
     var host = parsed.hostname.replace(/^(www|api)\./, '').split('.');
     return humanize(host[0]);
   } catch (err) {
@@ -325,9 +329,14 @@ function buildFallbackSpec(data, url) {
     var value = data[titleCandidates[i]];
     if (typeof value === 'string' && value.trim()) { titleKey = titleCandidates[i]; break; }
   }
-  title = titleKey ? String(data[titleKey]) : endpointTitle(url) || 'Response';
-  // A bare identifier ("pikachu", "the-hobbit") is a name, so it reads as one.
-  if (/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(title)) {
+  // A response about a code identifier (a GitHub login or repo, a package)
+  // names it in a form where case and hyphens matter: "left-pad" is not
+  // "Left pad", and a login is not a proper noun. Those are shown as written.
+  var codeIdentity = keys.some(function (k) { return RE_CODE_IDENTITY.test(k); });
+  title = titleKey ? String(data[titleKey]) : endpointTitle(url, codeIdentity) || 'Response';
+  // Otherwise a bare identifier ("pikachu", "the-hobbit") is a name, so it
+  // reads as one.
+  if (!codeIdentity && /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(title)) {
     title = title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, ' ');
   }
 
@@ -622,4 +631,4 @@ function humanize(key) {
   return words.join(' ');
 }
 
-export { normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, RE_MEASURE_HEIGHT, humanize };
+export { RE_CODE_IDENTITY, normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, RE_MEASURE_HEIGHT, humanize };

@@ -961,3 +961,18 @@ describe('no dead key-setup screen', () => {
     expect([...app.window.document.querySelectorAll('body > .view')].map((v) => v.id)).toEqual(['landingView', 'appView']);
   });
 });
+
+describe('titles keep identifiers as written', () => {
+  // A lowercase slug was always capitalised, so a package "left-pad" became
+  // "Left pad" and a GitHub login read as a proper noun.
+  it('leaves a code identifier alone, and still capitalises a plain name', async () => {
+    const app = await boot();
+    expect(app.buildFallbackSpec({ name: 'left-pad', version: '1.3.0' }, 'https://registry.test/left-pad').title).toBe('left-pad');
+    expect(app.buildFallbackSpec({ name: 'linux', full_name: 'torvalds/linux' }, 'https://api.test/repos/torvalds/linux').title).toBe('linux');
+    // No name at all: the URL segment is the title, and a login stays a login.
+    expect(app.buildFallbackSpec({ login: 'torvalds', id: 1024025 }, 'https://api.test/users/torvalds').title).toBe('torvalds');
+    expect(app.buildFallbackSpec({ name: 'pikachu', id: 25 }, 'https://a.test/p').title).toBe('Pikachu');
+    expect(app.buildFallbackSpec({ name: 'the-hobbit' }, 'https://a.test/b').title).toBe('The hobbit');
+    expect(app.buildFallbackSpec({ id: 7 }, 'https://a.test/users/some_user').title).toBe('Some user');
+  });
+});
