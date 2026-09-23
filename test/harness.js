@@ -1,15 +1,21 @@
-/* Boots app.js inside jsdom and hands back its test seam.
-   app.js is one IIFE with no module boundary, so it exposes `window.__imago`
-   (see the "Test seam" block at the bottom of app.js). Nothing here reaches
-   past that seam. */
+/* Boots the app inside jsdom and hands back its test seam.
+   The browser loads js/main.js as native ES modules (no build step). jsdom
+   cannot run module scripts, so the suite bundles the same modules into one
+   classic script, once per test file, and evaluates it in each fresh jsdom.
+   The app exposes `window.__imago` (the "Test seam" block in js/main.js);
+   nothing here reaches past that seam. */
 import { JSDOM } from 'jsdom';
+import { buildSync } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const APP = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
+const APP = buildSync({
+  entryPoints: [path.join(ROOT, 'js/main.js')],
+  bundle: true, format: 'iife', write: false, logLevel: 'silent'
+}).outputFiles[0].text;
 
 /**
  * @param {object}   opts
@@ -27,8 +33,8 @@ export async function boot(opts = {}) {
   });
   const { window } = dom;
 
-  // Wait for the document to finish loading BEFORE evaluating app.js. If we
-  // eval while readyState is still 'loading', app.js defers init() to
+  // Wait for the document to finish loading BEFORE evaluating the app. If we
+  // eval while readyState is still 'loading', main.js defers init() to
   // DOMContentLoaded and then runs it a second time when that fires — which
   // re-runs cacheDom and re-wires every event handler behind the test's back.
   if (window.document.readyState !== 'complete') {
@@ -58,8 +64,8 @@ export async function boot(opts = {}) {
   window.eval(APP);
 
   const api = window.__imago;
-  if (!api) throw new Error('app.js did not expose its test seam');
-  if (!api.dom.urlInput) throw new Error('app.js did not initialise (cacheDom never ran)');
+  if (!api) throw new Error('js/main.js did not expose its test seam');
+  if (!api.dom.urlInput) throw new Error('js/main.js did not initialise (cacheDom never ran)');
 
   return { dom, window, ...api, api };
 }

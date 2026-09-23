@@ -21,10 +21,12 @@ jobs:
       - name: Unit and regression suites
         run: npm test
 
-      # app.js ships to the browser unbundled, so a syntax error is a blank
-      # page rather than a build failure. Check it explicitly.
-      - name: Syntax-check the shipped script
-        run: node --check app.js
+      # js/ ships to the browser as native ES modules with no build step, so a
+      # syntax error or a missing import is a blank page, not a build failure.
+      # This bundles js/main.js (syntax, paths, exports) and checks every name
+      # a module uses from another is imported.
+      - name: Check the shipped modules
+        run: npm run check
 
       # publish.sh assembles dist/. If it breaks, deploys serve a stale tree.
       - name: Assemble the deploy tree
