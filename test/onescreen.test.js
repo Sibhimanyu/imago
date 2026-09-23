@@ -258,3 +258,31 @@ describe('the basic layout reads like a page', () => {
     expect(app.buildFallbackSpec({ name: 'Mr. Mime' }, 'https://a.test/p').title).toBe('Mr. Mime');
   });
 });
+
+describe('landing specimen', () => {
+  // The old hero was decoration (floating, unrelated cards). The new one is a
+  // real response beside the interface it becomes, for three examples.
+  it('the switcher swaps both halves and the URL together', async () => {
+    const app = await boot();
+    const doc = app.window.document;
+    const pane = (n) => doc.querySelector(`.spec-pane[data-example="${n}"]`);
+    expect(pane('pokemon').hidden).toBe(false);
+    expect(pane('weather').hidden).toBe(true);
+    doc.querySelector('.specimen-switch [data-example="weather"]').click();
+    expect(pane('weather').hidden).toBe(false);
+    expect(pane('pokemon').hidden).toBe(true);
+    expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo');
+    expect(doc.querySelector('.specimen-switch [data-example="weather"]').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('Try an example opens the app on the example that is showing', async () => {
+    const calls = [];
+    const app = await boot({ fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
+    app.window.document.querySelector('.specimen-switch [data-example="library"]').click();
+    app.dom.landingTry.click();
+    await flush();
+    expect(app.state.view).toBe('app');
+    expect(calls.some((u) => u.indexOf('openlibrary.org') !== -1)).toBe(true);
+    expect(app.getPrefs().onboarded).toBe(true);
+  });
+});

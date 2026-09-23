@@ -5247,6 +5247,7 @@
     // No key gate in front of the product: straight to a rendered page.
     dom.landingStart.addEventListener('click', function () { enterApp(); });
     dom.landingSkip.addEventListener('click', function () { enterApp(); });
+    wireSpecimen();
     dom.landingAbout.addEventListener('click', function () {
       toast('Imago turns an API response into an interface, remembers the shape, and watches it change.');
     });
@@ -5477,10 +5478,55 @@
     window.addEventListener('beforeunload', savePrefs);
   }
 
+  // The landing hero: one response and the interface it became, for three
+  // examples. The switcher swaps both halves; Try an example opens the app on
+  // whichever one is showing.
+  function wireSpecimen() {
+    var root = document.querySelector('.specimen');
+    if (!root) return;
+    var tabs = root.querySelectorAll('.specimen-switch button');
+    var url = DEMOS[0].url;
+    function show(name) {
+      for (var i = 0; i < tabs.length; i += 1) {
+        var on = tabs[i].getAttribute('data-example') === name;
+        tabs[i].classList.toggle('is-active', on);
+        tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) {
+          var shown = qs('specimenUrl');
+          if (shown) shown.textContent = tabs[i].getAttribute('data-url');
+        }
+      }
+      var panes = root.querySelectorAll('.spec-pane');
+      for (var j = 0; j < panes.length; j += 1) {
+        var match = panes[j].getAttribute('data-example') === name;
+        panes[j].hidden = !match;
+        panes[j].classList.toggle('is-active', match);
+      }
+      var demo = { pokemon: 'pokeapi.co', weather: 'open-meteo', library: 'openlibrary' }[name];
+      for (var d = 0; d < DEMOS.length; d += 1) {
+        if (DEMOS[d].url.indexOf(demo) !== -1) { url = DEMOS[d].url; break; }
+      }
+    }
+    for (var t = 0; t < tabs.length; t += 1) {
+      (function (tab) {
+        tab.addEventListener('click', function () { show(tab.getAttribute('data-example')); });
+      })(tabs[t]);
+    }
+    if (dom.landingTry) {
+      dom.landingTry.addEventListener('click', function () {
+        var prefs = getPrefs();
+        prefs.onboarded = true;
+        setPrefs(prefs);
+        showView('app');
+        loadExample(url);
+      });
+    }
+  }
+
   /* ── Bootstrap ─────────────────────────────────────────────────────────── */
 
   function cacheDom() {
-    var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout',
+    var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
                 'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
                 'exampleSelect', 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
