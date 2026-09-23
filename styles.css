@@ -1655,3 +1655,30 @@ select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mon
   .page-tools-right .btn .btn-label { display: none; }
   .page-tools-right .btn { min-width: 44px; justify-content: center; padding-left: 0; padding-right: 0; }
 }
+
+/* Page edits: a bar on each field, a panel above the page */
+.edit-panel {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 18px 0 8px;
+  padding: 12px 14px; border: 1px dashed var(--line); border-radius: var(--r); background: var(--card-2);
+}
+.edit-panel-note { margin: 0; flex: 1 1 260px; font-size: 13px; color: var(--muted); }
+.edit-hidden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; }
+.edit-hidden-label { font-size: 12.5px; color: var(--muted); }
+.edit-show {
+  padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
+  font: inherit; font-size: 12.5px; color: var(--ink-2); cursor: pointer;
+}
+.edit-show:hover { border-color: var(--ink-2); }
+.edit-panel-actions { display: flex; gap: 8px; margin-left: auto; }
+.edit-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 8px; }
+.edit-bar .edit-label { flex: 1 1 140px; min-width: 0; height: 32px; padding: 4px 8px; font-size: 13px; }
+.edit-bar .edit-weight { width: auto; height: 32px; padding: 4px 8px; font-size: 12.5px; font-family: var(--sans); }
+.edit-bar .edit-hide { height: 32px; }
+body.is-editing .fact { flex-wrap: wrap; }
+body.is-editing .fact > .edit-bar { flex-basis: 100%; }
+body.is-editing .comp, body.is-editing .fact { outline: 1px dashed var(--line); outline-offset: 6px; border-radius: 4px; }
+#editBtn[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+@media (max-width: 720px) { .edit-bar .edit-label { flex-basis: 100%; } }
+/* Phones: the interval picker waits until Watch is on (it is disabled until
+   then), which keeps Watch, Save, Edit, Share and Inspect on one row. */
+@media (max-width: 720px) { .page-tools .watch-group .mini-select:disabled { display: none; } }

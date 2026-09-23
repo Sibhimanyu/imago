@@ -89,6 +89,15 @@ bar saying how many are set. `-u` becomes Basic auth, `-G -d` becomes a query
 string, and headers the browser sets itself (Cookie, User-Agent, …) are left out
 and named. Headers stay in this tab's session.
 
+### Edit a page
+
+**Edit** puts a small bar on each field: rename its label, move it to the
+Headline, Normal or Details, or hide it. Hidden fields are listed above the page,
+each with a **Show** button, and **Reset page** puts everything back. Edits are
+saved for the response *shape*, so every endpoint that returns the same shape
+gets the same page, and a share link carries the edited page. Watch pauses while
+you edit.
+
 ### Know when a watched page changes
 
 With **Watch** on, a change found while you are in another tab puts a count in
