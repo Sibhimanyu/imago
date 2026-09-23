@@ -52,7 +52,7 @@ export function groupTokens(pairs) {
     if (/^#|^rgba?\(/i.test(value)) t.color[name] = value.toLowerCase();
     else if (/^r(-|$)/.test(name)) t.radius[name] = parseFloat(value);
     else if (/^sh(-|$)/.test(name)) t.shadow[name] = value;
-    else if (name === 'sans' || name === 'mono') t.font[name] = value.split(',')[0].replace(/["']/g, '').trim();
+    else if (name === 'sans' || name === 'mono' || name === 'display') t.font[name] = value.split(',')[0].replace(/["']/g, '').trim();
     else throw new Error('Unclassified token --' + name + ': add a group for it in scripts/design-sync.mjs');
   }
   return t;

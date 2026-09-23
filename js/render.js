@@ -665,6 +665,11 @@ function renderImage(value, component) {
   var img = document.createElement('img');
   img.src = value;
   img.alt = component.alt || component.label || 'Image';
+  // Pixel art (a 96px sprite) is drawn crisp when scaled up; a photo is not,
+  // or it would turn blocky. Decided by the image's own size once it loads.
+  img.addEventListener('load', function () {
+    if (img.naturalWidth && img.naturalWidth <= 128) img.classList.add('is-pixel');
+  });
   img.addEventListener('error', function () {
     if (img.parentNode === wrap) {
       wrap.removeChild(img);

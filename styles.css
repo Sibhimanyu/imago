@@ -61,6 +61,7 @@
   --sh-lg: 0 2px 6px rgba(27,27,25,.04), 0 18px 46px -16px rgba(27,27,25,.20);
 
   --sans: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --display: "Inter Display", "SF Pro Display", "Segoe UI Variable Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -352,8 +353,8 @@ input:focus, textarea:focus, select:focus {
 }
 .live-dot {
   width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-  animation: pulse 1.9s ease-in-out infinite;
 }
+.live-dot.is-beat { animation: pulse 1.9s ease-in-out 1; }
 .live-count { color: #4c8f63; font-variant-numeric: tabular-nums; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
@@ -522,7 +523,7 @@ input:focus, textarea:focus, select:focus {
 
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.4s; }
-  .live-dot { animation: none; }
+  .live-dot, .live-dot.is-beat { animation: none; }
   .tab-pane.is-active { animation: none; }
   * { transition-duration: .01ms !important; }
 }
@@ -838,8 +839,8 @@ input:focus, textarea:focus, select:focus {
 }
 .comp-image img {
   display: block; width: 100%; max-width: 150px; height: auto;
-  image-rendering: pixelated;
 }
+.comp-image img.is-pixel { image-rendering: pixelated; }
 
 .badge-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
 .badge {
@@ -1325,7 +1326,7 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 
 /* The generated page: one authored sheet, not a wall of boxes */
 .canvas .stage-head { margin: 0 0 26px; }
-.canvas .stage-title { font-size: 44px; letter-spacing: -0.035em; line-height: 1.05; }
+.canvas .stage-title { font-family: var(--display); font-size: 44px; letter-spacing: -0.035em; line-height: 1.05; }
 .canvas .stage-sub { margin-top: 6px; font-size: 14.5px; }
 .canvas .spec-body { gap: 36px; }
 .canvas .spec-section { margin-bottom: 36px; }

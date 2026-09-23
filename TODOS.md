@@ -253,48 +253,17 @@ it, or accept it as defence-in-depth and leave the note.
 
 ## One-screen redesign (0.4.0.0) — deferred
 
-### Deferred from plan: display grotesk for page titles (R6)
-
-**What:** The redesign brief sets stage titles in a display grotesk; the build
-still uses Inter at heavier weights.
-
-**Why:** Titles are the one place the page can carry character without a brand
-hue. Inter at 44px reads as UI chrome, not a page.
-
-**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, recommendation R6. Needs a font choice and a self-hosted
-file (the app has no build step).
-
-**Effort:** M
-**Priority:** P1
-**Depends on:** None
-
-### Deferred from plan: infinite pulse on the live dot (FINDING-011)
-
-**What:** The live indicator pulses forever; `prefers-reduced-motion` stops it
-but nothing else does. Pairs with "Dead width transitions" above.
-
-**Why:** A permanent animation is noise on a screen people leave open for hours.
-
-**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, FINDING-011. Pulse once per refresh instead of on a loop.
-
-**Effort:** S
-**Priority:** P1
-**Depends on:** None
-
-### Deferred from plan: sprite rendering (FINDING-007)
-
-**What:** Pokémon sprites were reported blurry in one capture; not reproduced.
-
-**Why:** Pixel art scaled with smoothing looks broken.
-
-**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, FINDING-007. Try `image-rendering: pixelated` on small
-images once it can be reproduced.
-
-**Effort:** S
-**Priority:** P1
-**Depends on:** A reproduction
-
 ## Completed
+
+### The last design leftovers — v0.10.4.0
+
+**What:** Page titles use a system display face (`--display`: SF Pro Display /
+Segoe UI Variable Display; no font file, which the CSP's font-src 'self' would
+need anyway). The live dot pulses once per refresh instead of forever, and not
+at all under reduced motion. Only small images (≤128px: sprites, icons) are
+drawn pixelated; photos stay smooth.
+
+**Completed:** v0.10.4.0 (2026-09-23)
 
 ### The rail and history strip rebuild only when what they show changes — v0.10.3.0
 

@@ -342,6 +342,7 @@ function performRequest(isAuto) {
         state.changedCount = Object.keys(state.diff).length;
       }
       if (isAuto && state.changedCount > 0) noteWatchedChange(url);
+      if (isAuto) beatLiveDots();
 
       pushSnapshot(requestKey, {
         id: 'snap_' + startedAt.toString(36),
@@ -772,6 +773,17 @@ function tick() {
   }
 }
 
+// The live dot pulses once per refresh (it used to pulse forever, which is
+// noise on a screen left open for hours). Restarting the class replays it.
+function beatLiveDots() {
+  var dots = document.querySelectorAll('.live-dot');
+  for (var i = 0; i < dots.length; i += 1) {
+    dots[i].classList.remove('is-beat');
+    void dots[i].offsetWidth;
+    dots[i].classList.add('is-beat');
+  }
+}
+
 function syncRefreshUi() {
   var on = state.refreshIntervalMs > 0;
   dom.refreshToggle.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -780,4 +792,4 @@ function syncRefreshUi() {
   if (dom.savedList) renderSavedList();   // the rail's live dot follows
 }
 
-export { SECRET_HEADER, sameOrigin, redactSecretHeaders, hasSecretHeader, parseHeaders, BROWSER_OWNED_HEADERS, CURL_NO_ARG, CURL_WITH_ARG, shellWords, looksLikeCurl, parseCurl, importCurl, syncHeadersChip, headersToText, getSnapshotsFor, stripBody, pushSnapshot, latestSnapshotWithData, markDirty, wrapError, performRequest, finishRequest, HEADER_NAME, headerProblem, explainFailure, handleRequestFailure, noKeyAlert, useKeyedProvider, resolveSpec, syncBuilderUi, setBuilder, resolveHtml, generateInterfaceNow, callHtml, callGemini, startTimer, stopTimer, tick, syncRefreshUi };
+export { beatLiveDots, SECRET_HEADER, sameOrigin, redactSecretHeaders, hasSecretHeader, parseHeaders, BROWSER_OWNED_HEADERS, CURL_NO_ARG, CURL_WITH_ARG, shellWords, looksLikeCurl, parseCurl, importCurl, syncHeadersChip, headersToText, getSnapshotsFor, stripBody, pushSnapshot, latestSnapshotWithData, markDirty, wrapError, performRequest, finishRequest, HEADER_NAME, headerProblem, explainFailure, handleRequestFailure, noKeyAlert, useKeyedProvider, resolveSpec, syncBuilderUi, setBuilder, resolveHtml, generateInterfaceNow, callHtml, callGemini, startTimer, stopTimer, tick, syncRefreshUi };
