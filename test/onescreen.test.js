@@ -882,3 +882,15 @@ describe('delete can be undone', () => {
     expect(app.dom.toast.hidden).toBe(true);
   });
 });
+
+describe('landing specimen', () => {
+  it('every example says what its highlighted lines mean', async () => {
+    const app = await boot();
+    const panes = [...app.window.document.querySelectorAll('.specimen .spec-pane')];
+    expect(panes.length).toBe(3);
+    for (const pane of panes) {
+      expect(pane.querySelector('.spec-response .spec-key').textContent).toBe('Highlighted lines are the fields the page uses.');
+      expect(pane.querySelectorAll('.spec-json .jl.is-used').length).toBeGreaterThan(0);
+    }
+  });
+});
