@@ -582,6 +582,11 @@ input:focus, textarea:focus, select:focus {
 .alert-ico { color: var(--red); flex: 0 0 auto; margin-top: 1px; }
 .alert-title { font-size: 13px; font-weight: 600; color: #9c3b38; }
 .alert-body { font-size: 12.5px; color: #8a4442; margin-top: 3px; word-break: break-word; line-height: 1.55; }
+/* A notice, not a failure: neutral, so red keeps meaning "this broke". */
+.alert-note { background: var(--card-2); border-color: var(--line); }
+.alert-note .alert-ico { color: var(--ink-2); }
+.alert-note .alert-title { color: var(--ink); }
+.alert-note .alert-body { color: var(--ink-2); }
 
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation-duration: 2.4s; }

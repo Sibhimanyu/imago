@@ -3890,8 +3890,10 @@
     dom.interfaceOut.appendChild(box);
   }
 
-  function showAlert(title, body) {
-    var box = el('div', 'alert');
+  // kind 'note' is for states that are not failures (no key yet): red is
+  // reserved for something that actually went wrong.
+  function showAlert(title, body, kind) {
+    var box = el('div', kind === 'note' ? 'alert alert-note' : 'alert');
     var ico = el('span', 'alert-ico');
     ico.appendChild(svgIcon(['M12 8v5', 'M12 16.2v.1', 'M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z'], 17));
     box.appendChild(ico);
@@ -4733,7 +4735,7 @@
     var provider = getProvider(getSessionProvider());
     showAlert('No ' + provider.label + ' key',
       'Paste one in Settings → API keys (free at ' + provider.keyHint + '). ' +
-      'Saved interfaces and cached pages keep working; only generating new ones needs a key.');
+      'Saved interfaces and cached pages keep working; only generating new ones needs a key.', 'note');
     if (!state.warnedNoKey) {
       state.warnedNoKey = true;
       toast('No ' + provider.label + ' key — showing a heuristic fallback.', 'warn');
