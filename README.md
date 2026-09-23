@@ -269,7 +269,8 @@ the foot of the page. The badge beside the title always tells you which path you
 
 ## Demo endpoints
 
-Built into the Examples dropdown (empty state, and beside the request bar):
+Built into the **Try an example** list at the foot of the endpoint rail, and the
+Examples picker in the page toolbar:
 
 | | |
 |---|---|
