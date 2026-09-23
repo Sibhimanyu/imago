@@ -760,3 +760,125 @@ describe('chart labels', () => {
     expect(svg.querySelector('.chart-line').getAttribute('vector-effect')).toBe('non-scaling-stroke');
   });
 });
+
+describe('focus survives a re-render', () => {
+  // With Watch on, the rail and history strip rebuild every 10-60s. A
+  // keyboard user focused on either used to be thrown back to <body>.
+  it('keeps focus on the same rail control and history tick across rebuilds', async () => {
+    const app = await boot({ local: { 'imago.savedRequests': [
+      { id: 'a', name: 'A', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z' },
+      { id: 'b', name: 'B', url: 'https://b.test/x', headers: {}, createdAt: '2026-09-20T09:00:00Z' }
+    ] } });
+    app.renderSavedList();
+    const del = app.dom.savedList.querySelector('[data-focus-key="delete:a"]');
+    del.focus();
+    app.renderSavedList();
+    expect(app.dom.savedList.contains(del)).toBe(false);   // really rebuilt
+    expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('delete:a');
+
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    app.setSnapshots({ [app.currentRequestKey()]: [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 1, data: { a: 1 } }
+    ] });
+    app.renderHistory();
+    app.dom.historyStrip.querySelector('[data-focus-key="tick:s1"]').focus();
+    app.renderHistory();
+    expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('tick:s1');
+  });
+
+  it('history ticks are buttons inside list items, not buttons pretending to be list items', async () => {
+    const app = await boot();
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    app.setSnapshots({ [app.currentRequestKey()]: [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 0, data: { a: 1 } }
+    ] });
+    app.renderHistory();
+    for (const tick of app.dom.historyStrip.querySelectorAll('.history-tick')) {
+      expect(tick.getAttribute('role')).toBeNull();
+      expect(tick.parentElement.getAttribute('role')).toBe('listitem');
+    }
+  });
+});
+
+describe('sheets behave as dialogs', () => {
+  const ONBOARDED = { local: { 'imago.preferences': { onboarded: true } } };
+  const tab = (app, shift) => app.window.document.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: !!shift, bubbles: true, cancelable: true }));
+
+  it('Settings is a modal dialog that takes focus and gives it back', async () => {
+    const app = await boot(ONBOARDED);
+    const sheet = app.dom.paneSettings;
+    expect(sheet.getAttribute('role')).toBe('dialog');
+    expect(sheet.getAttribute('aria-modal')).toBe('true');
+    expect(app.window.document.getElementById(sheet.getAttribute('aria-labelledby')).textContent).toBe('Settings');
+
+    const opener = app.dom.appNav.querySelector('[data-view="settings"]');
+    opener.focus();
+    opener.click();
+    expect(app.window.document.activeElement).toBe(app.dom.settingsClose);
+    app.dom.settingsClose.click();
+    expect(app.window.document.activeElement).toBe(opener);
+  });
+
+  it('Tab and Shift+Tab wrap inside Settings while it is open', async () => {
+    const app = await boot(ONBOARDED);
+    app.setAppPane('settings');
+    const items = [...app.dom.paneSettings.querySelectorAll('button, input, select, textarea')]
+      .filter((n) => !n.disabled && !n.closest('[hidden]'));
+    items[items.length - 1].focus();
+    tab(app);
+    expect(app.window.document.activeElement).toBe(items[0]);
+    tab(app, true);
+    expect(app.window.document.activeElement).toBe(items[items.length - 1]);
+    // Focus somewhere behind the scrim is pulled back in.
+    app.dom.urlInput.focus();
+    tab(app);
+    expect(app.dom.paneSettings.contains(app.window.document.activeElement)).toBe(true);
+  });
+
+  it('Tab is left alone when no sheet is open', async () => {
+    const app = await boot(ONBOARDED);
+    app.dom.urlInput.focus();
+    const ev = new app.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    app.window.document.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(false);
+  });
+});
+
+describe('Escape at the top of the trail', () => {
+  it('does nothing instead of silently leaving the page', async () => {
+    const app = await boot();
+    app.state.data = { a: 1 };
+    app.state.url = 'https://a.test/x';
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec({ a: 1 }, app.state.url)), 'fallback');
+    expect(app.state.stage).toBe(true);
+    app.state.stack = [];
+    app.window.document.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(app.state.stage).toBe(true);
+  });
+});
+
+describe('delete can be undone', () => {
+  const SAVED = { local: { 'imago.savedRequests': [
+    { id: 'a', name: 'Alpha', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z' },
+    { id: 'b', name: 'Beta', url: 'https://b.test/x', headers: {}, createdAt: '2026-09-20T09:00:00Z' }
+  ] } };
+
+  it('one tap deletes, and Undo puts it back where it was', async () => {
+    const app = await boot(SAVED);
+    app.renderSavedList();
+    app.dom.savedList.querySelector('[data-focus-key="delete:a"]').click();
+    const stored = () => JSON.parse(app.window.localStorage.getItem('imago.savedRequests')).map((r) => r.id);
+    expect(stored()).toEqual(['b']);
+    expect(app.dom.toast.textContent).toContain('Deleted Alpha.');
+    const undo = app.dom.toast.querySelector('.toast-action');
+    expect(undo.textContent).toBe('Undo');
+    undo.click();
+    expect(stored()).toEqual(['a', 'b']);
+    expect(app.dom.savedList.querySelector('[data-focus-key="open:a"]')).not.toBeNull();
+    expect(app.dom.toast.hidden).toBe(true);
+  });
+});

@@ -311,7 +311,7 @@
         <!-- One tick per fetch; yellow where that fetch changed something. -->
         <div class="history" id="historyStrip" hidden></div>
 
-        <div class="tab-pane is-active" data-pane="interface" id="pane-interface" role="tabpanel" aria-labelledby="tab-interface" tabindex="0">
+        <div class="tab-pane is-active" data-pane="interface" id="pane-interface">
           <div class="card" id="interfaceCard">
             <div class="card-head" id="interfaceHead" hidden>
               <span class="card-title" id="interfaceTitle"></span>
@@ -324,15 +324,18 @@
 
       <!-- ── Inspector: the raw material behind the page ───── -->
       <aside class="inspector" id="inspector" aria-label="Inspect">
-        <div class="tabs" id="tabBar" role="tablist" aria-label="Response views" hidden>
-          <button type="button" role="tab" id="tab-interface" aria-controls="pane-interface" data-tab="interface" class="is-active" aria-selected="true" tabindex="0" title="Close the inspector">
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-            <span class="visually-hidden">Page</span>
-          </button>
+        <!-- Close is a button, not a tab: it used to be the first tab, named
+             "Page", so arrow keys through the tabs closed the inspector. -->
+        <div class="inspector-head" id="inspectorHead" hidden>
+        <button type="button" class="icon-btn inspector-close" id="inspectorClose" aria-label="Close inspector">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        </button>
+        <div class="tabs" id="tabBar" role="tablist" aria-label="Response views">
           <button type="button" role="tab" id="tab-raw" aria-controls="pane-raw" data-tab="raw" aria-selected="false" tabindex="-1">Response</button>
           <button type="button" role="tab" id="tab-schema" aria-controls="pane-schema" data-tab="schema" aria-selected="false" tabindex="-1">Schema</button>
           <button type="button" role="tab" id="tab-changes" aria-controls="pane-changes" data-tab="changes" aria-selected="false" tabindex="-1">Changes</button>
           <button type="button" role="tab" id="tab-headers" aria-controls="pane-headers" data-tab="headers" aria-selected="false" tabindex="-1">Headers</button>
+        </div>
         </div>
         <div class="inspector-panes">
         <div class="tab-pane" data-pane="raw" id="pane-raw" role="tabpanel" aria-labelledby="tab-raw" tabindex="0">
@@ -377,9 +380,9 @@
 
   <!-- ── Settings sheet ──────────────────────────────────── -->
   <div class="sheet-scrim" id="sheetScrim" hidden></div>
-  <section class="pane settings-sheet" id="paneSettings" hidden aria-label="Settings">
+  <section class="pane settings-sheet" id="paneSettings" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="pane-head">
-      <h2 class="pane-title">Settings</h2>
+      <h2 class="pane-title" id="settingsTitle">Settings</h2>
       <button type="button" class="icon-btn" id="settingsClose" aria-label="Close settings"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
     </div>
     <div class="settings-grid">

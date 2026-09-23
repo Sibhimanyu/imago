@@ -3202,9 +3202,21 @@
 
   var toastTimer = null;
 
-  function toast(message, kind) {
+  // action: { label, run } adds one button (Undo). A toast with an action
+  // stays up longer, since the reader has to decide.
+  function toast(message, kind, action) {
     if (!dom.toast || !message) return;
     dom.toast.textContent = message;
+    if (action) {
+      var act = el('button', 'toast-action', action.label);
+      act.type = 'button';
+      act.addEventListener('click', function () {
+        action.run();
+        dom.toast.className = 'toast';
+        dom.toast.hidden = true;
+      });
+      dom.toast.appendChild(act);
+    }
     if (kind) dom.toast.setAttribute('data-kind', kind);
     else dom.toast.removeAttribute('data-kind');
     dom.toast.hidden = false;
@@ -3215,7 +3227,7 @@
     toastTimer = window.setTimeout(function () {
       dom.toast.className = 'toast';
       window.setTimeout(function () { dom.toast.hidden = true; }, 240);
-    }, kind === 'error' ? 6000 : 3400);
+    }, kind === 'error' || action ? 6000 : 3400);
   }
 
   /* ── View routing ──────────────────────────────────────────────────────── */
@@ -3232,8 +3244,25 @@
   // One screen, so a "pane" is no longer a page swap. The page is always on
   // screen; the endpoints rail is always there on a wide screen (and slides up
   // as a sheet on a phone when pane is 'saved'); Settings opens as a sheet.
+  // A sheet is a dialog: opening one moves focus into it and remembers what
+  // had focus, Tab stays inside Settings while it is open, and closing hands
+  // focus back. Before, focus stayed behind the scrim and fell to <body>.
+  var sheetOpener = null;
+
+  function railIsSheet() {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 860px)').matches);
+  }
+
+  function focusables(root) {
+    return [].slice.call(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+      .filter(function (n) { return !n.disabled && !n.closest('[hidden]'); });
+  }
+
   function setAppPane(pane) {
     if (['playground', 'saved', 'settings'].indexOf(pane) === -1) pane = 'playground';
+    var from = state.pane;
+    var opensSheet = pane === 'settings' || (pane === 'saved' && railIsSheet());
+    if (opensSheet && from !== pane && !sheetOpener) sheetOpener = document.activeElement;
     state.pane = pane;
     dom.panePlayground.hidden = false;
     dom.paneSaved.hidden = false;
@@ -3251,6 +3280,26 @@
     if (pane === 'saved') renderSavedList();
     if (pane === 'settings') renderStorageSummary();
     savePrefs();
+
+    if (opensSheet && from !== pane) {
+      var target = pane === 'settings' ? dom.settingsClose : dom.railClose;
+      if (target && target.focus) target.focus();
+    } else if (!opensSheet && sheetOpener) {
+      var back = sheetOpener;
+      sheetOpener = null;
+      if (back && back.focus && document.body.contains(back)) back.focus();
+    }
+  }
+
+  // Tab and Shift+Tab wrap inside the open Settings sheet.
+  function trapSheetFocus(event) {
+    if (event.key !== 'Tab' || state.pane !== 'settings' || !dom.paneSettings) return;
+    var items = focusables(dom.paneSettings);
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    var inside = dom.paneSettings.contains(document.activeElement);
+    if (event.shiftKey && (document.activeElement === first || !inside)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || !inside)) { event.preventDefault(); first.focus(); }
   }
 
   /* ── Meta row / key pill ───────────────────────────────────────────────── */
@@ -4303,7 +4352,25 @@
     try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url; }
   }
 
+  // The rail and the history strip are rebuilt on every render, and with Watch
+  // on that is every 10-60s. Rebuilding under a keyboard user's focus dropped
+  // it to <body>. Controls carry data-focus-key; focus returns to the same key.
+  function keepFocus(container, rebuild) {
+    var active = document.activeElement;
+    var key = active && container && container.contains(active) ? active.getAttribute('data-focus-key') : null;
+    rebuild();
+    if (!key) return;
+    var nodes = container.querySelectorAll('[data-focus-key]');
+    for (var i = 0; i < nodes.length; i += 1) {
+      if (nodes[i].getAttribute('data-focus-key') === key) { nodes[i].focus(); return; }
+    }
+  }
+
   function renderSavedList() {
+    keepFocus(dom.savedList, buildSavedList);
+  }
+
+  function buildSavedList() {
     var list = getSavedRequests();
     clear(dom.savedList);
     dom.savedEmpty.hidden = list.length > 0;
@@ -4321,6 +4388,7 @@
         open.type = 'button';
         open.title = item.url;
         open.setAttribute('aria-label', 'Open ' + item.name);
+        open.setAttribute('data-focus-key', 'open:' + item.id);
         if (onScreen) open.setAttribute('aria-current', 'page');
         open.addEventListener('click', function () { loadSavedRequest(item.id); });
 
@@ -4348,6 +4416,7 @@
         del.type = 'button';
         del.title = 'Delete';
         del.setAttribute('aria-label', 'Delete ' + item.name);
+        del.setAttribute('data-focus-key', 'delete:' + item.id);
         del.appendChild(svgIcon(['M4 6.5h16', 'M9.5 6.5V4.8h5v1.7', 'M6.5 6.5 7.4 20h9.2l.9-13.5'], 14));
         del.addEventListener('click', function () { deleteSavedRequest(item.id); });
         li.appendChild(del);
@@ -4364,8 +4433,11 @@
      ---------------------------------------------------------------------- */
 
   function renderHistory() {
+    if (dom.historyStrip) keepFocus(dom.historyStrip, buildHistory);
+  }
+
+  function buildHistory() {
     var strip = dom.historyStrip;
-    if (!strip) return;
     var list = state.data ? getSnapshotsFor(currentRequestKey()) : [];
     clear(strip);
     if (list.length < 2) { strip.hidden = true; return; }
@@ -4387,15 +4459,20 @@
     track.setAttribute('role', 'list');
     for (var i = 0; i < list.length; i += 1) {
       (function (snap, isLast) {
+        // The list item wraps the button: role=listitem on the button itself
+        // replaced its button role, so it was not announced as clickable.
+        var item = el('span', 'history-item');
+        item.setAttribute('role', 'listitem');
         var tick = el('button', 'history-tick' + (snap.changed > 0 ? ' is-changed' : '') + (isLast ? ' is-now' : ''));
         tick.type = 'button';
-        tick.setAttribute('role', 'listitem');
+        tick.setAttribute('data-focus-key', 'tick:' + (snap.id || snap.fetchedAt));
         var when = snap.fetchedAt ? formatClock(new Date(snap.fetchedAt).getTime()) : '';
         var label = when + (snap.changed > 0 ? ' · ' + snap.changed + ' changed' : ' · no change') + (isLast ? ' · on screen' : '');
         tick.title = label;
         tick.setAttribute('aria-label', label);
         tick.addEventListener('click', function () { setActiveTab('changes'); });
-        track.appendChild(tick);
+        item.appendChild(tick);
+        track.appendChild(item);
       })(list[i], i === list.length - 1);
     }
     strip.appendChild(track);
@@ -4509,13 +4586,26 @@
     performRequest(false);
   }
 
+  // One tap deletes (the button sits beside every row), so it can be undone.
   function deleteSavedRequest(id) {
-    var list = getSavedRequests().filter(function (item) { return item.id !== id; });
-    setSavedRequests(list);
-    if (state.activeRequestId === id) state.activeRequestId = null;
+    var before = getSavedRequests();
+    var index = -1;
+    for (var i = 0; i < before.length; i += 1) if (before[i].id === id) index = i;
+    if (index === -1) return;
+    var removed = before[index];
+    var wasActive = state.activeRequestId === id;
+    setSavedRequests(before.filter(function (item) { return item.id !== id; }));
+    if (wasActive) state.activeRequestId = null;
     renderSavedList();
     savePrefs();
-    toast('Request deleted.');
+    toast('Deleted ' + removed.name + '.', null, { label: 'Undo', run: function () {
+      var now = getSavedRequests();
+      now.splice(Math.min(index, now.length), 0, removed);
+      setSavedRequests(now);
+      if (wasActive) state.activeRequestId = id;
+      renderSavedList();
+      savePrefs();
+    } });
   }
 
   function touchSavedRequest(url) {
@@ -4724,7 +4814,7 @@
     state.headersText = dom.headersInput.value;
     state.headers = parseHeaders(state.headersText);
     dom.sendBtn.disabled = true;
-    dom.tabBar.hidden = false;
+    dom.inspectorHead.hidden = false;
 
     if (!isAuto) showInterfaceLoading('Fetching ' + parsed.hostname + '…');
 
@@ -5248,11 +5338,19 @@
       if (state.stage) stepBack(steps);
     });
     document.addEventListener('keydown', function (event) {
+      trapSheetFocus(event);
       if (event.key !== 'Escape' || event.defaultPrevented) return;
       // Innermost first: a sheet, then the inspector, then the trail.
       if (state.pane !== 'playground') { setAppPane('playground'); return; }
-      if (state.tab !== 'interface') { setActiveTab('interface'); return; }
-      if (state.stage) goBack();
+      if (state.tab !== 'interface') {
+        var fromInspector = dom.inspector && dom.inspector.contains(document.activeElement);
+        setActiveTab('interface');
+        if (fromInspector && dom.inspectBtn && !dom.inspectBtn.disabled) dom.inspectBtn.focus();
+        return;
+      }
+      // Only when there is a trail to walk back. At depth 0 this used to
+      // leave the page silently and pop the phone keyboard into the URL box.
+      if (state.stage && state.stack.length) goBack();
     });
     if (dom.modelName) {
       dom.modelName.addEventListener('input', function () {
@@ -5296,6 +5394,13 @@
         startTimer();
         savePrefs();
       }
+    });
+
+    // Closing hands focus back to the button that opened the inspector, or it
+    // would fall to <body> from a pane that just disappeared.
+    dom.inspectorClose.addEventListener('click', function () {
+      setActiveTab('interface');
+      if (dom.inspectBtn && !dom.inspectBtn.disabled) dom.inspectBtn.focus();
     });
 
     dom.tabBar.addEventListener('click', function (event) {
@@ -5455,7 +5560,7 @@
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
-               'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
+               'inspectorHead', 'inspectorClose', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                 'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
                 'geminiKeyStatus', 'groqKeyStatus', 'modelName',
                 'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
@@ -5551,7 +5656,7 @@
       // No body to show: an inspector reopened now would have no tab bar to
       // close it with, and would cover the canvas on a phone.
       setActiveTab('interface');
-      dom.tabBar.hidden = true;
+      dom.inspectorHead.hidden = true;
       showInterfaceEmpty();
       updateMeta();
     }
@@ -5579,7 +5684,7 @@
     state.schema = print.schema;
     state.schemaHash = print.hash;
 
-    dom.tabBar.hidden = false;
+    dom.inspectorHead.hidden = false;
     renderRawPane();
     renderSchemaPane();
     renderChangesPane();

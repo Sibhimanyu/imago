@@ -393,12 +393,14 @@ describe('the tablist keeps the contract its role makes', () => {
   // Found by /qa on 2026-09-22
   // Report: .gstack/qa-reports/qa-report-localhost-2026-09-22.md
   const tabs = (app) => [...app.window.document.querySelectorAll('#tabBar button')];
-  const panes = (app) => [...app.window.document.querySelectorAll('.tab-pane')];
+  // The page itself is not a tab panel: it never leaves the screen. Only the
+  // inspector's panes are.
+  const panes = (app) => [...app.window.document.querySelectorAll('.inspector .tab-pane')];
 
   it('points every tab at a pane that exists', async () => {
     const app = await boot();
     const bs = tabs(app);
-    expect(bs.length).toBe(5);
+    expect(bs.length).toBe(4);
     for (const b of bs) {
       const id = b.getAttribute('aria-controls');
       expect(id, `${b.textContent.trim()} has no aria-controls`).toBeTruthy();
@@ -431,19 +433,39 @@ describe('the tablist keeps the contract its role makes', () => {
 
   it('moves between tabs on Left/Right/Home/End, wrapping at the ends', async () => {
     const app = await boot();
+    app.setActiveTab('raw');
     const bs = tabs(app);
     const key = (k, from) => {
       from.focus();
       from.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
       return app.state.tab;
     };
-    expect(key('ArrowRight', bs[0])).toBe('raw');
-    expect(key('ArrowRight', bs[1])).toBe('schema');
-    expect(key('ArrowLeft', bs[2])).toBe('raw');
+    expect(key('ArrowRight', bs[0])).toBe('schema');
+    expect(key('ArrowRight', bs[1])).toBe('changes');
+    expect(key('ArrowLeft', bs[2])).toBe('schema');
     expect(key('End', bs[1])).toBe('headers');
-    expect(key('Home', bs[4])).toBe('interface');
-    expect(key('ArrowRight', bs[4]), 'should wrap past the last tab').toBe('interface');
+    expect(key('Home', bs[3])).toBe('raw');
+    expect(key('ArrowRight', bs[3]), 'should wrap past the last tab').toBe('raw');
     expect(key('ArrowLeft', bs[0]), 'should wrap before the first tab').toBe('headers');
+  });
+
+  // The close control used to be the first tab ("Page"), so Home or a Left
+  // arrow from Response closed the inspector and dropped focus to <body>.
+  it('no arrow key closes the inspector; the close button does, and returns focus', async () => {
+    const app = await boot();
+    app.state.data = { a: 1 };
+    app.updateMeta();
+    app.setActiveTab('raw');
+    const bs = tabs(app);
+    for (const k of ['Home', 'ArrowLeft']) {
+      bs[0].focus();
+      bs[0].dispatchEvent(new app.window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      expect(app.window.document.body.classList.contains('inspector-open')).toBe(true);
+    }
+    expect(bs.some((b) => b.getAttribute('data-tab') === 'interface')).toBe(false);
+    app.dom.inspectorClose.click();
+    expect(app.window.document.body.classList.contains('inspector-open')).toBe(false);
+    expect(app.window.document.activeElement).toBe(app.dom.inspectBtn);
   });
 
   it('ignores keys that are not part of the contract', async () => {

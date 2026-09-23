@@ -1404,8 +1404,10 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   background: var(--card); border-left: 1px solid var(--line);
 }
 body.inspector-open .inspector { display: block; }
-.inspector .tabs { position: sticky; top: 0; z-index: 1; margin: 0; padding: 0 10px; background: var(--card); }
-.inspector #tab-interface { display: inline-flex; align-items: center; padding-left: 8px; padding-right: 8px; color: var(--muted); }
+.inspector-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 2px; padding: 0 10px; background: var(--card); border-bottom: 1px solid var(--line); }
+.inspector-head[hidden] { display: none; }
+.inspector .tabs { margin: 0; padding: 0; border-bottom: 0; background: none; flex: 1 1 auto; min-width: 0; }
+.inspector-close { flex: 0 0 auto; color: var(--muted); }
 .inspector .tab-pane .card { border: 0; border-radius: 0; padding: 16px 18px; background: none; }
 
 /* ── Settings sheet ────────────────────────────────────────── */
@@ -1640,3 +1642,10 @@ select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mon
 .key-status[data-state="idle"]:empty { display: none; }
 .settings-foot { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .settings-foot .muted-note { margin: 0; flex: 1 1 220px; }
+
+.history-item { display: flex; }   /* display: contents would drop the listitem role in some browsers */
+.toast-action {
+  margin-left: 14px; padding: 0; border: 0; background: none; font: inherit; font-weight: 600;
+  color: #fff; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.toast-action:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 3px; }
