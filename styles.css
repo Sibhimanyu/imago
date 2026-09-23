@@ -295,13 +295,6 @@ input:focus, textarea:focus, select:focus {
 .key-pill[data-state="ready"] { color: #2f7a48; background: var(--green-bg); border-color: #c6e5cf; }
 /* A missing key is not a change, so it stays neutral (the default above). */
 
-.avatar {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--ink); color: #fff;
-  display: grid; place-items: center;
-  font-size: 12.5px; font-weight: 600;
-  flex: 0 0 auto;
-}
 
 .app-main { max-width: 1120px; margin: 0 auto; padding: 30px 26px 80px; }
 
@@ -1451,7 +1444,9 @@ body.inspector-open .inspector { display: block; }
   .appbar .brand-word, .appbar-right .key-pill, .appnav .appnav-label { display: none; }
   .appnav { margin-left: auto; }
   .appnav button { min-height: 44px; }
-  .appnav .appnav-endpoints { border: 1px solid var(--line); background: var(--card); color: var(--ink); font-weight: 600; }
+  /* A plain button until its sheet is open; a filled one read as "selected" */
+  .appnav .appnav-endpoints { color: var(--ink); font-weight: 500; }
+  body.sheet-saved .appnav .appnav-endpoints { background: rgba(27,27,25,.06); font-weight: 600; }
   /* The command bar moves to the thumb zone */
   .reqbar.cmdbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;

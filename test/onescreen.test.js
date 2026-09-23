@@ -176,13 +176,16 @@ describe('endpoint rail', () => {
 });
 
 describe('value before the key', () => {
-  it('a first visit opens on a rendered example instead of a key form', async () => {
+  // Get started and Try an example used to do the same thing (load an
+  // example). Get started now means "I have an endpoint".
+  it('Get started opens an empty page with the URL box focused, never a key form', async () => {
     const calls = [];
     const app = await boot({ fetch: (url) => { calls.push(String(url)); return jsonFetch({ name: 'pikachu' })(url); } });
     app.dom.landingStart.click();
     await flush(); await flush();
     expect(app.state.view).toBe('app');
-    expect(calls).toContain(app.DEMOS[0].url);
+    expect(calls).toHaveLength(0);
+    expect(app.window.document.activeElement).toBe(app.dom.urlInput);
   });
 
   it('a returning visit does not load an example over the last page', async () => {

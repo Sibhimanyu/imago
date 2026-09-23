@@ -5443,10 +5443,7 @@
     }
     if (dom.landingTry) {
       dom.landingTry.addEventListener('click', function () {
-        var prefs = getPrefs();
-        prefs.onboarded = true;
-        setPrefs(prefs);
-        showView('app');
+        enterApp();
         loadExample(url);
       });
     }
@@ -5456,7 +5453,7 @@
 
   function cacheDom() {
     var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
-                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
+                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
@@ -5477,15 +5474,16 @@
     for (var i = 0; i < ids.length; i += 1) dom[ids[i]] = qs(ids[i]);
   }
 
+  // Get started means "I have an endpoint": the page opens ready to paste
+  // one. Try an example is the other door, and it loads the example shown.
+  // Get started used to load an example too, so the two buttons did the same.
+  // No key is ever asked for here; it is offered when it would buy something.
   function enterApp() {
     var prefs = getPrefs();
-    var firstRun = !prefs.onboarded;
     prefs.onboarded = true;
     setPrefs(prefs);
     showView('app');
-    // Value before the key: a first visit opens on a real page, rendered from
-    // the basic layout. The key is asked for when it would buy something.
-    if (firstRun && !state.data && !dom.urlInput.value.trim()) loadExample(DEMOS[0].url);
+    if (!state.data && dom.urlInput) dom.urlInput.focus();
   }
 
   // One-time move from the old single session key: file it under the provider
