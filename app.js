@@ -599,7 +599,6 @@
     prefs.activeRequestId = state.activeRequestId;
     prefs.refreshIntervalMs = state.refreshIntervalMs;
     prefs.activeTab = state.tab;
-    prefs.activePane = state.pane;
     prefs.lastUrl = state.url;
     prefs.builder = state.builder;
     // Request headers are where users put `Authorization: Bearer ...`. They get
@@ -3263,7 +3262,6 @@
   function showView(name) {
     state.view = name;
     dom.landingView.hidden = name !== 'landing';
-    dom.setupView.hidden = name !== 'setup';
     dom.appView.hidden = name !== 'app';
     if (name === 'app') scheduleTimelineLayout();
     window.scrollTo(0, 0);
@@ -4125,7 +4123,6 @@
   function enterStage() {
     state.stage = true;
     state.stagePref = true;
-    document.body.classList.add('is-stage');
     syncTrail();
     savePrefs();
   }
@@ -4134,7 +4131,6 @@
     state.stage = false;
     state.stagePref = false;
     state.stack = [];
-    document.body.classList.remove('is-stage');
     syncTrail();
     savePrefs();
     window.scrollTo(0, 0);
@@ -5450,12 +5446,6 @@
     if (dom.savedList) renderSavedList();   // the rail's live dot follows
   }
 
-  // Setup and settings inputs share the <id>Key convention: setup boxes are
-  // setup<CapitalisedId>Key, settings boxes are <id>Key.
-  function setupKeyInputFor(id) {
-    return dom['setup' + id.charAt(0).toUpperCase() + id.slice(1) + 'Key'];
-  }
-
   /* ── Events ────────────────────────────────────────────────────────────── */
 
   function wireEvents() {
@@ -5472,37 +5462,6 @@
     dom.landingAbout.addEventListener('click', function () {
       toast('Imago turns an API response into an interface, remembers the shape, and watches it change.');
     });
-
-    dom.setupContinue.addEventListener('click', function () {
-      var lastFilled = '';
-      for (var ki = 0; ki < PROVIDER_IDS.length; ki += 1) {
-        var id = PROVIDER_IDS[ki];
-        var box = setupKeyInputFor(id);
-        var value = box ? box.value.trim() : '';
-        if (value) {
-          setProviderKey(id, value);
-          lastFilled = id;
-        }
-      }
-      // Last field wins the default — the key just typed is the one in use.
-      if (lastFilled) setSessionProvider(lastFilled);
-      if (lastFilled) {
-        syncProviderUi({ force: true });
-        syncKeyInputs();
-        setKeyStatus();
-        toast('Keys saved on this device.', 'ok');
-      }
-      enterApp();
-    });
-    dom.setupLater.addEventListener('click', function () { enterApp(); });
-    for (var si = 0; si < PROVIDER_IDS.length; si += 1) {
-      (function (input) {
-        if (!input) return;
-        input.addEventListener('keydown', function (event) {
-          if (event.key === 'Enter') { event.preventDefault(); dom.setupContinue.click(); }
-        });
-      })(setupKeyInputFor(PROVIDER_IDS[si]));
-    }
 
     dom.appNav.addEventListener('click', function (event) {
       // The Settings button wraps an icon and a label; a click lands on those.
@@ -5772,8 +5731,8 @@
   /* ── Bootstrap ─────────────────────────────────────────────────────────── */
 
   function cacheDom() {
-    var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
-                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus',
+    var ids = ['landingView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
+                'appNav', 'brandHome', 'keyStatus',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
                 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',

@@ -951,3 +951,13 @@ describe('the basic layout, edge cases', () => {
     expect(app.dom.interfaceOut.querySelector('details.spec-details').open).toBe(false);
   });
 });
+
+describe('no dead key-setup screen', () => {
+  // Nothing has routed to it since the landing page went straight to the app;
+  // its markup and handlers were still wired up.
+  it('ships only the landing and app views', async () => {
+    const app = await boot();
+    expect(app.window.document.getElementById('setupView')).toBeNull();
+    expect([...app.window.document.querySelectorAll('body > .view')].map((v) => v.id)).toEqual(['landingView', 'appView']);
+  });
+});
