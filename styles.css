@@ -1657,3 +1657,13 @@ select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mon
 .spec-key { margin: 16px 0 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .spec-key-mark { width: 12px; height: 12px; flex: 0 0 auto; background: rgba(27,27,25,.05); border-left: 2px solid var(--ink); }
 @media (max-width: 860px) { .spec-response .spec-json { margin: 0; } .spec-key { display: none; } }
+
+/* Headers are set: say so in the command bar, next to the URL they go with */
+.headers-chip {
+  flex: 0 0 auto; align-self: center; margin-right: 6px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg-sink); color: var(--ink-2);
+  font: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.headers-chip:hover { border-color: var(--ink-2); color: var(--ink); }
+.headers-chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.headers-chip[hidden] { display: none; }

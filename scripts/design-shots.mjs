@@ -155,6 +155,7 @@ async function shoot(page, base, shot) {
     }
   }
   if (shot.after) await evaluate(page, shot.after + '; 1');
+  if (shot.wait) await sleep(shot.wait);   // e.g. for a failure path that has no data to wait on
   await sleep(600); // sheet and drawer transitions
   // Toasts are transient; a design mirror should not freeze one in place.
   await evaluate(page, "var t = document.getElementById('toast'); if (t) t.style.visibility = 'hidden'; 1");
