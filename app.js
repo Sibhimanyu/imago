@@ -4182,7 +4182,10 @@
       savePrefs();
       return;
     }
-    leaveStage();
+    // Nothing on the trail. Loading an example or a new request resets the
+    // trail but leaves this app's earlier history entries in place, and the
+    // browser's Back used to walk into them and silently leave the page. The
+    // page is the one screen now; there is nothing to leave to.
   }
 
   function followUrl(url) {

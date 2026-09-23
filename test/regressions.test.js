@@ -244,6 +244,20 @@ describe('Back does not desync from browser history', () => {
     expect(app.state.stack.length).toBe(1);
   });
 
+  // loadExample / New request reset the trail but not the history entries
+  // this app pushed earlier; Back walked into those and left the page.
+  it('a Back with nothing on the trail keeps the page on screen', async () => {
+    const app = await boot({ fetch: jsonFetch({ a: 1 }) });
+    app.state.stage = true;
+    app.state.url = 'https://a.test/now';
+    app.state.historyDepth = 2;
+    app.state.stack = [];
+    app.window.dispatchEvent(new app.window.PopStateEvent('popstate', { state: { imagoDepth: 1 } }));
+    expect(app.state.stage).toBe(true);
+    expect(app.state.url).toBe('https://a.test/now');
+    expect(app.state.historyDepth).toBe(1);
+  });
+
   it('leaving the stage abandons the nav stack', async () => {
     const app = await boot();
     app.state.stage = true;

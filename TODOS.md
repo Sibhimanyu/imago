@@ -309,18 +309,6 @@ was fixed in 0.5.0.0 (`keepFocus`); the rebuild itself remains.
 **Priority:** P3
 **Depends on:** None
 
-### Back history and the trail drift apart after an example or New request
-
-**What:** `loadExample` and New request reset `state.stack` but not
-`state.historyDepth`, so the next Back walks pushState entries from before the
-reset and lands in `leaveStage`. (Escape at depth 0 was fixed in 0.5.0.0.)
-
-**Context:** `app.js` `loadExample`, the New request handler, `stepBack`.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
 ### Slug titles are capitalised even when case matters
 
 **What:** `buildFallbackSpec` capitalises a lowercase-slug title, so
