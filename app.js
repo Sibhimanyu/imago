@@ -389,37 +389,9 @@
     { name: 'Charizard',  chip: 'Charizard',  url: 'https://pokeapi.co/api/v2/pokemon/charizard' }
   ];
 
-  // Fill a <select> with the DEMOS list behind a placeholder option. Shared
-  // by the empty-state picker and the persistent one beside the request bar,
-  // so the two can never drift apart.
-  function fillExampleSelect(select) {
-    if (!select) return select;
-    clear(select);
-    var placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = 'Try an example…';
-    select.appendChild(placeholder);
-    for (var i = 0; i < DEMOS.length; i += 1) {
-      var option = document.createElement('option');
-      option.value = DEMOS[i].url;
-      option.textContent = DEMOS[i].name;
-      select.appendChild(option);
-    }
-    select.value = '';
-    return select;
-  }
-
-  // A picker selection behaves exactly like tapping a demo: drop any pushed
-  // pages and fetch the chosen endpoint. The picker resets to its
-  // placeholder so the same example can be picked twice in a row.
-  function pickExample(select) {
-    if (!select || !select.value) return false;
-    state.stack = [];
-    // Examples are public hosts: never carry the last endpoint's headers there.
-    navigateTo(select.value, '');
-    select.value = '';
-    return true;
-  }
+  // The four examples an empty page offers on a phone, where the rail's
+  // full list is behind the Endpoints sheet. One of each kind of page.
+  var EMPTY_EXAMPLES = ['Pokémon', 'Weather', 'Dictionary', 'Library'];
 
   var COMPONENT_TYPES = ['title', 'text', 'metric', 'image', 'badges', 'list',
                          'table', 'statBars', 'chart', 'link', 'jsonBlock', 'section',
@@ -3941,18 +3913,22 @@
     var icon = el('div', 'empty-icon');
     icon.appendChild(svgIcon(['M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z', 'M4 10h16M9 10v9'], 22));
     box.appendChild(icon);
-    box.appendChild(el('p', 'empty-title', 'Explore any API'));
+    box.appendChild(el('p', 'empty-title', 'Paste an API URL to start'));
     box.appendChild(el('p', 'empty-body',
-      'Enter an API endpoint and Imago will turn the response into a readable interface.'));
-    box.appendChild(el('p', 'chip-row-label', 'Try an example'));
-
-    var picker = el('div', 'example-picker');
-    var select = el('select', 'example-select');
-    select.setAttribute('aria-label', 'Try an example API');
-    fillExampleSelect(select);
-    select.addEventListener('change', function () { pickExample(select); });
-    picker.appendChild(select);
-    box.appendChild(picker);
+      'Imago fetches it and turns the response into a page. Any public GET endpoint works.'));
+    // Wide screens have the whole example list in the rail beside this; a
+    // second picker here was a third copy of the same list. Phones get four.
+    box.appendChild(el('p', 'empty-hint', 'Or open an example from the list on the left.'));
+    var chips = el('div', 'empty-examples');
+    chips.setAttribute('role', 'group');
+    chips.setAttribute('aria-label', 'Examples');
+    DEMOS.filter(function (d) { return EMPTY_EXAMPLES.indexOf(d.name) !== -1; }).forEach(function (demo) {
+      var chip = el('button', 'empty-example', demo.name);
+      chip.type = 'button';
+      chip.addEventListener('click', function () { loadExample(demo.url); });
+      chips.appendChild(chip);
+    });
+    box.appendChild(chips);
     dom.interfaceOut.appendChild(box);
   }
 
@@ -5291,12 +5267,6 @@
     });
 
     dom.saveBtn.addEventListener('click', saveCurrentRequest);
-    if (dom.exampleSelect) {
-      fillExampleSelect(dom.exampleSelect);
-      dom.exampleSelect.addEventListener('change', function () {
-        pickExample(dom.exampleSelect);
-      });
-    }
     // A new request starts from an empty command bar.
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
@@ -5484,7 +5454,7 @@
     var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
                 'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
-                'exampleSelect', 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
+                'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
                'stSize', 'stCache', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
                'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
@@ -5693,7 +5663,7 @@
     getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
     getProvider: getProvider,
     // examples
-    DEMOS: DEMOS, fillExampleSelect: fillExampleSelect, pickExample: pickExample,
+    DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,

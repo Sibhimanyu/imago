@@ -367,8 +367,6 @@ input:focus, textarea:focus, select:focus {
   cursor: pointer;
 }
 .mini-select:disabled { opacity: .45; cursor: not-allowed; }
-/* The empty state already offers the example picker; one is enough. */
-#panePlayground.is-empty .examples-group { display: none; }
 
 .live-pill {
   display: inline-flex; align-items: center; gap: 6px;
@@ -463,20 +461,6 @@ input:focus, textarea:focus, select:focus {
 .empty-title { font-size: 17px; font-weight: 600; }
 .empty-body { margin: 9px auto 0; font-size: 13.5px; color: var(--muted); max-width: 400px; line-height: 1.6; }
 
-.chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
-.chip-row-label { font-size: 12.5px; color: var(--muted); margin-top: 26px; }
-
-/* ─── Example picker ───────────────────────────────────────────── */
-
-.example-picker { display: flex; justify-content: center; margin-top: 14px; }
-.example-select {
-  width: auto; max-width: 280px;
-  padding: 7px 10px; font-size: 13px;
-  border-radius: var(--r-xs);
-  background: var(--card);
-  cursor: pointer;
-}
-.example-bar-select { max-width: 150px; }
 
 /* ─── Builder segmented toggle ─────────────────────────────── */
 
@@ -1311,7 +1295,7 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   .saved-item:hover .saved-status { visibility: visible; }
 }
 .rail-empty { font-size: 12.5px; color: var(--muted); line-height: 1.5; padding: 2px 8px 10px; }
-.rail-examples { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.rail-examples { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
 .rail-examples .rail-title { padding: 0 8px 4px; }
 .rail-example {
   width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
@@ -1333,7 +1317,7 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .page-tools .meta-chip { border: 0; background: none; padding: 0; font-size: 12px; }
 .page-tools .meta-chip.is-hot { background: var(--yellow-bg); padding: 1px 8px; }
 .page-tools-right { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; }
-.page-tools .builder-group, .page-tools .examples-group { display: none !important; }
+.page-tools .builder-group { display: none !important; }
 .btn-sm { height: 32px; padding: 0 11px; font-size: 13px; gap: 6px; }
 #inspectBtn[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
 
@@ -1629,3 +1613,20 @@ body.inspector-open .inspector { display: block; }
 .keyline-action:hover { text-decoration-color: currentColor; }
 .keyline-action:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 3px; }
 .interface-out > .keyline, #interfaceOut > .keyline { margin: 0 0 16px; }
+
+/* Empty page: nothing to watch, save or inspect yet, so none of it shows */
+#panePlayground.is-empty .page-tools { display: none; }
+#panePlayground.is-empty .empty { padding-top: 14vh; }
+.empty-hint { margin: 18px auto 0; font-size: 13px; color: var(--muted); }
+.empty-examples { display: none; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 20px; }
+.empty-example {
+  min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--card); font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer;
+}
+.empty-example:hover { border-color: var(--ink-2); }
+.empty-example:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* Below the rail breakpoint the list is behind a sheet: offer four here instead */
+@media (max-width: 860px) {
+  .empty-hint { display: none; }
+  .empty-examples { display: flex; }
+}

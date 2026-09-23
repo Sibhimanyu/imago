@@ -1,6 +1,6 @@
-/* The example picker: one dropdown, one DEMOS list, keyless GETs only.
-   A dead example (key-gated API, POST endpoint) is worse than no example,
-   so these tests pin the list shape and the picker behaviour. */
+/* The examples: one DEMOS list, keyless GETs only. A dead example (key-gated
+   API, POST endpoint) is worse than no example, so these tests pin the list
+   shape and where it is offered. */
 import { describe, it, expect } from 'vitest';
 import { boot, jsonFetch, flush } from './harness.js';
 
@@ -33,58 +33,37 @@ describe('example APIs (DEMOS)', () => {
   });
 });
 
-describe('example picker', () => {
-  it('fills a select with a placeholder plus one option per example', async () => {
+// The examples used to be offered three times at once on an empty page: the
+// rail list, a dropdown in the empty state, and a hidden toolbar dropdown.
+// Now the rail owns the list; phones, where the rail is a sheet, get four
+// buttons in the empty state.
+describe('the empty page', () => {
+  it('offers four example buttons, one per kind of page, and no dropdown', async () => {
     const app = await boot();
-    const select = app.window.document.createElement('select');
-    app.fillExampleSelect(select);
-    expect(select.options.length).toBe(app.DEMOS.length + 1);
-    expect(select.options[0].value).toBe('');
-    expect(select.value).toBe('');
-    for (let i = 0; i < app.DEMOS.length; i += 1) {
-      expect(select.options[i + 1].value).toBe(app.DEMOS[i].url);
-      expect(select.options[i + 1].textContent).toBe(app.DEMOS[i].name);
-    }
+    app.showInterfaceEmpty();
+    expect(app.dom.interfaceOut.querySelector('select')).toBeNull();
+    expect(app.window.document.getElementById('exampleSelect')).toBeNull();
+    const chips = [...app.dom.interfaceOut.querySelectorAll('.empty-example')].map((b) => b.textContent);
+    expect(chips).toEqual(app.EMPTY_EXAMPLES);
   });
 
-  it('tolerates a missing select instead of throwing', async () => {
+  it('every offered example exists in DEMOS', async () => {
     const app = await boot();
-    expect(() => app.fillExampleSelect(null)).not.toThrow();
-    expect(app.pickExample(null)).toBe(false);
+    const names = app.DEMOS.map((d) => d.name);
+    for (const name of app.EMPTY_EXAMPLES) expect(names).toContain(name);
   });
 
-  it('ignores the placeholder instead of fetching', async () => {
-    let calls = 0;
-    const app = await boot({ fetch: () => { calls += 1; return jsonFetch({ ok: 1 })(); } });
-    const select = app.window.document.createElement('select');
-    app.fillExampleSelect(select);
-    expect(app.pickExample(select)).toBe(false);
+  it('an example button fetches that example with no headers', async () => {
+    const seen = [];
+    const app = await boot({ fetch: (url, init) => { seen.push({ url: String(url), headers: (init && init.headers) || {} }); return jsonFetch({ a: 1 })(url); } });
+    app.dom.headersInput.value = 'Authorization: Bearer SECRET';
+    app.showInterfaceEmpty();
+    const weather = [...app.dom.interfaceOut.querySelectorAll('.empty-example')].find((b) => b.textContent === 'Weather');
+    weather.click();
     await flush();
-    expect(calls).toBe(0);
-  });
-
-  it('picking an example loads it into the request bar, fetches, and resets the picker', async () => {
-    const app = await boot({ fetch: jsonFetch({ hello: 'world' }) });
-    const select = app.window.document.createElement('select');
-    app.fillExampleSelect(select);
-    select.value = app.DEMOS[0].url;
-    expect(app.pickExample(select)).toBe(true);
-    await flush();
-    expect(app.dom.urlInput.value).toBe(app.DEMOS[0].url);
-    // Back on the placeholder, so the same example can be picked again.
-    expect(select.value).toBe('');
-  });
-
-  it('the persistent Examples dropdown is populated on boot', async () => {
-    const app = await boot();
-    expect(app.dom.exampleSelect.options.length).toBe(app.DEMOS.length + 1);
-  });
-
-  it('the empty state offers the examples dropdown', async () => {
-    const app = await boot();
-    const picker = app.dom.interfaceOut.querySelector('.example-select');
-    expect(picker).toBeTruthy();
-    expect(picker.options.length).toBe(app.DEMOS.length + 1);
+    const demo = app.DEMOS.find((d) => d.name === 'Weather');
+    expect(app.dom.urlInput.value).toBe(demo.url);
+    expect(JSON.stringify(seen[seen.length - 1].headers)).not.toContain('SECRET');
   });
 });
 
