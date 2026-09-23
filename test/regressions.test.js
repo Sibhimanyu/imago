@@ -491,3 +491,32 @@ describe('the tablist keeps the contract its role makes', () => {
     expect(app.state.tab).toBe('interface');
   });
 });
+
+describe('a failed send leaves the page it could not replace', () => {
+  // Go / opening a saved endpoint set state.url before fetching; a failure put
+  // page A back on screen with page B's history strip and rail highlight.
+  it('points history and the rail back at the endpoint on screen, and keeps the typed URL', async () => {
+    const A = 'https://a.test/on-screen';
+    const B = 'https://b.test/broken';
+    const app = await boot({
+      local: { 'imago.savedRequests': [
+        { id: 'ra', name: 'A', url: A, headers: {}, createdAt: '2026-09-20T08:00:00Z' },
+        { id: 'rb', name: 'B', url: B, headers: {}, createdAt: '2026-09-20T09:00:00Z' }
+      ] },
+      fetch: () => Promise.resolve({ ok: false, status: 500, headers: { get: () => 'application/json' }, text: () => Promise.resolve('{}') })
+    });
+    app.state.url = A; app.state.dataUrl = A; app.state.data = { v: 1 }; app.state.activeRequestId = 'ra';
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec({ v: 1 }, A)), 'fallback');
+    app.setSnapshots({ [app.currentRequestKey()]: [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 0, data: { v: 1 } }
+    ] });
+    app.loadSavedRequest('rb');
+    await flush(); await flush(); await flush();
+    expect(app.state.url).toBe(A);
+    expect(app.state.activeRequestId).toBe('ra');
+    expect(app.dom.savedList.querySelector('.saved-item.is-active').textContent).toContain('A');
+    expect(app.dom.historyStrip.querySelector('.history-count').textContent).toBe('2 fetches');
+    expect(app.dom.urlInput.value).toBe(B);   // left to fix and resend
+  });
+});

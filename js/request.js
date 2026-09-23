@@ -1,6 +1,6 @@
 import { LARGE_RESPONSE_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, PROVIDER_IDS, getProvider, providerNeedsKey } from './config.js';
 import { dom, state } from './state.js';
-import { getActiveKey, getProviderKey, getSchemaSpecs, getSessionProvider, getSnapshots, providerUsable, savePrefs, setSchemaSpecs, setSessionProvider, setSnapshots } from './storage.js';
+import { getActiveKey, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionProvider, getSnapshots, providerUsable, savePrefs, setSchemaSpecs, setSessionProvider, setSnapshots } from './storage.js';
 import { byteLength, el, formatBytes } from './util.js';
 import { diffData, fingerprint, hashString } from './schema.js';
 import { applyHtml, compactSample, generateHtml, generateSpec, normalizeHtmlDoc, providerErrorText } from './llm.js';
@@ -450,6 +450,16 @@ function handleRequestFailure(err, isAuto) {
   if (state.navRestorePoint) {
     rollbackNavigation(state.navRestorePoint);
     state.navRestorePoint = null;
+  }
+
+  // A direct send (Go, or opening a saved endpoint) has no restore point, but
+  // it set state.url before fetching. Point the state back at the endpoint
+  // whose data is still on screen, or the history strip and rail describe
+  // page B over page A. The URL box keeps what was typed, to fix and resend.
+  if (state.data && state.dataUrl && state.url !== state.dataUrl) {
+    state.url = state.dataUrl;
+    var saved = getSavedRequests().filter(function (r) { return r.url === state.dataUrl; })[0];
+    state.activeRequestId = saved ? saved.id : null;
   }
 
   if (state.data && state.spec) {
