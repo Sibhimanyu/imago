@@ -2,6 +2,28 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.0.0] - 2026-09-23
+
+The page is yours to adjust.
+
+### Added
+
+- **Edit a page.** Edit puts a small bar on each field. You can rename its
+  label, move it to the Headline, Normal or Details, or hide it. Hidden fields
+  are listed above the page, each with a Show button, and Reset page puts
+  everything back.
+- **Edits are saved for the response's shape**, so every endpoint that returns
+  the same shape gets the same page. Share links carry the edited page. Watch
+  pauses while you edit, and Clear all data removes edits too.
+
+### Fixed
+
+- **The no-key line no longer disappears when the page is redrawn.** Entering
+  Edit, among other things, used to drop it and bring back the "Basic layout"
+  badge. It now reappears on each redraw, exactly once.
+- **The phone toolbar stays on one row.** The refresh-interval picker now waits
+  until Watch is on, leaving room for Save, Edit, Share and Inspect.
+
 ## [0.9.0.0] - 2026-09-23
 
 Watch now works while you're looking at something else.
