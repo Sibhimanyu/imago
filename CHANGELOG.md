@@ -2,6 +2,19 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.2.0] - 2026-09-23
+
+### Fixed
+
+- **Names that are code keep their case.** A response about a GitHub login or
+  repo, or a package, shows its name exactly as the API wrote it: `left-pad`
+  used to become "Left pad". Plain names like `pikachu` still read as
+  "Pikachu".
+- **A failed request no longer mixes two pages.** When opening an endpoint
+  failed, the page you were reading came back with the other endpoint's
+  history and highlight. It now describes the page on screen, and the URL box
+  keeps what you typed so you can fix it and resend.
+
 ## [0.10.1.0] - 2026-09-23
 
 Nothing to see, deliberately: this release changes how the app is built, not what

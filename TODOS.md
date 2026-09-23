@@ -309,30 +309,15 @@ was fixed in 0.5.0.0 (`keepFocus`); the rebuild itself remains.
 **Priority:** P3
 **Depends on:** None
 
-### Slug titles are capitalised even when case matters
-
-**What:** `buildFallbackSpec` capitalises a lowercase-slug title, so
-case-sensitive identifiers (a GitHub login, a package name) are shown altered.
-The other fallback edge cases (minute-window labels, `units` fields, series
-with gaps, the third series, Details closing) were fixed in 0.7.0.0.
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
-### A failed direct request shows the new URL's history
-
-**What:** Send and opening an endpoint set `state.url` before the fetch, and a
-failure re-renders page A with URL B's history strip and rail highlight.
-
-**Context:** Adversarial review, 0.4.0.0. `performRequest`,
-`handleRequestFailure` — give direct sends a restore point like `navigateTo`.
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
 ## Completed
+
+### Code identifiers keep their case; a failed send keeps its page — v0.10.2.0
+
+**What:** A response about a login, repo or package shows its name as written
+(`left-pad`, not "Left pad"). A failed Go or saved-endpoint open points the
+history strip and rail back at the page still on screen.
+
+**Completed:** v0.10.2.0 (2026-09-23)
 
 ### Basic-layout edge cases and dead code — v0.7.0.0
 
