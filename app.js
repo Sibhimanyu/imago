@@ -415,7 +415,8 @@
   function pickExample(select) {
     if (!select || !select.value) return false;
     state.stack = [];
-    navigateTo(select.value);
+    // Examples are public hosts: never carry the last endpoint's headers there.
+    navigateTo(select.value, '');
     select.value = '';
     return true;
   }
@@ -4512,7 +4513,7 @@
   function loadExample(url) {
     state.stack = [];
     if (state.pane !== 'playground') setAppPane('playground');
-    navigateTo(url);
+    navigateTo(url, '');   // public demo host: the last endpoint's headers stay behind
   }
 
   // Every write to the URL box goes through here so Save reads as unavailable
@@ -4578,6 +4579,8 @@
       if (list[i].id === id) { found = list[i]; break; }
     }
     if (!found) return;
+    // A click mid-request would put B's URL and headers over page A.
+    if (state.inFlight) return;
 
     state.activeRequestId = found.id;
     setUrlInput(found.url);
@@ -5356,6 +5359,8 @@
       state.stack = [];
       state.activeRequestId = null;
       setUrlInput('');
+      dom.headersInput.value = '';   // the next host must not inherit these
+      markDirty();
       renderSavedList();
       dom.urlInput.focus();
     });
@@ -5761,6 +5766,7 @@
     clearAllData: clearAllData,
     callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,
     resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs, showInterfaceEmpty: showInterfaceEmpty, setUrlInput: setUrlInput,
+    loadSavedRequest: loadSavedRequest,
     setAppPane: setAppPane, renderHistory: renderHistory, renderSavedList: renderSavedList,
     enterApp: enterApp, isBookkeeping: isBookkeeping, stripBody: stripBody,
     init: init

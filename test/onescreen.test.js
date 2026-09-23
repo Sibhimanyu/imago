@@ -648,3 +648,40 @@ describe('review fixes', () => {
     expect(app.dom.historyStrip.querySelector('.history-count').textContent).toBe('2 fetches');
   });
 });
+
+describe('credentials stay with their endpoint', () => {
+  function recorder(seen) {
+    return (url, init) => { seen.push({ url: String(url), headers: (init && init.headers) || {} }); return jsonFetch({ a: 1 })(url); };
+  }
+
+  // The rail's examples are one tap away from any saved endpoint; they must
+  // not carry that endpoint's Authorization to a public demo host.
+  it('a rail example is fetched without the last endpoint headers', async () => {
+    const seen = [];
+    const app = await boot({ fetch: recorder(seen) });
+    app.state.headersText = 'Authorization: Bearer SECRET';
+    app.dom.headersInput.value = 'Authorization: Bearer SECRET';
+    app.dom.railExamples.querySelector('button').click();
+    await flush();
+    expect(seen.length).toBeGreaterThan(0);
+    expect(JSON.stringify(seen[seen.length - 1].headers)).not.toContain('SECRET');
+  });
+
+  it('New request clears the headers as well as the URL', async () => {
+    const app = await boot();
+    app.dom.headersInput.value = 'Authorization: Bearer SECRET';
+    app.dom.newRequestBtn.click();
+    expect(app.dom.headersInput.value).toBe('');
+  });
+
+  it('opening an endpoint mid-request leaves the form alone', async () => {
+    const app = await boot({ local: { 'imago.savedRequests': [
+      { id: 'b', name: 'B', url: 'https://b.test/x', headers: { 'X-Api-Key': 'k' }, createdAt: '2026-09-20T08:00:00Z' }
+    ] } });
+    app.setUrlInput('https://a.test/x');
+    app.state.inFlight = true;
+    app.loadSavedRequest('b');
+    expect(app.dom.urlInput.value).toBe('https://a.test/x');
+    expect(app.dom.headersInput.value).not.toContain('k');
+  });
+});
