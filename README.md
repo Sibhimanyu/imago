@@ -89,6 +89,14 @@ bar saying how many are set. `-u` becomes Basic auth, `-G -d` becomes a query
 string, and headers the browser sets itself (Cookie, User-Agent, …) are left out
 and named. Headers stay in this tab's session.
 
+### Know when a watched page changes
+
+With **Watch** on, a change found while you are in another tab puts a count in
+the tab title ("(3) Forecast — Imago") until you come back. Turning Watch on
+also offers, once, to send a browser notification that says what changed
+("Rate: 1.1 → 1.2"). Nothing asks for permission unprompted, and the title
+count works without it.
+
 ### Share a page
 
 **Share** copies a link that opens the same page for someone else: the
