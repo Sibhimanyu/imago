@@ -1632,3 +1632,11 @@ body.inspector-open .inspector { display: block; }
   .empty-hint { display: none; }
   .empty-examples { display: flex; }
 }
+
+/* Settings: provider first, one provider's block at a time */
+select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mono is for model ids and addresses */
+.provider-block { margin-top: 2px; }
+.provider-block > .muted-note { margin-top: 8px; }
+.key-status[data-state="idle"]:empty { display: none; }
+.settings-foot { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.settings-foot .muted-note { margin: 0; flex: 1 1 220px; }

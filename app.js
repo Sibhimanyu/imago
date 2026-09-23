@@ -3261,20 +3261,12 @@
     var id = getSessionProvider();
     var provider = getProvider(id);
     if (dom.providerSelect) dom.providerSelect.value = id;
-    // The server address is Ollama-only clutter for everyone else.
-    if (dom.ollamaServerGroup) dom.ollamaServerGroup.hidden = id !== 'ollama';
+    // Only the chosen provider's key, test and server are on screen.
+    var blocks = document.querySelectorAll('.provider-block');
+    for (var b = 0; b < blocks.length; b += 1) blocks[b].hidden = blocks[b].getAttribute('data-provider') !== id;
     if (dom.ollamaNoteOrigin) {
       try { dom.ollamaNoteOrigin.textContent = window.location.origin; }
       catch (e) { /* ignore */ }
-    }
-    if (dom.providerHint) {
-      if (providerNeedsKey(id)) {
-        dom.providerHint.innerHTML = 'Get a free key at <span class="mono">' + provider.keyHint +
-          '</span>. Typing into its field below selects it.';
-      } else {
-        dom.providerHint.innerHTML = 'Runs on your machine — no key needed. ' +
-          'Set the server address below; type a pulled model name into Model.';
-      }
     }
     if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
     syncChatTarget();
@@ -3317,6 +3309,11 @@
   // provider — the field you touched is the key you mean.
   function storeKeyFromInput(input, id) {
     var key = input.value.trim();
+    // A key pasted under the wrong provider is filed under the one its prefix
+    // names, and that provider is shown. The field it was typed into keeps
+    // whatever it held before.
+    var owner = detectProvider(key);
+    if (owner && owner !== id) id = owner;
     setProviderKey(id, key);
     if (key) setSessionProvider(id);
     syncProviderUi({ force: !!key });
@@ -5466,7 +5463,7 @@
                 'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
                 'ollamaTestBtn', 'ollamaTestStatus', 'modelOptions', 'modelNote',
                'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
-                'providerSelect', 'providerHint', 'modelHint', 'ollamaEndpoint',
+                'providerSelect', 'modelHint', 'ollamaEndpoint',
                 'ollamaServerGroup', 'ollamaNoteOrigin',
                'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource',
                'inspectBtn', 'inspector', 'historyStrip', 'railExamples', 'railClose',

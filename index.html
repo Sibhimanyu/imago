@@ -383,63 +383,63 @@
       <button type="button" class="icon-btn" id="settingsClose" aria-label="Close settings"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
     </div>
     <div class="settings-grid">
+      <!-- One card, provider first: only the chosen provider's key, test and
+           model are shown. It used to list every provider's key at once, with
+           a Test / Not tested pair each. -->
       <div class="card settings-card">
-        <h3 class="sub-head">Model provider</h3>
-        <select id="providerSelect" class="text-input" aria-label="Model provider">
+        <h3 class="sub-head">Model</h3>
+        <label class="field-label" for="providerSelect">Provider</label>
+        <select id="providerSelect" class="text-input">
           <option value="gemini">Google Gemini</option>
           <option value="groq">Groq</option>
-          <option value="ollama">Ollama (local)</option>
+          <option value="ollama">Ollama (runs on your machine)</option>
         </select>
-        <p class="muted-note" id="providerHint">Get a free key at <span class="mono">aistudio.google.com/apikey</span>. Pasting a key below switches this automatically.</p>
-        <div id="ollamaServerGroup" hidden>
-          <label class="field-label" for="ollamaEndpoint">Ollama server</label>
-          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://127.0.0.1:11434">
-          <p class="muted-note">Same machine only. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
+
+        <div class="provider-block" data-provider="gemini">
+          <label class="field-label" for="geminiKey">API key <span class="key-status key-status-inline" id="geminiKeyStatus" data-state="missing">Not set</span></label>
+          <div class="key-field">
+            <span class="key-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg></span>
+            <input type="password" id="geminiKey" placeholder="Paste a Gemini key (starts with AIza)" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="key-meta">
+            <button type="button" class="btn btn-ghost btn-xs" id="geminiTestBtn">Test</button>
+            <span class="key-status" id="geminiTestStatus" data-state="idle"></span>
+          </div>
+          <p class="muted-note">Free at <span class="mono">aistudio.google.com/apikey</span>.</p>
         </div>
+
+        <div class="provider-block" data-provider="groq" hidden>
+          <label class="field-label" for="groqKey">API key <span class="key-status key-status-inline" id="groqKeyStatus" data-state="missing">Not set</span></label>
+          <div class="key-field">
+            <span class="key-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg></span>
+            <input type="password" id="groqKey" placeholder="Paste a Groq key (starts with gsk_)" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="key-meta">
+            <button type="button" class="btn btn-ghost btn-xs" id="groqTestBtn">Test</button>
+            <span class="key-status" id="groqTestStatus" data-state="idle"></span>
+          </div>
+          <p class="muted-note">Free at <span class="mono">console.groq.com/keys</span>.</p>
+        </div>
+
+        <div class="provider-block" data-provider="ollama" id="ollamaServerGroup" hidden>
+          <label class="field-label" for="ollamaEndpoint">Server</label>
+          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://127.0.0.1:11434">
+          <div class="key-meta">
+            <button type="button" class="btn btn-ghost btn-xs" id="ollamaTestBtn">Test</button>
+            <span class="key-status" id="ollamaTestStatus" data-state="idle"></span>
+          </div>
+          <p class="muted-note">No key needed. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
+        </div>
+
         <label class="field-label" for="modelName">Model</label>
         <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off" placeholder="Model name" list="modelOptions">
         <datalist id="modelOptions"></datalist>
         <p class="muted-note" id="modelNote">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
-      </div>
 
-      <div class="card settings-card">
-        <h3 class="sub-head">API keys</h3>
-        <div class="key-block">
-          <label class="field-label" for="geminiKey">Google Gemini <span class="mono">AIza…</span> <span class="key-status key-status-inline" id="geminiKeyStatus" data-state="missing">Not set</span></label>
-          <div class="key-field">
-            <span class="key-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
-            </span>
-            <input type="password" id="geminiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="key-meta">
-            <button type="button" class="btn btn-ghost btn-xs" id="geminiTestBtn">Test</button>
-            <span class="key-status" id="geminiTestStatus" data-state="missing">Not tested</span>
-          </div>
+        <div class="settings-foot">
+          <p class="muted-note">Keys stay in this browser. Anyone using this browser profile can read them.</p>
+          <button type="button" class="btn btn-ghost btn-sm" id="clearKeyBtn">Clear all keys</button>
         </div>
-        <div class="key-block">
-          <label class="field-label" for="groqKey">Groq <span class="mono">gsk_…</span> <span class="key-status key-status-inline" id="groqKeyStatus" data-state="missing">Not set</span></label>
-          <div class="key-field">
-            <span class="key-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
-            </span>
-            <input type="password" id="groqKey" placeholder="Paste your Groq API key" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="key-meta">
-            <button type="button" class="btn btn-ghost btn-xs" id="groqTestBtn">Test</button>
-            <span class="key-status" id="groqTestStatus" data-state="missing">Not tested</span>
-          </div>
-        </div>
-        <div class="key-block">
-          <span class="field-label">Ollama</span>
-          <div class="key-meta key-meta-plain">
-            <span class="muted-note">No key needed.</span>
-            <button type="button" class="btn btn-ghost btn-xs" id="ollamaTestBtn">Test</button>
-            <span class="key-status" id="ollamaTestStatus" data-state="missing">Not tested</span>
-          </div>
-        </div>
-        <p class="muted-note">Saved in this browser only — anyone with this profile can read them. Typing selects that provider.</p>
-        <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear all keys</button>
       </div>
 
       <div class="card settings-card">
