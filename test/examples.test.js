@@ -87,3 +87,38 @@ describe('example picker', () => {
     expect(picker.options.length).toBe(app.DEMOS.length + 1);
   });
 });
+
+// The empty Playground showed two identical "Try an example" pickers, one in
+// the toolbar and one in the empty state. The toolbar copy now hides while the
+// empty state is up, and comes back once a response renders.
+describe('one example picker at a time', () => {
+  it('marks the pane empty on first run and clears the mark once an interface renders', async () => {
+    const app = await boot({ fetch: jsonFetch({ hello: 'world' }) });
+    app.showInterfaceEmpty();
+    expect(app.dom.panePlayground.classList.contains('is-empty')).toBe(true);
+
+    app.state.data = { hello: 'world' };
+    app.state.schema = { hello: 'string' };
+    app.state.schemaHash = 'h_test';
+    app.state.url = 'https://x.test/api';
+    app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
+    await flush();
+    expect(app.state.spec).toBeTruthy();
+    expect(app.dom.panePlayground.classList.contains('is-empty')).toBe(false);
+  });
+});
+
+// Save always looked live; pressing it with an empty URL box answered with an
+// error toast. It now reads as unavailable until there is a URL to save.
+describe('Save button', () => {
+  it('reads as unavailable with an empty URL and live once a URL is set or typed', async () => {
+    const app = await boot();
+    app.setUrlInput('');
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('true');
+    app.setUrlInput('https://pokeapi.co/api/v2/pokemon/pikachu');
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('false');
+    app.dom.urlInput.value = '   ';
+    app.dom.urlInput.dispatchEvent(new app.window.Event('input', { bubbles: true }));
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('true');
+  });
+});

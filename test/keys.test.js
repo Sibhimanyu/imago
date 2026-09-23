@@ -129,6 +129,18 @@ describe('no-key messaging', () => {
     expect(text).toContain('keep working');
   });
 
+  // The no-key banner used to render in the red error style, so the first
+  // thing on a page that rendered fine read as a failure. Red now means only
+  // "something broke"; a missing key is a neutral notice.
+  it('shows the missing key as a neutral notice, not a red failure', async () => {
+    const app = await noKeyApp();
+    app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
+    await flush();
+    const alert = app.dom.interfaceOut.querySelector('.alert');
+    expect(alert.textContent).toContain('No Google Gemini key');
+    expect(alert.classList.contains('alert-note')).toBe(true);
+  });
+
   it('uses whichever provider actually has a key instead of failing', async () => {
     const app = await noKeyApp();
     app.setProviderKey('groq', 'gsk_live123');
