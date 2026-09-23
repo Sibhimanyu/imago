@@ -2,7 +2,7 @@
   "name": "imago",
   "version": "0.10.0",
   "private": true,
-  "description": "Imago — APIs become interfaces. Browser-only API playground.",
+  "description": "Imago \u2014 APIs become interfaces. Browser-only API playground.",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -10,9 +10,11 @@
     "design:check": "node scripts/design-sync.mjs check",
     "design:shots": "node scripts/design-shots.mjs",
     "design:figma": "node scripts/design-sync.mjs figma",
-    "design:stamp": "node scripts/design-sync.mjs stamp"
+    "design:stamp": "node scripts/design-sync.mjs stamp",
+    "check": "node scripts/check-modules.mjs"
   },
   "devDependencies": {
+    "esbuild": "^0.21.5",
     "jsdom": "^25.0.1",
     "vitest": "^2.1.8"
   }
