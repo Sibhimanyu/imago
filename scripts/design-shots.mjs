@@ -79,19 +79,23 @@ function connect(url) {
   const ws = new WebSocket(url);
   let id = 0;
   const pending = new Map();
+  const errors = [];   // uncaught exceptions in the page: a shot of a broken app is not a mirror
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data);
     if (msg.id && pending.has(msg.id)) {
       const { resolve, reject } = pending.get(msg.id);
       pending.delete(msg.id);
       msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
+    } else if (msg.method === 'Runtime.exceptionThrown') {
+      const d = msg.params.exceptionDetails;
+      errors.push((d.exception && d.exception.description) || d.text);
     }
   };
   const send = (method, params = {}) => new Promise((resolve, reject) => {
     debug('→', method);
     const n = ++id; pending.set(n, { resolve, reject }); ws.send(JSON.stringify({ id: n, method, params }));
   });
-  return new Promise((r) => { ws.onopen = () => r({ send, close: () => ws.close() }); });
+  return new Promise((r) => { ws.onopen = () => r({ send, errors, close: () => ws.close() }); });
 }
 
 const debug = (...a) => { if (process.env.DEBUG) console.error('[shots]', ...a); };
@@ -138,7 +142,7 @@ async function shoot(page, base, shot) {
   await page.send('Emulation.setTouchEmulationEnabled', { enabled: mobile });
   await page.send('Storage.clearDataForOrigin', { origin: base, storageTypes: 'all' });
   if (shot.onboarded) {
-    // Runs before app.js, so the app boots straight into the app view.
+    // Runs before the app's modules, so it boots straight into the app view.
     await page.send('Page.addScriptToEvaluateOnNewDocument', {
       source: "try { localStorage.setItem('imago.preferences', JSON.stringify({ onboarded: true })); } catch (e) {}"
     });
@@ -165,6 +169,7 @@ async function shoot(page, base, shot) {
     format: 'png', captureBeyondViewport: !!shot.full,
     clip: { x: 0, y: 0, width, height: h, scale: 1 }
   });
+  if (page.errors.length) throw new Error(shot.id + ': the page threw: ' + page.errors[0]);
   await writeFile(join(OUT, shot.id + '.png'), Buffer.from(data, 'base64'));
   return { id: shot.id, title: shot.title, width, height: h, mobile };
 }

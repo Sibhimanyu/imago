@@ -7,7 +7,8 @@ cd "$(dirname "$0")"
 rm -rf dist
 mkdir -p dist/.catalyst
 
-cp index.html styles.css app.js og.png favicon.svg dist/
+cp index.html styles.css og.png favicon.svg dist/
+cp -R js dist/js
 cp -R assets dist/assets
 
 cat > dist/.catalyst/slate-config.toml <<'TOML'
