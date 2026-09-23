@@ -2,6 +2,32 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.7.0.0] - 2026-09-23
+
+The page you get without a key stops losing and mixing up fields.
+
+### Fixed
+
+- **Different fields keep different labels.** `load_1m`, `load_5m` and
+  `load_15m` all used to read "Load". The measuring height is now dropped only
+  after a weather measure (temperature_2m still reads "Temperature").
+- **A value called `units` is shown.** Only a unit table is treated as
+  bookkeeping. `units: 42` used to be tucked away in Details, even when it was
+  the number the page was about.
+- **Series with gaps still chart.** A time series with a `null` in it (common
+  for unfinished hours) used to be dropped from the page.
+- **A third series is no longer lost.** Two charts lead and the rest chart
+  inside Details.
+- **Details stays open.** With Watch on it used to snap shut on every refresh.
+- **Back no longer leaves the page.** Back from a page with nothing behind it
+  used to drop out of the page silently, after loading an example or starting a
+  new request.
+
+### Removed
+
+- The old key-setup screen, which nothing had shown since the landing page
+  started going straight to the app.
+
 ## [0.6.0.0] - 2026-09-23
 
 Real APIs on the first try: bring the request the way your docs or dev tools
