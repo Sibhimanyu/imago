@@ -34,6 +34,7 @@ export const SHOTS = [
   { id: 'page-desktop', title: 'Page · weather', view: DESKTOP, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true },
   { id: 'inspector-desktop', title: 'Inspector · Response', view: DESKTOP, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setActiveTab('raw')" },
   { id: 'settings-desktop', title: 'Settings sheet', view: DESKTOP, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('settings')" },
+  { id: 'empty-mobile', title: 'Empty page', view: MOBILE, onboarded: true },
   { id: 'page-mobile', title: 'Page · weather', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true },
   { id: 'endpoints-mobile', title: 'Endpoints sheet', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('saved')" },
   { id: 'settings-mobile', title: 'Settings sheet', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('settings')" }
@@ -115,20 +116,36 @@ async function ready(page) {
   throw new Error('page never became ready: ' + why);
 }
 
-async function capture(page, base, shot) {
+// Each shot gets a fresh tab: sessionStorage is per tab, and the app writes
+// its state back to storage on unload, so reusing a tab (or clearing and
+// reloading) let one shot's URL leak into the next.
+async function capture(chromePort, base, shot) {
+  const target = await (await fetch(`http://127.0.0.1:${chromePort}/json/new?about:blank`, { method: 'PUT' })).json();
+  const page = await connect(target.webSocketDebuggerUrl);
+  try {
+    return await shoot(page, base, shot);
+  } finally {
+    page.close();
+    await fetch(`http://127.0.0.1:${chromePort}/json/close/${target.id}`).catch(() => {});
+  }
+}
+
+async function shoot(page, base, shot) {
+  await page.send('Page.enable');
+  await page.send('Runtime.enable');
   const { width, height, mobile } = shot.view;
   await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile });
   await page.send('Emulation.setTouchEmulationEnabled', { enabled: mobile });
-  // A clean profile per shot: storage from the previous shot must not leak in.
   await page.send('Storage.clearDataForOrigin', { origin: base, storageTypes: 'all' });
+  if (shot.onboarded) {
+    // Runs before app.js, so the app boots straight into the app view.
+    await page.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: "try { localStorage.setItem('imago.preferences', JSON.stringify({ onboarded: true })); } catch (e) {}"
+    });
+  }
   const nav = await page.send('Page.navigate', { url: base + '/' });
   if (nav.errorText) throw new Error('navigate ' + base + ': ' + nav.errorText);
   await ready(page);
-  if (shot.onboarded) {
-    await evaluate(page, "localStorage.setItem('imago.preferences', JSON.stringify({ onboarded: true })); 1");
-    await page.send('Page.reload');
-    await ready(page);
-  }
   await evaluate(page, 'Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 4000); })]).then(function () { return 1; })');
   if (shot.setup) await evaluate(page, shot.setup + '; 1');
   if (shot.waitData) {
@@ -159,19 +176,14 @@ async function main() {
   const base = 'http://127.0.0.1:' + server.address().port;
   const chrome = await launch();
   try {
-    const target = await (await fetch(`http://127.0.0.1:${chrome.port}/json/new?about:blank`, { method: 'PUT' })).json();
-    const page = await connect(target.webSocketDebuggerUrl);
-    await page.send('Page.enable');
-    await page.send('Runtime.enable');
     const indexPath = join(OUT, 'index.json');
     const index = existsSync(indexPath) ? JSON.parse(await readFile(indexPath, 'utf8')) : {};
     for (const shot of shots) {
-      const meta = await capture(page, base, shot);
+      const meta = await capture(chrome.port, base, shot);
       index[shot.id] = meta;
       console.log(`${shot.id}  ${meta.width}x${meta.height}`);
     }
     await writeFile(indexPath, JSON.stringify(index, null, 2) + '\n');
-    page.close();
   } finally {
     chrome.proc.kill();
     server.close();

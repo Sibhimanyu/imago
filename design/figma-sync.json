@@ -11,9 +11,10 @@
     "settings-desktop": "26:19",
     "page-mobile": "26:21",
     "endpoints-mobile": "26:23",
-    "settings-mobile": "26:25"
+    "settings-mobile": "26:25",
+    "empty-mobile": "28:2"
   },
-  "surfaceHash": "f726c3a37d3d5a2f",
+  "surfaceHash": "7d97deb6a02bc482",
   "syncedAt": "2026-09-23",
-  "syncedCommit": "2cde6d2"
+  "syncedCommit": "fbad487"
 }
