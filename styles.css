@@ -295,13 +295,6 @@ input:focus, textarea:focus, select:focus {
 .key-pill[data-state="ready"] { color: #2f7a48; background: var(--green-bg); border-color: #c6e5cf; }
 /* A missing key is not a change, so it stays neutral (the default above). */
 
-.avatar {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--ink); color: #fff;
-  display: grid; place-items: center;
-  font-size: 12.5px; font-weight: 600;
-  flex: 0 0 auto;
-}
 
 .app-main { max-width: 1120px; margin: 0 auto; padding: 30px 26px 80px; }
 
@@ -367,8 +360,6 @@ input:focus, textarea:focus, select:focus {
   cursor: pointer;
 }
 .mini-select:disabled { opacity: .45; cursor: not-allowed; }
-/* The empty state already offers the example picker; one is enough. */
-#panePlayground.is-empty .examples-group { display: none; }
 
 .live-pill {
   display: inline-flex; align-items: center; gap: 6px;
@@ -463,20 +454,6 @@ input:focus, textarea:focus, select:focus {
 .empty-title { font-size: 17px; font-weight: 600; }
 .empty-body { margin: 9px auto 0; font-size: 13.5px; color: var(--muted); max-width: 400px; line-height: 1.6; }
 
-.chip-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
-.chip-row-label { font-size: 12.5px; color: var(--muted); margin-top: 26px; }
-
-/* ─── Example picker ───────────────────────────────────────────── */
-
-.example-picker { display: flex; justify-content: center; margin-top: 14px; }
-.example-select {
-  width: auto; max-width: 280px;
-  padding: 7px 10px; font-size: 13px;
-  border-radius: var(--r-xs);
-  background: var(--card);
-  cursor: pointer;
-}
-.example-bar-select { max-width: 150px; }
 
 /* ─── Builder segmented toggle ─────────────────────────────── */
 
@@ -623,7 +600,6 @@ input:focus, textarea:focus, select:focus {
 .action-btn.is-on { background: var(--green-bg); border-color: #c6e5cf; color: #2f7a48; }
 .action-btn.is-on svg { color: inherit; }
 
-.stage-raw { margin-top: 26px; }
 
 /* Layout shells — the plan's `layout` decides the page's shape. */
 .layout-article .spec-section { max-width: 760px; }
@@ -935,8 +911,13 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .chart-svg { display: block; width: 100%; height: 130px; overflow: visible; }
 .chart-line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart-area { fill: url(#imagoChartFill); }
-.chart-dot { fill: var(--ink); }
-.chart-axis { font-family: var(--mono); font-size: 9.5px; fill: var(--muted-2); }
+.chart-dot { stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.chart-plot { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; }
+.chart-axis { position: relative; height: 130px; min-width: 2.5em; }
+.chart-tick {
+  position: absolute; right: 0; transform: translateY(-50%);
+  font-size: 11px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--muted-2); white-space: nowrap;
+}
 .chart-grid { stroke: var(--line-soft); stroke-width: 1; }
 
 /* ─── Code panes ───────────────────────────────────────────────── */
@@ -1312,7 +1293,7 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   .saved-item:hover .saved-status { visibility: visible; }
 }
 .rail-empty { font-size: 12.5px; color: var(--muted); line-height: 1.5; padding: 2px 8px 10px; }
-.rail-examples { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.rail-examples { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
 .rail-examples .rail-title { padding: 0 8px 4px; }
 .rail-example {
   width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
@@ -1334,7 +1315,7 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .page-tools .meta-chip { border: 0; background: none; padding: 0; font-size: 12px; }
 .page-tools .meta-chip.is-hot { background: var(--yellow-bg); padding: 1px 8px; }
 .page-tools-right { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; }
-.page-tools .builder-group, .page-tools .examples-group { display: none !important; }
+.page-tools .builder-group { display: none !important; }
 .btn-sm { height: 32px; padding: 0 11px; font-size: 13px; gap: 6px; }
 #inspectBtn[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
 
@@ -1373,7 +1354,8 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   font-size: 16px; font-weight: 600; letter-spacing: -0.01em; text-transform: none;
   color: var(--ink); border: 0; padding: 0; margin: 0 0 12px;
 }
-.canvas .hero-row { display: flex; flex-wrap: wrap; gap: 28px 64px; align-items: flex-end; }
+/* Top-aligned: a meter under one value must not lift that value's label */
+.canvas .hero-row { display: flex; flex-wrap: wrap; gap: 28px 64px; align-items: flex-start; }
 .canvas .comp-hero, .canvas .comp { background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
 .canvas .comp-hero .comp-label { font-size: 14px; font-weight: 400; color: var(--muted); margin-bottom: 4px; }
 .canvas .val-hero .val-main { font-size: 88px; letter-spacing: -0.045em; line-height: 1; }
@@ -1381,7 +1363,8 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .canvas .spec-grid { gap: 40px 48px; }
 
 .canvas .fact-strip {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); column-gap: 48px;
+  /* auto-fit, not auto-fill: two facts share the row instead of leaving a phantom third track empty */
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); column-gap: 48px;
   border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; overflow: visible;
 }
 .canvas .fact {
@@ -1421,8 +1404,10 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   background: var(--card); border-left: 1px solid var(--line);
 }
 body.inspector-open .inspector { display: block; }
-.inspector .tabs { position: sticky; top: 0; z-index: 1; margin: 0; padding: 0 10px; background: var(--card); }
-.inspector #tab-interface { display: inline-flex; align-items: center; padding-left: 8px; padding-right: 8px; color: var(--muted); }
+.inspector-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 2px; padding: 0 10px; background: var(--card); border-bottom: 1px solid var(--line); }
+.inspector-head[hidden] { display: none; }
+.inspector .tabs { margin: 0; padding: 0; border-bottom: 0; background: none; flex: 1 1 auto; min-width: 0; }
+.inspector-close { flex: 0 0 auto; color: var(--muted); }
 .inspector .tab-pane .card { border: 0; border-radius: 0; padding: 16px 18px; background: none; }
 
 /* ── Settings sheet ────────────────────────────────────────── */
@@ -1461,7 +1446,9 @@ body.inspector-open .inspector { display: block; }
   .appbar .brand-word, .appbar-right .key-pill, .appnav .appnav-label { display: none; }
   .appnav { margin-left: auto; }
   .appnav button { min-height: 44px; }
-  .appnav .appnav-endpoints { border: 1px solid var(--line); background: var(--card); color: var(--ink); font-weight: 600; }
+  /* A plain button until its sheet is open; a filled one read as "selected" */
+  .appnav .appnav-endpoints { color: var(--ink); font-weight: 500; }
+  body.sheet-saved .appnav .appnav-endpoints { background: rgba(27,27,25,.06); font-weight: 600; }
   /* The command bar moves to the thumb zone */
   .reqbar.cmdbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
@@ -1513,7 +1500,7 @@ body.inspector-open .inspector { display: block; }
 #landingView .landing-title { font-size: clamp(40px, 5.6vw, 64px); line-height: 1.04; letter-spacing: -0.04em; }
 #landingView .landing-sub { margin: 20px auto 0; max-width: 560px; font-size: 17px; line-height: 1.55; color: var(--muted); }
 .landing-ctas { display: flex; justify-content: center; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
-.landing-caption { margin-top: 18px; font-size: 12.5px; color: var(--muted-2); }
+.landing-caption { margin-top: 18px; font-size: 14px; color: var(--muted); }
 
 .specimen {
   margin-top: 56px; overflow: hidden;
@@ -1537,7 +1524,7 @@ body.inspector-open .inspector { display: block; }
 .spec-pane[hidden] { display: none; }
 .spec-response { background: var(--bg-sink); padding: 20px 22px; border-right: 1px solid var(--line); overflow: hidden; }
 .spec-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-.spec-json { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.8; color: var(--muted-2); white-space: pre; overflow: hidden; }
+.spec-json { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.8; color: var(--muted); white-space: pre; overflow: hidden; }
 .spec-json .jl { display: block; padding: 0 10px; border-left: 2px solid transparent; }
 .spec-json .jk { color: var(--ink-2); }
 .spec-json .jv { color: var(--ink-2); }
@@ -1558,7 +1545,7 @@ body.inspector-open .inspector { display: block; }
 .si-metric b { font-size: 40px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.1; }
 .si-metric small { font-size: 16px; font-weight: 400; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
 .si-big b { font-size: 64px; }
-.si-changed { font-style: normal; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--yellow); color: var(--ink); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+.si-changed { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--yellow); color: var(--ink); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
 .si-was { display: inline-block; font-style: normal; font-size: 12.5px; color: var(--yellow-ink); background: var(--yellow-bg); border-radius: 999px; padding: 1px 9px; }
 .si-badge { font-size: 12.5px; font-weight: 500; color: var(--ink-2); border: 1px solid var(--line); background: var(--card-2); border-radius: 999px; padding: 3px 11px; }
 .si-sub { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
@@ -1581,7 +1568,7 @@ body.inspector-open .inspector { display: block; }
   margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--line);
 }
 .proof h2 { font-size: 16px; letter-spacing: -0.01em; }
-.proof p { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-2); max-width: 340px; }
+.proof p { margin-top: 10px; font-size: 16px; line-height: 1.55; color: var(--ink-2); max-width: 340px; }
 .proof-ev { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .proof-ev code { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .proof-ev .live-pill { display: inline-flex; }
@@ -1618,3 +1605,55 @@ body.inspector-open .inspector { display: block; }
 }
 .spec-response { position: relative; }
 .spec-response::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(rgba(241,239,233,0), var(--bg-sink)); pointer-events: none; }
+
+/* ── UI pass: one signal per fact ─────────────────────────────────────────── */
+
+/* No key: one quiet line under the title, never a banner */
+.keyline { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.keyline-action {
+  padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ink);
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); cursor: pointer;
+}
+.keyline-action:hover { text-decoration-color: currentColor; }
+.keyline-action:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 3px; }
+.interface-out > .keyline, #interfaceOut > .keyline { margin: 0 0 16px; }
+
+/* Empty page: nothing to watch, save or inspect yet, so none of it shows */
+#panePlayground.is-empty .page-tools { display: none; }
+#panePlayground.is-empty .empty { padding-top: 14vh; }
+.empty-hint { margin: 18px auto 0; font-size: 13px; color: var(--muted); }
+.empty-examples { display: none; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 20px; }
+.empty-example {
+  min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--card); font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer;
+}
+.empty-example:hover { border-color: var(--ink-2); }
+.empty-example:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* Below the rail breakpoint the list is behind a sheet: offer four here instead */
+@media (max-width: 860px) {
+  .empty-hint { display: none; }
+  .empty-examples { display: flex; }
+}
+
+/* Settings: provider first, one provider's block at a time */
+select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mono is for model ids and addresses */
+.provider-block { margin-top: 2px; }
+.provider-block > .muted-note { margin-top: 8px; }
+.key-status[data-state="idle"]:empty { display: none; }
+.settings-foot { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.settings-foot .muted-note { margin: 0; flex: 1 1 220px; }
+
+.history-item { display: flex; }   /* display: contents would drop the listitem role in some browsers */
+.toast-action {
+  margin-left: 14px; padding: 0; border: 0; background: none; font: inherit; font-weight: 600;
+  color: #fff; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.toast-action:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 3px; }
+
+/* Landing specimen: the response column was empty below the JSON. The JSON
+   sits in the middle of it and a key at the foot says what the highlight means. */
+.spec-response { display: flex; flex-direction: column; }
+.spec-response .spec-json { margin: auto 0; }
+.spec-key { margin: 16px 0 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.spec-key-mark { width: 12px; height: 12px; flex: 0 0 auto; background: rgba(27,27,25,.05); border-left: 2px solid var(--ink); }
+@media (max-width: 860px) { .spec-response .spec-json { margin: 0; } .spec-key { display: none; } }

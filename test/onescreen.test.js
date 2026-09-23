@@ -176,13 +176,16 @@ describe('endpoint rail', () => {
 });
 
 describe('value before the key', () => {
-  it('a first visit opens on a rendered example instead of a key form', async () => {
+  // Get started and Try an example used to do the same thing (load an
+  // example). Get started now means "I have an endpoint".
+  it('Get started opens an empty page with the URL box focused, never a key form', async () => {
     const calls = [];
     const app = await boot({ fetch: (url) => { calls.push(String(url)); return jsonFetch({ name: 'pikachu' })(url); } });
     app.dom.landingStart.click();
     await flush(); await flush();
     expect(app.state.view).toBe('app');
-    expect(calls).toContain(app.DEMOS[0].url);
+    expect(calls).toHaveLength(0);
+    expect(app.window.document.activeElement).toBe(app.dom.urlInput);
   });
 
   it('a returning visit does not load an example over the last page', async () => {
@@ -204,7 +207,7 @@ describe('value before the key', () => {
     app.state.url = 'https://x.test/api';
     app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
     await flush();
-    const btn = app.dom.interfaceOut.querySelector('.alert-action');
+    const btn = app.dom.interfaceOut.querySelector('.keyline-action');
     expect(btn.textContent).toBe('Add a key');
     btn.click();
     expect(app.state.pane).toBe('settings');
@@ -683,5 +686,211 @@ describe('credentials stay with their endpoint', () => {
     app.loadSavedRequest('b');
     expect(app.dom.urlInput.value).toBe('https://a.test/x');
     expect(app.dom.headersInput.value).not.toContain('k');
+  });
+});
+
+describe('one home per control', () => {
+  // Watch, refetch and the raw response each live in the toolbar. The page
+  // used to repeat them as buttons, which on a phone meant two rows of
+  // controls before any data.
+  it('the basic layout offers no Watch, Refresh or Raw JSON buttons', async () => {
+    const app = await boot();
+    app.state.url = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m';
+    app.state.data = WEATHER;
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec(WEATHER, app.state.url)), 'fallback');
+    expect(app.buildFallbackSpec(WEATHER, app.state.url).actions).toEqual([]);
+    expect(app.state.spec.actions).toEqual([]);
+    expect(app.dom.interfaceOut.querySelector('.action-row')).toBeNull();
+  });
+
+  it('a model plan cannot bring them back, but its links survive', async () => {
+    const app = await boot();
+    const spec = app.normalizeSpec({
+      title: 'T', layout: 'dashboard', components: [{ type: 'text', path: 'a' }],
+      actions: [{ type: 'watch', interval: 10 }, { type: 'refresh' }, { type: 'raw' }, { type: 'follow', path: 'next', label: 'Next page' }]
+    });
+    expect(spec.actions).toEqual([{ type: 'follow', path: 'next', label: 'Next page' }]);
+  });
+});
+
+describe('the line above the page speaks plainly', () => {
+  it('shows when and how big, no schema id, and a change count only when something changed', async () => {
+    const app = await boot();
+    app.state.data = { a: 1 };
+    app.state.byteSize = 1126;
+    app.state.schemaHash = 'sch_1t1u1v1';
+    app.state.lastCheckedAt = Date.now();
+    app.state.diff = null;
+    app.updateMeta();
+    const meta = app.dom.runMeta;
+    expect(meta.textContent).not.toContain('sch_1t1u1v1');
+    expect(meta.textContent).not.toContain('Schema');
+    expect(meta.textContent).toContain('1.1 KB');
+    expect(app.dom.changedChip.hidden).toBe(true);
+
+    app.state.diff = { changed: [] };
+    app.state.changedCount = 0;
+    app.updateMeta();
+    expect(app.dom.changedChip.hidden).toBe(true);
+
+    app.state.changedCount = 3;
+    app.updateMeta();
+    expect(app.dom.changedChip.hidden).toBe(false);
+    expect(app.dom.changedChip.textContent).toBe('3 changed');
+  });
+});
+
+describe('chart labels', () => {
+  // The chart SVG stretches to the card (preserveAspectRatio none), and its
+  // value labels stretched with it. They are HTML beside the plot now.
+  it('puts the value labels outside the stretching SVG, top to bottom', async () => {
+    const app = await boot();
+    const r = app.renderComponent({ type: 'chart', path: 'v', label: 'V' }, { v: [1, 2, 3, 4] }, null);
+    const svg = r.node.querySelector('svg.chart-svg');
+    expect(svg.querySelector('text')).toBeNull();
+    const ticks = [...r.node.querySelectorAll('.chart-axis .chart-tick')];
+    expect(ticks).toHaveLength(3);
+    const tops = ticks.map((t) => parseFloat(t.style.top));
+    expect(tops[0]).toBeLessThan(tops[1]);
+    expect(tops[1]).toBeLessThan(tops[2]);
+    expect(Number(ticks[0].textContent)).toBeGreaterThan(Number(ticks[2].textContent));
+    // Dots and line keep their shape when the plot stretches.
+    expect(svg.querySelector('circle')).toBeNull();
+    for (const dot of svg.querySelectorAll('.chart-dot')) expect(dot.getAttribute('vector-effect')).toBe('non-scaling-stroke');
+    expect(svg.querySelector('.chart-line').getAttribute('vector-effect')).toBe('non-scaling-stroke');
+  });
+});
+
+describe('focus survives a re-render', () => {
+  // With Watch on, the rail and history strip rebuild every 10-60s. A
+  // keyboard user focused on either used to be thrown back to <body>.
+  it('keeps focus on the same rail control and history tick across rebuilds', async () => {
+    const app = await boot({ local: { 'imago.savedRequests': [
+      { id: 'a', name: 'A', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z' },
+      { id: 'b', name: 'B', url: 'https://b.test/x', headers: {}, createdAt: '2026-09-20T09:00:00Z' }
+    ] } });
+    app.renderSavedList();
+    const del = app.dom.savedList.querySelector('[data-focus-key="delete:a"]');
+    del.focus();
+    app.renderSavedList();
+    expect(app.dom.savedList.contains(del)).toBe(false);   // really rebuilt
+    expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('delete:a');
+
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    app.setSnapshots({ [app.currentRequestKey()]: [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 1, data: { a: 1 } }
+    ] });
+    app.renderHistory();
+    app.dom.historyStrip.querySelector('[data-focus-key="tick:s1"]').focus();
+    app.renderHistory();
+    expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('tick:s1');
+  });
+
+  it('history ticks are buttons inside list items, not buttons pretending to be list items', async () => {
+    const app = await boot();
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    app.setSnapshots({ [app.currentRequestKey()]: [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 0, data: { a: 1 } }
+    ] });
+    app.renderHistory();
+    for (const tick of app.dom.historyStrip.querySelectorAll('.history-tick')) {
+      expect(tick.getAttribute('role')).toBeNull();
+      expect(tick.parentElement.getAttribute('role')).toBe('listitem');
+    }
+  });
+});
+
+describe('sheets behave as dialogs', () => {
+  const ONBOARDED = { local: { 'imago.preferences': { onboarded: true } } };
+  const tab = (app, shift) => app.window.document.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: !!shift, bubbles: true, cancelable: true }));
+
+  it('Settings is a modal dialog that takes focus and gives it back', async () => {
+    const app = await boot(ONBOARDED);
+    const sheet = app.dom.paneSettings;
+    expect(sheet.getAttribute('role')).toBe('dialog');
+    expect(sheet.getAttribute('aria-modal')).toBe('true');
+    expect(app.window.document.getElementById(sheet.getAttribute('aria-labelledby')).textContent).toBe('Settings');
+
+    const opener = app.dom.appNav.querySelector('[data-view="settings"]');
+    opener.focus();
+    opener.click();
+    expect(app.window.document.activeElement).toBe(app.dom.settingsClose);
+    app.dom.settingsClose.click();
+    expect(app.window.document.activeElement).toBe(opener);
+  });
+
+  it('Tab and Shift+Tab wrap inside Settings while it is open', async () => {
+    const app = await boot(ONBOARDED);
+    app.setAppPane('settings');
+    const items = [...app.dom.paneSettings.querySelectorAll('button, input, select, textarea')]
+      .filter((n) => !n.disabled && !n.closest('[hidden]'));
+    items[items.length - 1].focus();
+    tab(app);
+    expect(app.window.document.activeElement).toBe(items[0]);
+    tab(app, true);
+    expect(app.window.document.activeElement).toBe(items[items.length - 1]);
+    // Focus somewhere behind the scrim is pulled back in.
+    app.dom.urlInput.focus();
+    tab(app);
+    expect(app.dom.paneSettings.contains(app.window.document.activeElement)).toBe(true);
+  });
+
+  it('Tab is left alone when no sheet is open', async () => {
+    const app = await boot(ONBOARDED);
+    app.dom.urlInput.focus();
+    const ev = new app.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    app.window.document.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(false);
+  });
+});
+
+describe('Escape at the top of the trail', () => {
+  it('does nothing instead of silently leaving the page', async () => {
+    const app = await boot();
+    app.state.data = { a: 1 };
+    app.state.url = 'https://a.test/x';
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec({ a: 1 }, app.state.url)), 'fallback');
+    expect(app.state.stage).toBe(true);
+    app.state.stack = [];
+    app.window.document.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(app.state.stage).toBe(true);
+  });
+});
+
+describe('delete can be undone', () => {
+  const SAVED = { local: { 'imago.savedRequests': [
+    { id: 'a', name: 'Alpha', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z' },
+    { id: 'b', name: 'Beta', url: 'https://b.test/x', headers: {}, createdAt: '2026-09-20T09:00:00Z' }
+  ] } };
+
+  it('one tap deletes, and Undo puts it back where it was', async () => {
+    const app = await boot(SAVED);
+    app.renderSavedList();
+    app.dom.savedList.querySelector('[data-focus-key="delete:a"]').click();
+    const stored = () => JSON.parse(app.window.localStorage.getItem('imago.savedRequests')).map((r) => r.id);
+    expect(stored()).toEqual(['b']);
+    expect(app.dom.toast.textContent).toContain('Deleted Alpha.');
+    const undo = app.dom.toast.querySelector('.toast-action');
+    expect(undo.textContent).toBe('Undo');
+    undo.click();
+    expect(stored()).toEqual(['a', 'b']);
+    expect(app.dom.savedList.querySelector('[data-focus-key="open:a"]')).not.toBeNull();
+    expect(app.dom.toast.hidden).toBe(true);
+  });
+});
+
+describe('landing specimen', () => {
+  it('every example says what its highlighted lines mean', async () => {
+    const app = await boot();
+    const panes = [...app.window.document.querySelectorAll('.specimen .spec-pane')];
+    expect(panes.length).toBe(3);
+    for (const pane of panes) {
+      expect(pane.querySelector('.spec-response .spec-key').textContent).toBe('Highlighted lines are the fields the page uses.');
+      expect(pane.querySelectorAll('.spec-json .jl.is-used').length).toBeGreaterThan(0);
+    }
   });
 });

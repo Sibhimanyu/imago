@@ -15,6 +15,7 @@ describe('per-provider key fields', () => {
     expect(app.window.localStorage.getItem('imago.key.groq')).toBe('gsk_live123');
     expect(app.getSessionProvider()).toBe('groq');
     expect(app.dom.keyStatus.textContent).toBe('Groq ready');
+    expect(app.dom.keyStatus.hidden).toBe(false);   // ready is the one state the pill shows
     // The untouched slot stays empty — fields never cross-write.
     expect(app.window.localStorage.getItem('imago.key.gemini')).toBeNull();
     typeInto(app, app.dom.geminiKey, 'AIza_live456');
@@ -116,29 +117,28 @@ describe('no-key messaging', () => {
     return app;
   }
 
-  it('names the missing key, where it goes, and where a free one lives', async () => {
+  it('names the missing key and says the page is the basic layout', async () => {
     const app = await noKeyApp();
     app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
     await flush();
-    // Heuristic output still renders — the alert explains, it does not replace.
+    // Heuristic output still renders — the line explains, it does not replace.
     expect(app.state.spec).toBeTruthy();
-    const text = app.dom.interfaceOut.textContent;
-    expect(text).toContain('No Google Gemini key');
-    expect(text).toContain('Settings');
-    expect(text).toContain('aistudio.google.com/apikey');
-    expect(text).toContain('keep working');
+    const line = app.dom.interfaceOut.querySelector('.stage-head .keyline');
+    expect(line.textContent).toContain('No Google Gemini key, so this is the basic layout.');
   });
 
-  // The no-key banner used to render in the red error style, so the first
-  // thing on a page that rendered fine read as a failure. Red now means only
-  // "something broke"; a missing key is a neutral notice.
-  it('shows the missing key as a neutral notice, not a red failure', async () => {
+  // A missing key used to be a banner, a toast, a "Fallback" badge and a
+  // top-bar pill at once; on a phone the banner pushed the data below the
+  // fold. It is one line now, and never an alert or a toast.
+  it('says it once: no banner, no toast, no badge, no pill', async () => {
     const app = await noKeyApp();
     app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
     await flush();
-    const alert = app.dom.interfaceOut.querySelector('.alert');
-    expect(alert.textContent).toContain('No Google Gemini key');
-    expect(alert.classList.contains('alert-note')).toBe(true);
+    expect(app.dom.interfaceOut.querySelectorAll('.keyline')).toHaveLength(1);
+    expect(app.dom.interfaceOut.querySelector('.alert')).toBeNull();
+    expect(app.dom.toast.hidden).toBe(true);
+    expect(app.dom.cacheBadge.hidden).toBe(true);
+    expect(app.dom.keyStatus.hidden).toBe(true);
   });
 
   it('uses whichever provider actually has a key instead of failing', async () => {

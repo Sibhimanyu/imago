@@ -389,37 +389,9 @@
     { name: 'Charizard',  chip: 'Charizard',  url: 'https://pokeapi.co/api/v2/pokemon/charizard' }
   ];
 
-  // Fill a <select> with the DEMOS list behind a placeholder option. Shared
-  // by the empty-state picker and the persistent one beside the request bar,
-  // so the two can never drift apart.
-  function fillExampleSelect(select) {
-    if (!select) return select;
-    clear(select);
-    var placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = 'Try an example…';
-    select.appendChild(placeholder);
-    for (var i = 0; i < DEMOS.length; i += 1) {
-      var option = document.createElement('option');
-      option.value = DEMOS[i].url;
-      option.textContent = DEMOS[i].name;
-      select.appendChild(option);
-    }
-    select.value = '';
-    return select;
-  }
-
-  // A picker selection behaves exactly like tapping a demo: drop any pushed
-  // pages and fetch the chosen endpoint. The picker resets to its
-  // placeholder so the same example can be picked twice in a row.
-  function pickExample(select) {
-    if (!select || !select.value) return false;
-    state.stack = [];
-    // Examples are public hosts: never carry the last endpoint's headers there.
-    navigateTo(select.value, '');
-    select.value = '';
-    return true;
-  }
+  // The four examples an empty page offers on a phone, where the rail's
+  // full list is behind the Endpoints sheet. One of each kind of page.
+  var EMPTY_EXAMPLES = ['Pokémon', 'Weather', 'Dictionary', 'Library'];
 
   var COMPONENT_TYPES = ['title', 'text', 'metric', 'image', 'badges', 'list',
                          'table', 'statBars', 'chart', 'link', 'jsonBlock', 'section',
@@ -428,7 +400,10 @@
   var EMPHASIS = ['hero', 'normal', 'quiet'];
   // What a generated page can let the reader *do*. `follow` opens a URL found
   // in the response as the next generative page; the rest drive Imago itself.
-  var ACTION_TYPES = ['follow', 'refresh', 'watch', 'raw'];
+  // Only links live on the page. Watch, refetch and the raw response each have
+  // one home in the toolbar (Watch, Go, Inspect); the page used to repeat all
+  // three as buttons, so a phone showed two rows of controls before any data.
+  var ACTION_TYPES = ['follow'];
   var MAX_ACTIONS = 6;
 
   var IMAGO_UI_SPEC_JSON_SCHEMA = {
@@ -530,7 +505,6 @@
     view: 'landing',
     pane: 'playground',
     pendingGenerate: false,
-    warnedNoKey: false,
     stage: false,          // the generated page owns the screen
     stagePref: true,       // false once the reader pressed Back to the controls
     stack: [],             // urls behind the current page, for Back
@@ -540,7 +514,6 @@
     rawPaneDirty: true,    // body changed since the Raw pane was last built
     schemaPaneDirty: true,
     hasData: false,        // a fetch succeeded — distinct from `data` being falsy
-    showRaw: false
   };
 
   var dom = {};
@@ -1364,10 +1337,8 @@
       '- { type: "follow", path, label } for every field whose value is a URL to',
       '  a related resource or the next/previous page. path must point at the',
       '  URL string itself. Label it by what it leads to ("Species", "Next page").',
-      '- { type: "refresh", label } when the data changes over time.',
-      '- { type: "watch", interval: 10|30|60, label } for live data such as',
-      '  weather, prices or status.',
-      '- { type: "raw", label } is always acceptable as the last action.',
+      'Only follow actions: watching, refetching and the raw response are',
+      'already in the toolbar. No links worth following means an empty list.',
       '',
       'title should name the thing the response is about, in human words.',
       'subtitle is one short line of context, not the URL.',
@@ -1584,7 +1555,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Fallback';
+      : source === 'cache' ? 'From schema cache' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -1723,10 +1694,6 @@
       if (candidate.type === 'follow') {
         if (typeof candidate.path !== 'string' || !candidate.path.trim()) continue;
         action.path = candidate.path.trim();
-      }
-      if (candidate.type === 'watch') {
-        var interval = Number(candidate.interval);
-        action.interval = [10, 30, 60].indexOf(interval) !== -1 ? interval : 30;
       }
       if (!action.label) action.label = action.type === 'follow' ? humanize(lastSegment(action.path)) : humanize(action.type);
       var key = action.type + '@' + (action.path || '');
@@ -2130,17 +2097,15 @@
   }
 
   // Where can the reader go from here? Any URL in the body is a door; the
-  // paging keys are the front door. Live-looking data earns a watch action.
+  // paging keys are the front door.
   var RE_KEY_PAGING = /^(next|next_page|next_url|nextpage|previous|prev|prev_page|previous_url|self|first|last)$/;
-  // Deliberately narrow: "rate" would match capture_rate, "status" any enum.
-  var RE_LIVE_HINT = /(^|[_./?&-])(current|weather|forecast|prices?|quotes?|health|live|latest|now|ticker|exchange)([_./?&=-]|$)/i;
 
   function deriveActions(data, url) {
     var actions = [];
     var seen = Object.create(null);   // keys come from the response body
 
     function follow(path, label) {
-      if (actions.length >= MAX_ACTIONS - 2 || seen[path]) return;
+      if (actions.length >= MAX_ACTIONS || seen[path]) return;
       seen[path] = true;
       actions.push({ type: 'follow', path: path, label: label });
     }
@@ -2170,15 +2135,7 @@
       }
     }
     scan(data, '', 0);
-
-    var live = RE_LIVE_HINT.test(String(url || '')) ||
-               (isPlainObject(data) && Object.keys(data).some(function (k) {
-                 return RE_LIVE_HINT.test(k) || (typeof data[k] === 'string' && RE_ISO_DT.test(data[k]));
-               }));
-    if (live) actions.push({ type: 'watch', interval: 30, label: 'Watch' });
-    actions.push({ type: 'refresh', label: 'Refresh' });
-    actions.push({ type: 'raw', label: 'Raw JSON' });
-    return actions.slice(0, MAX_ACTIONS);
+    return actions;
   }
 
   // Key order is not preference order: PokeAPI lists front_shiny before
@@ -3143,7 +3100,9 @@
     var pad = (max - min) * 0.12;
     min -= pad; max += pad;
 
-    var W = 600, H = 130, padL = 34, padR = 8, padT = 10, padB = 20;
+    // The SVG stretches to the card's width (preserveAspectRatio none), which
+    // also stretched any text inside it. The value labels are HTML beside it.
+    var W = 600, H = 130, padL = 0, padR = 8, padT = 10, padB = 20;
     var innerW = W - padL - padR;
     var innerH = H - padT - padB;
 
@@ -3166,6 +3125,8 @@
     svg.appendChild(defs);
 
     // three horizontal guides, labelled with their value
+    var axis = el('div', 'chart-axis');
+    axis.setAttribute('aria-hidden', 'true');
     for (i = 0; i < 3; i += 1) {
       var frac = i / 2;
       var val = max - frac * (max - min);
@@ -3176,13 +3137,9 @@
       line.setAttribute('y1', y.toFixed(1)); line.setAttribute('y2', y.toFixed(1));
       svg.appendChild(line);
 
-      var text = document.createElementNS(svgNS, 'text');
-      text.setAttribute('class', 'chart-axis');
-      text.setAttribute('x', padL - 7);
-      text.setAttribute('y', (y + 3).toFixed(1));
-      text.setAttribute('text-anchor', 'end');
-      text.textContent = Math.round(val * 10) / 10;
-      svg.appendChild(text);
+      var tick = el('span', 'chart-tick', String(Math.round(val * 10) / 10));
+      tick.style.top = (y / H * 100).toFixed(2) + '%';
+      axis.appendChild(tick);
     }
 
     var points = [];
@@ -3198,23 +3155,29 @@
 
     var poly = document.createElementNS(svgNS, 'polyline');
     poly.setAttribute('class', 'chart-line');
+    poly.setAttribute('vector-effect', 'non-scaling-stroke');
     poly.setAttribute('points', points.join(' '));
     svg.appendChild(poly);
 
     // Dots only when sparse enough to read.
     if (numbers.length <= 24) {
       for (i = 0; i < numbers.length; i += 1) {
-        var dot = document.createElementNS(svgNS, 'circle');
+        // A zero-length round-capped stroke with a non-scaling stroke stays a
+        // circle when the SVG stretches; a <circle> became an oval.
+        var dot = document.createElementNS(svgNS, 'line');
         dot.setAttribute('class', 'chart-dot');
-        dot.setAttribute('cx', px(i).toFixed(1));
-        dot.setAttribute('cy', py(numbers[i]).toFixed(1));
-        dot.setAttribute('r', '2.5');
+        dot.setAttribute('x1', px(i).toFixed(1)); dot.setAttribute('x2', px(i).toFixed(1));
+        dot.setAttribute('y1', py(numbers[i]).toFixed(1)); dot.setAttribute('y2', py(numbers[i]).toFixed(1));
+        dot.setAttribute('vector-effect', 'non-scaling-stroke');
         svg.appendChild(dot);
       }
     }
 
     var wrap = el('div', 'chart-wrap');
-    wrap.appendChild(svg);
+    var plot = el('div', 'chart-plot');
+    plot.appendChild(axis);
+    plot.appendChild(svg);
+    wrap.appendChild(plot);
     wrap.appendChild(el('p', 'more-note',
       numbers.length + ' points · low ' + (Math.round(min * 10) / 10) + ' · high ' + (Math.round(max * 10) / 10)));
     return wrap;
@@ -3239,9 +3202,21 @@
 
   var toastTimer = null;
 
-  function toast(message, kind) {
+  // action: { label, run } adds one button (Undo). A toast with an action
+  // stays up longer, since the reader has to decide.
+  function toast(message, kind, action) {
     if (!dom.toast || !message) return;
     dom.toast.textContent = message;
+    if (action) {
+      var act = el('button', 'toast-action', action.label);
+      act.type = 'button';
+      act.addEventListener('click', function () {
+        action.run();
+        dom.toast.className = 'toast';
+        dom.toast.hidden = true;
+      });
+      dom.toast.appendChild(act);
+    }
     if (kind) dom.toast.setAttribute('data-kind', kind);
     else dom.toast.removeAttribute('data-kind');
     dom.toast.hidden = false;
@@ -3252,7 +3227,7 @@
     toastTimer = window.setTimeout(function () {
       dom.toast.className = 'toast';
       window.setTimeout(function () { dom.toast.hidden = true; }, 240);
-    }, kind === 'error' ? 6000 : 3400);
+    }, kind === 'error' || action ? 6000 : 3400);
   }
 
   /* ── View routing ──────────────────────────────────────────────────────── */
@@ -3269,8 +3244,25 @@
   // One screen, so a "pane" is no longer a page swap. The page is always on
   // screen; the endpoints rail is always there on a wide screen (and slides up
   // as a sheet on a phone when pane is 'saved'); Settings opens as a sheet.
+  // A sheet is a dialog: opening one moves focus into it and remembers what
+  // had focus, Tab stays inside Settings while it is open, and closing hands
+  // focus back. Before, focus stayed behind the scrim and fell to <body>.
+  var sheetOpener = null;
+
+  function railIsSheet() {
+    return !!(window.matchMedia && window.matchMedia('(max-width: 860px)').matches);
+  }
+
+  function focusables(root) {
+    return [].slice.call(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+      .filter(function (n) { return !n.disabled && !n.closest('[hidden]'); });
+  }
+
   function setAppPane(pane) {
     if (['playground', 'saved', 'settings'].indexOf(pane) === -1) pane = 'playground';
+    var from = state.pane;
+    var opensSheet = pane === 'settings' || (pane === 'saved' && railIsSheet());
+    if (opensSheet && from !== pane && !sheetOpener) sheetOpener = document.activeElement;
     state.pane = pane;
     dom.panePlayground.hidden = false;
     dom.paneSaved.hidden = false;
@@ -3288,6 +3280,26 @@
     if (pane === 'saved') renderSavedList();
     if (pane === 'settings') renderStorageSummary();
     savePrefs();
+
+    if (opensSheet && from !== pane) {
+      var target = pane === 'settings' ? dom.settingsClose : dom.railClose;
+      if (target && target.focus) target.focus();
+    } else if (!opensSheet && sheetOpener) {
+      var back = sheetOpener;
+      sheetOpener = null;
+      if (back && back.focus && document.body.contains(back)) back.focus();
+    }
+  }
+
+  // Tab and Shift+Tab wrap inside the open Settings sheet.
+  function trapSheetFocus(event) {
+    if (event.key !== 'Tab' || state.pane !== 'settings' || !dom.paneSettings) return;
+    var items = focusables(dom.paneSettings);
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    var inside = dom.paneSettings.contains(document.activeElement);
+    if (event.shiftKey && (document.activeElement === first || !inside)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || !inside)) { event.preventDefault(); first.focus(); }
   }
 
   /* ── Meta row / key pill ───────────────────────────────────────────────── */
@@ -3298,20 +3310,12 @@
     var id = getSessionProvider();
     var provider = getProvider(id);
     if (dom.providerSelect) dom.providerSelect.value = id;
-    // The server address is Ollama-only clutter for everyone else.
-    if (dom.ollamaServerGroup) dom.ollamaServerGroup.hidden = id !== 'ollama';
+    // Only the chosen provider's key, test and server are on screen.
+    var blocks = document.querySelectorAll('.provider-block');
+    for (var b = 0; b < blocks.length; b += 1) blocks[b].hidden = blocks[b].getAttribute('data-provider') !== id;
     if (dom.ollamaNoteOrigin) {
       try { dom.ollamaNoteOrigin.textContent = window.location.origin; }
       catch (e) { /* ignore */ }
-    }
-    if (dom.providerHint) {
-      if (providerNeedsKey(id)) {
-        dom.providerHint.innerHTML = 'Get a free key at <span class="mono">' + provider.keyHint +
-          '</span>. Typing into its field below selects it.';
-      } else {
-        dom.providerHint.innerHTML = 'Runs on your machine — no key needed. ' +
-          'Set the server address below; type a pulled model name into Model.';
-      }
     }
     if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
     syncChatTarget();
@@ -3354,6 +3358,11 @@
   // provider — the field you touched is the key you mean.
   function storeKeyFromInput(input, id) {
     var key = input.value.trim();
+    // A key pasted under the wrong provider is filed under the one its prefix
+    // names, and that provider is shown. The field it was typed into keeps
+    // whatever it held before.
+    var owner = detectProvider(key);
+    if (owner && owner !== id) id = owner;
     setProviderKey(id, key);
     if (key) setSessionProvider(id);
     syncProviderUi({ force: !!key });
@@ -3407,6 +3416,9 @@
     }
     dom.keyStatus.textContent = text;
     dom.keyStatus.setAttribute('data-state', ready ? 'ready' : 'missing');
+    // Missing is said on the page itself (noKeyAlert); a pill repeating it on
+    // every screen was noise. The pill only confirms a ready provider.
+    dom.keyStatus.hidden = !ready;
     dom.keyStatus.title = title;
     syncKeyStatusLines();
   }
@@ -3750,15 +3762,13 @@
 
     dom.stLastChecked.textContent = state.lastCheckedAt ? formatRelative(state.lastCheckedAt) : '—';
     dom.stSize.textContent = state.byteSize ? formatBytes(state.byteSize) : '—';
-    dom.stCache.textContent = state.schemaHash || '—';
-
-    if (state.diff) {
-      dom.stChanged.textContent = String(state.changedCount);
-      dom.changedChip.className = state.changedCount > 0 ? 'meta-chip is-hot' : 'meta-chip';
-    } else {
-      dom.stChanged.textContent = '—';
-      dom.changedChip.className = 'meta-chip';
-    }
+    // Plain words only. The schema fingerprint lives in Inspect → Schema, and
+    // "Changed —" (no previous fetch yet) said nothing; the count shows only
+    // when something actually changed.
+    var changed = state.diff ? state.changedCount : 0;
+    dom.changedChip.hidden = !(changed > 0);
+    dom.stChanged.textContent = String(changed);
+    dom.changedChip.className = changed > 0 ? 'meta-chip is-hot' : 'meta-chip';
 
     if (state.refreshIntervalMs && state.nextRefreshAt) {
       var remaining = Math.max(0, Math.ceil((state.nextRefreshAt - Date.now()) / 1000));
@@ -3953,18 +3963,22 @@
     var icon = el('div', 'empty-icon');
     icon.appendChild(svgIcon(['M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z', 'M4 10h16M9 10v9'], 22));
     box.appendChild(icon);
-    box.appendChild(el('p', 'empty-title', 'Explore any API'));
+    box.appendChild(el('p', 'empty-title', 'Paste an API URL to start'));
     box.appendChild(el('p', 'empty-body',
-      'Enter an API endpoint and Imago will turn the response into a readable interface.'));
-    box.appendChild(el('p', 'chip-row-label', 'Try an example'));
-
-    var picker = el('div', 'example-picker');
-    var select = el('select', 'example-select');
-    select.setAttribute('aria-label', 'Try an example API');
-    fillExampleSelect(select);
-    select.addEventListener('change', function () { pickExample(select); });
-    picker.appendChild(select);
-    box.appendChild(picker);
+      'Imago fetches it and turns the response into a page. Any public GET endpoint works.'));
+    // Wide screens have the whole example list in the rail beside this; a
+    // second picker here was a third copy of the same list. Phones get four.
+    box.appendChild(el('p', 'empty-hint', 'Or open an example from the list on the left.'));
+    var chips = el('div', 'empty-examples');
+    chips.setAttribute('role', 'group');
+    chips.setAttribute('aria-label', 'Examples');
+    DEMOS.filter(function (d) { return EMPTY_EXAMPLES.indexOf(d.name) !== -1; }).forEach(function (demo) {
+      var chip = el('button', 'empty-example', demo.name);
+      chip.type = 'button';
+      chip.addEventListener('click', function () { loadExample(demo.url); });
+      chips.appendChild(chip);
+    });
+    box.appendChild(chips);
     dom.interfaceOut.appendChild(box);
   }
 
@@ -4043,7 +4057,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Fallback';
+      : source === 'cache' ? 'From schema cache' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -4062,7 +4076,6 @@
 
     dom.interfaceOut.appendChild(renderSpecBody(spec, state.data, state.diff));
 
-    if (state.showRaw) dom.interfaceOut.appendChild(renderRawSection());
 
     dom.stageSource.textContent = dom.cacheBadge.textContent;
     dom.stageSource.setAttribute('data-kind', source);
@@ -4137,7 +4150,6 @@
       state.headersText = previous.headersText || '';
       state.headers = parseHeaders(state.headersText);
       state.activeRequestId = null;
-      state.showRaw = false;
       state.stagePref = true;
       markDirty();
       state.dirtySinceSend = false;
@@ -4197,7 +4209,6 @@
     setUrlInput(url);
     if (typeof headersText === 'string') dom.headersInput.value = headersText;
     state.activeRequestId = null;
-    state.showRaw = false;
     state.stagePref = true;
     markDirty();
 
@@ -4222,10 +4233,7 @@
   }
 
   var ACTION_ICONS = {
-    follow:  ['M3 8h9', 'M8.5 4l4 4-4 4'],
-    refresh: ['M13.5 8a5.5 5.5 0 1 1-1.6-3.9', 'M13.5 2.5v3h-3'],
-    watch:   ['M8 2.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z', 'M8 5v3.2l2.2 1.3'],
-    raw:     ['M5.5 4.5 2 8l3.5 3.5', 'M10.5 4.5 14 8l-3.5 3.5']
+    follow:  ['M3 8h9', 'M8.5 4l4 4-4 4']
   };
 
   function actionIcon(type) {
@@ -4274,39 +4282,6 @@
         btn.addEventListener('click', (function (href) {
           return function () { followUrl(href); };
         })(target));
-      } else if (action.type === 'refresh') {
-        btn.appendChild(actionIcon('refresh'));
-        btn.appendChild(document.createTextNode(action.label));
-        btn.addEventListener('click', function () { performRequest(false); });
-      } else if (action.type === 'watch') {
-        var on = state.refreshIntervalMs > 0;
-        btn.appendChild(actionIcon('watch'));
-        btn.appendChild(document.createTextNode(on
-          ? 'Watching · ' + (state.refreshIntervalMs / 1000) + 's'
-          : action.label + ' · ' + action.interval + 's'));
-        if (on) btn.className += ' is-on';
-        btn.addEventListener('click', (function (interval) {
-          return function () {
-            state.refreshIntervalMs = state.refreshIntervalMs ? 0 : interval * 1000;
-            syncRefreshUi();
-            if (state.refreshIntervalMs && state.data && !state.dirtySinceSend) startTimer();
-            else stopTimer();
-            savePrefs();
-            applySpec(state.spec, state.specSource);   // re-render so the button reflects it
-          };
-        })(action.interval || 30));
-      } else if (action.type === 'raw') {
-        btn.appendChild(actionIcon('raw'));
-        btn.appendChild(document.createTextNode(state.showRaw ? 'Hide raw' : action.label));
-        if (state.showRaw) btn.className += ' is-on';
-        btn.addEventListener('click', function () {
-          state.showRaw = !state.showRaw;
-          applySpec(state.spec, state.specSource);
-          if (state.showRaw) {
-            var raw = dom.interfaceOut.querySelector('.stage-raw');
-            if (raw && raw.scrollIntoView) raw.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
       } else {
         continue;
       }
@@ -4315,17 +4290,6 @@
       rendered += 1;
     }
     return rendered ? row : null;
-  }
-
-  function renderRawSection() {
-    var section = el('section', 'spec-section stage-raw');
-    section.appendChild(el('h2', 'spec-section-head', 'Raw response'));
-    var grid = el('div', 'spec-grid');
-    var raw = renderComponent({ type: 'jsonBlock', path: '', label: state.url || 'Response' }, state.data, state.diff);
-    raw.node.className += ' span-12';
-    grid.appendChild(raw.node);
-    section.appendChild(grid);
-    return section;
   }
 
   /* ── Tabs ──────────────────────────────────────────────────────────────── */
@@ -4388,7 +4352,25 @@
     try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url; }
   }
 
+  // The rail and the history strip are rebuilt on every render, and with Watch
+  // on that is every 10-60s. Rebuilding under a keyboard user's focus dropped
+  // it to <body>. Controls carry data-focus-key; focus returns to the same key.
+  function keepFocus(container, rebuild) {
+    var active = document.activeElement;
+    var key = active && container && container.contains(active) ? active.getAttribute('data-focus-key') : null;
+    rebuild();
+    if (!key) return;
+    var nodes = container.querySelectorAll('[data-focus-key]');
+    for (var i = 0; i < nodes.length; i += 1) {
+      if (nodes[i].getAttribute('data-focus-key') === key) { nodes[i].focus(); return; }
+    }
+  }
+
   function renderSavedList() {
+    keepFocus(dom.savedList, buildSavedList);
+  }
+
+  function buildSavedList() {
     var list = getSavedRequests();
     clear(dom.savedList);
     dom.savedEmpty.hidden = list.length > 0;
@@ -4406,6 +4388,7 @@
         open.type = 'button';
         open.title = item.url;
         open.setAttribute('aria-label', 'Open ' + item.name);
+        open.setAttribute('data-focus-key', 'open:' + item.id);
         if (onScreen) open.setAttribute('aria-current', 'page');
         open.addEventListener('click', function () { loadSavedRequest(item.id); });
 
@@ -4433,6 +4416,7 @@
         del.type = 'button';
         del.title = 'Delete';
         del.setAttribute('aria-label', 'Delete ' + item.name);
+        del.setAttribute('data-focus-key', 'delete:' + item.id);
         del.appendChild(svgIcon(['M4 6.5h16', 'M9.5 6.5V4.8h5v1.7', 'M6.5 6.5 7.4 20h9.2l.9-13.5'], 14));
         del.addEventListener('click', function () { deleteSavedRequest(item.id); });
         li.appendChild(del);
@@ -4449,8 +4433,11 @@
      ---------------------------------------------------------------------- */
 
   function renderHistory() {
+    if (dom.historyStrip) keepFocus(dom.historyStrip, buildHistory);
+  }
+
+  function buildHistory() {
     var strip = dom.historyStrip;
-    if (!strip) return;
     var list = state.data ? getSnapshotsFor(currentRequestKey()) : [];
     clear(strip);
     if (list.length < 2) { strip.hidden = true; return; }
@@ -4472,15 +4459,20 @@
     track.setAttribute('role', 'list');
     for (var i = 0; i < list.length; i += 1) {
       (function (snap, isLast) {
+        // The list item wraps the button: role=listitem on the button itself
+        // replaced its button role, so it was not announced as clickable.
+        var item = el('span', 'history-item');
+        item.setAttribute('role', 'listitem');
         var tick = el('button', 'history-tick' + (snap.changed > 0 ? ' is-changed' : '') + (isLast ? ' is-now' : ''));
         tick.type = 'button';
-        tick.setAttribute('role', 'listitem');
+        tick.setAttribute('data-focus-key', 'tick:' + (snap.id || snap.fetchedAt));
         var when = snap.fetchedAt ? formatClock(new Date(snap.fetchedAt).getTime()) : '';
         var label = when + (snap.changed > 0 ? ' · ' + snap.changed + ' changed' : ' · no change') + (isLast ? ' · on screen' : '');
         tick.title = label;
         tick.setAttribute('aria-label', label);
         tick.addEventListener('click', function () { setActiveTab('changes'); });
-        track.appendChild(tick);
+        item.appendChild(tick);
+        track.appendChild(item);
       })(list[i], i === list.length - 1);
     }
     strip.appendChild(track);
@@ -4594,13 +4586,26 @@
     performRequest(false);
   }
 
+  // One tap deletes (the button sits beside every row), so it can be undone.
   function deleteSavedRequest(id) {
-    var list = getSavedRequests().filter(function (item) { return item.id !== id; });
-    setSavedRequests(list);
-    if (state.activeRequestId === id) state.activeRequestId = null;
+    var before = getSavedRequests();
+    var index = -1;
+    for (var i = 0; i < before.length; i += 1) if (before[i].id === id) index = i;
+    if (index === -1) return;
+    var removed = before[index];
+    var wasActive = state.activeRequestId === id;
+    setSavedRequests(before.filter(function (item) { return item.id !== id; }));
+    if (wasActive) state.activeRequestId = null;
     renderSavedList();
     savePrefs();
-    toast('Request deleted.');
+    toast('Deleted ' + removed.name + '.', null, { label: 'Undo', run: function () {
+      var now = getSavedRequests();
+      now.splice(Math.min(index, now.length), 0, removed);
+      setSavedRequests(now);
+      if (wasActive) state.activeRequestId = id;
+      renderSavedList();
+      savePrefs();
+    } });
   }
 
   function touchSavedRequest(url) {
@@ -4809,7 +4814,7 @@
     state.headersText = dom.headersInput.value;
     state.headers = parseHeaders(state.headersText);
     dom.sendBtn.disabled = true;
-    dom.tabBar.hidden = false;
+    dom.inspectorHead.hidden = false;
 
     if (!isAuto) showInterfaceLoading('Fetching ' + parsed.hostname + '…');
 
@@ -4951,19 +4956,26 @@
 
   /* ── Spec resolution: cache → (explicit) model call → fallback ─────────────── */
 
-  // The no-key state, said plainly and in one place: which provider's key is
-  // missing, where to put it, where a free one comes from, and what still
-  // works without it. Called after the fallback renders, since applySpec
-  // clears the pane the alert lives in.
+  // The no-key state, said once and quietly: the page rendered fine, it is
+  // just the basic layout. It used to be a banner, a toast, a badge and a
+  // top-bar pill all saying the same thing, and on a phone the banner pushed
+  // the data below the fold. One line under the title, with the way out.
+  // Called after the fallback renders, since applySpec clears the pane.
   function noKeyAlert() {
     var provider = getProvider(getSessionProvider());
-    showAlert('No ' + provider.label + ' key',
-      'Paste one in Settings → API keys (free at ' + provider.keyHint + '). ' +
-      'Saved interfaces and cached pages keep working; only generating new ones needs a key.', 'note',
-      { label: 'Add a key', run: function () { setAppPane('settings'); } });
-    if (!state.warnedNoKey) {
-      state.warnedNoKey = true;
-      toast('No ' + provider.label + ' key — showing a heuristic fallback.', 'warn');
+    var line = el('p', 'keyline');
+    line.appendChild(el('span', null, 'No ' + provider.label + ' key, so this is the basic layout.'));
+    var add = el('button', 'keyline-action', 'Add a key');
+    add.type = 'button';
+    add.addEventListener('click', function () { setAppPane('settings'); });
+    line.appendChild(add);
+    var head = dom.interfaceOut.querySelector('.stage-head');
+    if (head) {
+      var sub = head.querySelector('.stage-sub');
+      head.insertBefore(line, sub ? sub.nextSibling : head.children[1] || null);
+      dom.cacheBadge.hidden = true;   // the line says it; the badge would repeat it
+    } else {
+      dom.interfaceOut.insertBefore(line, dom.interfaceOut.firstChild);
     }
   }
 
@@ -5314,7 +5326,6 @@
       event.preventDefault();
       state.stack = [];          // a typed URL starts a new trail
       state.stagePref = true;
-      state.showRaw = false;
       performRequest(false);
     });
 
@@ -5327,11 +5338,19 @@
       if (state.stage) stepBack(steps);
     });
     document.addEventListener('keydown', function (event) {
+      trapSheetFocus(event);
       if (event.key !== 'Escape' || event.defaultPrevented) return;
       // Innermost first: a sheet, then the inspector, then the trail.
       if (state.pane !== 'playground') { setAppPane('playground'); return; }
-      if (state.tab !== 'interface') { setActiveTab('interface'); return; }
-      if (state.stage) goBack();
+      if (state.tab !== 'interface') {
+        var fromInspector = dom.inspector && dom.inspector.contains(document.activeElement);
+        setActiveTab('interface');
+        if (fromInspector && dom.inspectBtn && !dom.inspectBtn.disabled) dom.inspectBtn.focus();
+        return;
+      }
+      // Only when there is a trail to walk back. At depth 0 this used to
+      // leave the page silently and pop the phone keyboard into the URL box.
+      if (state.stage && state.stack.length) goBack();
     });
     if (dom.modelName) {
       dom.modelName.addEventListener('input', function () {
@@ -5347,12 +5366,6 @@
     });
 
     dom.saveBtn.addEventListener('click', saveCurrentRequest);
-    if (dom.exampleSelect) {
-      fillExampleSelect(dom.exampleSelect);
-      dom.exampleSelect.addEventListener('change', function () {
-        pickExample(dom.exampleSelect);
-      });
-    }
     // A new request starts from an empty command bar.
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
@@ -5381,6 +5394,13 @@
         startTimer();
         savePrefs();
       }
+    });
+
+    // Closing hands focus back to the button that opened the inspector, or it
+    // would fall to <body> from a pane that just disappeared.
+    dom.inspectorClose.addEventListener('click', function () {
+      setActiveTab('interface');
+      if (dom.inspectBtn && !dom.inspectBtn.disabled) dom.inspectBtn.focus();
     });
 
     dom.tabBar.addEventListener('click', function (event) {
@@ -5525,10 +5545,7 @@
     }
     if (dom.landingTry) {
       dom.landingTry.addEventListener('click', function () {
-        var prefs = getPrefs();
-        prefs.onboarded = true;
-        setPrefs(prefs);
-        showView('app');
+        enterApp();
         loadExample(url);
       });
     }
@@ -5538,12 +5555,12 @@
 
   function cacheDom() {
     var ids = ['landingView', 'setupView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
-                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus', 'avatar',
+                'setupGeminiKey', 'setupGroqKey', 'setupContinue', 'setupLater', 'appNav', 'brandHome', 'keyStatus',
                 'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
-                'exampleSelect', 'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
-               'stSize', 'stCache', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
+                'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
+               'stSize', 'stChanged', 'changedChip', 'nextChip', 'stNextRefresh', 'tabBar',
                'interfaceCard', 'interfaceHead', 'interfaceTitle', 'cacheBadge', 'interfaceOut',
-               'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
+               'inspectorHead', 'inspectorClose', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
                 'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
                 'geminiKeyStatus', 'groqKeyStatus', 'modelName',
                 'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
@@ -5551,7 +5568,7 @@
                 'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
                 'ollamaTestBtn', 'ollamaTestStatus', 'modelOptions', 'modelNote',
                'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
-                'providerSelect', 'providerHint', 'modelHint', 'ollamaEndpoint',
+                'providerSelect', 'modelHint', 'ollamaEndpoint',
                 'ollamaServerGroup', 'ollamaNoteOrigin',
                'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource',
                'inspectBtn', 'inspector', 'historyStrip', 'railExamples', 'railClose',
@@ -5559,15 +5576,16 @@
     for (var i = 0; i < ids.length; i += 1) dom[ids[i]] = qs(ids[i]);
   }
 
+  // Get started means "I have an endpoint": the page opens ready to paste
+  // one. Try an example is the other door, and it loads the example shown.
+  // Get started used to load an example too, so the two buttons did the same.
+  // No key is ever asked for here; it is offered when it would buy something.
   function enterApp() {
     var prefs = getPrefs();
-    var firstRun = !prefs.onboarded;
     prefs.onboarded = true;
     setPrefs(prefs);
     showView('app');
-    // Value before the key: a first visit opens on a real page, rendered from
-    // the basic layout. The key is asked for when it would buy something.
-    if (firstRun && !state.data && !dom.urlInput.value.trim()) loadExample(DEMOS[0].url);
+    if (!state.data && dom.urlInput) dom.urlInput.focus();
   }
 
   // One-time move from the old single session key: file it under the provider
@@ -5638,7 +5656,7 @@
       // No body to show: an inspector reopened now would have no tab bar to
       // close it with, and would cover the canvas on a phone.
       setActiveTab('interface');
-      dom.tabBar.hidden = true;
+      dom.inspectorHead.hidden = true;
       showInterfaceEmpty();
       updateMeta();
     }
@@ -5666,7 +5684,7 @@
     state.schema = print.schema;
     state.schemaHash = print.hash;
 
-    dom.tabBar.hidden = false;
+    dom.inspectorHead.hidden = false;
     renderRawPane();
     renderSchemaPane();
     renderChangesPane();
@@ -5749,7 +5767,7 @@
     getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
     getProvider: getProvider,
     // examples
-    DEMOS: DEMOS, fillExampleSelect: fillExampleSelect, pickExample: pickExample,
+    DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,

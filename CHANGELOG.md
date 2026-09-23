@@ -2,6 +2,55 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.5.0.0] - 2026-09-23
+
+Less on the screen, and every piece of it means one thing. The page you asked
+for is the first thing you see, even without a key.
+
+### Added
+
+- **Figma always matches what ships.** The design file has a page of
+  screenshots taken from the real app, desktop and phone, and the colour and
+  corner-radius tokens come straight from the stylesheet. A UI change can no
+  longer merge without the Figma file being brought along.
+- **Undo for deleting an endpoint.** One tap deletes, and the toast offers to
+  put it back where it was.
+
+### Changed
+
+- **No key is said once, quietly.** One line under the title ("No Google
+  Gemini key, so this is the basic layout. Add a key") replaces a banner, a
+  toast, a badge and a top-bar pill that all said the same thing. On a phone
+  the data is now on the first screen.
+- **One home per control.** Watch, refetching and the raw response live in
+  the toolbar only; the page no longer repeats them as buttons.
+- **The empty page offers the examples once**: the list beside it on a wide
+  screen, four buttons on a phone. Watch, Save and Inspect wait until there
+  is something to act on.
+- **Plain words above the page**: when it was checked and how big it is, and
+  a change count only when something changed.
+- **Settings shows one provider at a time**: its key, its test and its model.
+  A key pasted under the wrong provider is filed under the right one.
+- **Get started opens a page ready to paste into**; Try an example loads the
+  example. They used to do the same thing.
+- The avatar circle is gone, and the phone Endpoints button no longer looks
+  selected when it is not.
+
+### Fixed
+
+- **Keyboard focus survives auto-refresh.** With Watch on, focus in the
+  endpoint list or history strip used to fall back to the top of the page
+  every 10–60 seconds.
+- **Settings behaves as a dialog**: focus moves in, Tab stays inside, and
+  closing returns you to where you were. The inspector has a real close
+  button, so arrow keys through its tabs can no longer close it.
+- **Charts keep their shape on wide screens.** Axis numbers were stretched
+  sideways and the dots were ovals.
+- Metric labels line up, two facts share their row instead of leaving a gap,
+  and Escape no longer leaves a page when there is nothing to go back to.
+- The landing example fills its response column and says what the
+  highlighted lines mean; its small print is larger and passes contrast.
+
 ## [0.4.0.0] - 2026-09-23
 
 One screen. The page you are reading never leaves it: your endpoints sit

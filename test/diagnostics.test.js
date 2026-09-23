@@ -114,12 +114,32 @@ describe('connection tests', () => {
     expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('missing');
   });
 
-  it('the card exists with one row per provider', async () => {
+  // Settings listed every provider's key with a "Test / Not tested" pair
+  // each. Now only the chosen provider's block shows, and an untested
+  // status says nothing rather than "Not tested".
+  it('shows only the chosen provider, and an untested status is blank', async () => {
     const app = await boot();
+    const blocks = () => [...app.window.document.querySelectorAll('.provider-block')].filter((b) => !b.hidden).map((b) => b.getAttribute('data-provider'));
+    expect(blocks()).toEqual(['gemini']);
     for (const id of ['gemini', 'groq', 'ollama']) {
       expect(app.dom[id + 'TestBtn']).toBeTruthy();
-      expect(app.dom[id + 'TestStatus'].textContent).toBe('Not tested');
+      expect(app.dom[id + 'TestStatus'].textContent).toBe('');
     }
+    app.dom.providerSelect.value = 'ollama';
+    app.dom.providerSelect.dispatchEvent(new app.window.Event('change'));
+    expect(blocks()).toEqual(['ollama']);
+  });
+
+  it('a key pasted under the wrong provider is filed under its own and shown', async () => {
+    const app = await boot();
+    app.dom.geminiKey.value = 'gsk_live123';
+    app.dom.geminiKey.dispatchEvent(new app.window.Event('input'));
+    expect(app.window.localStorage.getItem('imago.key.groq')).toBe('gsk_live123');
+    expect(app.window.localStorage.getItem('imago.key.gemini')).toBeNull();
+    expect(app.getSessionProvider()).toBe('groq');
+    expect(app.dom.geminiKey.value).toBe('');
+    const shown = [...app.window.document.querySelectorAll('.provider-block')].filter((b) => !b.hidden);
+    expect(shown.map((b) => b.getAttribute('data-provider'))).toEqual(['groq']);
   });
 });
 

@@ -74,7 +74,7 @@ describe('ollama needs no key', () => {
     await flush();
     expect(app.getSessionProvider()).toBe('ollama');
     expect(app.state.pendingGenerate).toBe(true);
-    expect(app.state.warnedNoKey).toBe(false);
+    expect(app.dom.interfaceOut.querySelector('.keyline')).toBeNull();
   });
 
   it('never re-homes a keyless user to localhost uninvited', async () => {
