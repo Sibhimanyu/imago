@@ -2,6 +2,20 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.9.0.0] - 2026-09-23
+
+Watch now works while you're looking at something else.
+
+### Added
+
+- **Know when a watched page changes.** With Watch on, a change found while
+  you're in another tab puts a count in the tab title, like
+  "(3) Forecast — Imago", until you come back. If you allow it, a browser
+  notification also says what changed, like "Rate: 1.1 → 1.2".
+- **Asked once, never pushed.** Turning Watch on offers notifications once, as
+  a button in a toast. Nothing prompts on its own, and the title count works
+  without permission.
+
 ## [0.8.0.0] - 2026-09-23
 
 Pages you build can leave your browser.
