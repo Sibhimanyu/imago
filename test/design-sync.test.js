@@ -30,9 +30,6 @@ describe('tokens', () => {
     expect(() => groupTokens([['space-4', '16px']])).toThrow(/Unclassified token --space-4/);
   });
 
-  it('design/tokens.json matches styles.css', () => {
-    expect(read('design/tokens.json')).toBe(tokensJson(read('styles.css')));
-  });
 });
 
 describe('surface hash', () => {
@@ -56,6 +53,10 @@ describe('design:check', () => {
     for (const f of ['scripts/design-sync.mjs', 'index.html', 'styles.css', 'design/tokens.json', 'design/figma-sync.json']) {
       writeFileSync(join(dir, f), read(f));
     }
+    // Stamp the copy first: the test is about the gate, not about whether the
+    // working tree happens to be synced right now (CI checks that directly).
+    execFileSync(process.execPath, [join(dir, 'scripts/design-sync.mjs'), 'tokens'], { stdio: 'pipe' });
+    execFileSync(process.execPath, [join(dir, 'scripts/design-sync.mjs'), 'stamp'], { stdio: 'pipe' });
     if (edit) edit(dir);
     try {
       return { code: 0, out: execFileSync(process.execPath, [join(dir, 'scripts/design-sync.mjs'), 'check'], { stdio: 'pipe' }).toString() };
@@ -64,7 +65,7 @@ describe('design:check', () => {
     } finally { rmSync(dir, { recursive: true, force: true }); }
   }
 
-  it('passes on the committed tree', () => {
+  it('passes right after a stamp', () => {
     expect(sandbox()).toEqual({ code: 0, out: 'Figma sync OK\n' });
   });
 

@@ -530,7 +530,6 @@
     view: 'landing',
     pane: 'playground',
     pendingGenerate: false,
-    warnedNoKey: false,
     stage: false,          // the generated page owns the screen
     stagePref: true,       // false once the reader pressed Back to the controls
     stack: [],             // urls behind the current page, for Back
@@ -1584,7 +1583,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Fallback';
+      : source === 'cache' ? 'From schema cache' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -3407,6 +3406,9 @@
     }
     dom.keyStatus.textContent = text;
     dom.keyStatus.setAttribute('data-state', ready ? 'ready' : 'missing');
+    // Missing is said on the page itself (noKeyAlert); a pill repeating it on
+    // every screen was noise. The pill only confirms a ready provider.
+    dom.keyStatus.hidden = !ready;
     dom.keyStatus.title = title;
     syncKeyStatusLines();
   }
@@ -4043,7 +4045,7 @@
     dom.cacheBadge.hidden = false;
     dom.cacheBadge.setAttribute('data-kind', source);
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
-      : source === 'cache' ? 'From schema cache' : 'Fallback';
+      : source === 'cache' ? 'From schema cache' : 'Basic layout';
 
     resetInterfaceOut(false);
 
@@ -4951,19 +4953,26 @@
 
   /* ── Spec resolution: cache → (explicit) model call → fallback ─────────────── */
 
-  // The no-key state, said plainly and in one place: which provider's key is
-  // missing, where to put it, where a free one comes from, and what still
-  // works without it. Called after the fallback renders, since applySpec
-  // clears the pane the alert lives in.
+  // The no-key state, said once and quietly: the page rendered fine, it is
+  // just the basic layout. It used to be a banner, a toast, a badge and a
+  // top-bar pill all saying the same thing, and on a phone the banner pushed
+  // the data below the fold. One line under the title, with the way out.
+  // Called after the fallback renders, since applySpec clears the pane.
   function noKeyAlert() {
     var provider = getProvider(getSessionProvider());
-    showAlert('No ' + provider.label + ' key',
-      'Paste one in Settings → API keys (free at ' + provider.keyHint + '). ' +
-      'Saved interfaces and cached pages keep working; only generating new ones needs a key.', 'note',
-      { label: 'Add a key', run: function () { setAppPane('settings'); } });
-    if (!state.warnedNoKey) {
-      state.warnedNoKey = true;
-      toast('No ' + provider.label + ' key — showing a heuristic fallback.', 'warn');
+    var line = el('p', 'keyline');
+    line.appendChild(el('span', null, 'No ' + provider.label + ' key, so this is the basic layout.'));
+    var add = el('button', 'keyline-action', 'Add a key');
+    add.type = 'button';
+    add.addEventListener('click', function () { setAppPane('settings'); });
+    line.appendChild(add);
+    var head = dom.interfaceOut.querySelector('.stage-head');
+    if (head) {
+      var sub = head.querySelector('.stage-sub');
+      head.insertBefore(line, sub ? sub.nextSibling : head.children[1] || null);
+      dom.cacheBadge.hidden = true;   // the line says it; the badge would repeat it
+    } else {
+      dom.interfaceOut.insertBefore(line, dom.interfaceOut.firstChild);
     }
   }
 

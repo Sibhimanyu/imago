@@ -1618,3 +1618,15 @@ body.inspector-open .inspector { display: block; }
 }
 .spec-response { position: relative; }
 .spec-response::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(rgba(241,239,233,0), var(--bg-sink)); pointer-events: none; }
+
+/* ── UI pass: one signal per fact ─────────────────────────────────────────── */
+
+/* No key: one quiet line under the title, never a banner */
+.keyline { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.keyline-action {
+  padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ink);
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); cursor: pointer;
+}
+.keyline-action:hover { text-decoration-color: currentColor; }
+.keyline-action:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 3px; }
+.interface-out > .keyline, #interfaceOut > .keyline { margin: 0 0 16px; }

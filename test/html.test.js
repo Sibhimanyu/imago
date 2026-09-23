@@ -123,7 +123,7 @@ describe('html request flow', () => {
     await flush();
     expect(app.dom.interfaceOut.querySelector('iframe.html-frame')).toBe(null);
     expect(app.state.spec).toBeTruthy();
-    expect(app.state.warnedNoKey).toBe(true);
+    expect(app.dom.interfaceOut.querySelector('.keyline')).not.toBeNull();
   });
 
   it('falls back when the model returns prose instead of a document', async () => {

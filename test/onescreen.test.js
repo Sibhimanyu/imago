@@ -204,7 +204,7 @@ describe('value before the key', () => {
     app.state.url = 'https://x.test/api';
     app.resolveSpec('https://x.test/api', { hash: 'h_test', schema: {} }, false);
     await flush();
-    const btn = app.dom.interfaceOut.querySelector('.alert-action');
+    const btn = app.dom.interfaceOut.querySelector('.keyline-action');
     expect(btn.textContent).toBe('Add a key');
     btn.click();
     expect(app.state.pane).toBe('settings');
