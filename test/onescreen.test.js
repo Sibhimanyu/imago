@@ -695,6 +695,7 @@ describe('one home per control', () => {
     app.state.url = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m';
     app.state.data = WEATHER;
     app.applySpec(app.normalizeSpec(app.buildFallbackSpec(WEATHER, app.state.url)), 'fallback');
+    expect(app.buildFallbackSpec(WEATHER, app.state.url).actions).toEqual([]);
     expect(app.state.spec.actions).toEqual([]);
     expect(app.dom.interfaceOut.querySelector('.action-row')).toBeNull();
   });
