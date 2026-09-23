@@ -2,6 +2,17 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.4.0] - 2026-09-23
+
+### Changed
+
+- **Page titles use a display typeface** (SF Pro Display or Segoe UI Variable
+  Display, whichever the system has). Nothing extra is downloaded.
+- **The live dot pulses once per refresh** instead of all the time, and not at
+  all if you have reduced motion turned on.
+- **Only small images are drawn as crisp pixels.** Sprites and icons stay sharp,
+  and photos are no longer drawn blocky.
+
 ## [0.10.3.0] - 2026-09-23
 
 ### Changed

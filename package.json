@@ -1,6 +1,6 @@
 {
   "name": "imago",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "private": true,
   "description": "Imago — APIs become interfaces. Browser-only API playground.",
   "scripts": {
