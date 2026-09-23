@@ -1259,3 +1259,12 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .chat-thinking-toggle::before { content: "▸ "; }
 .chat-thinking-wrap[open] .chat-thinking-toggle::before { content: "▾ "; }
 .chat-thinking-toggle:hover { color: var(--ink-2); }
+
+/* ─── Surfaces: a border or a shadow, never both ───────────────── */
+/* In-flow surfaces are drawn by their 1px line; a wide soft shadow on top of
+   it is the generated-UI signature. Shadows are kept only for things that
+   float above the page (toast, landing art, the onboarding panel), and those
+   drop the hairline instead. */
+.card, .reqbar, .saved-item, .comp-hero { box-shadow: none; }
+.saved-item:hover { box-shadow: none; border-color: #cfccc3; }
+.float-card, .setup-card { border-color: transparent; }
