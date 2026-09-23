@@ -268,7 +268,126 @@ it, or accept it as defence-in-depth and leave the note.
 **Priority:** P4
 **Depends on:** None
 
+## One-screen redesign (0.4.0.0) — deferred
+
+### Deferred from plan: display grotesk for page titles (R6)
+
+**What:** The redesign brief sets stage titles in a display grotesk; the build
+still uses Inter at heavier weights.
+
+**Why:** Titles are the one place the page can carry character without a brand
+hue. Inter at 44px reads as UI chrome, not a page.
+
+**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, recommendation R6. Needs a font choice and a self-hosted
+file (the app has no build step).
+
+**Effort:** M
+**Priority:** P1
+**Depends on:** None
+
+### Deferred from plan: infinite pulse on the live dot (FINDING-011)
+
+**What:** The live indicator pulses forever; `prefers-reduced-motion` stops it
+but nothing else does. Pairs with "Dead width transitions" above.
+
+**Why:** A permanent animation is noise on a screen people leave open for hours.
+
+**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, FINDING-011. Pulse once per refresh instead of on a loop.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** None
+
+### Deferred from plan: sprite rendering (FINDING-007)
+
+**What:** Pokémon sprites were reported blurry in one capture; not reproduced.
+
+**Why:** Pixel art scaled with smoothing looks broken.
+
+**Context:** `~/.gstack/projects/Sibhimanyu-something-that-does-stuff/designs/design-audit-20260923/design-audit-127.0.0.1.md`, FINDING-007. Try `image-rendering: pixelated` on small
+images once it can be reproduced.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** A reproduction
+
+### Rail and history strip rebuild on every refresh tick
+
+**What:** `applySpec` and `syncRefreshUi` rebuild the whole rail and history
+strip every render (and `renderHistory` runs twice per fetch).
+
+**Why:** Keyboard focus on a rail row or history tick drops to `<body>` every
+10–60s under auto-refresh, and each tick re-parses the saved-requests store.
+
+**Context:** Pre-landing review, 0.4.0.0. Patch nodes in place or re-render only
+when inputs change; restore focus by data-id at minimum.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
+### Back history and the trail drift apart after an example or New request
+
+**What:** `loadExample` and New request reset `state.stack` but not
+`state.historyDepth`, so the next Back walks pushState entries from before the
+reset and lands in `leaveStage`. Escape at trail depth 0 also calls
+`leaveStage`, which focuses the URL input (pops the keyboard on phones).
+
+**Context:** Pre-landing review, 0.4.0.0. `app.js` `loadExample`, the Escape
+handler, `stepBack`.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+### Fallback layout edge cases
+
+**What:** `humanize` strips any `_\d+m`, so `load_1m`/`load_5m` collide;
+`isBookkeeping` hides a scalar field named `units`; series with a `null` are
+dropped silently and only two per block are charted; the Details fold snaps
+shut on every refresh; slug titles are capitalised even when case matters.
+
+**Context:** Adversarial review, 0.4.0.0. `app.js` `humanize`, `isBookkeeping`,
+`seriesKeys`, `renderSpecBody`, `buildFallbackSpec`.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
+### Sheets and inspector are not dialogs
+
+**What:** The Settings sheet has no `role="dialog"`, focus move, trap or
+restore; the inspector's close is a tab named "Page"; Home/ArrowLeft in the tab
+bar closes the inspector and drops focus; history ticks override their button
+role with `listitem`; the setup view is now unreachable dead markup.
+
+**Context:** Pre-landing and adversarial review, 0.4.0.0.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
+### A failed direct request shows the new URL's history
+
+**What:** Send and opening an endpoint set `state.url` before the fetch, and a
+failure re-renders page A with URL B's history strip and rail highlight.
+
+**Context:** Adversarial review, 0.4.0.0. `performRequest`,
+`handleRequestFailure` — give direct sends a restore point like `navigateTo`.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
 ## Completed
+
+### One-screen redesign and review fixes — v0.4.0.0
+
+**What:** Endpoint rail, page canvas, inspector drawer, history strip, specimen
+landing; Settings icon clicks, stuck inspector on reload, touch targets, iOS
+zoom; examples and New request no longer carry the last endpoint's headers.
+
+**Completed:** v0.4.0.0 (2026-09-23)
 
 ### Ollama, per-provider keys and connection tests — v0.2.0.0
 

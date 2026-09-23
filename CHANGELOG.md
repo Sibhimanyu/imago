@@ -2,6 +2,58 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.4.0.0] - 2026-09-23
+
+One screen. The page you are reading never leaves it: your endpoints sit
+beside it, the raw response slides in next to it, and a history strip shows
+every fetch and which ones changed something.
+
+### Added
+
+- **An endpoint rail.** Saved endpoints live down the left edge with a green
+  dot on the one that is live, a count of what changed since you last looked,
+  and when it was fetched. Examples sit at the bottom of the rail, one tap
+  away. On a phone the rail opens as a sheet.
+- **An inspector beside the page.** Response, Schema, Changes and Headers open
+  in a drawer next to the page instead of replacing it, so you can read the
+  raw JSON and the page it became at the same time.
+- **A history strip.** Every fetch is a tick; the ones that changed something
+  are marked, and tapping one opens what changed.
+- **A landing page that shows the idea.** The hero is a live specimen — a real
+  response next to the page Imago builds from it — with Pokémon, weather and
+  library examples, and "Try an example" opens the one you are looking at.
+- **Better pages when there is no AI key.** Time series become charts
+  ("Hourly temperature"), weather-style responses get a located subtitle
+  ("13.13° N, 80.25° E · GMT"), and bookkeeping fields (units, generation
+  time) fold into a Details section instead of crowding the page.
+
+### Changed
+
+- **Settings opens as a sheet over the page** rather than a separate screen,
+  and Escape closes the top layer first: sheet, then inspector, then the trail.
+- **The command bar moves to the bottom of the screen on phones**, where your
+  thumb is.
+- **Colour means one thing each.** Yellow only ever means "changed", green
+  only "live", red only "failed" — the no-key notice, provenance badge and
+  key pill are now neutral.
+- **Save reads as unavailable while the URL box is empty**, instead of
+  looking live and answering with an error.
+- First run opens straight onto an example page instead of a key form.
+
+### Fixed
+
+- **Examples and New request no longer carry your last endpoint's headers.**
+  Tapping an example after using an authenticated API could send that API's
+  `Authorization` header to the public demo host.
+- **The Settings gear works when you tap the icon itself**, not just the
+  space around it — on a phone it was the only way in.
+- **Reloading with an inspector tab open but nothing stored** no longer opens
+  an inspector you cannot close.
+- Opening an endpoint while a request is running no longer overwrites the
+  form. The Imago mark answers Enter and Space. On iPhone, focusing the URL
+  box no longer zooms the page. History ticks and the rail's delete button
+  are large enough, and visible enough, to hit on a touch screen.
+
 ## [0.3.0.0] - 2026-09-23
 
 Talk to your provider before you trust it, and get a straight answer when
