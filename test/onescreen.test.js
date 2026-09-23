@@ -547,16 +547,18 @@ describe('the basic layout, the other paths', () => {
     expect(book.components.some((c) => c.path === 'price_units')).toBe(true);
   });
 
-  it('charts at most two series per block, accepts date-only axes, and ignores short ones', async () => {
+  // A third series used to vanish; it now charts inside Details.
+  it('leads with two series per block, tucks the rest into Details, accepts date-only axes, and ignores short ones', async () => {
     const app = await boot();
     const days = ['2026-09-20', '2026-09-21', '2026-09-22', '2026-09-23'];
     const spec = app.buildFallbackSpec({
       daily: { time: days, a_max: [1, 2, 3, 4], b_max: [4, 3, 2, 1], c_max: [5, 5, 5, 5], note: ['x', 'y', 'z', 'w'] },
       short: { time: days.slice(0, 3), v: [1, 2, 3] }
     }, 'https://a.test/d');
-    const charts = spec.components.filter((c) => c.type === 'chart').map((c) => c.path);
-    expect(charts).toEqual(['daily.a_max', 'daily.b_max']);
-    expect(charts.some((p) => p.indexOf('short') === 0)).toBe(false);
+    const charts = spec.components.filter((c) => c.type === 'chart');
+    expect(charts.map((c) => c.path)).toEqual(['daily.a_max', 'daily.b_max', 'daily.c_max']);
+    expect(charts.map((c) => c.emphasis === 'quiet')).toEqual([false, false, true]);
+    expect(charts.some((c) => c.path.indexOf('short') === 0)).toBe(false);
   });
 
   it('bookkeeping goes by the last path segment; Details counts one field in the singular and files tables into its grid', async () => {
@@ -892,5 +894,70 @@ describe('landing specimen', () => {
       expect(pane.querySelector('.spec-response .spec-key').textContent).toBe('Highlighted lines are the fields the page uses.');
       expect(pane.querySelectorAll('.spec-json .jl.is-used').length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('the basic layout, edge cases', () => {
+  it('strips a measuring height only after a weather measure', async () => {
+    const app = await boot();
+    expect(app.humanize('temperature_2m')).toBe('Temperature');
+    expect(app.humanize('wind_speed_10m')).toBe('Wind speed');
+    // Minute windows are the data: three different fields, three labels.
+    const loads = ['load_1m', 'load_5m', 'load_15m'].map(app.humanize);
+    expect(new Set(loads).size).toBe(3);
+    expect(app.humanize('price_change_5m')).not.toBe(app.humanize('price_change_15m'));
+  });
+
+  it('a plain value named units is data, not bookkeeping', async () => {
+    const app = await boot();
+    const data = { units: 42, sold_units: 7, meta: { units: { t: 'C' } } };
+    expect(app.isBookkeeping({ type: 'metric', path: 'units' }, data)).toBe(false);
+    expect(app.isBookkeeping({ type: 'metric', path: 'sold_units' }, data)).toBe(false);
+    expect(app.isBookkeeping({ type: 'keyValue', path: 'meta.units' }, data)).toBe(true);
+    app.state.url = 'https://a.test/u';
+    app.state.data = { title: 'Stock', units: 42 };
+    app.applySpec(app.normalizeSpec(app.buildFallbackSpec(app.state.data, app.state.url)), 'fallback');
+    const details = app.dom.interfaceOut.querySelector('details.spec-details');
+    expect(details ? details.textContent : '').not.toContain('42');
+    expect(app.dom.interfaceOut.textContent).toContain('42');
+  });
+
+  it('a series with gaps (nulls) still charts', async () => {
+    const app = await boot();
+    const hours = ['2026-09-20T00:00', '2026-09-20T01:00', '2026-09-20T02:00', '2026-09-20T03:00'];
+    const spec = app.buildFallbackSpec({ hourly: { time: hours, temperature_2m: [20, null, 22, null] } }, 'https://a.test/h');
+    expect(spec.components.some((c) => c.type === 'chart' && c.path === 'hourly.temperature_2m')).toBe(true);
+    // One number is not a series.
+    const lone = app.buildFallbackSpec({ hourly: { time: hours, v: [1, null, null, null] } }, 'https://a.test/h');
+    expect(lone.components.some((c) => c.type === 'chart')).toBe(false);
+  });
+
+  it('an opened Details stays open across the re-render every refresh does', async () => {
+    const app = await boot();
+    app.state.url = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m';
+    app.state.data = WEATHER;
+    const render = () => app.applySpec(app.normalizeSpec(app.buildFallbackSpec(WEATHER, app.state.url)), 'fallback');
+    render();
+    let details = app.dom.interfaceOut.querySelector('details.spec-details');
+    expect(details.open).toBe(false);
+    details.open = true;
+    details.dispatchEvent(new app.window.Event('toggle'));
+    render();
+    details = app.dom.interfaceOut.querySelector('details.spec-details');
+    expect(details.open).toBe(true);
+    // Per endpoint: another URL starts closed.
+    app.state.url = 'https://api.open-meteo.com/v1/forecast?current=wind_speed_10m';
+    render();
+    expect(app.dom.interfaceOut.querySelector('details.spec-details').open).toBe(false);
+  });
+});
+
+describe('no dead key-setup screen', () => {
+  // Nothing has routed to it since the landing page went straight to the app;
+  // its markup and handlers were still wired up.
+  it('ships only the landing and app views', async () => {
+    const app = await boot();
+    expect(app.window.document.getElementById('setupView')).toBeNull();
+    expect([...app.window.document.querySelectorAll('body > .view')].map((v) => v.id)).toEqual(['landingView', 'appView']);
   });
 });

@@ -297,57 +297,27 @@ images once it can be reproduced.
 ### Rail and history strip rebuild on every refresh tick
 
 **What:** `applySpec` and `syncRefreshUi` rebuild the whole rail and history
-strip every render (and `renderHistory` runs twice per fetch).
+strip on every render (and `renderHistory` runs twice per fetch), re-parsing
+the saved-requests store each time.
 
-**Why:** Keyboard focus on a rail row or history tick drops to `<body>` every
-10–60s under auto-refresh, and each tick re-parses the saved-requests store.
+**Why:** Wasted work every 10–60s under Watch. Focus loss, the visible symptom,
+was fixed in 0.5.0.0 (`keepFocus`); the rebuild itself remains.
 
-**Context:** Pre-landing review, 0.4.0.0. Patch nodes in place or re-render only
-when inputs change; restore focus by data-id at minimum.
+**Context:** Patch nodes in place or re-render only when inputs change.
 
 **Effort:** M
-**Priority:** P2
+**Priority:** P3
 **Depends on:** None
 
-### Back history and the trail drift apart after an example or New request
+### Slug titles are capitalised even when case matters
 
-**What:** `loadExample` and New request reset `state.stack` but not
-`state.historyDepth`, so the next Back walks pushState entries from before the
-reset and lands in `leaveStage`. Escape at trail depth 0 also calls
-`leaveStage`, which focuses the URL input (pops the keyboard on phones).
-
-**Context:** Pre-landing review, 0.4.0.0. `app.js` `loadExample`, the Escape
-handler, `stepBack`.
+**What:** `buildFallbackSpec` capitalises a lowercase-slug title, so
+case-sensitive identifiers (a GitHub login, a package name) are shown altered.
+The other fallback edge cases (minute-window labels, `units` fields, series
+with gaps, the third series, Details closing) were fixed in 0.7.0.0.
 
 **Effort:** S
-**Priority:** P2
-**Depends on:** None
-
-### Fallback layout edge cases
-
-**What:** `humanize` strips any `_\d+m`, so `load_1m`/`load_5m` collide;
-`isBookkeeping` hides a scalar field named `units`; series with a `null` are
-dropped silently and only two per block are charted; the Details fold snaps
-shut on every refresh; slug titles are capitalised even when case matters.
-
-**Context:** Adversarial review, 0.4.0.0. `app.js` `humanize`, `isBookkeeping`,
-`seriesKeys`, `renderSpecBody`, `buildFallbackSpec`.
-
-**Effort:** M
-**Priority:** P2
-**Depends on:** None
-
-### Sheets and inspector are not dialogs
-
-**What:** The Settings sheet has no `role="dialog"`, focus move, trap or
-restore; the inspector's close is a tab named "Page"; Home/ArrowLeft in the tab
-bar closes the inspector and drops focus; history ticks override their button
-role with `listitem`; the setup view is now unreachable dead markup.
-
-**Context:** Pre-landing and adversarial review, 0.4.0.0.
-
-**Effort:** M
-**Priority:** P2
+**Priority:** P3
 **Depends on:** None
 
 ### A failed direct request shows the new URL's history
@@ -363,6 +333,21 @@ failure re-renders page A with URL B's history strip and rail highlight.
 **Depends on:** None
 
 ## Completed
+
+### Basic-layout edge cases and dead code — v0.7.0.0
+
+**What:** load_1m/5m/15m keep distinct labels, a `units` value is data, series
+with nulls chart, extra series go to Details, Details stays open across
+refreshes; the unreachable setup screen and two dead state writes removed.
+
+**Completed:** v0.7.0.0 (2026-09-23)
+
+### Sheets and the inspector behave as dialogs — v0.5.0.0
+
+**What:** Settings is a modal dialog with focus in/out and a Tab trap, the
+inspector's close is a real button, history ticks are buttons in list items.
+
+**Completed:** v0.5.0.0 (2026-09-23)
 
 ### Curl import and a plain CORS diagnosis — v0.6.0.0
 

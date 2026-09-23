@@ -176,7 +176,6 @@ input:focus, textarea:focus, select:focus {
 .key-status[data-state="ready"] { color: #2f7a48; }
 .key-status[data-state="missing"] { color: var(--muted); }
 .settings-card .key-field { margin-top: 0; }
-.setup-card .key-field + .key-field { margin-top: 12px; }
 
 /* ═══ Landing ════════════════════════════════════════════════════ */
 
@@ -234,29 +233,12 @@ input:focus, textarea:focus, select:focus {
 
 /* ═══ Setup ══════════════════════════════════════════════════════ */
 
-#setupView { min-height: 100vh; display: grid; place-items: center; padding: 28px; }
-.setup-card {
-  width: 100%; max-width: 420px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh);
-  padding: 40px 38px 32px;
-  text-align: center;
-}
-.setup-mark { display: inline-flex; margin-bottom: 20px; }
-.setup-title { font-size: 23px; }
-.setup-sub { margin-top: 9px; font-size: 14px; color: var(--muted); }
 .key-field { position: relative; margin-top: 26px; }
 .key-icon {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
   color: var(--muted-2); display: flex; pointer-events: none;
 }
 .key-field input { padding-left: 36px; height: 44px; }
-.setup-note { margin-top: 11px; font-size: 12.5px; color: var(--muted); }
-.setup-card .btn-lg { margin-top: 20px; }
-.setup-later { display: block; margin: 18px auto 0; }
-.setup-hint { margin-top: 22px; font-size: 12px; color: var(--muted-2); }
 
 /* ═══ App shell ══════════════════════════════════════════════════ */
 
@@ -1126,7 +1108,6 @@ table.comp-table tr:last-child td { border-bottom: none; }
   .timeline-tag { width: 62px; }
   .fact-strip { grid-template-columns: repeat(2, 1fr); }
   .hero-row { grid-template-columns: 1fr; }
-  .setup-card { padding: 32px 24px 26px; }
 
   .saved-item { flex-wrap: wrap; gap: 10px; }
   .saved-main { flex-basis: calc(100% - 52px); }

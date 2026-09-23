@@ -169,38 +169,6 @@
   </footer>
 </div>
 
-<!-- ══ Setup ════════════════════════════════════════════════════ -->
-<div class="view" id="setupView" hidden>
-  <div class="setup-card">
-    <span class="setup-mark" aria-hidden="true">
-      <svg width="44" height="44"><use href="#imagoIcon"/></svg>
-    </span>
-    <h2 class="setup-title">Let's get started</h2>
-    <p class="setup-sub">Add a Gemini or Groq API key to generate interfaces. Either one works.</p>
-
-    <div class="key-field">
-      <span class="key-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
-      </span>
-      <input type="password" id="setupGeminiKey" placeholder="Gemini key (AIza…)" autocomplete="off" spellcheck="false" aria-label="Gemini API key">
-    </div>
-    <div class="key-field">
-      <span class="key-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M14.5 10.5a4 4 0 1 0-3.9 4l1.4 1.4v1.7h1.7v1.7h1.7v1.7h2.4v-2.4l-6-6a4 4 0 0 0 2.7-2.1Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="16.4" cy="8.1" r="1.1" fill="currentColor"/></svg>
-      </span>
-      <input type="password" id="setupGroqKey" placeholder="Groq key (gsk_…)" autocomplete="off" spellcheck="false" aria-label="Groq API key">
-    </div>
-    <p class="setup-note">Keys are kept in this browser's local storage, so they survive a restart. Anyone with this browser profile can read them.</p>
-
-    <button type="button" class="btn btn-dark btn-block btn-lg" id="setupContinue">
-      Continue
-      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button type="button" class="link-btn setup-later" id="setupLater">I'll add it later</button>
-    <p class="setup-hint">Free keys: <span class="mono">aistudio.google.com/apikey</span> or <span class="mono">console.groq.com/keys</span></p>
-  </div>
-</div>
-
 <!-- ══ App ══════════════════════════════════════════════════════ -->
 <div class="view" id="appView" hidden>
 

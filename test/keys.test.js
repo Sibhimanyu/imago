@@ -83,19 +83,6 @@ describe('per-provider key fields', () => {
     expect(again.getActiveKey()).toBe('gsk_live123');
   });
 
-  it('the setup screen collects both keys at once', async () => {
-    const app = await boot();
-    expect(app.dom.setupGeminiKey).toBeTruthy();
-    expect(app.dom.setupGroqKey).toBeTruthy();
-    app.dom.setupGeminiKey.value = 'AIza_setup1';
-    app.dom.setupGroqKey.value = 'gsk_setup2';
-    app.dom.setupContinue.click();
-    expect(app.window.localStorage.getItem('imago.key.gemini')).toBe('AIza_setup1');
-    expect(app.window.localStorage.getItem('imago.key.groq')).toBe('gsk_setup2');
-    // Last field wins the default — the key just typed is the one in use.
-    expect(app.getSessionProvider()).toBe('groq');
-  });
-
   it('clear-all-data wipes the keys too', async () => {
     const app = await boot({
       local: { 'imago.key.gemini': 'AIza_live456' }
