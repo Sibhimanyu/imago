@@ -1889,6 +1889,29 @@
     }
   }
 
+  // An object of parallel arrays keyed by time (Open-Meteo's hourly/daily,
+  // most metrics APIs): the numeric arrays are series, and a series is a chart,
+  // not a key/value sheet with a sparkline per row.
+  function seriesKeys(node) {
+    if (!isPlainObject(node)) return null;
+    var keys = Object.keys(node);
+    var timeLen = -1;
+    for (var i = 0; i < keys.length; i += 1) {
+      var arr = node[keys[i]];
+      if (Array.isArray(arr) && arr.length >= 4 && typeof arr[0] === 'string' &&
+          (RE_ISO_DT.test(arr[0]) || RE_ISO_DATE.test(arr[0]))) { timeLen = arr.length; break; }
+    }
+    if (timeLen < 0) return null;
+    var numeric = keys.filter(function (k) {
+      return Array.isArray(node[k]) && node[k].length === timeLen && allNumbers(node[k]);
+    });
+    return numeric.length ? numeric : null;
+  }
+
+  function formatCoord(value, pos, neg) {
+    return Math.abs(value).toFixed(2) + '° ' + (value >= 0 ? pos : neg);
+  }
+
   function buildFallbackSpec(data, url) {
     var components = [];
     var title = 'Response';
@@ -1926,6 +1949,20 @@
       if (typeof value === 'string' && value.trim()) { titleKey = titleCandidates[i]; break; }
     }
     title = titleKey ? String(data[titleKey]) : endpointTitle(url) || 'Response';
+    // A bare identifier ("pikachu", "the-hobbit") is a name, so it reads as one.
+    if (/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(title)) {
+      title = title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, ' ');
+    }
+
+    // A located response says where it is in its subtitle; the raw
+    // coordinates then belong with the bookkeeping, not in the fact sheet.
+    var located = typeof data.latitude === 'number' && typeof data.longitude === 'number';
+    if (located) {
+      subtitle = formatCoord(data.latitude, 'N', 'S') + ', ' + formatCoord(data.longitude, 'E', 'W') +
+        (typeof data.timezone === 'string' && data.timezone ? ' · ' + data.timezone : '');
+    }
+    // Probed with keys from the response body, so no prototype to collide with.
+    var LOCATION_KEYS = Object.assign(Object.create(null), { latitude: true, longitude: true, timezone: true });
 
     var imagePath = findFirstImagePath(data, '', 0);
     if (imagePath) components.push({ type: 'image', path: imagePath, label: 'Image', alt: title });
@@ -1990,6 +2027,19 @@
 
       if (v === null || v === undefined) continue;
 
+      // Unit tables are consumed by the values they describe (hoisted facts
+      // pick theirs up above), so they never render as a card of their own.
+      if (/_units$/.test(key) && isPlainObject(data[key.replace(/_units$/, '')])) continue;
+
+      var series = seriesKeys(v);
+      if (series) {
+        for (var si = 0; si < series.length && si < 2; si += 1) {
+          blocks.push({ type: 'chart', path: key + '.' + series[si],
+                        label: label + ' ' + humanize(series[si]).toLowerCase() });
+        }
+        continue;
+      }
+
       if (Array.isArray(v)) {
         if (!v.length) continue;
         if (isPlainObject(v[0])) {
@@ -2019,7 +2069,7 @@
 
       var kind = inferKind(v, { path: key });
       facts.push({
-        __noise: RE_KEY_NOISE.test(key.toLowerCase()),
+        __noise: RE_KEY_NOISE.test(key.toLowerCase()) || (located && LOCATION_KEYS[key] === true),
         type: kind === 'number' || kind === 'percent' || kind === 'duration' ||
               kind === 'bytes' || kind === 'money' || kind === 'temperature' ? 'metric' : 'text',
         path: key,
@@ -2180,7 +2230,10 @@
   function humanize(key) {
     // Sentence case, so snake_case and camelCase labels read the same way.
     // All-caps words are left alone so acronyms survive (URL, ID, HP).
-    var words = String(key)
+    // Weather APIs suffix the measuring height (temperature_2m,
+    // wind_speed_10m); that is instrument detail, not the reader's label.
+    var base = String(key).replace(/_\d+m$/, '');
+    var words = (base || String(key))
       .replace(/[_\-.]+/g, ' ')
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
       .split(/\s+/)
@@ -2379,6 +2432,15 @@
   // with its numbers.
   var STRUCTURE_FIRST = ['table', 'list', 'timeline', 'raw', 'article'];
 
+  // Bookkeeping (quiet fields, unit tables, generation times) is kept, but out
+  // of the reader's way: it folds into a Details section at the foot of the
+  // page instead of getting the same box as the values they came for.
+  function isBookkeeping(component) {
+    if (component.emphasis === 'quiet') return true;
+    var leaf = lastSegment(component.path || '').toLowerCase();
+    return /(^|_)units$/.test(leaf);
+  }
+
   function renderSpecBody(spec, data, diffMap) {
     var frag = document.createDocumentFragment();
     var body = el('div', 'spec-body layout-' + (spec.layout || 'dashboard'));
@@ -2397,6 +2459,7 @@
     }
 
     var anyRendered = false;
+    var tucked = [];
 
     for (var g = 0; g < groups.length; g += 1) {
       var group = groups[g];
@@ -2406,6 +2469,7 @@
       for (var c = 0; c < group.items.length; c += 1) {
         var result = renderComponent(group.items[c], data, diffMap);
         if (!result) continue;
+        if (isBookkeeping(group.items[c]) && result.weight !== 'hero') { tucked.push(result); continue; }
         if (result.weight === 'hero') heroes.push(result);
         else if (result.weight === 'fact') facts.push(result);
         else blocks.push(result);
@@ -2472,6 +2536,34 @@
       }
 
       body.appendChild(section);
+      anyRendered = true;
+    }
+
+    if (tucked.length) {
+      var details = el('details', 'spec-details');
+      var summary = el('summary', 'spec-details-summary');
+      summary.appendChild(el('span', 'spec-details-title', 'Details'));
+      var names = [];
+      for (var t = 0; t < tucked.length && names.length < 5; t += 1) {
+        var labelNode = tucked[t].node.querySelector('.fact-label, .comp-label');
+        if (labelNode && labelNode.textContent) names.push(labelNode.textContent.toLowerCase());
+      }
+      summary.appendChild(el('span', 'spec-details-hint',
+        tucked.length + (tucked.length === 1 ? ' more field' : ' more fields') +
+        (names.length ? ' · ' + names.join(', ') : '')));
+      details.appendChild(summary);
+      var tuckedFacts = el('div', 'fact-strip');
+      var tuckedGrid = el('div', 'spec-grid');
+      for (t = 0; t < tucked.length; t += 1) {
+        if (tucked[t].weight === 'fact') tuckedFacts.appendChild(tucked[t].node);
+        else {
+          tucked[t].node.className += ' span-6';
+          tuckedGrid.appendChild(tucked[t].node);
+        }
+      }
+      if (tuckedFacts.childNodes.length) details.appendChild(tuckedFacts);
+      if (tuckedGrid.childNodes.length) details.appendChild(tuckedGrid);
+      body.appendChild(details);
       anyRendered = true;
     }
 
@@ -3171,17 +3263,24 @@
     window.scrollTo(0, 0);
   }
 
+  // One screen, so a "pane" is no longer a page swap. The page is always on
+  // screen; the endpoints rail is always there on a wide screen (and slides up
+  // as a sheet on a phone when pane is 'saved'); Settings opens as a sheet.
   function setAppPane(pane) {
+    if (['playground', 'saved', 'settings'].indexOf(pane) === -1) pane = 'playground';
     state.pane = pane;
-    dom.panePlayground.hidden = pane !== 'playground';
-    dom.paneSaved.hidden = pane !== 'saved';
+    dom.panePlayground.hidden = false;
+    dom.paneSaved.hidden = false;
     dom.paneSettings.hidden = pane !== 'settings';
+    if (dom.sheetScrim) dom.sheetScrim.hidden = pane === 'playground';
+    document.body.classList.toggle('sheet-settings', pane === 'settings');
+    document.body.classList.toggle('sheet-saved', pane === 'saved');
 
     var buttons = dom.appNav.querySelectorAll('button');
     for (var i = 0; i < buttons.length; i += 1) {
       var active = buttons[i].getAttribute('data-view') === pane;
-      buttons[i].className = active ? 'is-active' : '';
-      buttons[i].setAttribute('aria-selected', active ? 'true' : 'false');
+      buttons[i].classList.toggle('is-active', active);
+      buttons[i].setAttribute('aria-pressed', active ? 'true' : 'false');
     }
     if (pane === 'saved') renderSavedList();
     if (pane === 'settings') renderStorageSummary();
@@ -3642,6 +3741,7 @@
   }
 
   function updateMeta() {
+    if (dom.inspectBtn) dom.inspectBtn.disabled = !state.data;
     if (!state.data) { dom.runMeta.hidden = true; return; }
     dom.runMeta.hidden = false;
 
@@ -3900,7 +4000,7 @@
 
   // kind 'note' is for states that are not failures (no key yet): red is
   // reserved for something that actually went wrong.
-  function showAlert(title, body, kind) {
+  function showAlert(title, body, kind, action) {
     var box = el('div', kind === 'note' ? 'alert alert-note' : 'alert');
     var ico = el('span', 'alert-ico');
     ico.appendChild(svgIcon(['M12 8v5', 'M12 16.2v.1', 'M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z'], 17));
@@ -3909,6 +4009,12 @@
     text.appendChild(el('p', 'alert-title', title));
     text.appendChild(el('p', 'alert-body', body));
     box.appendChild(text);
+    if (action) {
+      var go = el('button', 'btn btn-dark btn-sm alert-action', action.label);
+      go.type = 'button';
+      go.addEventListener('click', action.run);
+      box.appendChild(go);
+    }
     dom.interfaceOut.insertBefore(box, dom.interfaceOut.firstChild);
   }
 
@@ -3959,6 +4065,8 @@
     dom.stageSource.setAttribute('data-kind', source);
     if (state.stagePref) enterStage();
 
+    renderHistory();
+    renderSavedList();
     scheduleTimelineLayout();
     updateMeta();
   }
@@ -3974,11 +4082,7 @@
     state.stage = true;
     state.stagePref = true;
     document.body.classList.add('is-stage');
-    dom.stageBar.hidden = false;
-    dom.stageCrumb.textContent = hostOf(state.url) + (state.stack.length ? ' · ' + state.stack.length + ' back' : '');
-    dom.stageCrumb.title = state.url;
-    if (state.pane !== 'playground') setAppPane('playground');
-    if (state.tab !== 'interface') setActiveTab('interface');
+    syncTrail();
     savePrefs();
   }
 
@@ -3987,10 +4091,20 @@
     state.stagePref = false;
     state.stack = [];
     document.body.classList.remove('is-stage');
-    dom.stageBar.hidden = true;
+    syncTrail();
     savePrefs();
     window.scrollTo(0, 0);
     if (dom.urlInput) dom.urlInput.focus();
+  }
+
+  // The trail only appears once a link has been followed out of a page:
+  // with nothing to go back to, a Back button is noise.
+  function syncTrail() {
+    if (!dom.stageBar) return;
+    var depth = state.stage ? state.stack.length : 0;
+    dom.stageBar.hidden = depth === 0;
+    dom.stageCrumb.textContent = hostOf(state.url) + (depth ? ' · ' + depth + ' back' : '');
+    dom.stageCrumb.title = state.url || '';
   }
 
   // Back has two entry points (the stage button / Escape, and the browser's
@@ -4101,11 +4215,7 @@
     state.headers = parseHeaders(point.headersText);
     while (state.stack.length > point.stackLength) state.stack.pop();
     state.historyDepth = point.historyDepth;
-    if (state.stage) {
-      dom.stageCrumb.textContent = hostOf(state.url) +
-        (state.stack.length ? ' · ' + state.stack.length + ' back' : '');
-      dom.stageCrumb.title = state.url;
-    }
+    syncTrail();
   }
 
   var ACTION_ICONS = {
@@ -4235,8 +4345,14 @@
     }
     var panes = document.querySelectorAll('.tab-pane');
     for (i = 0; i < panes.length; i += 1) {
-      panes[i].className = panes[i].getAttribute('data-pane') === tab ? 'tab-pane is-active' : 'tab-pane';
+      var name = panes[i].getAttribute('data-pane');
+      // The page never leaves the screen: the other panes open beside it.
+      panes[i].className = (name === tab || name === 'interface') ? 'tab-pane is-active' : 'tab-pane';
     }
+    var open = tab !== 'interface';
+    if (open) state.inspectTab = tab;
+    document.body.classList.toggle('inspector-open', open);
+    if (dom.inspectBtn) dom.inspectBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
     if (tab === 'interface') scheduleTimelineLayout();
     // Build the heavy panes on demand — they are skipped while hidden.
     if (tab === 'raw' && state.rawPaneDirty) renderRawPane();
@@ -4280,42 +4396,121 @@
 
     for (var i = 0; i < list.length; i += 1) {
       (function (item) {
-        var li = el('li', 'saved-item');
+        var onScreen = !!state.data && (item.id === state.activeRequestId || item.url === state.url);
+        var li = el('li', 'saved-item' + (onScreen ? ' is-active' : ''));
 
-        var avatar = el('span', 'saved-avatar', (item.name || '?').charAt(0).toUpperCase());
-        li.appendChild(avatar);
+        var open = el('button', 'saved-open');
+        open.type = 'button';
+        open.title = item.url;
+        open.setAttribute('aria-label', 'Open ' + item.name);
+        if (onScreen) open.setAttribute('aria-current', 'page');
+        open.addEventListener('click', function () { loadSavedRequest(item.id); });
 
-        var main = el('div', 'saved-main');
+        open.appendChild(el('span', 'saved-avatar', (item.name || '?').charAt(0).toUpperCase()));
+        var main = el('span', 'saved-main');
         main.appendChild(el('span', 'saved-name', item.name));
-        main.appendChild(el('span', 'saved-url', item.url));
-        li.appendChild(main);
+        main.appendChild(el('span', 'saved-url', hostOf(item.url) || item.url));
+        open.appendChild(main);
 
-        var when = el('div', 'saved-when', 'Last used');
-        when.appendChild(el('b', null, formatRelative(item.lastUsedAt || item.createdAt)));
-        li.appendChild(when);
+        var status = el('span', 'saved-status');
+        if (onScreen && state.changedCount > 0) {
+          status.appendChild(el('span', 'saved-changed', String(state.changedCount)));
+        }
+        if (onScreen && state.refreshIntervalMs) {
+          var live = el('span', 'saved-live');
+          live.title = 'Watching';
+          status.appendChild(live);
+        } else if (!onScreen) {
+          status.appendChild(el('span', 'saved-when', formatRelative(item.lastUsedAt || item.createdAt)));
+        }
+        open.appendChild(status);
+        li.appendChild(open);
 
-        var actions = el('div', 'saved-actions');
-
-        var run = el('button', 'icon-btn');
-        run.type = 'button';
-        run.title = 'Run this request';
-        run.setAttribute('aria-label', 'Run ' + item.name);
-        run.appendChild(svgIcon(['M8 5.5v13l10-6.5-10-6.5Z'], 15));
-        run.addEventListener('click', function () { loadSavedRequest(item.id); });
-        actions.appendChild(run);
-
-        var del = el('button', 'icon-btn danger');
+        var del = el('button', 'icon-btn saved-delete danger');
         del.type = 'button';
         del.title = 'Delete';
         del.setAttribute('aria-label', 'Delete ' + item.name);
-        del.appendChild(svgIcon(['M4 6.5h16', 'M9.5 6.5V4.8h5v1.7', 'M6.5 6.5 7.4 20h9.2l.9-13.5'], 15));
+        del.appendChild(svgIcon(['M4 6.5h16', 'M9.5 6.5V4.8h5v1.7', 'M6.5 6.5 7.4 20h9.2l.9-13.5'], 14));
         del.addEventListener('click', function () { deleteSavedRequest(item.id); });
-        actions.appendChild(del);
+        li.appendChild(del);
 
-        li.appendChild(actions);
         dom.savedList.appendChild(li);
       })(list[i]);
     }
+  }
+
+  /* ── History strip ──────────────────────────────────────────────────────
+     Time made visible: one tick per stored fetch of this endpoint, yellow
+     where that fetch changed something. Only the newest snapshot keeps its
+     body, so a tick opens the Changes inspector rather than an old page.
+     ---------------------------------------------------------------------- */
+
+  function renderHistory() {
+    var strip = dom.historyStrip;
+    if (!strip) return;
+    var list = state.data ? getSnapshotsFor(currentRequestKey()) : [];
+    clear(strip);
+    if (list.length < 2) { strip.hidden = true; return; }
+    strip.hidden = false;
+
+    var changedFetches = 0;
+    for (var c = 0; c < list.length; c += 1) if (list[c] && list[c].changed > 0) changedFetches += 1;
+
+    var head = el('div', 'history-head');
+    head.appendChild(el('span', 'history-title', 'History'));
+    head.appendChild(el('span', 'history-count', list.length + ' fetches'));
+    if (changedFetches) {
+      var hot = el('span', 'history-hot', changedFetches + (changedFetches === 1 ? ' changed something' : ' changed something'));
+      head.appendChild(hot);
+    }
+    strip.appendChild(head);
+
+    var track = el('div', 'history-track');
+    track.setAttribute('role', 'list');
+    for (var i = 0; i < list.length; i += 1) {
+      (function (snap, isLast) {
+        var tick = el('button', 'history-tick' + (snap.changed > 0 ? ' is-changed' : '') + (isLast ? ' is-now' : ''));
+        tick.type = 'button';
+        tick.setAttribute('role', 'listitem');
+        var when = snap.fetchedAt ? formatClock(new Date(snap.fetchedAt).getTime()) : '';
+        var label = when + (snap.changed > 0 ? ' · ' + snap.changed + ' changed' : ' · no change') + (isLast ? ' · on screen' : '');
+        tick.title = label;
+        tick.setAttribute('aria-label', label);
+        tick.addEventListener('click', function () { setActiveTab('changes'); });
+        track.appendChild(tick);
+      })(list[i], i === list.length - 1);
+    }
+    strip.appendChild(track);
+
+    var foot = el('div', 'history-foot');
+    var first = list[0] && list[0].fetchedAt ? formatClock(new Date(list[0].fetchedAt).getTime()) : '';
+    foot.appendChild(el('span', null, first));
+    foot.appendChild(el('span', null, 'now'));
+    strip.appendChild(foot);
+  }
+
+  // The rail's examples: one tap loads a demo, the same as the picker.
+  function renderRailExamples() {
+    if (!dom.railExamples) return;
+    clear(dom.railExamples);
+    for (var i = 0; i < DEMOS.length; i += 1) {
+      (function (demo) {
+        var li = el('li');
+        var b = el('button', 'rail-example');
+        b.type = 'button';
+        b.appendChild(el('span', 'rail-example-name', demo.name));
+        b.appendChild(el('span', 'rail-example-host', hostOf(demo.url)));
+        b.addEventListener('click', function () { loadExample(demo.url); });
+        li.appendChild(b);
+        dom.railExamples.appendChild(li);
+      })(DEMOS[i]);
+    }
+  }
+
+  function loadExample(url) {
+    state.stack = [];
+    if (state.pane !== 'playground') setAppPane('playground');
+    navigateTo(url);
   }
 
   // Every write to the URL box goes through here so Save reads as unavailable
@@ -4536,7 +4731,8 @@
     if (!snapshot || snapshot.data === null || snapshot.data === undefined) return snapshot;
     return {
       id: snapshot.id, url: snapshot.url, schemaHash: snapshot.schemaHash,
-      fetchedAt: snapshot.fetchedAt, status: snapshot.status, data: null, omitted: true
+      fetchedAt: snapshot.fetchedAt, status: snapshot.status, changed: snapshot.changed || 0,
+      data: null, omitted: true
     };
   }
 
@@ -4669,8 +4865,10 @@
           schemaHash: print.hash,
           fetchedAt: new Date(state.lastCheckedAt).toISOString(),
           status: response.status,
+          changed: state.changedCount,
           data: data
         });
+        renderHistory();
 
         touchSavedRequest(url);
         // These two panes stringify the whole body and build ~1500 spans. On a
@@ -4756,7 +4954,8 @@
     var provider = getProvider(getSessionProvider());
     showAlert('No ' + provider.label + ' key',
       'Paste one in Settings → API keys (free at ' + provider.keyHint + '). ' +
-      'Saved interfaces and cached pages keep working; only generating new ones needs a key.', 'note');
+      'Saved interfaces and cached pages keep working; only generating new ones needs a key.', 'note',
+      { label: 'Add a key', run: function () { setAppPane('settings'); } });
     if (!state.warnedNoKey) {
       state.warnedNoKey = true;
       toast('No ' + provider.label + ' key — showing a heuristic fallback.', 'warn');
@@ -5027,6 +5226,7 @@
     dom.refreshToggle.setAttribute('aria-checked', on ? 'true' : 'false');
     dom.refreshInterval.disabled = !on;
     if (on) dom.refreshInterval.value = String(state.refreshIntervalMs);
+    if (dom.savedList) renderSavedList();   // the rail's live dot follows
   }
 
   // Setup and settings inputs share the <id>Key convention: setup boxes are
@@ -5044,9 +5244,8 @@
       relayoutHandle = window.setTimeout(scheduleTimelineLayout, 140);
     });
 
-    dom.landingStart.addEventListener('click', function () {
-      showView(hasAnyKey() ? 'app' : 'setup');
-    });
+    // No key gate in front of the product: straight to a rendered page.
+    dom.landingStart.addEventListener('click', function () { enterApp(); });
     dom.landingSkip.addEventListener('click', function () { enterApp(); });
     dom.landingAbout.addEventListener('click', function () {
       toast('Imago turns an API response into an interface, remembers the shape, and watches it change.');
@@ -5088,6 +5287,15 @@
       if (view) setAppPane(view);
     });
     dom.brandHome.addEventListener('click', function () { setAppPane('playground'); });
+    if (dom.settingsClose) dom.settingsClose.addEventListener('click', function () { setAppPane('playground'); });
+    if (dom.sheetScrim) dom.sheetScrim.addEventListener('click', function () { setAppPane('playground'); });
+    if (dom.railClose) dom.railClose.addEventListener('click', function () { setAppPane('playground'); });
+    if (dom.inspectBtn) {
+      dom.inspectBtn.addEventListener('click', function () {
+        setActiveTab(state.tab === 'interface' ? (state.inspectTab || 'changes') : 'interface');
+      });
+    }
+    renderRailExamples();
     // The pill is the fastest route to the keys: one click opens Settings.
     dom.keyStatus.addEventListener('click', function () { setAppPane('settings'); });
     dom.keyStatus.style.cursor = 'pointer';
@@ -5109,7 +5317,11 @@
       if (state.stage) stepBack(steps);
     });
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && state.stage && !event.defaultPrevented) goBack();
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      // Innermost first: a sheet, then the inspector, then the trail.
+      if (state.pane !== 'playground') { setAppPane('playground'); return; }
+      if (state.tab !== 'interface') { setActiveTab('interface'); return; }
+      if (state.stage) goBack();
     });
     if (dom.modelName) {
       dom.modelName.addEventListener('input', function () {
@@ -5131,9 +5343,13 @@
         pickExample(dom.exampleSelect);
       });
     }
+    // A new request starts from an empty command bar.
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
+      state.stack = [];
+      state.activeRequestId = null;
       setUrlInput('');
+      renderSavedList();
       dom.urlInput.focus();
     });
 
@@ -5280,15 +5496,21 @@
                'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
                 'providerSelect', 'providerHint', 'modelHint', 'ollamaEndpoint',
                 'ollamaServerGroup', 'ollamaNoteOrigin',
-               'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource'];
+               'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource',
+               'inspectBtn', 'inspector', 'historyStrip', 'railExamples', 'railClose',
+               'settingsClose', 'sheetScrim'];
     for (var i = 0; i < ids.length; i += 1) dom[ids[i]] = qs(ids[i]);
   }
 
   function enterApp() {
     var prefs = getPrefs();
+    var firstRun = !prefs.onboarded;
     prefs.onboarded = true;
     setPrefs(prefs);
     showView('app');
+    // Value before the key: a first visit opens on a real page, rendered from
+    // the basic layout. The key is asked for when it would buy something.
+    if (firstRun && !state.data && !dom.urlInput.value.trim()) loadExample(DEMOS[0].url);
   }
 
   // One-time move from the old single session key: file it under the provider
@@ -5351,7 +5573,7 @@
     state.stagePref = prefs.stage !== false;
     syncRefreshUi();
 
-    setAppPane(['playground', 'saved', 'settings'].indexOf(prefs.activePane) !== -1 ? prefs.activePane : 'playground');
+    setAppPane('playground');   // sheets do not reopen on reload
     setActiveTab(prefs.activeTab || 'interface');
     renderSavedList();
 
@@ -5484,6 +5706,8 @@
     clearAllData: clearAllData,
     callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,
     resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs, showInterfaceEmpty: showInterfaceEmpty, setUrlInput: setUrlInput,
+    setAppPane: setAppPane, renderHistory: renderHistory, renderSavedList: renderSavedList,
+    enterApp: enterApp, isBookkeeping: isBookkeeping, stripBody: stripBody,
     init: init
   };
 

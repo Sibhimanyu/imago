@@ -80,11 +80,22 @@ Two more passes run before anything is drawn:
 `emphasis: "hero"` marks the field the reader came for; `emphasis: "quiet"` marks
 bookkeeping. If a plan says nothing, Imago ranks the fields itself.
 
-### The plan is the whole page
+### One screen
 
-Once a plan renders, it takes the screen. The request bar, tabs, meta chips and app
-navigation step aside; what remains is the generated page and a single **Back**
-control. The plan decides the page's `layout` (`profile`, `dashboard`, `table`, `list`,
+Imago is one screen. The command bar (paste a URL) sits on top, your saved endpoints
+sit in a rail on the left, and the page the response became is the white canvas in
+the middle. Each saved endpoint shows a green dot while it is being watched and a
+yellow count when its last fetch changed something. **Inspect** opens the raw
+material (Response, Schema, Changes, Headers) in a drawer beside the page, and
+Settings opens as a sheet over it; <kbd>Esc</kbd> closes whichever is on top. On a
+phone the command bar moves to the bottom of the screen and the endpoints open as a
+sheet.
+
+Under the page title, a **history strip** draws one tick per stored fetch, yellow
+where that fetch changed something; a tick opens the Changes drawer. Only the newest
+snapshot keeps its body, so the strip shows *when* things moved, not old pages.
+
+The page itself is the plan. It decides the `layout` (`profile`, `dashboard`, `table`, `list`,
 `article`, `timeline`, `raw`), its sections and hierarchy, and — through `actions` —
 what the reader can do next:
 
@@ -99,8 +110,8 @@ what the reader can do next:
 ```
 
 `follow` opens a URL found in the response as the next generative page; Imago keeps a
-trail, so Back pops through the pages you followed and, from the first one, returns
-you to the controls (typing a new URL, headers, saving, settings). `watch` turns on
+trail, and a **Back** control appears above the page once you have followed a link;
+it pops through the pages you followed. `watch` turns on
 auto-refresh at the given interval, `refresh` fetches now, `raw` reveals the JSON at
 the bottom of the page. A `follow` whose path does not hold a URL at render time is
 dropped silently. The browser's Back button and <kbd>Esc</kbd> do the same as Back.
@@ -245,8 +256,13 @@ The tradeoff is plain: anyone with access to this browser profile can read them.
 Imago still works, and it says so plainly. Without a usable key it falls back to
 a heuristic interface built from the response itself — it finds a title field,
 the most likely primary image, and the first handful of scalar fields — with a
-banner naming the missing key, where to paste it, and where a free one lives.
-The badge beside the title always tells you which path you got:
+neutral notice naming the missing key, where a free one lives, and an **Add a
+key** button that opens Settings. A first visit skips the key form entirely and
+opens on a rendered example, so you see what Imago does before it asks for anything.
+In this basic layout, unit tables are applied to their values, time series become
+charts, located responses name the place in the subtitle, and bookkeeping
+(generation times, offsets, raw coordinates) folds into a **Details** section at
+the foot of the page. The badge beside the title always tells you which path you got:
 `Generated`, `From schema cache`, or `Fallback`.
 
 ---
@@ -268,8 +284,8 @@ Built into the Examples dropdown (empty state, and beside the request bar):
 | Sunrise & Sunset | `https://api.sunrise-sunset.org/json?lat=13.0827&lng=80.2707&formatted=0` |
 | Charizard | `https://pokeapi.co/api/v2/pokemon/charizard` |
 
-Any CORS-friendly GET endpoint works. Optional request headers are supported under the
-Headers tab, one `Name: value` per line. Endpoints that don't send CORS headers can't
+Any CORS-friendly GET endpoint works. Optional request headers are supported under
+Inspect → Headers, one `Name: value` per line. Endpoints that don't send CORS headers can't
 be reached from any browser-only app — Imago reports that clearly rather than failing
 silently.
 

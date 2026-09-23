@@ -58,6 +58,7 @@ Two other jsdom traps the harness already handles:
 |---|---|
 | `test/pure.test.js` | Path parsing, `getByPath`, diffing, spec normalisation, HTML escaping, header parsing and redaction, origin comparison. The trust boundary between untrusted input and the renderer. |
 | `test/regressions.test.js` | One test per critical bug fixed, named after the behaviour that was broken. |
+| `test/onescreen.test.js` | The one-screen layout: inspector and Settings sheet, the trail, the history strip, the endpoint rail, first run without a key, and the basic layout (units, series, Details). |
 
 `test/harness.js` also exports `jsonFetch(body)` for a one-shot fetch stub and
 `flush()` to drain pending promise jobs.
