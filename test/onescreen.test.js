@@ -736,3 +736,24 @@ describe('the line above the page speaks plainly', () => {
     expect(app.dom.changedChip.textContent).toBe('3 changed');
   });
 });
+
+describe('chart labels', () => {
+  // The chart SVG stretches to the card (preserveAspectRatio none), and its
+  // value labels stretched with it. They are HTML beside the plot now.
+  it('puts the value labels outside the stretching SVG, top to bottom', async () => {
+    const app = await boot();
+    const r = app.renderComponent({ type: 'chart', path: 'v', label: 'V' }, { v: [1, 2, 3, 4] }, null);
+    const svg = r.node.querySelector('svg.chart-svg');
+    expect(svg.querySelector('text')).toBeNull();
+    const ticks = [...r.node.querySelectorAll('.chart-axis .chart-tick')];
+    expect(ticks).toHaveLength(3);
+    const tops = ticks.map((t) => parseFloat(t.style.top));
+    expect(tops[0]).toBeLessThan(tops[1]);
+    expect(tops[1]).toBeLessThan(tops[2]);
+    expect(Number(ticks[0].textContent)).toBeGreaterThan(Number(ticks[2].textContent));
+    // Dots and line keep their shape when the plot stretches.
+    expect(svg.querySelector('circle')).toBeNull();
+    for (const dot of svg.querySelectorAll('.chart-dot')) expect(dot.getAttribute('vector-effect')).toBe('non-scaling-stroke');
+    expect(svg.querySelector('.chart-line').getAttribute('vector-effect')).toBe('non-scaling-stroke');
+  });
+});

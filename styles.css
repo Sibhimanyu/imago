@@ -918,8 +918,13 @@ table.comp-table tr:last-child td { border-bottom: none; }
 .chart-svg { display: block; width: 100%; height: 130px; overflow: visible; }
 .chart-line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart-area { fill: url(#imagoChartFill); }
-.chart-dot { fill: var(--ink); }
-.chart-axis { font-family: var(--mono); font-size: 9.5px; fill: var(--muted-2); }
+.chart-dot { stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.chart-plot { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; }
+.chart-axis { position: relative; height: 130px; min-width: 2.5em; }
+.chart-tick {
+  position: absolute; right: 0; transform: translateY(-50%);
+  font-size: 11px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--muted-2); white-space: nowrap;
+}
 .chart-grid { stroke: var(--line-soft); stroke-width: 1; }
 
 /* ─── Code panes ───────────────────────────────────────────────── */
@@ -1356,7 +1361,8 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
   font-size: 16px; font-weight: 600; letter-spacing: -0.01em; text-transform: none;
   color: var(--ink); border: 0; padding: 0; margin: 0 0 12px;
 }
-.canvas .hero-row { display: flex; flex-wrap: wrap; gap: 28px 64px; align-items: flex-end; }
+/* Top-aligned: a meter under one value must not lift that value's label */
+.canvas .hero-row { display: flex; flex-wrap: wrap; gap: 28px 64px; align-items: flex-start; }
 .canvas .comp-hero, .canvas .comp { background: none; border: 0; border-radius: 0; padding: 0; box-shadow: none; }
 .canvas .comp-hero .comp-label { font-size: 14px; font-weight: 400; color: var(--muted); margin-bottom: 4px; }
 .canvas .val-hero .val-main { font-size: 88px; letter-spacing: -0.045em; line-height: 1; }
@@ -1364,7 +1370,8 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .canvas .spec-grid { gap: 40px 48px; }
 
 .canvas .fact-strip {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); column-gap: 48px;
+  /* auto-fit, not auto-fill: two facts share the row instead of leaving a phantom third track empty */
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); column-gap: 48px;
   border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; background: none; overflow: visible;
 }
 .canvas .fact {

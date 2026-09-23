@@ -3100,7 +3100,9 @@
     var pad = (max - min) * 0.12;
     min -= pad; max += pad;
 
-    var W = 600, H = 130, padL = 34, padR = 8, padT = 10, padB = 20;
+    // The SVG stretches to the card's width (preserveAspectRatio none), which
+    // also stretched any text inside it. The value labels are HTML beside it.
+    var W = 600, H = 130, padL = 0, padR = 8, padT = 10, padB = 20;
     var innerW = W - padL - padR;
     var innerH = H - padT - padB;
 
@@ -3123,6 +3125,8 @@
     svg.appendChild(defs);
 
     // three horizontal guides, labelled with their value
+    var axis = el('div', 'chart-axis');
+    axis.setAttribute('aria-hidden', 'true');
     for (i = 0; i < 3; i += 1) {
       var frac = i / 2;
       var val = max - frac * (max - min);
@@ -3133,13 +3137,9 @@
       line.setAttribute('y1', y.toFixed(1)); line.setAttribute('y2', y.toFixed(1));
       svg.appendChild(line);
 
-      var text = document.createElementNS(svgNS, 'text');
-      text.setAttribute('class', 'chart-axis');
-      text.setAttribute('x', padL - 7);
-      text.setAttribute('y', (y + 3).toFixed(1));
-      text.setAttribute('text-anchor', 'end');
-      text.textContent = Math.round(val * 10) / 10;
-      svg.appendChild(text);
+      var tick = el('span', 'chart-tick', String(Math.round(val * 10) / 10));
+      tick.style.top = (y / H * 100).toFixed(2) + '%';
+      axis.appendChild(tick);
     }
 
     var points = [];
@@ -3155,23 +3155,29 @@
 
     var poly = document.createElementNS(svgNS, 'polyline');
     poly.setAttribute('class', 'chart-line');
+    poly.setAttribute('vector-effect', 'non-scaling-stroke');
     poly.setAttribute('points', points.join(' '));
     svg.appendChild(poly);
 
     // Dots only when sparse enough to read.
     if (numbers.length <= 24) {
       for (i = 0; i < numbers.length; i += 1) {
-        var dot = document.createElementNS(svgNS, 'circle');
+        // A zero-length round-capped stroke with a non-scaling stroke stays a
+        // circle when the SVG stretches; a <circle> became an oval.
+        var dot = document.createElementNS(svgNS, 'line');
         dot.setAttribute('class', 'chart-dot');
-        dot.setAttribute('cx', px(i).toFixed(1));
-        dot.setAttribute('cy', py(numbers[i]).toFixed(1));
-        dot.setAttribute('r', '2.5');
+        dot.setAttribute('x1', px(i).toFixed(1)); dot.setAttribute('x2', px(i).toFixed(1));
+        dot.setAttribute('y1', py(numbers[i]).toFixed(1)); dot.setAttribute('y2', py(numbers[i]).toFixed(1));
+        dot.setAttribute('vector-effect', 'non-scaling-stroke');
         svg.appendChild(dot);
       }
     }
 
     var wrap = el('div', 'chart-wrap');
-    wrap.appendChild(svg);
+    var plot = el('div', 'chart-plot');
+    plot.appendChild(axis);
+    plot.appendChild(svg);
+    wrap.appendChild(plot);
     wrap.appendChild(el('p', 'more-note',
       numbers.length + ' points · low ' + (Math.round(min * 10) / 10) + ' · high ' + (Math.round(max * 10) / 10)));
     return wrap;
@@ -5661,7 +5667,7 @@
     getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
     getProvider: getProvider,
     // examples
-    DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample,
+    DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
     // full-html builder
     normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
     applyHtml: applyHtml, setBuilder: setBuilder,
