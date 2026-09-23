@@ -1,0 +1,65 @@
+{
+  "landing-desktop": {
+    "id": "landing-desktop",
+    "title": "Landing",
+    "width": 1440,
+    "height": 1450,
+    "mobile": false
+  },
+  "landing-mobile": {
+    "id": "landing-mobile",
+    "title": "Landing",
+    "width": 390,
+    "height": 2240,
+    "mobile": true
+  },
+  "empty-desktop": {
+    "id": "empty-desktop",
+    "title": "Empty page",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "page-desktop": {
+    "id": "page-desktop",
+    "title": "Page · weather",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "inspector-desktop": {
+    "id": "inspector-desktop",
+    "title": "Inspector · Response",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "settings-desktop": {
+    "id": "settings-desktop",
+    "title": "Settings sheet",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "page-mobile": {
+    "id": "page-mobile",
+    "title": "Page · weather",
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "endpoints-mobile": {
+    "id": "endpoints-mobile",
+    "title": "Endpoints sheet",
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "settings-mobile": {
+    "id": "settings-mobile",
+    "title": "Settings sheet",
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  }
+}

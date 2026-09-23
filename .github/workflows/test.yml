@@ -29,3 +29,8 @@ jobs:
       # publish.sh assembles dist/. If it breaks, deploys serve a stale tree.
       - name: Assemble the deploy tree
         run: ./publish.sh
+
+      # The Figma file mirrors what ships. A UI or token change that was not
+      # carried into Figma fails here; see DESIGN.md → Figma sync.
+      - name: Figma is in sync with the UI
+        run: npm run design:check
