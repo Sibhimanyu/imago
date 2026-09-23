@@ -2,6 +2,36 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.3.0.0] - 2026-09-23
+
+Talk to your provider before you trust it, and get a straight answer when
+something is wrong.
+
+### Added
+
+- **A try-it chat console in Settings.** Send a message to whichever provider
+  you have selected and read the reply, using the same code path the interface
+  builder uses — so if the conversation works, generating works. It carries the
+  conversation, names the model and how long the reply took, counts the seconds
+  while a local model thinks, and shows a reasoning model's thinking behind a
+  toggle rather than leaving you staring at an empty answer.
+
+### Fixed
+
+- **"Unreachable" no longer means "something went wrong".** A reasoning model
+  that replies with thinking and no text was being read as silence, and every
+  failure — including that one — was reported as the server being unreachable.
+  The result was a message telling you to restart Ollama while Ollama was
+  answering every request successfully. The word is now reserved for an actual
+  connection failure, and everything else says what really happened.
+- **Ollama is reached at 127.0.0.1 rather than localhost.** `localhost` can
+  resolve to an IPv6 address that Ollama is not listening on, which looks
+  exactly like the server being down. Imago now tries the other address
+  automatically and remembers the one that worked.
+- On a secure page, an unreachable Ollama explains that some browsers refuse to
+  let an https page talk to a local server at all, so you stop re-checking a
+  setting that was never the problem.
+
 ## [0.2.0.0] - 2026-09-22
 
 Run Imago against a model on your own machine, keep a key for each provider,
