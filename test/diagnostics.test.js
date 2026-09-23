@@ -205,3 +205,28 @@ describe('a rejected key says so, whatever status the provider uses', () => {
     expect(app.dom.groqTestStatus.textContent).not.toContain('rejected the API key');
   });
 });
+
+describe('an https page says what an http page cannot', () => {
+  // Reaching a local http server from an https page is a browser policy call.
+  // Chrome exempts loopback, Safari does not, so the message has to name the
+  // browser as a possible cause rather than only blaming OLLAMA_ORIGINS —
+  // otherwise the user keeps restarting a server that is already correct.
+  it('names both causes when the page is https', async () => {
+    const app = await boot({ url: 'https://imago.test/', fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
+    app.dom.ollamaTestBtn.click();
+    await settled(app);
+    const text = app.dom.ollamaTestStatus.textContent;
+    expect(text).toContain('OLLAMA_ORIGINS=https://imago.test');
+    expect(text).toContain('Safari');
+    expect(text).toContain('http://localhost');
+  });
+
+  it('keeps the simpler message on an http page', async () => {
+    const app = await boot({ url: 'http://localhost:8899/', fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
+    app.dom.ollamaTestBtn.click();
+    await settled(app);
+    const text = app.dom.ollamaTestStatus.textContent;
+    expect(text).toContain('OLLAMA_ORIGINS=http://localhost:8899');
+    expect(text, 'no browser-policy caveat is needed over http').not.toContain('Safari');
+  });
+});

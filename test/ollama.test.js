@@ -9,12 +9,17 @@
 import { describe, it, expect } from 'vitest';
 import { boot, jsonFetch, flush } from './harness.js';
 
+// Let the test's promise chain drain: the Ollama path is tags -> completion.
+const settled = async () => { for (let i = 0; i < 8; i += 1) await flush(); };
+
 const SPEC = { title: 'Designed', components: [{ type: 'jsonBlock', path: '' }] };
 
 describe('ollama endpoint', () => {
   it('defaults to a stock local install and honours an override', async () => {
     const app = await boot();
-    expect(app.getProvider('ollama').endpoint()).toBe('http://localhost:11434/api/chat');
+    // 127.0.0.1, not localhost: localhost resolves to ::1 first on macOS and
+    // Ollama listens on IPv4 only, so ::1 refuses the connection.
+    expect(app.getProvider('ollama').endpoint()).toBe('http://127.0.0.1:11434/api/chat');
     app.setPrefs(Object.assign(app.getPrefs(), { ollamaEndpoint: 'http://lanbox:11434/' }));
     expect(app.getProvider('ollama').endpoint()).toBe('http://lanbox:11434/api/chat');
   });
@@ -120,7 +125,7 @@ describe('ollama generation', () => {
     }]);
     await app.callGemini('https://a.test/x', { hash: 'OLLAHASH', schema: { a: 'number' } });
     expect(seen.length).toBe(1);
-    expect(seen[0].url).toBe('http://localhost:11434/api/chat');
+    expect(seen[0].url).toBe('http://127.0.0.1:11434/api/chat');
     expect('Authorization' in seen[0].headers).toBe(false);
     expect(seen[0].body.model).toBe('qwen3');
     // The schema goes in `format`, and the context has to be big enough for
@@ -213,5 +218,125 @@ describe("Ollama's error shape is not the others'", () => {
     const shown = app.dom.interfaceOut.textContent;
     expect(shown).toContain("model 'qwen3' not found");
     expect(shown, 'a bare HTTP code tells the user nothing').not.toContain('HTTP 404');
+  });
+});
+
+describe('the two spellings of loopback', () => {
+  // `localhost` resolves to ::1 before 127.0.0.1 on a default macOS install,
+  // and Ollama binds IPv4 only (lsof: `TCP 127.0.0.1:11434 (LISTEN)`), so ::1
+  // refuses the connection. curl hides this by falling back to IPv4; browsers
+  // do not reliably do the same, which reads as "did not answer" against a
+  // server that is plainly running. Observed 2026-09-22.
+  it('defaults to the address Ollama actually listens on', async () => {
+    const app = await boot();
+    expect(app.getProvider('ollama').endpoint()).toContain('127.0.0.1');
+  });
+
+  it('retries the other spelling when the connection is refused', async () => {
+    const tried = [];
+    const app = await boot({
+      fetch: (url) => {
+        tried.push(String(url));
+        if (String(url).includes('localhost')) return Promise.reject(new TypeError('Failed to fetch'));
+        return Promise.resolve({
+          ok: true, status: 200, headers: { get: () => 'application/json' },
+          text: () => Promise.resolve('{"models":[{"name":"llama3.1"}]}'),
+          json: () => Promise.resolve({ models: [{ name: 'llama3.1' }] })
+        });
+      }
+    });
+    app.setPrefs(Object.assign(app.getPrefs(), { ollamaEndpoint: 'http://localhost:11434' }));
+    const list = await app.fetchOllamaModels();
+    expect(list).toEqual(['llama3.1']);
+    expect(tried.some((u) => u.includes('localhost'))).toBe(true);
+    expect(tried.some((u) => u.includes('127.0.0.1'))).toBe(true);
+  });
+
+  it('remembers the spelling that worked', async () => {
+    const app = await boot({
+      fetch: (url) => String(url).includes('localhost')
+        ? Promise.reject(new TypeError('Failed to fetch'))
+        : Promise.resolve({
+            ok: true, status: 200, headers: { get: () => 'application/json' },
+            text: () => Promise.resolve('{"models":[]}'),
+            json: () => Promise.resolve({ models: [] })
+          })
+    });
+    app.setPrefs(Object.assign(app.getPrefs(), { ollamaEndpoint: 'http://localhost:11434' }));
+    await app.fetchOllamaModels();
+    expect(app.getPrefs().ollamaEndpoint).toBe('http://127.0.0.1:11434');
+  });
+
+  it('does not retry when the server answered with an error', async () => {
+    let calls = 0;
+    const app = await boot({
+      fetch: () => { calls += 1; return Promise.resolve({
+        ok: false, status: 500, headers: { get: () => 'application/json' },
+        text: () => Promise.resolve('{"error":"boom"}'), json: () => Promise.resolve({ error: 'boom' })
+      }); }
+    });
+    await app.fetchOllamaModels().catch(() => {});
+    expect(calls, 'a reachable server that errored is not a wrong-spelling problem').toBe(1);
+  });
+});
+
+describe('a reasoning model answering with thought is not a failure', () => {
+  // qwen3.6 answers a one-word ping with message.thinking and an empty
+  // message.content. The shared thinking check only understood the OpenAI
+  // shape (choices[0].message.reasoning), so the native reply looked like
+  // silence: the test failed and — worse — reported "Unreachable" against a
+  // server that had just answered 200 twice. Observed 2026-09-22.
+  const ok = (body) => () => Promise.resolve({
+    ok: true, status: 200, headers: { get: () => 'application/json' },
+    text: () => Promise.resolve(JSON.stringify(body)),
+    json: () => Promise.resolve(body)          // fetchOllamaModels uses .json()
+  });
+
+  it('passes when the model thinks but writes no content', async () => {
+    const app = await boot({
+      fetch: (url) => String(url).includes('/api/tags')
+        ? ok({ models: [{ name: 'llama3.1' }] })()
+        : ok({ message: { role: 'assistant', content: '', thinking: 'Here is a thinking process...' }, done_reason: 'length' })()
+    });
+    app.setSessionProvider('ollama');
+    app.dom.modelName.value = 'llama3.1';
+    app.dom.ollamaTestBtn.click();
+    await settled();
+    expect(app.dom.ollamaTestStatus.textContent).toContain('OK');
+    expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('ready');
+  });
+
+  it('still fails when the model returns neither content nor thought', async () => {
+    const app = await boot({
+      fetch: (url) => String(url).includes('/api/tags')
+        ? ok({ models: [{ name: 'llama3.1' }] })()
+        : ok({ message: { role: 'assistant', content: '' }, done_reason: 'stop' })()
+    });
+    app.setSessionProvider('ollama');
+    app.dom.modelName.value = 'llama3.1';
+    app.dom.ollamaTestBtn.click();
+    await settled();
+    expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('missing');
+  });
+
+  it('never calls a server that answered "Unreachable"', async () => {
+    // The word sent the user restarting a healthy process for half an hour.
+    const app = await boot({
+      fetch: (url) => String(url).includes('/api/tags')
+        ? ok({ models: [{ name: 'llama3.1' }] })()
+        : ok({ message: { role: 'assistant', content: '' }, done_reason: 'stop' })()
+    });
+    app.setSessionProvider('ollama');
+    app.dom.modelName.value = 'llama3.1';
+    app.dom.ollamaTestBtn.click();
+    await settled();
+    expect(app.dom.ollamaTestStatus.textContent).not.toContain('Unreachable');
+  });
+
+  it('still says Unreachable when the connection really fails', async () => {
+    const app = await boot({ fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
+    app.dom.ollamaTestBtn.click();
+    await settled();
+    expect(app.dom.ollamaTestStatus.textContent).toContain('Unreachable');
   });
 });

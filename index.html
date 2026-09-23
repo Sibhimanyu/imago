@@ -324,7 +324,7 @@
         <p class="muted-note" id="providerHint">Get a free key at <span class="mono">aistudio.google.com/apikey</span>. Pasting a key below switches this automatically.</p>
         <div id="ollamaServerGroup" hidden>
           <label class="field-label" for="ollamaEndpoint">Ollama server</label>
-          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://localhost:11434">
+          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://127.0.0.1:11434">
           <p class="muted-note">Same machine only. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
         </div>
         <label class="field-label" for="modelName">Model</label>
@@ -371,6 +371,25 @@
         </div>
         <p class="muted-note">Saved in this browser only — anyone with this profile can read them. Typing selects that provider.</p>
         <button type="button" class="btn btn-ghost" id="clearKeyBtn">Clear all keys</button>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Try it</h3>
+        <p class="muted-note">Send a message to the provider you have selected. Same key, same
+          model, same code path the interface builder uses — so if this answers, generating works.</p>
+        <div class="chat-meta">
+          <span class="key-status" id="chatTarget" data-state="missing">No provider</span>
+          <button type="button" class="btn btn-ghost btn-xs" id="chatClearBtn">Clear</button>
+        </div>
+        <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="Test conversation">
+          <p class="muted-note" id="chatEmpty">Nothing sent yet.</p>
+        </div>
+        <form id="chatForm" class="chat-form">
+          <label class="visually-hidden" for="chatInput">Message</label>
+          <input type="text" id="chatInput" class="text-input" autocomplete="off"
+                 placeholder="Ask it something…" aria-label="Message">
+          <button type="submit" class="btn" id="chatSendBtn">Send</button>
+        </form>
       </div>
 
       <div class="card settings-card">
