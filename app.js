@@ -1585,7 +1585,7 @@
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
       : source === 'cache' ? 'From schema cache' : 'Fallback';
 
-    clear(dom.interfaceOut);
+    resetInterfaceOut(false);
 
     var head = el('header', 'stage-head');
     var headTop = el('div', 'stage-head-top');
@@ -3834,9 +3834,17 @@
     return svg;
   }
 
+  // Clears the interface pane and records whether it now shows the empty
+  // state, so the toolbar can drop its own example picker while the empty
+  // state offers the same one front and centre.
+  function resetInterfaceOut(empty) {
+    clear(dom.interfaceOut);
+    if (dom.panePlayground) dom.panePlayground.classList.toggle('is-empty', !!empty);
+  }
+
   function showInterfaceEmpty() {
     dom.interfaceHead.hidden = true;
-    clear(dom.interfaceOut);
+    resetInterfaceOut(true);
 
     var box = el('div', 'empty');
     var icon = el('div', 'empty-icon');
@@ -3859,7 +3867,7 @@
 
   function showInterfaceLoading(message) {
     dom.interfaceHead.hidden = true;
-    clear(dom.interfaceOut);
+    resetInterfaceOut(false);
     var box = el('div', 'loading');
     box.appendChild(el('div', 'spinner'));
     box.appendChild(el('span', null, message));
@@ -3868,7 +3876,7 @@
 
   function showGeneratePrompt() {
     dom.interfaceHead.hidden = true;
-    clear(dom.interfaceOut);
+    resetInterfaceOut(false);
 
     var box = el('div', 'gen-prompt');
     var spark = el('div', 'gen-spark');
@@ -3928,7 +3936,7 @@
     dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
       : source === 'cache' ? 'From schema cache' : 'Fallback';
 
-    clear(dom.interfaceOut);
+    resetInterfaceOut(false);
 
     // The page header the plan asked for: title, one line of context, and
     // what the reader can do next. Off stage the source badge sits here; on
@@ -4717,7 +4725,7 @@
     } else {
       if (state.stage) leaveStage();
       dom.interfaceHead.hidden = true;
-      clear(dom.interfaceOut);
+      resetInterfaceOut(false);
       var box = el('div', 'empty');
       box.appendChild(el('p', 'empty-title', title));
       box.appendChild(el('p', 'empty-body', detail));
@@ -5460,7 +5468,7 @@
     restoreFromSnapshot: restoreFromSnapshot, currentRequestKey: currentRequestKey,
     clearAllData: clearAllData,
     callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,
-    resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs,
+    resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs, showInterfaceEmpty: showInterfaceEmpty,
     init: init
   };
 

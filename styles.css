@@ -398,6 +398,8 @@ input:focus, textarea:focus, select:focus {
   cursor: pointer;
 }
 .mini-select:disabled { opacity: .45; cursor: not-allowed; }
+/* The empty state already offers the example picker; one is enough. */
+#panePlayground.is-empty .examples-group { display: none; }
 
 .live-pill {
   display: inline-flex; align-items: center; gap: 6px;
