@@ -4015,7 +4015,7 @@
     var previous = null;
     for (var i = 0; i < steps && state.stack.length; i += 1) previous = state.stack.pop();
     if (previous) {
-      dom.urlInput.value = previous.url;
+      setUrlInput(previous.url);
       if (typeof previous.headersText === 'string') dom.headersInput.value = previous.headersText;
       state.headersText = previous.headersText || '';
       state.headers = parseHeaders(state.headersText);
@@ -4077,7 +4077,7 @@
       historyDepth: state.historyDepth
     };
 
-    dom.urlInput.value = url;
+    setUrlInput(url);
     if (typeof headersText === 'string') dom.headersInput.value = headersText;
     state.activeRequestId = null;
     state.showRaw = false;
@@ -4094,7 +4094,7 @@
 
   function rollbackNavigation(point) {
     if (!point) return;
-    dom.urlInput.value = point.urlInput;
+    setUrlInput(point.urlInput);
     dom.headersInput.value = point.headersInput;
     state.url = point.url;
     state.headersText = point.headersText;
@@ -4318,6 +4318,19 @@
     }
   }
 
+  // Every write to the URL box goes through here so Save reads as unavailable
+  // while there is nothing to save (it used to look live and answer with an
+  // error toast). aria-disabled, not disabled: the click handler still checks
+  // the real value, so a stale flag can never block a legitimate save.
+  function setUrlInput(value) {
+    dom.urlInput.value = value;
+    syncSaveBtn();
+  }
+  function syncSaveBtn() {
+    if (!dom.saveBtn || !dom.urlInput) return;
+    dom.saveBtn.setAttribute('aria-disabled', dom.urlInput.value.trim() ? 'false' : 'true');
+  }
+
   function saveCurrentRequest() {
     var url = dom.urlInput.value.trim();
     if (!url) { toast('Enter a URL before saving.', 'error'); return; }
@@ -4370,7 +4383,7 @@
     if (!found) return;
 
     state.activeRequestId = found.id;
-    dom.urlInput.value = found.url;
+    setUrlInput(found.url);
     dom.headersInput.value = headersToText(found.headers);
 
     found.lastUsedAt = new Date().toISOString();
@@ -4429,7 +4442,7 @@
     state.url = '';
     state.stack = [];
     if (dom.headersInput) dom.headersInput.value = '';
-    if (dom.urlInput) dom.urlInput.value = '';
+    if (dom.urlInput) setUrlInput('');
 
     // Write a clean prefs object now rather than waiting for the next
     // savePrefs to serialise whatever is still in memory.
@@ -5107,6 +5120,7 @@
 
     dom.urlInput.addEventListener('input', function () {
       state.activeRequestId = null;
+      syncSaveBtn();
       markDirty();
     });
 
@@ -5119,7 +5133,7 @@
     }
     dom.newRequestBtn.addEventListener('click', function () {
       setAppPane('playground');
-      dom.urlInput.value = '';
+      setUrlInput('');
       dom.urlInput.focus();
     });
 
@@ -5318,7 +5332,8 @@
     state.builder = prefs.builder === 'html' ? 'html' : 'spec';
     syncBuilderUi();
 
-    if (prefs.lastUrl) dom.urlInput.value = prefs.lastUrl;
+    if (prefs.lastUrl) setUrlInput(prefs.lastUrl);
+    syncSaveBtn();
     // Older builds persisted headers to localStorage. Migrate them into the
     // session once, then scrub the durable copy so the credentials stop
     // surviving a browser restart.
@@ -5468,7 +5483,7 @@
     restoreFromSnapshot: restoreFromSnapshot, currentRequestKey: currentRequestKey,
     clearAllData: clearAllData,
     callGemini: callGemini, generateInterfaceNow: generateInterfaceNow,
-    resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs, showInterfaceEmpty: showInterfaceEmpty,
+    resolveSpec: resolveSpec, getSchemaSpecs: getSchemaSpecs, showInterfaceEmpty: showInterfaceEmpty, setUrlInput: setUrlInput,
     init: init
   };
 

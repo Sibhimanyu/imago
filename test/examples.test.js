@@ -107,3 +107,18 @@ describe('one example picker at a time', () => {
     expect(app.dom.panePlayground.classList.contains('is-empty')).toBe(false);
   });
 });
+
+// Save always looked live; pressing it with an empty URL box answered with an
+// error toast. It now reads as unavailable until there is a URL to save.
+describe('Save button', () => {
+  it('reads as unavailable with an empty URL and live once a URL is set or typed', async () => {
+    const app = await boot();
+    app.setUrlInput('');
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('true');
+    app.setUrlInput('https://pokeapi.co/api/v2/pokemon/pikachu');
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('false');
+    app.dom.urlInput.value = '   ';
+    app.dom.urlInput.dispatchEvent(new app.window.Event('input', { bubbles: true }));
+    expect(app.dom.saveBtn.getAttribute('aria-disabled')).toBe('true');
+  });
+});
