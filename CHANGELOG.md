@@ -2,6 +2,20 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.1.0] - 2026-09-23
+
+Nothing to see, deliberately: this release changes how the app is built, not what
+it does.
+
+### Changed
+
+- **The app is now 16 small modules instead of one 6,300-line file.** Each module
+  covers one part of the app: storage, the renderer, the request flow and so on.
+  It is still served as-is, with no build step. The change makes future work
+  faster and safer.
+- **A new check runs on every change**, so a module that uses something from
+  another without importing it fails before it can ship as a blank page.
+
 ## [0.10.0.0] - 2026-09-23
 
 The page is yours to adjust.

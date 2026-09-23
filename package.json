@@ -1,8 +1,8 @@
 {
   "name": "imago",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
-  "description": "Imago \u2014 APIs become interfaces. Browser-only API playground.",
+  "description": "Imago — APIs become interfaces. Browser-only API playground.",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
