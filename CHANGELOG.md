@@ -2,6 +2,17 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.3.0] - 2026-09-23
+
+### Changed
+
+- **Watch does less work on every tick.** The endpoint list and history strip
+  used to be rebuilt from scratch every time the page redrew: every Watch
+  refresh, and the history strip twice per fetch. Now they are rebuilt only
+  when something they show has actually changed, and an unchanged tick no
+  longer re-reads the saved endpoints. The "x ago" times still update as
+  before.
+
 ## [0.10.2.0] - 2026-09-23
 
 ### Fixed

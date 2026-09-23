@@ -294,22 +294,15 @@ images once it can be reproduced.
 **Priority:** P1
 **Depends on:** A reproduction
 
-### Rail and history strip rebuild on every refresh tick
-
-**What:** `applySpec` and `syncRefreshUi` rebuild the whole rail and history
-strip on every render (and `renderHistory` runs twice per fetch), re-parsing
-the saved-requests store each time.
-
-**Why:** Wasted work every 10–60s under Watch. Focus loss, the visible symptom,
-was fixed in 0.5.0.0 (`keepFocus`); the rebuild itself remains.
-
-**Context:** Patch nodes in place or re-render only when inputs change.
-
-**Effort:** M
-**Priority:** P3
-**Depends on:** None
-
 ## Completed
+
+### The rail and history strip rebuild only when what they show changes — v0.10.3.0
+
+**What:** Each keeps a signature of its inputs and skips identical renders
+(every Watch tick, and the strip's second render per fetch); an unchanged tick
+no longer parses the saved-requests store.
+
+**Completed:** v0.10.3.0 (2026-09-23)
 
 ### Code identifiers keep their case; a failed send keeps its page — v0.10.2.0
 
