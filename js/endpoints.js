@@ -47,7 +47,36 @@ function keepFocus(container, rebuild) {
   }
 }
 
+/* The rail and the history strip are asked to render on every applySpec,
+   every Watch tick, and (the strip) twice per fetch. Each used to rebuild its
+   whole DOM and re-parse the saved-requests store every time. Now each keeps a
+   signature of what it shows and skips a render whose inputs have not
+   changed. The rail's signature reads the stored string, not the parsed list,
+   and carries a 10-second clock so its "x ago" labels stay as fresh as the
+   renders that used to refresh them. */
+var railSig = null;
+var historySig = null;
+
+function railSignature() {
+  var raw = '';
+  try { raw = window.localStorage.getItem(STORE.requests) || ''; } catch (err) { /* unavailable: always rebuild */ return null; }
+  return [raw, state.activeRequestId || '', state.url || '', state.data ? 1 : 0,
+          state.changedCount || 0, state.refreshIntervalMs || 0, Math.floor(Date.now() / 10000)].join('\u0001');
+}
+
+function historySignature() {
+  if (!state.data) return 'none';
+  var key = currentRequestKey();
+  var list = getSnapshotsFor(key);
+  var parts = [key];
+  for (var i = 0; i < list.length; i += 1) parts.push((list[i].id || list[i].fetchedAt) + ':' + (list[i].changed || 0));
+  return parts.join('|');
+}
+
 function renderSavedList() {
+  var sig = railSignature();
+  if (sig !== null && sig === railSig) return;
+  railSig = sig;
   keepFocus(dom.savedList, buildSavedList);
 }
 
@@ -114,7 +143,11 @@ function buildSavedList() {
    ---------------------------------------------------------------------- */
 
 function renderHistory() {
-  if (dom.historyStrip) keepFocus(dom.historyStrip, buildHistory);
+  if (!dom.historyStrip) return;
+  var sig = historySignature();
+  if (sig === historySig) return;
+  historySig = sig;
+  keepFocus(dom.historyStrip, buildHistory);
 }
 
 function buildHistory() {

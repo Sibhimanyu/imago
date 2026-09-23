@@ -774,6 +774,7 @@ describe('focus survives a re-render', () => {
     app.renderSavedList();
     const del = app.dom.savedList.querySelector('[data-focus-key="delete:a"]');
     del.focus();
+    app.state.refreshIntervalMs = 30000;                    // something the rail shows changed
     app.renderSavedList();
     expect(app.dom.savedList.contains(del)).toBe(false);   // really rebuilt
     expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('delete:a');
@@ -786,7 +787,13 @@ describe('focus survives a re-render', () => {
     ] });
     app.renderHistory();
     app.dom.historyStrip.querySelector('[data-focus-key="tick:s1"]').focus();
+    app.setSnapshots({ [app.currentRequestKey()]: [   // a new fetch landed
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 1 },
+      { id: 's3', fetchedAt: '2026-09-20T08:01:00Z', changed: 0, data: { a: 1 } }
+    ] });
     app.renderHistory();
+    expect(app.dom.historyStrip.querySelectorAll('.history-tick')).toHaveLength(3);
     expect(app.window.document.activeElement.getAttribute('data-focus-key')).toBe('tick:s1');
   });
 
@@ -974,5 +981,92 @@ describe('titles keep identifiers as written', () => {
     expect(app.buildFallbackSpec({ name: 'pikachu', id: 25 }, 'https://a.test/p').title).toBe('Pikachu');
     expect(app.buildFallbackSpec({ name: 'the-hobbit' }, 'https://a.test/b').title).toBe('The hobbit');
     expect(app.buildFallbackSpec({ id: 7 }, 'https://a.test/users/some_user').title).toBe('Some user');
+  });
+});
+
+describe('the rail and the history strip only rebuild when what they show changes', () => {
+  const SAVED = { local: { 'imago.savedRequests': [
+    { id: 'a', name: 'A', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z' }
+  ] } };
+
+  it('an unchanged render keeps the same nodes; a change rebuilds', async () => {
+    const app = await boot(SAVED);
+    app.renderSavedList();
+    const row = app.dom.savedList.firstElementChild;
+    app.renderSavedList();
+    expect(app.dom.savedList.firstElementChild).toBe(row);            // skipped
+    app.state.url = 'https://a.test/x'; app.state.data = { v: 1 };    // now on screen
+    app.renderSavedList();
+    expect(app.dom.savedList.firstElementChild).not.toBe(row);
+    expect(app.dom.savedList.querySelector('.saved-item.is-active')).not.toBeNull();
+    // A saved list written elsewhere (rename, delete) is noticed through the store.
+    const list = JSON.parse(app.window.localStorage.getItem('imago.savedRequests'));
+    list[0].name = 'Renamed';
+    app.window.localStorage.setItem('imago.savedRequests', JSON.stringify(list));
+    app.renderSavedList();
+    expect(app.dom.savedList.textContent).toContain('Renamed');
+  });
+
+  it('does not parse the saved list when nothing changed', async () => {
+    const app = await boot(SAVED);
+    app.renderSavedList();
+    const parse = app.window.JSON.parse;
+    let parses = 0;
+    app.window.JSON.parse = function (t) { parses += 1; return parse.apply(this, arguments); };
+    app.renderSavedList();
+    app.window.JSON.parse = parse;
+    expect(parses).toBe(0);
+  });
+
+  it('the history strip skips an identical render, and redraws for a new fetch', async () => {
+    const app = await boot();
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    const two = [
+      { id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 },
+      { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: 0, data: { a: 1 } }
+    ];
+    app.setSnapshots({ [app.currentRequestKey()]: two });
+    app.renderHistory();
+    const track = app.dom.historyStrip.querySelector('.history-track');
+    app.renderHistory();
+    expect(app.dom.historyStrip.querySelector('.history-track')).toBe(track);
+    app.setSnapshots({ [app.currentRequestKey()]: two.concat([{ id: 's3', fetchedAt: '2026-09-20T08:01:00Z', changed: 2, data: { a: 2 } }]) });
+    app.renderHistory();
+    expect(app.dom.historyStrip.querySelector('.history-track')).not.toBe(track);
+    expect(app.dom.historyStrip.querySelectorAll('.history-tick.is-changed')).toHaveLength(1);
+    // No data on screen: the strip goes away.
+    app.state.data = null;
+    app.renderHistory();
+    expect(app.dom.historyStrip.hidden).toBe(true);
+  });
+});
+
+describe('skipped renders stay honest', () => {
+  it('the rail\'s "x ago" labels still move on with the clock', async () => {
+    const app = await boot({ local: { 'imago.savedRequests': [
+      { id: 'a', name: 'A', url: 'https://a.test/x', headers: {}, createdAt: '2026-09-20T08:00:00Z', lastUsedAt: '2026-09-20T08:00:00Z' }
+    ] } });
+    // jsdom's window has its own Date, so the app's clock is stubbed there.
+    const at = (iso) => { app.window.Date.now = () => new Date(iso).getTime(); };
+    at('2026-09-20T08:00:20Z');
+    app.renderSavedList();
+    expect(app.dom.savedList.querySelector('.saved-when').textContent).toBe('20s ago');
+    at('2026-09-20T08:00:45Z');
+    app.renderSavedList();
+    expect(app.dom.savedList.querySelector('.saved-when').textContent).toBe('45s ago');
+  });
+
+  it('a snapshot whose change count moved redraws the strip', async () => {
+    const app = await boot();
+    app.state.url = 'https://a.test/x';
+    app.state.data = { a: 1 };
+    const snaps = (c) => [{ id: 's1', fetchedAt: '2026-09-20T08:00:00Z', changed: 0 }, { id: 's2', fetchedAt: '2026-09-20T08:00:30Z', changed: c, data: { a: 1 } }];
+    app.setSnapshots({ [app.currentRequestKey()]: snaps(0) });
+    app.renderHistory();
+    expect(app.dom.historyStrip.querySelectorAll('.history-tick.is-changed')).toHaveLength(0);
+    app.setSnapshots({ [app.currentRequestKey()]: snaps(3) });
+    app.renderHistory();
+    expect(app.dom.historyStrip.querySelectorAll('.history-tick.is-changed')).toHaveLength(1);
   });
 });
