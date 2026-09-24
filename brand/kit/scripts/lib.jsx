@@ -353,3 +353,21 @@ function amigo(x, y, size, c, into) {
   }
   return g;
 }
+
+// Resting Amigo: two Zs rising off the top-right, outside the body, same colour.
+// Rounded strokes so they belong to the mark's geometry. Idle states only.
+function zs(x, y, size, c, into) {
+  var s = size / 32, g = (into || DOC).groupItems.add(); g.name = "Zs";
+  var Z = [[26.8, 1.2, 3.6], [31.2, -5.6, 5.2]]; // [left, top, width] in Amigo units
+  for (var i = 0; i < Z.length; i++) {
+    var zx = x + Z[i][0] * s, zy = y + Z[i][1] * s, w = Z[i][2] * s;
+    var p = poly([[zx, zy], [zx + w, zy], [zx, zy + w], [zx + w, zy + w]], g);
+    stroke(p, c, 1.3 * s); p.strokeCap = StrokeCap.ROUNDENDCAP; p.strokeJoin = StrokeJoin.ROUNDENDJOIN;
+  }
+  return g;
+}
+function amigoResting(x, y, size, c, into) {
+  var g = (into || DOC).groupItems.add(); g.name = "Amigo, resting";
+  amigo(x, y, size, c, g); zs(x, y, size, c, g);
+  return g;
+}

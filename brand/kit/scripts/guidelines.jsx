@@ -234,8 +234,10 @@ for (k = 0; k < 6; k++) {
 page(7);
 title("Amigo, the mascot", "Amigo is the Imago system standing up to help. It is built from the mark, so it never needs a face.");
 var hc = rrect(ox + M, oy + 250, 360, 440, 16, "card", art); stroke(hc, "line", 1);
-label("Amigo", ox + M + 22, oy + 280);
-centre(amigo(0, 0, 280, "ink", art), ox + M, oy + 270, 360, 420);
+label("Standing", ox + M + 22, oy + 280); label("Resting", ox + M + 200, oy + 280);
+amigo(ox + M + 15, oy + 404, 150, "ink", art);
+amigoResting(ox + M + 170, oy + 404, 150, "ink", art);
+line(ox + M + 180, oy + 300, ox + M + 180, oy + 660, "line", 1, art);
 // Where it comes from
 var rx8 = ox + M + 392, rw8 = 360;
 var rc = rrect(rx8, oy + 250, rw8, 170, 16, "card", art); stroke(rc, "line", 1);
@@ -247,8 +249,8 @@ body("Same body, same aperture, stood upright. The two incoming fields become tw
   rx8, oy + 436, rw8, 44, { size: 13, leading: 19, color: "ink2" });
 // In the product
 var ec = rrect(rx8, oy + 500, rw8, 190, 16, "card", art); stroke(ec, "line", 1);
-label("In use  ·  empty state", rx8 + 22, oy + 530);
-amigo(rx8 + rw8 / 2 - 28, oy + 546, 56, "ink", art);
+label("In use  ·  empty state, resting", rx8 + 22, oy + 530);
+amigoResting(rx8 + rw8 / 2 - 32, oy + 552, 52, "ink", art);
 text("No endpoints saved yet", rx8 + rw8 / 2, oy + 632, { font: "Inter-SemiBold", size: 15, color: "ink", tracking: -10, align: "center", into: words });
 text("Paste a URL above and it will appear here.", rx8 + rw8 / 2, oy + 654, { font: "Inter-Regular", size: 12, color: "muted", align: "center", into: words });
 // Rules
@@ -256,7 +258,7 @@ var qx = ox + M + 784, qw = PW - M - (M + 784);
 var lists = [
   ["Use Amigo in", "green", ["Loading and empty states", "Onboarding and setup", "Success confirmations", "Recoverable errors", "Small moments in docs and slides"]],
   ["Never in", "red", ["The favicon or the app icon", "The navigation wordmark", "Dense data views", "Anywhere a status icon is more precise"]],
-  ["Rules", "ink", ["One flat colour, like the mark", "Keep the body, aperture and legs", "No eyes, mouth, arms, clothes or expressions", "Never a robot, animal or person", "Personality comes from the copy beside it"]]
+  ["Rules", "ink", ["One flat colour, like the mark", "Keep the body, aperture and legs", "No eyes, mouth, arms, clothes or expressions", "Never a robot, animal or person", "Personality comes from the copy beside it", "Resting Zs only when nothing is happening"]]
 ];
 var qy = oy + 262;
 for (k = 0; k < 3; k++) {
