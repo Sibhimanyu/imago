@@ -2,6 +2,30 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.10.5.0] - 2026-09-24
+
+### Added
+
+- **The Imago mark takes you back to the landing page.** Before, once you had
+  opened the app there was no way back to it. **Open app** brings you back to
+  the page you were on.
+
+### Fixed
+
+- **Works properly with a finger on a phone.** Every control is now at least
+  44px to tap: the page buttons, close buttons, the interval picker, Details,
+  the Watch switch and the edit bar. Some already had the larger size, but
+  later rules in the stylesheet were overriding it.
+- **iOS no longer zooms in when you tap a field.** Text fields are 16px on touch
+  screens.
+- **The toast is readable on a phone.** A message that wrapped used to squeeze
+  the pill into a circle. It now stretches across the screen above the command
+  bar.
+- **Page buttons stay together.** On a narrow phone, or with Watch on, the Watch
+  controls get their own row instead of pushing a single button onto a second
+  line.
+- Small labels are at least 12px on phones.
+
 ## [0.10.4.0] - 2026-09-23
 
 ### Changed

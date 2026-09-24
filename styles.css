@@ -1451,7 +1451,6 @@ body.inspector-open .inspector { display: block; }
   .inspector { top: 56px; width: 100%; flex-basis: auto; }
   .settings-sheet { padding: 18px 16px 60px; }
   .settings-sheet .pane-head { margin: -18px -16px 16px; padding: 14px 16px 12px; }
-  .toast { bottom: 84px; }
 }
 /* A portrait needs no caption saying "Image". */
 .canvas .profile-grid > .comp > .comp-label { display: none; }
@@ -1683,3 +1682,32 @@ body.is-editing .comp, body.is-editing .fact { outline: 1px dashed var(--line); 
 /* Phones: the interval picker waits until Watch is on (it is disabled until
    then), which keeps Watch, Save, Edit, Share and Inspect on one row. */
 @media (max-width: 720px) { .page-tools .watch-group .mini-select:disabled { display: none; } }
+
+/* Phones. Last in the file so the component rules above cannot undo them. */
+@media (pointer: coarse) {
+  .btn, .btn-sm, .mini-select, .text-input, .spec-details-summary { min-height: 44px; }
+  .appnav button { min-width: 44px; justify-content: center; }
+  .icon-btn, .rail .icon-btn { width: 44px; height: 44px; }
+  .edit-bar .edit-label, .edit-bar .edit-weight { height: 44px; }
+  .spec-details-summary { align-items: center; }
+  .appbar .brand { min-width: 44px; min-height: 44px; justify-content: center; }
+  /* Small controls keep their look and grow an invisible 44px hit area. */
+  .switch::before { content: ""; position: absolute; inset: -11px -4px; }
+  .keyline-action, .toast-action { padding: 12px 0; margin-top: -12px; margin-bottom: -12px; }
+  .landing-nav .link-btn { min-width: 44px; }
+  /* iOS zooms the page into any field set below 16px the moment it is focused. */
+  input, select, textarea { font-size: 16px !important; }
+}
+@media (max-width: 720px) {
+  /* A pill wrapping three lines of text became a circle: span the screen instead. */
+  .toast { bottom: 84px; left: 16px; right: 16px; max-width: none; border-radius: 14px; justify-content: space-between; transform: translateY(12px); }
+  .toast.is-up { transform: none; }
+  .method-chip, .rail-example-host, .hash-chip, .spec-label, .badge-chip, .meta-chip { font-size: 12px; }
+  /* Watch takes its own row when the four page buttons would not fit beside
+     it, so they wrap together instead of stranding one on a second line. */
+  .page-tools-right { gap: 8px; }
+  .page-tools-right:has(#refreshToggle[aria-checked="true"]) .watch-group { flex-basis: 100%; }
+}
+@media (max-width: 360px) {
+  .page-tools-right .watch-group { flex-basis: 100%; }
+}

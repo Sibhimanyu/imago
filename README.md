@@ -122,9 +122,10 @@ sit in a rail on the left, and the page the response became is the white canvas 
 the middle. Each saved endpoint shows a green dot while it is being watched and a
 yellow count when its last fetch changed something. **Inspect** opens the raw
 material (Response, Schema, Changes, Headers) in a drawer beside the page, and
-Settings opens as a sheet over it; <kbd>Esc</kbd> closes whichever is on top. On a
-phone the command bar moves to the bottom of the screen and the endpoints open as a
-sheet.
+Settings opens as a sheet over it; <kbd>Esc</kbd> closes whichever is on top. The
+Imago mark in the corner goes back to the landing page, and **Open app** returns you
+to the page you left. On a phone the command bar moves to the bottom of the screen,
+the endpoints open as a sheet, and every control is at least 44px to tap.
 
 Under the page title, a **history strip** draws one tick per stored fetch, yellow
 where that fetch changed something; a tick opens the Changes drawer. Only the newest

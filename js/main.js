@@ -43,9 +43,12 @@ function wireEvents() {
     var btn = event.target && event.target.closest && event.target.closest('[data-view]');
     if (btn) setAppPane(btn.getAttribute('data-view'));
   });
-  dom.brandHome.addEventListener('click', function () { setAppPane('playground'); });
+  // The mark is the way back to the landing page; Open app returns to the
+  // page as it was, since leaving only hides the app.
+  function goHome() { setAppPane('playground'); showView('landing'); }
+  dom.brandHome.addEventListener('click', goHome);
   dom.brandHome.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setAppPane('playground'); }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); goHome(); }
   });
   if (dom.settingsClose) dom.settingsClose.addEventListener('click', function () { setAppPane('playground'); });
   if (dom.sheetScrim) dom.sheetScrim.addEventListener('click', function () { setAppPane('playground'); });
