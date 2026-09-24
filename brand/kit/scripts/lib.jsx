@@ -354,11 +354,13 @@ function amigo(x, y, size, c, into) {
   return g;
 }
 
-// Resting Amigo: two Zs rising off the top-right, outside the body, same colour.
-// Rounded strokes so they belong to the mark's geometry. Idle states only.
-function zs(x, y, size, c, into) {
-  var s = size / 32, g = (into || DOC).groupItems.add(); g.name = "Zs";
-  var Z = [[26.8, 1.2, 3.6], [31.2, -5.6, 5.2]]; // [left, top, width] in Amigo units
+// Resting Amigo: lying on its side, head to the right, legs trailing left, with two Zs
+// rising off the head. The Zs never appear on the standing pose. They are rounded
+// strokes in the mark's one colour, outside the body, so Amigo still has no face.
+// (x, y) is the top-left of a 40 × 32 unit box; size is the height of that box.
+function zs(x, y, s, c, into) {
+  var g = (into || DOC).groupItems.add(); g.name = "Zs";
+  var Z = [[0, 3.8, 3.6], [4.4, 0, 5.2]]; // [left, top, width] in Amigo units
   for (var i = 0; i < Z.length; i++) {
     var zx = x + Z[i][0] * s, zy = y + Z[i][1] * s, w = Z[i][2] * s;
     var p = poly([[zx, zy], [zx + w, zy], [zx, zy + w], [zx + w, zy + w]], g);
@@ -367,7 +369,11 @@ function zs(x, y, size, c, into) {
   return g;
 }
 function amigoResting(x, y, size, c, into) {
-  var g = (into || DOC).groupItems.add(); g.name = "Amigo, resting";
-  amigo(x, y, size, c, g); zs(x, y, size, c, g);
+  var s = size / 32, g = (into || DOC).groupItems.add(); g.name = "Amigo, resting";
+  var a = amigo(0, 0, size, c, g); a.rotate(-90); // clockwise: head right, legs left
+  var b = a.geometricBounds; // lie it down on the box's floor
+  a.translate(L(x + 1 * s) - b[0], T(y + 31 * s) - b[3]);
+  b = a.geometricBounds;
+  zs(b[2] - OX - 3 * s, OY - b[1] - 9.5 * s, s, c, g);
   return g;
 }

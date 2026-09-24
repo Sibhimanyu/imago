@@ -3,9 +3,9 @@ newDoc("imago-mascot", 320, 320, false);
 var art = layer("Mascot");
 board("amigo", 0, 0, 320, 320, true);
 amigo(0, 0, 320, "ink", art);
-// The resting Zs rise above and right of the 32-unit box, so this board is wider.
+// Resting lies down with Zs off its head: a 40 × 32 unit box, so this board is wider.
 board("amigo-resting", 400, 0, 400, 320);
-var r = amigoResting(0, 0, 250, "ink", art); centre(r, 400, 0, 400, 320);
+amigoResting(400 + 30, 30, 260, "ink", art);
 saveAI("imago-mascot.ai");
 var old = new Folder(KIT + "/exports").getFiles("imago-mascot_*.svg");
 for (var f = 0; f < old.length; f++) old[f].remove();
