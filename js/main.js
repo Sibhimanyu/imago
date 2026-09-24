@@ -45,7 +45,7 @@ function wireEvents() {
   });
   // The mark is the way back to the landing page; Open app returns to the
   // page as it was, since leaving only hides the app.
-  function goHome() { setAppPane('playground'); showView('landing'); }
+  function goHome() { setAppPane('playground'); goToView('landing'); }
   dom.brandHome.addEventListener('click', goHome);
   dom.brandHome.addEventListener('keydown', function (event) {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); goHome(); }
@@ -86,6 +86,9 @@ function wireEvents() {
 
   dom.stageBack.addEventListener('click', goBack);
   window.addEventListener('popstate', function (event) {
+    // Back and Forward between the landing page and the app move views, not pages.
+    var view = viewFromUrl();
+    if (view !== state.view) { showView(view); return; }
     var depth = (event.state && event.state.imagoDepth) || 0;
     if (depth >= state.historyDepth) return;   // forward, or not one of ours
     var steps = state.historyDepth - depth;
@@ -342,8 +345,26 @@ function enterApp() {
   var prefs = getPrefs();
   prefs.onboarded = true;
   setPrefs(prefs);
-  showView('app');
+  goToView('app');
   if (!state.data && dom.urlInput) dom.urlInput.focus();
+}
+
+// The address decides the view: the landing page lives at the bare URL and
+// the app at #app. A reload keeps you where you were, and the browser's Back
+// leaves the app for the landing page. Before, a returning visitor could not
+// reach the landing page at all: a stored flag sent every visit to the app.
+var APP_HASH = '#app';
+
+function viewFromUrl() {
+  return window.location.hash === APP_HASH ? 'app' : 'landing';
+}
+
+function goToView(name) {
+  if (viewFromUrl() !== name) {
+    var target = window.location.pathname + window.location.search + (name === 'app' ? APP_HASH : '');
+    try { window.history.pushState(null, '', target); } catch (err) { /* history unavailable: the view still changes */ }
+  }
+  showView(name);
 }
 
 // One-time move from the old single session key: file it under the provider
@@ -600,12 +621,12 @@ function shareCurrentPage() {
 }
 
 // Opening a share link: straight into the app, fetch with no headers, show
-// the shared layout once. The link comes out of the address bar so a reload
-// is an ordinary visit and the link is not kept in history.
+// the shared layout once. The link becomes #app in the address bar so a
+// reload is an ordinary visit to the app and the link is not kept in history.
 function openShareLink() {
   var shared = readShareLink(window.location.hash);
   if (!shared) return false;
-  try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (err) { /* ignore */ }
+  try { window.history.replaceState(null, '', window.location.pathname + window.location.search + APP_HASH); } catch (err) { /* ignore */ }
   var prefs = getPrefs();
   prefs.onboarded = true;
   setPrefs(prefs);
@@ -628,9 +649,7 @@ function init() {
   restoreLastView();
   if (openShareLink()) return;
 
-  var prefs = getPrefs();
-  if (prefs.onboarded) showView('app');
-  else showView('landing');
+  showView(viewFromUrl());
 }
 
 /* ── Test seam ─────────────────────────────────────────────────────────
@@ -707,4 +726,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { wireEvents, wireSpecimen, cacheDom, enterApp, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { wireEvents, wireSpecimen, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };

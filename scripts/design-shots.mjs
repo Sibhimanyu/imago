@@ -25,7 +25,7 @@ const OUT = join(ROOT, 'design/shots');
 const DESKTOP = { width: 1440, height: 900, mobile: false };
 const MOBILE = { width: 390, height: 844, mobile: true };
 
-// setup runs in the page after load. `onboarded` skips the landing view.
+// setup runs in the page after load. `onboarded` opens the app (#app) instead of the landing page.
 const WEATHER = "__imago.DEMOS.find(function (d) { return d.name === 'Weather'; }).url";
 export const SHOTS = [
   { id: 'landing-desktop', title: 'Landing', view: DESKTOP, full: true },
@@ -147,7 +147,8 @@ async function shoot(page, base, shot) {
       source: "try { localStorage.setItem('imago.preferences', JSON.stringify({ onboarded: true })); } catch (e) {}"
     });
   }
-  const nav = await page.send('Page.navigate', { url: base + '/' });
+  // The app lives at #app; the bare URL is always the landing page.
+  const nav = await page.send('Page.navigate', { url: base + '/' + (shot.onboarded ? '#app' : '') });
   if (nav.errorText) throw new Error('navigate ' + base + ': ' + nav.errorText);
   await ready(page);
   await evaluate(page, 'Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 4000); })]).then(function () { return 1; })');

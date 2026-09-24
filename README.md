@@ -129,8 +129,10 @@ the middle. Each saved endpoint shows a green dot while it is being watched and 
 yellow count when its last fetch changed something. **Inspect** opens the raw
 material (Response, Schema, Changes, Headers) in a drawer beside the page, and
 Settings opens as a sheet over it; <kbd>Esc</kbd> closes whichever is on top. The
-Imago mark in the corner goes back to the landing page, and **Open app** returns you
-to the page you left. On a phone the command bar moves to the bottom of the screen,
+landing page and the app have their own addresses: the bare URL is always the
+landing page and `/#app` is the app, so a reload keeps you where you are and the
+browser's Back goes from the app to the landing page. The Imago mark in the corner
+goes back to the landing page too, and **Open app** returns you to the page you left. On a phone the command bar moves to the bottom of the screen,
 the endpoints open as a sheet, and every control is at least 44px to tap.
 
 Under the page title, a **history strip** draws one tick per stored fetch, yellow

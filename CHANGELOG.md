@@ -2,6 +2,20 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.11.1.0] - 2026-09-24
+
+### Changed
+
+- **The landing page and the app have separate addresses.**
+  <https://imago.onslate.in/> is always the landing page and
+  <https://imago.onslate.in/#app> is always the app. Reloading keeps you on
+  whichever one you are on. Before, anyone who had opened the app once was
+  sent straight to it on every visit and never saw the landing page again.
+- The browser's Back button goes from the app to the landing page, and Forward
+  goes back into the app. Inside the app, Back still steps back through the
+  pages you followed.
+- A shared link opens the app at `#app`, so reloading it stays in the app.
+
 ## [0.11.0.1] - 2026-09-24
 
 ### Fixed

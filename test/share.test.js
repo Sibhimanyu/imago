@@ -77,7 +77,7 @@ describe('opening a link', () => {
     expect(app.state.view).toBe('app');
     expect(seen[0].url).toBe('https://pokeapi.co/api/v2/pokemon/pikachu');
     expect(seen[0].headers).toEqual({});                       // the recipient's own headers stay home
-    expect(app.window.location.hash).toBe('');
+    expect(app.window.location.hash).toBe('#app');                 // the link itself is gone; a reload opens the app
     expect(app.dom.interfaceOut.querySelector('.stage-title').textContent).toBe('Pikachu');
     expect(app.dom.cacheBadge.textContent).toBe('Shared layout');
     // Used for this view only, never written to the recipient's cache.
