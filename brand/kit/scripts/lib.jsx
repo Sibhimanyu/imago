@@ -262,8 +262,11 @@ function centre(item, x, y, w, h) {
 // ── The hero: a raw response on the left becomes its interface on the right ──
 // Drawn at 507 × 262 with its top-left at (x, y), then scaled by `k`.
 // Amber appears only on the field that changed since the last fetch.
+// opts.code / opts.changed swap in a shorter excerpt (and the index of its
+// changed line); a short excerpt is centred in the panel.
 var MONO = "JetBrainsMono-Regular";
-function hero(x, y, k, into) {
+function hero(x, y, k, into, opts) {
+  opts = opts || {};
   var g = (into || DOC).groupItems.add(); g.name = "Hero — response becomes interface";
 
   // Response panel
@@ -272,7 +275,7 @@ function hero(x, y, k, into) {
   text("GET", x + 16, y + 21, { font: "JetBrainsMono-Medium", size: 6.8, color: "card", tracking: 40, into: rp });
   text("api.open-meteo.com/v1/forecast", x + 36, y + 21, { font: MONO, size: 6.8, color: "onInk", into: rp });
   line(x + 16, y + 31, x + 234, y + 31, "onInk2", 0.4, rp);
-  var code = [
+  var code = opts.code || [
     '{',
     '  "latitude": 13.08,',
     '  "longitude": 80.27,',
@@ -291,12 +294,15 @@ function hero(x, y, k, into) {
     '  }',
     '}'
   ];
-  var lh = 12.2, top = y + 48;
-  var hl = rrect(x + 10, top + 5 * lh - 9, 128, 12.4, 3, "yellow", rp); hl.opacity = 18; hl.name = "changed field";
+  var ci = opts.changed === undefined ? 5 : opts.changed;
+  // A short excerpt is set larger, so it fills the panel instead of floating in it.
+  var big = code.length < 12, fs = big ? 9.4 : 7.4, lh = big ? 16 : 12.2;
+  var top = y + 48 + Math.max(0, (big ? 13 : 17) - code.length) * lh / 2;
+  var hl = rrect(x + 10, top + ci * lh - fs * 1.2, big ? 162 : 128, lh + 0.2, 3, "yellow", rp); hl.opacity = 18; hl.name = "changed field";
   for (var i = 0; i < code.length; i++) {
-    var t = text(code[i], x + 16, top + i * lh, { font: MONO, size: 7.4, color: "onInk", into: rp });
+    var t = text(code[i], x + 16, top + i * lh, { font: MONO, size: fs, color: "onInk", into: rp });
     var m = code[i].match(/[\s\[]-?\d[\d.]*|"[^"]*"(?!:)/g);
-    if (m) for (var j = 0; j < m.length; j++) span(t, m[j], { color: i == 5 ? "yellow" : "card" });
+    if (m) for (var j = 0; j < m.length; j++) span(t, m[j], { color: i == ci ? "yellow" : "card" });
   }
 
   // Interface card
