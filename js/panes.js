@@ -180,8 +180,17 @@ function showInterfaceEmpty() {
   resetInterfaceOut(true);
 
   var box = el('div', 'empty');
-  var icon = el('div', 'empty-icon');
-  icon.appendChild(svgIcon(['M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z', 'M4 10h16M9 10v9'], 22));
+  // Amigo, the mark stood up: the brand's helper, here where the app is waiting on you.
+  var icon = el('div', 'empty-icon is-amigo');
+  var ns = 'http://www.w3.org/2000/svg';
+  var amigo = document.createElementNS(ns, 'svg');
+  amigo.setAttribute('width', '40');
+  amigo.setAttribute('height', '40');
+  amigo.setAttribute('aria-hidden', 'true');
+  var use = document.createElementNS(ns, 'use');
+  use.setAttribute('href', '#amigoMark');
+  amigo.appendChild(use);
+  icon.appendChild(amigo);
   box.appendChild(icon);
   box.appendChild(el('p', 'empty-title', 'Paste an API URL to start'));
   box.appendChild(el('p', 'empty-body',

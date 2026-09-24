@@ -14,6 +14,10 @@ weather endpoint becomes metrics and a temperature chart, a book search becomes 
 > **imago** *(n.)* — Latin for *image*; in entomology, the final, fully-formed adult
 > stage an insect reaches after metamorphosis. Raw JSON goes in; its finished form
 > comes out.
+>
+> Swap two letters and **imago** becomes **amigo**, Spanish for *friend*. That
+> is the mascot, Amigo: the same mark, stood up to help. It greets you on the
+> empty page.
 
 ---
 

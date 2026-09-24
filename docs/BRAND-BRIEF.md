@@ -35,6 +35,27 @@ Imago means image in Latin. In biology, an imago is the final adult form reached
 after metamorphosis. That is the brand idea: raw API responses arrive at their
 finished visible form.
 
+### The anagram: imago ↔ amigo
+
+Swap the I and the A in **imago** and it reads **amigo**, Spanish for friend.
+Same five letters, two meanings, and they match the two roles in the identity:
+**Imago** is the finished view (the product), **Amigo** is the helper that
+gets you there (the mascot).
+
+How to use it:
+
+- Write it as a letter swap, with the two letters that move marked:
+  i**m**a**g**o → a**m**i**g**o, with the i and the a highlighted. On screen
+  the marked letters use `--yellow-bg` with a `--yellow` underline, the colour
+  the app uses for a value that changed.
+- Line to use: *Swap two letters and imago becomes amigo, Spanish for friend.*
+  Say it once, on the landing page and in brand material. Do not repeat it
+  across the UI.
+- The product is always **Imago**. Never rename it, and never write "Amigo"
+  where the product is meant.
+- Amigo appears where the app is helping or waiting (the empty page first),
+  never in navigation or the favicon.
+
 Important nuance: Imago is about the final formed view, not generic motion. The
 logo should feel like an interface has been revealed from the response, not like
 data is simply flying across the screen.

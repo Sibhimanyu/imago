@@ -2,6 +2,18 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.11.0.0] - 2026-09-24
+
+### Added
+
+- **imago ↔ amigo.** Swap two letters and *imago* becomes *amigo*, Spanish for
+  friend. The landing page says so, with the two swapped letters marked in the
+  yellow the app uses for a value that changed.
+- **Amigo on the empty page.** The mascot (the Imago mark standing up) now
+  greets you where the app is waiting for a URL, replacing the generic icon.
+- The brand brief explains the anagram and how to use it: Imago is the
+  product, Amigo is the helper, and the line is said once.
+
 ## [0.10.5.0] - 2026-09-24
 
 ### Added
