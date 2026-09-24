@@ -159,6 +159,13 @@ async function shoot(page, base, shot) {
       await sleep(250);
     }
   }
+  // The landing demo fetches its example live; wait until it has drawn.
+  if (!shot.onboarded) {
+    for (let i = 0; i < 60; i++) {
+      if (await evaluate(page, "document.getElementById('specimenPane').getAttribute('aria-busy') === 'false'")) break;
+      await sleep(250);
+    }
+  }
   if (shot.after) await evaluate(page, shot.after + '; 1');
   if (shot.wait) await sleep(shot.wait);   // e.g. for a failure path that has no data to wait on
   await sleep(600); // sheet and drawer transitions

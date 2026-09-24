@@ -18,14 +18,14 @@ var RE_HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 var RE_KEY_PERCENT = /(percent|percentage|pct|illumination|humidity|probability|saturation|lightness|battery|progress|score_pct)/;
-var RE_KEY_SECONDS = /(^|_)(seconds|secs?|duration|day_length|length|elapsed|uptime|runtime|ttl|expires_in)(_|$)/;
+var RE_KEY_SECONDS = /(^|_)(seconds|secs?|duration|length|elapsed|uptime|runtime|ttl|expires_in)(_|$)/;
 var RE_KEY_MILLIS = /(^|_)(ms|millis|milliseconds|latency|duration_ms|response_time)(_|$)/;
 var RE_KEY_BYTES = /(^|_)(bytes|size|filesize|content_length|length_bytes)(_|$)/;
 var RE_KEY_LAT = /(^|_)(lat|latitude)(_|$)/;
 var RE_KEY_LNG = /(^|_)(lng|lon|long|longitude)(_|$)/;
 // Transport and bookkeeping fields. Still shown, never as the headline.
 var RE_KEY_YEAR = /(^|_)(year|yr|founded|published_year)(_|$)/;
-var RE_KEY_NOISE = /(generationtime|utc_offset|timezone_abbreviation|interval|elevation|^id$|_id$|etag|checksum|revision|version|request|cursor|offset|page|limit|status_code|copyright|licen[cs]e|attribution)/;
+var RE_KEY_NOISE = /(generation_?time|utc_offset|timezone_abbreviation|interval|elevation|^id$|_id$|etag|checksum|revision|version|request|cursor|offset|page|limit|status_code|copyright|licen[cs]e|attribution)/;
 var RE_KEY_ANGLE = /(azimuth|altitude|bearing|heading|declination|elevation_angle)/;
 var RE_KEY_TIME = /(^|_)(at|time|timestamp|date|epoch|created|updated|modified|published|expires)(_|$)/;
 var RE_KEY_TEMP = /(^|_)(temp|temperature|feels_like|dew_point)/;

@@ -2,6 +2,35 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.12.0.0] - 2026-09-24
+
+### Changed
+
+- **Nothing on the landing page is made up any more.** The demo used to be
+  three hand-built cards: Pikachu, Chennai weather and The Hobbit, with
+  invented JSON, an embedded sprite, a false "From schema cache" badge and a
+  fake "Changed, was 30.4 °C". Now it fetches the example's real response
+  when the landing page opens and draws it with the app's own renderer, with
+  no model. Which example shows first is picked at random.
+- **The basic layout no longer knows the example APIs.** Rules keyed to their
+  field names are gone: `base_stat`, `moves`, `forms`, `encounter`, `sprite`
+  (Pokémon); `ia`, `lending`, `ebook`, `availability` (Open Library);
+  `day_length` (Sunrise-Sunset); and the rule that renamed `temperature_2m`
+  to "Temperature" (Open-Meteo). In their place are rules that work from the
+  data's shape. Bars are drawn for the quantity that varies most in small
+  rows. Lists too long to read, and objects that hold nothing but links, fold
+  into Details. Labels say what the key says, so `temperature_2m` reads
+  "Temperature 2m". A test fails if sample-API vocabulary comes back.
+- The model prompt's example path is neutral (`data.items.0.name`), not taken
+  from an example API.
+
+### Fixed
+
+- **A failed request says which page is still showing.** When a request
+  failed, the last page that loaded stayed on screen under a banner about the
+  other host, which read as if the two were connected. The banner now names
+  the page, for example "Below is Pikachu, the last page that loaded."
+
 ## [0.11.1.0] - 2026-09-24
 
 ### Changed

@@ -520,3 +520,23 @@ describe('a failed send leaves the page it could not replace', () => {
     expect(app.dom.urlInput.value).toBe(B);   // left to fix and resend
   });
 });
+
+describe('a failed request over a page that stays', () => {
+  // A Trivia request failed and the banner "Could not reach opentdb.com" sat
+  // above the Pikachu page from before, which read as if one caused the other.
+  it('names the page kept below the error', async () => {
+    let fail = false;
+    const app = await boot({ fetch: (url) => (fail ? Promise.reject(new TypeError('Failed to fetch')) : jsonFetch({ name: 'widget', size: 3 })(url)) });
+    app.setUrlInput('https://a.test/widget');
+    app.performRequest(false);
+    for (let i = 0; i < 4; i += 1) await flush();
+    fail = true;
+    app.setUrlInput('https://b.test/other');
+    app.performRequest(false);
+    for (let i = 0; i < 12; i += 1) await flush();
+    await new Promise((r) => setTimeout(r, 50));
+    for (let i = 0; i < 6; i += 1) await flush();
+    const alert = app.dom.interfaceOut.querySelector('.alert');
+    expect(alert.textContent).toMatch(/Below is Widget, the last page that loaded\./);
+  });
+});

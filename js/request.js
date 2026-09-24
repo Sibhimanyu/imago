@@ -465,9 +465,12 @@ function handleRequestFailure(err, isAuto) {
 
   if (state.data && state.spec) {
     // The loading state cleared the pane — put the last good interface back
-    // so a failure never costs you the view you were reading.
+    // so a failure never costs you the view you were reading, and say that it
+    // is the old page: under a banner for another host it read as the answer.
     applySpec(state.spec, state.specSource);
-    showAlert(isAuto ? 'Auto-refresh failed' : title, detail);
+    var kept = state.spec.title || hostOf(state.dataUrl) || 'the last page';
+    showAlert(isAuto ? 'Auto-refresh failed' : title,
+              detail + ' Below is ' + kept + ', the last page that loaded.');
   } else {
     if (state.stage) leaveStage();
     dom.interfaceHead.hidden = true;

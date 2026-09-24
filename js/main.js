@@ -9,12 +9,12 @@ import { DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, 
 import { dom, state } from './state.js';
 import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getSessionModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setSessionModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
 import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
-import { byteLength, canonPath, formatBytes, formatValue, getByPath, isImageUrl, isPlainObject, isUrl, parsePath, qs } from './util.js';
+import { byteLength, canonPath, el, formatBytes, formatValue, getByPath, isImageUrl, isPlainObject, isUrl, parsePath, qs } from './util.js';
 import { lastSegment } from './values.js';
 import { deriveSchema, diffData, fingerprint, flatten, hashString, mergeSchemas, stableStringify } from './schema.js';
 import { applyHtml, buildHtmlPrompt, normalizeHtmlDoc, providerErrorText } from './llm.js';
 import { buildFallbackSpec, deriveActions, endpointTitle, humanize, normalizeActions, normalizeSpec } from './spec.js';
-import { isBookkeeping, renderComponent, scheduleTimelineLayout } from './render.js';
+import { isBookkeeping, renderComponent, renderSpecBody, scheduleTimelineLayout } from './render.js';
 import { keyInputFor, setAppPane, setKeyStatus, showView, storeKeyFromInput, syncKeyInputs, syncProviderUi, toast, trapSheetFocus } from './ui.js';
 import { chatBusy, chatTarget, chatTurns, clearChat, sendChat, syncChatTarget, testProvider, updateMeta } from './chat.js';
 import { applySpec, enterStage, escapeHtml, followUrl, goBack, highlightJson, leaveStage, minimalSpec, navigateTo, pushHistory, renderChangesPane, renderRawPane, renderSchemaPane, rollbackNavigation, setActiveTab, showGeneratePrompt, showInterfaceEmpty, stepBack } from './panes.js';
@@ -88,7 +88,7 @@ function wireEvents() {
   window.addEventListener('popstate', function (event) {
     // Back and Forward between the landing page and the app move views, not pages.
     var view = viewFromUrl();
-    if (view !== state.view) { showView(view); return; }
+    if (view !== state.view) { setView(view); return; }
     var depth = (event.state && event.state.imagoDepth) || 0;
     if (depth >= state.historyDepth) return;   // forward, or not one of ours
     var steps = state.historyDepth - depth;
@@ -273,43 +273,99 @@ function wireEvents() {
 // The landing hero: one response and the interface it became, for three
 // examples. The switcher swaps both halves; Try an example opens the app on
 // whichever one is showing.
+// The landing demo is a real request: the example's response is fetched the
+// first time its tab is shown, and the page is drawn by the same renderer the
+// app uses, with no model. Nothing on it is written by hand, and which example
+// opens first is left to chance so none is favoured.
+var specimen = { name: '', url: '', cache: Object.create(null), started: false };
+var SPECIMEN_LINES = 16;
+
+function specimenDemo(name) {
+  for (var i = 0; i < DEMOS.length; i += 1) if (DEMOS[i].name === name) return DEMOS[i];
+  return null;
+}
+
 function wireSpecimen() {
   var root = document.querySelector('.specimen');
   if (!root) return;
   var tabs = root.querySelectorAll('.specimen-switch button');
-  var url = DEMOS[0].url;
-  function show(name) {
-    for (var i = 0; i < tabs.length; i += 1) {
-      var on = tabs[i].getAttribute('data-example') === name;
-      tabs[i].classList.toggle('is-active', on);
-      tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
-      if (on) {
-        var shown = qs('specimenUrl');
-        if (shown) shown.textContent = tabs[i].getAttribute('data-url');
-      }
-    }
-    var panes = root.querySelectorAll('.spec-pane');
-    for (var j = 0; j < panes.length; j += 1) {
-      var match = panes[j].getAttribute('data-example') === name;
-      panes[j].hidden = !match;
-      panes[j].classList.toggle('is-active', match);
-    }
-    var demo = { pokemon: 'pokeapi.co', weather: 'open-meteo', library: 'openlibrary' }[name];
-    for (var d = 0; d < DEMOS.length; d += 1) {
-      if (DEMOS[d].url.indexOf(demo) !== -1) { url = DEMOS[d].url; break; }
-    }
-  }
   for (var t = 0; t < tabs.length; t += 1) {
     (function (tab) {
-      tab.addEventListener('click', function () { show(tab.getAttribute('data-example')); });
+      tab.addEventListener('click', function () { showSpecimen(tab.getAttribute('data-example')); });
     })(tabs[t]);
   }
   if (dom.landingTry) {
     dom.landingTry.addEventListener('click', function () {
       enterApp();
-      loadExample(url);
+      loadExample(specimen.url || DEMOS[0].url);
     });
   }
+}
+
+// Called whenever the landing page is shown; the first call picks a tab.
+function startSpecimen() {
+  if (specimen.started) return;
+  var tabs = document.querySelectorAll('.specimen-switch button');
+  if (!tabs.length) return;
+  specimen.started = true;
+  showSpecimen(tabs[Math.floor(Math.random() * tabs.length)].getAttribute('data-example'));
+}
+
+function showSpecimen(name) {
+  var demo = specimenDemo(name);
+  if (!demo) return;
+  specimen.name = name;
+  specimen.url = demo.url;
+  var tabs = document.querySelectorAll('.specimen-switch button');
+  for (var i = 0; i < tabs.length; i += 1) {
+    var on = tabs[i].getAttribute('data-example') === name;
+    tabs[i].classList.toggle('is-active', on);
+    tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+  }
+  qs('specimenUrl').textContent = demo.url;
+  var cached = specimen.cache[name];
+  if (cached) { drawSpecimen(cached); return; }
+  drawSpecimen({ pending: true, url: demo.url });
+  window.fetch(demo.url, { headers: { Accept: 'application/json' } })
+    .then(function (response) {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    })
+    .then(function (data) { return { data: data, url: demo.url }; },
+          function () { return { failed: true, url: demo.url }; })
+    .then(function (result) {
+      if (!result.failed) specimen.cache[name] = result;
+      if (specimen.name === name) drawSpecimen(result);
+    });
+}
+
+function drawSpecimen(result) {
+  var pane = qs('specimenPane');
+  var json = qs('specimenJson');
+  var note = qs('specimenNote');
+  var out = qs('specimenOut');
+  pane.setAttribute('aria-busy', result.pending ? 'true' : 'false');
+  out.textContent = '';
+  if (result.pending) {
+    json.textContent = '';
+    note.textContent = 'Fetching ' + hostOf(result.url) + '…';
+    out.appendChild(el('p', 'spec-live-status', 'Drawing the page once the response arrives…'));
+    return;
+  }
+  if (result.failed) {
+    json.textContent = '';
+    note.textContent = 'Could not reach ' + hostOf(result.url) + ' just now. Try another example, or open the app.';
+    return;
+  }
+  var lines = JSON.stringify(result.data, null, 2).split('\n');
+  json.innerHTML = highlightJson(lines.slice(0, SPECIMEN_LINES).join('\n') + (lines.length > SPECIMEN_LINES ? '\n…' : ''));
+  note.textContent = 'Fetched live just now, drawn without a model.';
+  var spec = normalizeSpec(buildFallbackSpec(result.data, result.url));
+  var title = document.createElement('h3');
+  title.className = 'stage-title';
+  title.textContent = spec.title || hostOf(result.url);
+  out.appendChild(title);
+  out.appendChild(renderSpecBody(spec, result.data, null));
 }
 
 /* ── Bootstrap ─────────────────────────────────────────────────────────── */
@@ -359,12 +415,17 @@ function viewFromUrl() {
   return window.location.hash === APP_HASH ? 'app' : 'landing';
 }
 
+function setView(name) {
+  showView(name);
+  if (name === 'landing') startSpecimen();
+}
+
 function goToView(name) {
   if (viewFromUrl() !== name) {
     var target = window.location.pathname + window.location.search + (name === 'app' ? APP_HASH : '');
     try { window.history.pushState(null, '', target); } catch (err) { /* history unavailable: the view still changes */ }
   }
-  showView(name);
+  setView(name);
 }
 
 // One-time move from the old single session key: file it under the provider
@@ -649,7 +710,7 @@ function init() {
   restoreLastView();
   if (openShareLink()) return;
 
-  showView(viewFromUrl());
+  setView(viewFromUrl());
 }
 
 /* ── Test seam ─────────────────────────────────────────────────────────
@@ -696,6 +757,7 @@ window.__imago = {
   getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
   getProvider: getProvider,
   // examples
+  showSpecimen: showSpecimen, startSpecimen: startSpecimen, specimen: specimen,
   DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
   parseCurl: parseCurl, shellWords: shellWords, startTimer: startTimer, stopTimer: stopTimer, applyEdits: applyEdits, editsFor: editsFor, setEditing: setEditing, describeChange: describeChange, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
   // full-html builder
@@ -726,4 +788,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { wireEvents, wireSpecimen, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };

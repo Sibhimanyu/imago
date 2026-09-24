@@ -38,7 +38,7 @@ describe('describing a change', () => {
   it('names the first change in words and counts the rest', async () => {
     const app = await boot();
     expect(app.describeChange({ 'current.temperature_2m': { type: 'changed', before: 30.1, after: 30.4 } }))
-      .toBe('Temperature: 30.1 → 30.4');
+      .toBe('Temperature 2m: 30.1 → 30.4');
     expect(app.describeChange({ a: { type: 'added', after: 1 }, b: { type: 'removed', before: 2 } }))
       .toBe('A appeared (and 1 more)');
     expect(app.describeChange({ b: { type: 'removed', before: 2 } })).toBe('B was removed');

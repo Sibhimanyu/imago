@@ -2,13 +2,13 @@
    landing page, #app is the app. A reload keeps you where you were, and a
    returning visitor lands on the landing page instead of being sent to the app. */
 import { describe, it, expect } from 'vitest';
-import { boot, jsonFetch, flush } from './harness.js';
+import { boot, jsonFetch, flush, LANDING } from './harness.js';
 
 const RETURNING = { 'imago.preferences': { onboarded: true, lastUrl: 'https://a.test/x' } };
 
 describe('landing and app are separate addresses', () => {
   it('the bare URL is the landing page, even for a returning visitor', async () => {
-    const app = await boot({ local: RETURNING });
+    const app = await boot({ url: LANDING, local: RETURNING, fetch: jsonFetch({ a: 1 }) });
     expect(app.state.view).toBe('landing');
     expect(app.dom.landingView.hidden).toBe(false);
   });
@@ -19,7 +19,7 @@ describe('landing and app are separate addresses', () => {
   });
 
   it('Open app moves the address to #app; the mark moves it back', async () => {
-    const app = await boot();
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
     app.dom.landingSkip.click();
     expect(app.window.location.hash).toBe('#app');
     expect(app.state.view).toBe('app');
@@ -29,7 +29,7 @@ describe('landing and app are separate addresses', () => {
   });
 
   it('the browser Back button leaves the app for the landing page, and Forward returns', async () => {
-    const app = await boot();
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
     app.dom.landingStart.click();
     expect(app.state.view).toBe('app');
     app.window.history.back();

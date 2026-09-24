@@ -158,9 +158,12 @@ function assignEmphasis(components) {
 /* ── Fallback spec (no key, provider failure, or invalid spec) ───────────── */
 
 // With more structures than fit on a page, show the ones that say something
-// about the thing itself — stats and types before internal move tables.
-var RE_KEY_INTERESTING = /(stat|type|score|rating|metric|summary|current|result|price|category|tag|genre|ingredient)/;
-var RE_KEY_BULK = /(past|deprecated|legacy|index|indices|moves|forms|encounter|sprite|image|icon|internal|meta|raw|log|debug|_url|href)/;
+// about the thing itself before the bulk. Bulk is judged by the data's shape
+// (a list too long to read, an object that is only links) and by words any API
+// uses for plumbing, never by the vocabulary of a particular API.
+var RE_KEY_INTERESTING = /(stat|type|score|rating|metric|summary|current|result|price|category|tag)/;
+var RE_KEY_BULK = /(past|deprecated|legacy|index|indices|image|icon|internal|meta|raw|log|debug|_url|href)/;
+var BULK_ROWS = 30;
 var BLOCK_INTEREST = { statBars: 6, chart: 5, timeline: 5, badges: 3, table: 2, keyValue: 2, list: 1 };
 
 function rankBlocks(blocks) {
@@ -170,15 +173,22 @@ function rankBlocks(blocks) {
     if (RE_KEY_INTERESTING.test(key)) score += 4;
     if (RE_KEY_BULK.test(key)) score -= 5;
     if (RE_KEY_NOISE.test(key)) score -= 3;
+    // Too long to read, or only links: plumbing, not content. It folds into
+    // Details at the foot of the page rather than vanishing.
+    if (block.__rows > BULK_ROWS || block.__links) { score -= 5; block.emphasis = 'quiet'; }
     return { block: block, index: index, score: score };
   }).sort(function (a, b) {
     return b.score - a.score || a.index - b.index;
-  }).map(function (entry) { return entry.block; });
+  }).map(function (entry) {
+    delete entry.block.__rows;
+    delete entry.block.__links;
+    return entry.block;
+  });
 }
 
 // An array of { name, value } objects is a ranking, and a ranking reads as
 // bars. Anything more ambiguous stays a table.
-var RE_STAT_VALUE = /^(base_stat|value|count|amount|score|total|power|rating|points|votes|weight|percent|percentage)$/;
+var RE_STAT_VALUE = /^(value|count|amount|score|total|power|rating|points|votes|weight|percent|percentage)$/;
 
 // A short array of { name, slot } objects is a set of labels. A table of one
 // row and two columns is not worth the chrome.
@@ -210,6 +220,29 @@ function labelOnlyArray(rows) {
   return namePath;
 }
 
+// An object whose filled values are all URLs, or objects of URLs, is a
+// bundle of links (image variants, API cross-references), whatever its name.
+function onlyLinks(obj) {
+  return linkCount(obj, 0) > 0;
+}
+
+// How many URLs an object holds, or -1 as soon as it holds anything else.
+// Empty values (and objects of nothing but empty values) are neutral.
+function linkCount(obj, depth) {
+  var seen = 0;
+  var keys = Object.keys(obj);
+  for (var i = 0; i < keys.length; i += 1) {
+    var v = obj[keys[i]];
+    if (v === null || v === undefined || v === '') continue;
+    if (typeof v === 'string' && isUrl(v)) { seen += 1; continue; }
+    if (!isPlainObject(v) || depth >= 8) return -1;
+    var inner = linkCount(v, depth + 1);
+    if (inner < 0) return -1;
+    seen += inner;
+  }
+  return seen;
+}
+
 function statBarsShape(rows) {
   if (rows.length < 2 || rows.length > 12) return null;
   var sample = rows[0];
@@ -224,8 +257,22 @@ function statBarsShape(rows) {
   }
   // A slot, index or rank is a position, not a quantity worth drawing.
   var RE_POSITION = /^(slot|index|order|position|rank|level|page|number|no|id|game_index)$/;
-  if (!valueKey && numeric.length === 1 && !RE_POSITION.test(numeric[0].toLowerCase())) {
-    valueKey = numeric[0];
+  var quantities = numeric.filter(function (key) { return !RE_POSITION.test(key.toLowerCase()); });
+  if (!valueKey && quantities.length === 1) valueKey = quantities[0];
+  // Several quantities and no name that says which: draw the one that moves
+  // most across the rows. A column that is the same (or nearly) everywhere
+  // is not what the rows are being compared on. Only for small rows (a name
+  // and a few numbers); a record of many fields is a table, not a ranking.
+  if (!valueKey && quantities.length > 1 && Object.keys(sample).length <= 4) {
+    var best = 0;
+    for (var q = 0; q < quantities.length; q += 1) {
+      var lo = Infinity, hi = -Infinity;
+      for (var rr = 0; rr < rows.length; rr += 1) {
+        var x = rows[rr] ? rows[rr][quantities[q]] : NaN;
+        if (typeof x === 'number' && isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); }
+      }
+      if (hi - lo > best) { best = hi - lo; valueKey = quantities[q]; }
+    }
   }
   if (!valueKey) return null;
 
@@ -440,17 +487,17 @@ function buildFallbackSpec(data, url) {
         } else if (namesOnly) {
           blocks.push({ type: 'badges', path: key, label: label, itemPath: namesOnly });
         } else {
-          blocks.push({ type: 'table', path: key, label: label });
+          blocks.push({ type: 'table', path: key, label: label, __rows: v.length });
         }
       }
       else if (allNumbers(v) && v.length >= 4) blocks.push({ type: 'chart', path: key, label: label });
-      else blocks.push({ type: 'badges', path: key, label: label });
+      else blocks.push({ type: 'badges', path: key, label: label, __rows: v.length });
       continue;
     }
 
     if (isPlainObject(v)) {
       if (!Object.keys(v).length) continue;
-      blocks.push({ type: 'keyValue', path: key, label: label });
+      blocks.push({ type: 'keyValue', path: key, label: label, __links: onlyLinks(v) });
       continue;
     }
 
@@ -606,17 +653,12 @@ var LABEL_WORDS = Object.assign(Object.create(null), {
   avg: 'average', min: 'minimum', max: 'maximum', desc: 'description'
 });
 
-var RE_MEASURE_HEIGHT = /((?:^|_)(?:temperature|humidity|dew_?point|wind_speed|wind_direction|wind_gusts|soil_temperature|soil_moisture))_\d+m$/;
+
 
 function humanize(key) {
   // Sentence case, so snake_case and camelCase labels read the same way.
   // All-caps words are left alone so acronyms survive (URL, ID, HP).
-  // Weather APIs suffix the measuring height (temperature_2m,
-  // wind_speed_10m); that is instrument detail, not the reader's label.
-  // Only after a weather measure: load_1m / load_5m / load_15m are minute
-  // windows, and stripping those made three fields read "Load".
-  var base = String(key).replace(RE_MEASURE_HEIGHT, '$1');
-  var words = (base || String(key))
+  var words = String(key)
     .replace(/[_\-.]+/g, ' ')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .split(/\s+/)
@@ -631,4 +673,4 @@ function humanize(key) {
   return words.join(' ');
 }
 
-export { RE_CODE_IDENTITY, normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, RE_MEASURE_HEIGHT, humanize };
+export { RE_CODE_IDENTITY, normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, humanize, onlyLinks, BULK_ROWS };

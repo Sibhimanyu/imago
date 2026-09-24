@@ -166,9 +166,15 @@ The fallback plan is not a last resort — it is the same renderer driven by loc
 heuristics: it hoists a `current`/`results` object to the surface, pairs numbers with
 their `*_units` siblings, collects three or more timestamps into a timeline, turns
 named numeric arrays into stat bars, chooses table columns by what identifies a row
-(and follows `{ name, url }` wrappers to the name), sinks `generationtime_ms` and
-friends to the bottom of the page, picks a layout, and turns every URL in the body —
-paging keys first — into a `follow` action.
+(and follows `{ name, url }` wrappers to the name), sinks bookkeeping (generation
+times, offsets, versions) to the bottom of the page, folds lists too long to read
+and objects that hold nothing but links into **Details**, picks a layout, and turns
+every URL in the body (paging keys first) into a `follow` action.
+
+None of these rules knows any particular API. They work from the shape of the data
+and from words any API uses for plumbing, never from the field names of the
+examples, and a test fails if a sample API's vocabulary appears in them. Labels
+say what the key says: `temperature_2m` reads *Temperature 2m*.
 
 ### Schema caching
 
@@ -302,8 +308,9 @@ Imago still works, and it says so plainly. Without a usable key it falls back to
 a heuristic interface built from the response itself — it finds a title field,
 the most likely primary image, and the first handful of scalar fields — with a
 neutral notice naming the missing key, where a free one lives, and an **Add a
-key** button that opens Settings. A first visit skips the key form entirely and
-opens on a rendered example, so you see what Imago does before it asks for anything.
+key** button that opens Settings. The landing page shows a live example before
+asking for anything: one of three example APIs, picked at random, is fetched right
+then and drawn by the same renderer, with no model and nothing written by hand.
 In this basic layout, unit tables are applied to their values, time series become
 charts, located responses name the place in the subtitle, and bookkeeping
 (generation times, offsets, raw coordinates) folds into a **Details** section at

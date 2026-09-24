@@ -223,7 +223,7 @@ describe('the basic layout reads like a page', () => {
     expect(paths).not.toContain('hourly_units');
     const chart = spec.components.find((c) => c.type === 'chart');
     expect(chart.path).toBe('hourly.temperature_2m');
-    expect(chart.label).toBe('Hourly temperature');
+    expect(chart.label).toBe('Hourly temperature 2m');
     expect(spec.components.some((c) => c.type === 'keyValue' && c.path === 'hourly')).toBe(false);
     expect(spec.subtitle).toBe('13.13° N, 80.25° E · GMT');
     const lat = spec.components.find((c) => c.path === 'latitude');
@@ -252,41 +252,13 @@ describe('the basic layout reads like a page', () => {
     expect(app.isBookkeeping({ type: 'metric', path: 'current.temperature_2m' })).toBe(false);
   });
 
-  it('labels drop the measuring height and bare identifiers read as names', async () => {
+  it('labels say what the key says, and bare identifiers read as names', async () => {
     const app = await boot();
-    expect(app.humanize('temperature_2m')).toBe('Temperature');
-    expect(app.humanize('wind_speed_10m')).toBe('Wind speed');
+    expect(app.humanize('temperature_2m')).toBe('Temperature 2m');
+    expect(app.humanize('wind_speed_10m')).toBe('Wind speed 10m');
     expect(app.humanize('base_stat')).toBe('Base stat');
     expect(app.buildFallbackSpec({ name: 'pikachu', id: 25 }, 'https://a.test/p').title).toBe('Pikachu');
     expect(app.buildFallbackSpec({ name: 'Mr. Mime' }, 'https://a.test/p').title).toBe('Mr. Mime');
-  });
-});
-
-describe('landing specimen', () => {
-  // The old hero was decoration (floating, unrelated cards). The new one is a
-  // real response beside the interface it becomes, for three examples.
-  it('the switcher swaps both halves and the URL together', async () => {
-    const app = await boot();
-    const doc = app.window.document;
-    const pane = (n) => doc.querySelector(`.spec-pane[data-example="${n}"]`);
-    expect(pane('pokemon').hidden).toBe(false);
-    expect(pane('weather').hidden).toBe(true);
-    doc.querySelector('.specimen-switch [data-example="weather"]').click();
-    expect(pane('weather').hidden).toBe(false);
-    expect(pane('pokemon').hidden).toBe(true);
-    expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo');
-    expect(doc.querySelector('.specimen-switch [data-example="weather"]').getAttribute('aria-selected')).toBe('true');
-  });
-
-  it('Try an example opens the app on the example that is showing', async () => {
-    const calls = [];
-    const app = await boot({ fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
-    app.window.document.querySelector('.specimen-switch [data-example="library"]').click();
-    app.dom.landingTry.click();
-    await flush();
-    expect(app.state.view).toBe('app');
-    expect(calls.some((u) => u.indexOf('openlibrary.org') !== -1)).toBe(true);
-    expect(app.getPrefs().onboarded).toBe(true);
   });
 });
 
@@ -892,23 +864,13 @@ describe('delete can be undone', () => {
   });
 });
 
-describe('landing specimen', () => {
-  it('every example says what its highlighted lines mean', async () => {
-    const app = await boot();
-    const panes = [...app.window.document.querySelectorAll('.specimen .spec-pane')];
-    expect(panes.length).toBe(3);
-    for (const pane of panes) {
-      expect(pane.querySelector('.spec-response .spec-key').textContent).toBe('Highlighted lines are the fields the page uses.');
-      expect(pane.querySelectorAll('.spec-json .jl.is-used').length).toBeGreaterThan(0);
-    }
-  });
-});
 
 describe('the basic layout, edge cases', () => {
-  it('strips a measuring height only after a weather measure', async () => {
+  // No rule is keyed to one API's vocabulary: a suffix a weather API uses for
+  // measuring height reads the same as any other suffix.
+  it('keeps every suffix, so no API gets a special case', async () => {
     const app = await boot();
-    expect(app.humanize('temperature_2m')).toBe('Temperature');
-    expect(app.humanize('wind_speed_10m')).toBe('Wind speed');
+    expect(app.humanize('temperature_2m')).toBe('Temperature 2m');
     // Minute windows are the data: three different fields, three labels.
     const loads = ['load_1m', 'load_5m', 'load_15m'].map(app.humanize);
     expect(new Set(loads).size).toBe(3);

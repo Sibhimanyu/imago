@@ -81,66 +81,25 @@
          the interface uses. -->
     <section class="specimen" aria-label="An API response and the interface Imago renders from it">
       <div class="specimen-head">
-        <span class="specimen-url"><span class="method-chip">GET</span><span class="specimen-url-text" id="specimenUrl">https://pokeapi.co/api/v2/pokemon/pikachu</span></span>
+        <span class="specimen-url"><span class="method-chip">GET</span><span class="specimen-url-text" id="specimenUrl"></span></span>
         <div class="specimen-switch" role="tablist" aria-label="Example">
-          <button type="button" role="tab" class="is-active" aria-selected="true" data-example="pokemon" data-url="https://pokeapi.co/api/v2/pokemon/pikachu">Pokémon</button>
-          <button type="button" role="tab" aria-selected="false" data-example="weather" data-url="https://api.open-meteo.com/v1/forecast?latitude=13.08&amp;longitude=80.27&amp;current=…">Weather</button>
-          <button type="button" role="tab" aria-selected="false" data-example="library" data-url="https://openlibrary.org/search.json?title=the+hobbit">Library</button>
+          <button type="button" role="tab" aria-selected="false" data-example="Pokémon">Pokémon</button>
+          <button type="button" role="tab" aria-selected="false" data-example="Weather">Weather</button>
+          <button type="button" role="tab" aria-selected="false" data-example="Library">Library</button>
         </div>
       </div>
-      
-      <div class="spec-pane is-active" data-example="pokemon" role="tabpanel" aria-label="pokemon example">
+      <!-- Nothing in here is written by hand: the response is fetched live and
+           the page is drawn by the same renderer the app uses, with no model. -->
+      <div class="spec-pane is-active" id="specimenPane" role="tabpanel" aria-busy="true">
         <div class="spec-response" aria-label="The API response">
           <p class="spec-label">Response</p>
-          <pre class="spec-json"><span class="jl"><span class="jk">{</span></span><span class="jl is-used">  <span class="jk">"height"</span>: <span class="jv">4,</span></span><span class="jl">  <span class="jk">"id"</span>: <span class="jv">25,</span></span><span class="jl is-used">  <span class="jk">"name"</span>: <span class="jv">"pikachu",</span></span><span class="jl is-used">  <span class="jk">"sprites"</span>: <span class="jv">{ "front_default": "…/25.png" },</span></span><span class="jl is-used">  <span class="jk">"stats"</span>: <span class="jv">[ { "base_stat": 35, "stat": { "name": "hp" } }, … ],</span></span><span class="jl is-used">  <span class="jk">"types"</span>: <span class="jv">[ { "type": { "name": "electric" } } ],</span></span><span class="jl is-used">  <span class="jk">"weight"</span>: <span class="jv">60</span></span><span class="jl"><span class="jk">}</span></span></pre>
-          <p class="spec-key"><span class="spec-key-mark" aria-hidden="true"></span>Highlighted lines are the fields the page uses.</p>
+          <pre class="spec-json" id="specimenJson"></pre>
+          <p class="spec-key" id="specimenNote">Fetching…</p>
         </div>
         <div class="spec-seam" aria-hidden="true"><span class="spec-seam-mark"><svg width="16" height="16"><use href="#imagoMark"/></svg></span></div>
         <div class="spec-interface" aria-label="The interface Imago renders">
           <p class="spec-label">Interface</p>
-          <div class="si-head"><h3 class="si-title">Pikachu</h3><span class="badge-chip">From schema cache</span></div>
-          <div class="si-hero">
-            <span class="si-sprite"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgBAMAAAAQtmoLAAAAKlBMVEUAAAAAAAApKSlBQUpiMQhzc4OcUgDFIBjelADmWkH2vSD25lL/9qT////Vai+KAAAAAXRSTlMAQObYZgAAAdlJREFUWMPtlsFqwkAQhjclhB6ztRRReqiHXnoSbz0piLX2JcwliD6A0JsgEuoDlNJTQKzsnkJpSDN9A3PpG3U2ST12J4dCKftjNML/MTObndkwZmRkZPTX5Vb0Wxe/DrQq5nRSHehWBK4PQKtFAWpiU9wctTodygI0SsCZQqfTJgK+P3ZmgAClfltsJ9k+Qf8bKQACQZZlgHptqwC+lhh+ZNleAVz5HRjrAEwGUi4Tr/wX61JaSMzm8wrygo9BD5wjENVKYI3hNDnZbRiqlHJfAHrAuVQmeH9eqooJwB3AABN5egyL+rVF3MrldDtJ5/OwDKADbkSuHJAVgJf7kE1FTmg2lCNKheoOCa7froU2OSo5owLSHeG33s+aJQCuTfKzJhQBsNjRlpEAJHZSrY4tKBNkHeNSqk3XZXUKYEFSApH18D1BfgYAmwZ7CKJhsOsRgHUB7CAMgj5lGM9AIfgJ6wtGA2Ko45UK7lPmUjPGmRThlQr3zCMAM/BxhXz1MLhPAKyiBwCkEH2PkJIlCn+apiKklGDlPQBCYoSQdKBMxUG0o6hx8O9oh53VEAHnqndIj42x/kotpjWYrGgB7Djp5c6R8GgR+Gn5G0cVXwl41bcUIyMjo/+qLw92FGczGN4XAAAAAElFTkSuQmCC" alt="" width="96" height="96"></span>
-            <div class="si-metric"><span>Height</span><b>0.4<small>m</small></b></div>
-            <div class="si-metric"><span>Weight</span><b>6.0<small>kg</small></b></div>
-            <span class="si-badge">Electric</span>
-          </div>
-          <p class="si-sub">Base stats</p>
-          <ul class="si-bars"><li><span>HP</span><i><b style="width:14%"></b></i><em>35</em></li><li><span>Attack</span><i><b style="width:22%"></b></i><em>55</em></li><li><span>Defense</span><i><b style="width:16%"></b></i><em>40</em></li><li><span>Sp. Atk</span><i><b style="width:20%"></b></i><em>50</em></li><li><span>Sp. Def</span><i><b style="width:20%"></b></i><em>50</em></li><li><span>Speed</span><i><b style="width:35%"></b></i><em>90</em></li></ul>
-        </div>
-      </div>
-      
-      <div class="spec-pane" data-example="weather" role="tabpanel" aria-label="weather example" hidden>
-        <div class="spec-response" aria-label="The API response">
-          <p class="spec-label">Response</p>
-          <pre class="spec-json"><span class="jl"><span class="jk">{</span></span><span class="jl">  <span class="jk">"latitude"</span>: <span class="jv">13.125,</span></span><span class="jl">  <span class="jk">"longitude"</span>: <span class="jv">80.25,</span></span><span class="jl">  <span class="jk">"generationtime_ms"</span>: <span class="jv">0.04,</span></span><span class="jl">  <span class="jk">"current"</span>: <span class="jv">{</span></span><span class="jl is-used">    <span class="jk">"temperature_2m"</span>: <span class="jv">31.0,</span></span><span class="jl is-used">    <span class="jk">"relative_humidity_2m"</span>: <span class="jv">72,</span></span><span class="jl is-used">    <span class="jk">"wind_speed_10m"</span>: <span class="jv">11.2</span></span><span class="jl">  <span class="jk">}</span></span><span class="jl is-used">  <span class="jk">"hourly"</span>: <span class="jv">{ "temperature_2m": [27.1, 26.8, …] }</span></span><span class="jl"><span class="jk">}</span></span></pre>
-          <p class="spec-key"><span class="spec-key-mark" aria-hidden="true"></span>Highlighted lines are the fields the page uses.</p>
-        </div>
-        <div class="spec-seam" aria-hidden="true"><span class="spec-seam-mark"><svg width="16" height="16"><use href="#imagoMark"/></svg></span></div>
-        <div class="spec-interface" aria-label="The interface Imago renders">
-          <p class="spec-label">Interface</p>
-          <div class="si-head"><h3 class="si-title">Chennai</h3><span class="badge-chip">From schema cache</span></div>
-          <div class="si-hero">
-            <div class="si-metric si-big"><span>Temperature <em class="si-changed">Changed</em></span><b>31.0<small>°C</small></b><i class="si-was">was 30.4 °C</i></div>
-          </div>
-          <dl class="si-facts"><div><dt>Humidity</dt><dd>72 %</dd></div><div><dt>Wind</dt><dd>11.2 km/h</dd></div><div><dt>Updated</dt><dd>08:03</dd></div></dl>
-          <p class="si-sub">Today, hourly</p>
-          <svg class="si-chart" viewBox="0 0 520 110" preserveAspectRatio="none" aria-hidden="true"><polyline points="0.0,83.1 22.6,87.0 45.2,90.9 67.8,93.5 90.4,96.2 113.0,97.5 135.7,92.2 158.3,77.9 180.9,59.6 203.5,42.6 226.1,32.1 248.7,24.3 271.3,17.8 293.9,13.8 316.5,16.5 339.1,21.7 361.7,32.1 384.3,43.9 407.0,54.3 429.6,62.2 452.2,68.7 474.8,72.6 497.4,76.6 520.0,80.5" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
-        </div>
-      </div>
-      
-      <div class="spec-pane" data-example="library" role="tabpanel" aria-label="library example" hidden>
-        <div class="spec-response" aria-label="The API response">
-          <p class="spec-label">Response</p>
-          <pre class="spec-json"><span class="jl"><span class="jk">{</span></span><span class="jl is-used">  <span class="jk">"numFound"</span>: <span class="jv">224,</span></span><span class="jl">  <span class="jk">"start"</span>: <span class="jv">0,</span></span><span class="jl">  <span class="jk">"docs"</span>: <span class="jv">[</span></span><span class="jl is-used">    <span class="jk">{ "title"</span>: <span class="jv">"The Hobbit", "author_name": ["J.R.R. Tolkien"], "first_publish_year": 1937 },</span></span><span class="jl is-used">    <span class="jk">{ "title"</span>: <span class="jv">"The Hobbit", "author_name": ["Charles Dixon", …], … },</span></span><span class="jl is-used">  <span class="jk">…</span></span><span class="jl">  <span class="jk">]</span></span><span class="jl"><span class="jk">}</span></span></pre>
-          <p class="spec-key"><span class="spec-key-mark" aria-hidden="true"></span>Highlighted lines are the fields the page uses.</p>
-        </div>
-        <div class="spec-seam" aria-hidden="true"><span class="spec-seam-mark"><svg width="16" height="16"><use href="#imagoMark"/></svg></span></div>
-        <div class="spec-interface" aria-label="The interface Imago renders">
-          <p class="spec-label">Interface</p>
-          <div class="si-head"><h3 class="si-title">The Hobbit</h3><span class="badge-chip">From schema cache</span></div>
-          <div class="si-hero"><div class="si-metric"><span>Results</span><b>224</b></div></div>
-          <table class="si-table"><thead><tr><th>Title</th><th>Author</th><th>First published</th></tr></thead><tbody><tr><td>The Hobbit</td><td>J.R.R. Tolkien</td><td>1937</td></tr><tr><td>The Hobbit (graphic novel)</td><td>Charles Dixon</td><td>1990</td></tr><tr><td>The Hobbit & The Lord of the Rings</td><td>J.R.R. Tolkien</td><td>1979</td></tr><tr><td>J.R.R. Tolkien’s The Hobbit</td><td>Patsey Gray</td><td>1968</td></tr></tbody></table>
+          <div class="canvas spec-live" id="specimenOut"></div>
         </div>
       </div>
     </section>

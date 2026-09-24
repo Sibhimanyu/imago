@@ -737,7 +737,7 @@ function columnScore(key, rows) {
   else if (/(title|name|label)/.test(lower)) score += 5;
   if (/(author|artist|creator|owner|publisher|brand|category|type|status|state|country|city|language)/.test(lower)) score += 3;
   if (/(year|count|total|price|amount|rating|score|size|duration|date)/.test(lower)) score += 2;
-  if (/(^_|_key$|_i$|^id$|_id$|key$|hash|guid|uuid|slug|cover|thumbnail|internal|seed|ia$|lending|ebook|availability)/.test(lower)) score -= 6;
+  if (/(^_|_key$|^id$|_id$|key$|hash|guid|uuid|slug|cover|thumbnail|internal|seed)/.test(lower)) score -= 6;
   if (RE_KEY_NOISE.test(lower)) score -= 4;
 
   var present = 0, longText = 0;
