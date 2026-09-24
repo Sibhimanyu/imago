@@ -66,43 +66,42 @@
   </header>
 
   <main class="landing-main">
-    <section class="landing-hero">
-      <h1 class="landing-title">APIs become interfaces.</h1>
-      <p class="landing-sub">Paste a GET endpoint. Imago reads the response, designs a view that fits its shape, and remembers it.</p>
-      <div class="landing-ctas">
-        <button type="button" class="btn btn-dark btn-lg" id="landingStart">Get started <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button type="button" class="btn btn-ghost btn-lg" id="landingTry">Try an example</button>
-      </div>
-      <p class="landing-caption">Runs in your browser. No account. Bring your own Gemini or Groq key, or use none.</p>
-    </section>
-
-    <!-- The hero is the transformation itself: one real response, and the
-         interface Imago renders from it. The highlighted lines are the fields
-         the interface uses. -->
-    <section class="specimen" aria-label="An API response and the interface Imago renders from it">
-      <div class="specimen-head">
-        <span class="specimen-url"><span class="method-chip">GET</span><span class="specimen-url-text" id="specimenUrl"></span></span>
-        <div class="specimen-switch" role="tablist" aria-label="Example">
-          <button type="button" role="tab" aria-selected="false" data-example="Pokémon">Pokémon</button>
-          <button type="button" role="tab" aria-selected="false" data-example="Weather">Weather</button>
-          <button type="button" role="tab" aria-selected="false" data-example="Library">Library</button>
+    <!-- The hero follows the brand banner: the promise on the left, and on the
+         right the transformation itself, one live response under the
+         interface Imago renders from it. -->
+    <div class="landing-top">
+      <section class="landing-hero">
+        <h1 class="landing-title">APIs become interfaces.</h1>
+        <p class="landing-sub">Paste a GET endpoint. Imago reads the response, designs a view that fits its shape, and remembers it.</p>
+        <div class="landing-ctas">
+          <button type="button" class="btn btn-dark btn-lg" id="landingStart">Get started <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="btn btn-ghost btn-lg" id="landingTry">Try an example</button>
         </div>
-      </div>
-      <!-- Nothing in here is written by hand: the response is fetched live and
-           the page is drawn by the same renderer the app uses, with no model. -->
-      <div class="spec-pane is-active" id="specimenPane" role="tabpanel" aria-busy="true">
-        <div class="spec-response" aria-label="The API response">
-          <p class="spec-label">Response</p>
-          <pre class="spec-json" id="specimenJson"></pre>
+        <p class="landing-caption">Runs in your browser. No account. Bring your own Gemini or Groq key, or use none.</p>
+      </section>
+
+      <section class="specimen" aria-label="An API response and the interface Imago renders from it">
+        <!-- Nothing in here is written by hand: the response is fetched live and
+             the page is drawn by the same renderer the app uses, with no model. -->
+        <div class="spec-pane is-active" id="specimenPane" role="tabpanel" aria-busy="true">
+          <div class="spec-response" aria-label="The API response">
+            <p class="specimen-url"><span class="method-chip">GET</span><span class="specimen-url-text" id="specimenUrl"></span></p>
+            <pre class="spec-json" id="specimenJson"></pre>
+          </div>
+          <div class="spec-interface" aria-label="The interface Imago renders">
+            <div class="canvas spec-live" id="specimenOut"></div>
+          </div>
+        </div>
+        <div class="specimen-foot">
+          <div class="specimen-switch" role="tablist" aria-label="Example">
+            <button type="button" role="tab" aria-selected="false" data-example="Pokémon">Pokémon</button>
+            <button type="button" role="tab" aria-selected="false" data-example="Weather">Weather</button>
+            <button type="button" role="tab" aria-selected="false" data-example="Library">Library</button>
+          </div>
           <p class="spec-key" id="specimenNote">Fetching…</p>
         </div>
-        <div class="spec-seam" aria-hidden="true"><span class="spec-seam-mark"><svg width="16" height="16"><use href="#imagoMark"/></svg></span></div>
-        <div class="spec-interface" aria-label="The interface Imago renders">
-          <p class="spec-label">Interface</p>
-          <div class="canvas spec-live" id="specimenOut"></div>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <section class="proofs" aria-label="What Imago does">
       <div class="proof">

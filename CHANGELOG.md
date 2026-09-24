@@ -2,6 +2,19 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.12.1.0] - 2026-09-24
+
+### Changed
+
+- **The landing hero follows the brand banner.** The headline, the pitch and
+  the two buttons sit on the left, left-aligned. On the right is the live demo
+  as one composition: the response in a dark panel with its GET URL at the
+  top, and the interface Imago draws from it on a white card that overlaps
+  the panel. The example tabs and the "Fetched live" note sit underneath. On
+  a phone the card overlaps the bottom of the panel instead of its side. The
+  demo is still fetched live and drawn by the real renderer; only its layout
+  changed. The Figma landing page and the shipped screens are synced to match.
+
 ## [0.12.0.0] - 2026-09-24
 
 ### Changed

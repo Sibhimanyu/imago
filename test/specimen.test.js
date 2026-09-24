@@ -83,3 +83,25 @@ describe('the landing demo is live', () => {
     expect(app.state.url).toContain('openlibrary.org');
   });
 });
+
+describe('the landing hero follows the brand banner', () => {
+  it('sets the promise beside the demo, the URL on the response and the examples below', async () => {
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
+    const doc = app.window.document;
+    const top = doc.querySelector('.landing-main > .landing-top');
+    expect([...top.children].map((c) => c.className)).toEqual(['landing-hero', 'specimen']);
+    expect(doc.querySelector('.spec-response').contains(doc.getElementById('specimenUrl'))).toBe(true);
+    const foot = doc.querySelector('.specimen > .specimen-foot');
+    expect(foot.querySelector('.specimen-switch')).not.toBeNull();
+    expect(foot.contains(doc.getElementById('specimenNote'))).toBe(true);
+    expect(doc.querySelector('.spec-seam')).toBeNull();
+  });
+
+  it('switches examples from the tabs under the composition', async () => {
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
+    const doc = app.window.document;
+    doc.querySelector('.specimen-foot [data-example="Weather"]').click();
+    await settle();
+    expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo.com');
+  });
+});
