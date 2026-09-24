@@ -20,3 +20,16 @@ describe('the imago/amigo wordplay', () => {
     expect(app.window.document.getElementById('amigoMark')).not.toBeNull();
   });
 });
+
+describe('link previews', () => {
+  // The site moved to imago.onslate.in; previews pointing at the old host
+  // showed a broken image wherever the link was pasted.
+  it('point at the live host, and the image sits on the same host as the page', async () => {
+    const app = await boot();
+    const meta = (sel) => app.window.document.querySelector(sel).getAttribute('content');
+    const page = new URL(meta('meta[property="og:url"]'));
+    expect(page.host).toBe('imago.onslate.in');
+    expect(new URL(meta('meta[property="og:image"]')).host).toBe(page.host);
+    expect(new URL(meta('meta[name="twitter:image"]')).host).toBe(page.host);
+  });
+});

@@ -2,6 +2,8 @@
 
 **APIs become interfaces.**
 
+Live: **<https://imago.onslate.in>**
+
 Imago is a browser-only API playground. You give it a GET endpoint; it fetches the
 JSON, works out what *shape* the response is, asks a model to design an interface for
 that shape, and renders it with its own components. It remembers every interpretation

@@ -2,6 +2,14 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.11.0.1] - 2026-09-24
+
+### Fixed
+
+- **The app is live at <https://imago.onslate.in>.** The old address returned
+  404. Link previews (the image shown when the link is pasted into a chat) now
+  point at the new address, so they no longer show a broken image.
+
 ## [0.11.0.0] - 2026-09-24
 
 ### Added
