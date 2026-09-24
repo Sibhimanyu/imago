@@ -8,6 +8,7 @@ from `scripts/`, so every piece shares the same palette, mark geometry and hero.
 | Logo (6 artboards: primary, reversed, app icon, mark, tile lockup, construction) | `imago-logo.ai` (RGB) | `exports/imago-logo_*.svg`, `exports/*.png`, `exports/imago-logo.pdf` |
 | A4 flyer, CMYK, 3 mm bleed | `imago-flyer-a4.ai` | `exports/imago-flyer-a4-print.pdf` (PDF/X-4), `exports/imago-flyer-a4-preview.png` |
 | Blog banner, 1200 × 700 px, RGB | `imago-blog-banner.ai` | `exports/imago-blog-banner.png`, `.jpg`, `@2x.png` |
+| Brand guidelines (11 pages: name, what the mark means, anatomy, construction, versions, misuse, Amigo the mascot, colour, type, voice) | `imago-brand-guidelines.ai` | `exports/imago-brand-guidelines.pdf`, `exports/guidelines/*.png` |
 
 ## Direction
 
@@ -30,7 +31,7 @@ from `scripts/`, so every piece shares the same palette, mark geometry and hero.
 Needs Illustrator plus the Inter, Inter Display and JetBrains Mono fonts.
 
 ```bash
-brand/kit/scripts/build.sh logo    # or flyer, banner
+brand/kit/scripts/build.sh logo    # or flyer, banner, guidelines
 ```
 
 A rebuild closes and replaces only that piece's own document; nothing else

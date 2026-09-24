@@ -20,7 +20,10 @@ var PAL = {
   yellowBg:  { hex: "fdf3cd", cmyk: [0, 3, 24, 0] },
   yellowInk: { hex: "6f570b", cmyk: [20, 35, 100, 45] },
   green:     { hex: "4fa96a", cmyk: [70, 5, 75, 0] },
-  link:      { hex: "3f6fb5", cmyk: [78, 50, 0, 0] }
+  link:      { hex: "3f6fb5", cmyk: [78, 50, 0, 0] },
+  red:       { hex: "d9534f", cmyk: [8, 80, 70, 0] },
+  redBg:     { hex: "fbeaea", cmyk: [0, 10, 6, 0] },
+  redInk:    { hex: "a83e3a", cmyk: [20, 85, 80, 12] }
 };
 
 var DOC, OX, OY, CMYK_MODE;
@@ -107,7 +110,7 @@ function style(range, o) {
   a.tracking = o.tracking || 0;
   if (o.leading) { a.autoLeading = false; a.leading = o.leading; }
   if (o.align) range.paragraphAttributes.justification =
-    o.align == "right" ? Justification.RIGHT : o.align == "center" ? Justification.CENTER : Justification.LEFT;
+    o.align == "right" ? Justification.RIGHT : (o.align == "center" ? Justification.CENTER : Justification.LEFT);
 }
 // Point text; y is the first baseline.
 function text(str, x, y, o) {
@@ -161,6 +164,10 @@ function parsePath(d) {
         var c1 = [x + num(), y + num()], c2 = [x + num(), y + num()];
         x += num(); y += num();
         cur[cur.length - 1].r = c1; pt(x, y).l = c2; break;
+      case "C":
+        var a1 = [num(), num()], a2 = [num(), num()];
+        x = num(); y = num();
+        cur[cur.length - 1].r = a1; pt(x, y).l = a2; break;
       case "Z": case "z":
         var last = cur[cur.length - 1];
         if (Math.abs(last.a[0] - sx) < 0.01 && Math.abs(last.a[1] - sy) < 0.01) { cur[0].l = last.l; cur.pop(); }
@@ -325,5 +332,24 @@ function hero(x, y, k, into) {
   for (i = 0; i < 24; i++) rrect(px + i * (iw / 24), cy + 214, 5, 9, 1.5, changed[i] ? "yellow" : "line", cd);
 
   if (k && k != 1) g.resize(k * 100, k * 100, true, true, true, true, k * 100, Transformation.TOPLEFT);
+  return g;
+}
+
+// ── Amigo, the mascot: the mark's body and aperture stood upright on two legs ──
+var AMIGO_BODY = "M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z";
+function amigo(x, y, size, c, into) {
+  var s = size / 32, g = (into || DOC).groupItems.add(); g.name = "Amigo";
+  function P(p) { return [L(x + p[0] * s), T(y + p[1] * s)]; }
+  rrect(x + 9 * s, y + 21.5 * s, 6 * s, 8.5 * s, 3 * s, c, g).name = "leg";
+  rrect(x + 17 * s, y + 21.5 * s, 6 * s, 8.5 * s, 3 * s, c, g).name = "leg";
+  var cp = g.compoundPathItems.add(); cp.name = "body + aperture";
+  var subs = parsePath(AMIGO_BODY);
+  for (var k = 0; k < subs.length; k++) {
+    var sp = subs[k], p = cp.pathItems.add(), a = [];
+    for (var j = 0; j < sp.length; j++) a.push(P(sp[j].a));
+    p.setEntirePath(a); p.closed = true;
+    for (j = 0; j < sp.length; j++) { p.pathPoints[j].leftDirection = P(sp[j].l); p.pathPoints[j].rightDirection = P(sp[j].r); }
+    p.evenodd = true; fill(p, c);
+  }
   return g;
 }
