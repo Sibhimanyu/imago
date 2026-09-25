@@ -123,6 +123,7 @@ describe('ollama generation', () => {
       ok: true, status: 200,
       body: { message: { content: JSON.stringify(SPEC) }, done_reason: 'stop' }
     }]);
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'OLLAHASH', schema: { a: 'number' } });
     expect(seen.length).toBe(1);
     expect(seen[0].url).toBe('http://127.0.0.1:11434/api/chat');
@@ -142,6 +143,7 @@ describe('ollama generation', () => {
       { ok: false, status: 400, body: { error: 'unsupported params' } },
       { ok: true, status: 200, body: { message: { content: JSON.stringify(SPEC) }, done_reason: 'stop' } }
     ]);
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'OLLAHASH', schema: { a: 'number' } });
     expect(seen.length).toBe(2);
     expect(seen[1].body.format).toBe('json');
@@ -175,6 +177,7 @@ describe('a truncated reply says so', () => {
     app.dom.modelName.value = 'llama3.1';
     app.state.data = { a: 1 };
     app.state.schemaHash = 'TRUNC';
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'TRUNC', schema: { a: 'number' } });
     const shown = app.dom.interfaceOut.textContent;
     expect(shown).toContain('cut off');
@@ -193,6 +196,7 @@ describe('a truncated reply says so', () => {
     app.dom.modelName.value = 'llama3.1';
     app.state.data = { a: 1 };
     app.state.schemaHash = 'TRUNC2';
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'TRUNC2', schema: { a: 'number' } });
     expect(seen.length, 'a retry would be cut off at the same place').toBe(1);
   });
@@ -214,6 +218,7 @@ describe("Ollama's error shape is not the others'", () => {
     app.dom.modelName.value = 'qwen3';
     app.state.data = { a: 1 };
     app.state.schemaHash = 'ERRHASH';
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'ERRHASH', schema: { a: 'number' } });
     const shown = app.dom.interfaceOut.textContent;
     expect(shown).toContain("model 'qwen3' not found");

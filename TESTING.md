@@ -9,7 +9,14 @@ just yolo coding. With tests, it's a superpower.
 ```bash
 npm test          # one pass
 npm run test:watch
+npm run test:coverage
 ```
+
+Coverage is real, not the harness's: `test/harness.js` writes the bundle it
+evaluates to `.cache/app.js` with an inline source map and runs it under that
+file URL, so V8's coverage maps back onto the modules in `js/`. On
+2026-09-25 it stood at 90.8% of lines and 80.9% of branches; `render.js`
+(66%) is the gap.
 
 Framework: **Vitest 2.1** with **jsdom 25**. The browser loads `js/main.js` as
 native ES modules with no build step. jsdom cannot run module scripts, so
@@ -62,6 +69,7 @@ Two other jsdom traps the harness already handles:
 | `test/onescreen.test.js` | The one-screen layout: inspector and Settings sheet, the trail, the history strip, the endpoint rail, first run without a key, and the basic layout (units, series, Details). |
 | `test/design-sync.test.js` | The Figma sync gate: token extraction from `:root`, the UI-surface hash, the Figma manifest against the screenshot list, and `design:check` run end to end in a sandbox copy. |
 | `test/modules.test.js` | The module check (`npm run check`): a name used without an import, an assignment to an import, duplicates, unreachable modules, and the shipped `js/` passing it. |
+| `test/audit.test.js` | The 2026-09-24 audit: a request's lifetime (replace, abort, time out, ignore late replies), layouts remembered by shape, what may leave the browser (the HTML frame, address keys, share links, framing), and the page and its controls. |
 
 `test/harness.js` also exports `jsonFetch(body)` for a one-shot fetch stub and
 `flush()` to drain pending promise jobs.

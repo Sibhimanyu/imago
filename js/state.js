@@ -5,12 +5,13 @@ var state = {
   builder: 'spec',   // 'spec' | 'html' — structured plan vs full-page HTML
   html: null,
   htmlSource: '',    // 'generated' | 'cache'
-  htmlBytes: -1,     // byteSize of the data the current page was built from
-  htmlUrl: '',
+  htmlSig: '',       // dataSig of the response the current page was written from
+  htmlUrl: '',       // and the endpoint it came from
   headers: {},
   headersText: '',
   data: null,
   dataUrl: '',
+  dataSig: '',           // dataSignature(data), taken once per fetch
   rawText: '',
   byteSize: 0,
   status: 0,
@@ -26,6 +27,7 @@ var state = {
   nextRefreshAt: 0,
   tickHandle: null,
   inFlight: false,
+  requestSeq: 0,         // bumps per request; a reply for an older one is ignored
   dirtySinceSend: true,
   tab: 'interface',
   view: 'landing',
@@ -37,6 +39,7 @@ var state = {
   historyDepth: 0,       // history entries this app pushed; popstate owns the pop
   navRestorePoint: null, // what was on screen before an in-flight navigation
   generating: false,     // a model call is in flight
+  genSeq: 0,             // bumps per model call; a reply for an older one is dropped
   rawPaneDirty: true,    // body changed since the Raw pane was last built
   schemaPaneDirty: true,
   detailsOpen: Object.create(null),   // endpoint hash → Details left open

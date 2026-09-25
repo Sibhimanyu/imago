@@ -5,21 +5,21 @@
    rest of js/ is imported from here. See the module table in README.md.
    ========================================================================== */
 
-import { DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, detectProvider, fetchOllamaModels, getProvider, ollamaAltBase, ollamaBase } from './config.js';
+import { DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, fetchOllamaModels, getProvider, ollamaAltBase, ollamaBase } from './config.js';
 import { dom, state } from './state.js';
 import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getSessionModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setSessionModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
 import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
 import { byteLength, canonPath, el, formatBytes, formatValue, getByPath, isImageUrl, isPlainObject, isUrl, parsePath, qs } from './util.js';
 import { lastSegment } from './values.js';
-import { deriveSchema, diffData, fingerprint, flatten, hashString, mergeSchemas, stableStringify } from './schema.js';
-import { applyHtml, buildHtmlPrompt, normalizeHtmlDoc, providerErrorText } from './llm.js';
-import { buildFallbackSpec, deriveActions, endpointTitle, humanize, normalizeActions, normalizeSpec } from './spec.js';
+import { dataSignature, deriveSchema, diffData, fingerprint, flatten, hashString, mergeSchemas, stableStringify } from './schema.js';
+import { applyHtml, buildHtmlPrompt, buildImagoPrompt, normalizeHtmlDoc, providerErrorText, sanitizeHtmlDoc } from './llm.js';
+import { buildFallbackSpec, deriveActions, endpointTitle, fitTitle, humanize, normalizeActions, normalizeSpec } from './spec.js';
 import { isBookkeeping, renderComponent, renderSpecBody, scheduleTimelineLayout } from './render.js';
 import { keyInputFor, setAppPane, setKeyStatus, showView, storeKeyFromInput, syncKeyInputs, syncProviderUi, toast, trapSheetFocus } from './ui.js';
 import { chatBusy, chatTarget, chatTurns, clearChat, sendChat, syncChatTarget, testProvider, updateMeta } from './chat.js';
 import { applySpec, enterStage, escapeHtml, followUrl, goBack, highlightJson, leaveStage, minimalSpec, navigateTo, pushHistory, renderChangesPane, renderRawPane, renderSchemaPane, rollbackNavigation, setActiveTab, showGeneratePrompt, showInterfaceEmpty, stepBack } from './panes.js';
 import { clearAllData, currentRequestKey, hostOf, loadExample, loadSavedRequest, renderHistory, renderRailExamples, renderSavedList, saveCurrentRequest, setUrlInput, syncSaveBtn } from './endpoints.js';
-import { callGemini, explainFailure, finishRequest, generateInterfaceNow, getSnapshotsFor, handleRequestFailure, hasSecretHeader, headerProblem, headersToText, importCurl, latestSnapshotWithData, looksLikeCurl, markDirty, noKeyAlert, parseCurl, parseHeaders, performRequest, pushSnapshot, redactSecretHeaders, resolveSpec, sameOrigin, setBuilder, shellWords, startTimer, stopTimer, stripBody, syncBuilderUi, syncHeadersChip, syncRefreshUi, useKeyedProvider } from './request.js';
+import { cachedHtmlFor, callGemini, callHtml, cancelInFlight, explainFailure, finishRequest, generateInterfaceNow, getSnapshotsFor, handleRequestFailure, hasSecretHeader, headerProblem, headersToText, importCurl, latestSnapshotWithData, looksLikeCurl, markDirty, maskUrlSecrets, noKeyAlert, parseCurl, parseHeaders, performRequest, pushSnapshot, redactSecretHeaders, resolveSpec, sameOrigin, secureUrl, setBuilder, shellWords, startTimer, stopTimer, stripBody, stripUrlSecrets, syncBuilderUi, syncHeadersChip, syncRefreshUi, useKeyedProvider, withScheme } from './request.js';
 
 /* ── Events ────────────────────────────────────────────────────────────── */
 
@@ -402,7 +402,12 @@ function enterApp() {
   prefs.onboarded = true;
   setPrefs(prefs);
   goToView('app');
-  if (!state.data && dom.urlInput) dom.urlInput.focus();
+  // Ready to paste, even over a page restored from last time: the address
+  // is selected, so a paste replaces it.
+  if (dom.urlInput) {
+    dom.urlInput.focus();
+    if (dom.urlInput.select) dom.urlInput.select();
+  }
 }
 
 // The address decides the view: the landing page lives at the bare URL and
@@ -512,6 +517,7 @@ function restoreFromSnapshot(url) {
   state.url = url;
   state.data = snapshot.data;
   state.dataUrl = url;
+  state.dataSig = dataSignature(snapshot.data);
   state.status = snapshot.status;
   state.lastCheckedAt = new Date(snapshot.fetchedAt).getTime();
   state.diff = null;
@@ -532,8 +538,8 @@ function restoreFromSnapshot(url) {
 
   if (state.builder === 'html') {
     var htmlEntry = getSchemaSpecs()[print.hash];
-    var cachedDoc = htmlEntry && htmlEntry.html ? normalizeHtmlDoc(htmlEntry.html) : null;
-    if (cachedDoc) applyHtml(cachedDoc, 'cache');
+    var cachedDoc = cachedHtmlFor(htmlEntry, url);
+    if (cachedDoc) applyHtml(cachedDoc, 'cache', { url: htmlEntry.htmlUrl, sig: htmlEntry.htmlSig || '' });
     else if (useKeyedProvider()) {
       state.pendingGenerate = true;
       showGeneratePrompt();
@@ -547,7 +553,7 @@ function restoreFromSnapshot(url) {
 
   var entry = getSchemaSpecs()[print.hash];
   var normalized = entry && entry.spec ? normalizeSpec(entry.spec) : null;
-  if (normalized) applySpec(normalized, 'cache');
+  if (normalized) applySpec(fitTitle(normalized, snapshot.data, url, entry.sourceUrl), 'cache');
   else applySpec(normalizeSpec(buildFallbackSpec(snapshot.data, url)), 'fallback');
 
   updateMeta();
@@ -634,9 +640,12 @@ function fromBase64Url(text) {
   return decodeURIComponent(escape(window.atob(b64)));
 }
 
-// → { link, withLayout }
+// → { link, withLayout, removed: [query parameter names left out] }
 function buildShareLink() {
-  var payload = { v: 1, u: state.url };
+  // A key in the address (?api_key=, ?appid=) is a credential like a header,
+  // and a link is for someone else.
+  var secured = stripUrlSecrets(state.url);
+  var payload = { v: 1, u: secured.url };
   // What is on screen, edits included: a basic layout you edited is worth
   // sending; an untouched one the recipient rebuilds on their own.
   var edits = editsFor(state.schemaHash);
@@ -647,9 +656,23 @@ function buildShareLink() {
   var link = base + SHARE_PREFIX + toBase64Url(JSON.stringify(payload));
   if (link.length > MAX_SHARE_CHARS && withLayout) {
     withLayout = false;
-    link = base + SHARE_PREFIX + toBase64Url(JSON.stringify({ v: 1, u: state.url }));
+    link = base + SHARE_PREFIX + toBase64Url(JSON.stringify({ v: 1, u: secured.url }));
   }
-  return { link: link, withLayout: withLayout };
+  return { link: link, withLayout: withLayout, removed: secured.removed };
+}
+
+// A link someone sent you may only open a public https endpoint. One aimed
+// at http://localhost or a LAN address would have your browser request your
+// own machine's services, and Watch would keep requesting them.
+function isPrivateHost(hostname) {
+  var h = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+  if (!h || h === 'localhost' || /\.localhost$/.test(h) || /\.local$/.test(h) || /\.internal$/.test(h)) return true;
+  if (h === '::1' || h === '::' || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe80:/.test(h)) return true;
+  var m = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(h);
+  if (!m) return false;
+  var a = Number(m[1]), b = Number(m[2]);
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) ||
+         (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
 }
 
 // → { url, spec|null } or null for no link; { error } for a damaged one.
@@ -660,6 +683,10 @@ function readShareLink(hash) {
     var url = payload && typeof payload.u === 'string' ? payload.u : '';
     var parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('scheme');
+    if (parsed.protocol !== 'https:' || isPrivateHost(parsed.hostname)) {
+      return { error: 'That share link points at ' + (parsed.host || 'a private address') +
+                      ', which is not a public https endpoint, so it was not opened.' };
+    }
     return { url: url, spec: isPlainObject(payload.s) ? payload.s : null };
   } catch (err) {
     return { error: 'That share link is damaged, so it could not be opened.' };
@@ -672,6 +699,7 @@ function shareCurrentPage() {
   var notes = [];
   if (!built.withLayout && state.specSource !== 'fallback') notes.push('The layout was too big to fit, so the link has only the endpoint.');
   if (Object.keys(state.headers || {}).length) notes.push('It leaves out this endpoint\'s headers, so it may not load for others.');
+  if (built.removed.length) notes.push('It leaves out ' + built.removed.join(', ') + ' from the address, so it may not load for others.');
   var done = function () { toast(['Link copied.'].concat(notes).join(' '), notes.length ? null : 'ok'); };
   var failed = function () { toast('Could not copy the link. Allow clipboard access and try again.', 'error'); };
   try {
@@ -695,19 +723,53 @@ function openShareLink() {
   if (shared.error) { toast(shared.error, 'error'); return true; }
   state.sharedSpec = shared.spec ? { url: shared.url, spec: shared.spec } : null;
   state.stack = [];
+  // Someone else's endpoint is opened once, not watched: Watch stays off
+  // until the reader turns it on for this page.
+  if (state.refreshIntervalMs) {
+    state.refreshIntervalMs = 0;
+    stopTimer();
+    syncRefreshUi();
+  }
   toast('Opened a page shared from ' + (hostOf(shared.url) || 'a link') + '.');
   navigateTo(shared.url, '');
   return true;
 }
 
+/* ── Framing ──────────────────────────────────────────────────────────
+   A page on another site could put Imago in a frame and steer a click onto
+   Generate (spending your model key on its data) or Clear all data. A
+   <meta> CSP cannot forbid framing and the host sends no header for it, so
+   the app checks for itself and refuses to run inside a frame. */
+
+function isFramed(win) {
+  try { return win.self !== win.top; } catch (err) { return true; }   // a cross-origin top throws
+}
+
+function showFramedNotice() {
+  var body = document.body;
+  while (body.firstChild) body.removeChild(body.firstChild);
+  var box = el('div', 'framed-note');
+  box.appendChild(el('p', 'framed-title', 'Imago does not run inside other sites.'));
+  var link = el('a', 'framed-link', 'Open Imago in its own tab');
+  link.href = window.location.origin + window.location.pathname;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  box.appendChild(link);
+  body.appendChild(box);
+}
+
 function init() {
   cacheDom();
+  if (isFramed(window)) { showFramedNotice(); return; }
   baseTitle = document.title;
   document.addEventListener('visibilitychange', clearUnseen);
   window.addEventListener('focus', clearUnseen);
   wireEvents();
   restoreSession();
-  restoreLastView();
+  // Whatever an older build left in storage, a bad restore must not stop
+  // the app from opening a share link or showing a view.
+  try { restoreLastView(); }
+  catch (err) { showInterfaceEmpty(); }
   if (openShareLink()) return;
 
   setView(viewFromUrl());
@@ -761,7 +823,7 @@ window.__imago = {
   DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
   parseCurl: parseCurl, shellWords: shellWords, startTimer: startTimer, stopTimer: stopTimer, applyEdits: applyEdits, editsFor: editsFor, setEditing: setEditing, describeChange: describeChange, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
   // full-html builder
-  normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt,
+  normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt, buildImagoPrompt: buildImagoPrompt,
   applyHtml: applyHtml, setBuilder: setBuilder,
   testProvider: testProvider, providerErrorText: providerErrorText,
   // behaviour
@@ -779,6 +841,11 @@ window.__imago = {
   loadSavedRequest: loadSavedRequest,
   setAppPane: setAppPane, renderHistory: renderHistory, renderSavedList: renderSavedList,
   enterApp: enterApp, isBookkeeping: isBookkeeping, stripBody: stripBody,
+  fitTitle: fitTitle, sanitizeHtmlDoc: sanitizeHtmlDoc, dataSignature: dataSignature,
+  secureUrl: secureUrl, maskUrlSecrets: maskUrlSecrets, stripUrlSecrets: stripUrlSecrets,
+  withScheme: withScheme, isPrivateHost: isPrivateHost, isFramed: isFramed, showFramedNotice: showFramedNotice,
+  cancelInFlight: cancelInFlight, callHtml: callHtml, TIMEOUTS: TIMEOUTS,
+  saveCurrentRequest: saveCurrentRequest, restoreLastView: restoreLastView, showGeneratePrompt: showGeneratePrompt,
   init: init
 };
 
@@ -788,4 +855,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };

@@ -9,7 +9,7 @@ import { renderSpecBody, scheduleTimelineLayout } from './render.js';
 import { toast } from './ui.js';
 import { updateMeta } from './chat.js';
 import { currentRequestKey, hostOf, loadExample, renderHistory, renderSavedList, setUrlInput } from './endpoints.js';
-import { generateInterfaceNow, getSnapshotsFor, hasSecretHeader, markDirty, noKeyAlert, parseHeaders, performRequest, sameOrigin, startTimer, syncHeadersChip } from './request.js';
+import { cancelInFlight, generateInterfaceNow, getSnapshotsFor, hasSecretHeader, markDirty, noKeyAlert, parseHeaders, performRequest, sameOrigin, startTimer, syncHeadersChip } from './request.js';
 import { restoreFromSnapshot } from './main.js';
 
 /* ── Response pane (syntax highlighted, numbered) ──────────────────────── */
@@ -223,6 +223,11 @@ function showInterfaceLoading(message) {
 function showGeneratePrompt() {
   dom.interfaceHead.hidden = true;
   resetInterfaceOut(false);
+  // The prompt is what is on screen now. A plan left behind here was put
+  // back over this endpoint's data when a later request failed.
+  state.spec = null;
+  state.specSource = '';
+  state.html = null;
 
   var box = el('div', 'gen-prompt');
   var spark = el('div', 'gen-spark');
@@ -238,14 +243,15 @@ function showGeneratePrompt() {
   btn.style.margin = '22px auto 0';
   btn.addEventListener('click', function () {
     btn.disabled = true;
-    generateInterfaceNow();
+    if (generateInterfaceNow() === false) btn.disabled = false;
   });
   box.appendChild(btn);
   dom.interfaceOut.appendChild(box);
 }
 
 // kind 'note' is for states that are not failures (no key yet): red is
-// reserved for something that actually went wrong.
+// reserved for something that actually went wrong. body may be a list of
+// paragraphs, so a quoted response and the sentence after it stay apart.
 function showAlert(title, body, kind, action) {
   var box = el('div', kind === 'note' ? 'alert alert-note' : 'alert');
   var ico = el('span', 'alert-ico');
@@ -253,7 +259,10 @@ function showAlert(title, body, kind, action) {
   box.appendChild(ico);
   var text = el('div');
   text.appendChild(el('p', 'alert-title', title));
-  text.appendChild(el('p', 'alert-body', body));
+  var paragraphs = Array.isArray(body) ? body : [body];
+  for (var i = 0; i < paragraphs.length; i += 1) {
+    if (paragraphs[i]) text.appendChild(el('p', 'alert-body', paragraphs[i]));
+  }
   box.appendChild(text);
   if (action) {
     var go = el('button', 'btn btn-dark btn-sm alert-action', action.label);
@@ -280,6 +289,7 @@ function applySpec(spec, source) {
   if (!spec) spec = minimalSpec();
   state.spec = spec;
   state.specSource = source;
+  state.html = null;
   state.pendingGenerate = false;
 
   dom.interfaceHead.hidden = true;   // the title lives in the lead row instead
@@ -375,6 +385,7 @@ function goBack() {
 
 function stepBack(steps) {
   if (!state.stage) return;
+  cancelInFlight(true);   // Back leaves a page still loading, as a browser does
   var previous = null;
   for (var i = 0; i < steps && state.stack.length; i += 1) previous = state.stack.pop();
   if (previous) {
@@ -399,6 +410,9 @@ function stepBack(steps) {
 
 function followUrl(url) {
   if (!isUrl(url)) { toast('That field is not a URL.', 'error'); return; }
+  // A page still loading is abandoned first, so the trail records the page
+  // actually on screen, not the one that never arrived.
+  cancelInFlight(true);
   // The follow target comes out of the fetched body at a path the model
   // chose, so it is attacker-influenceable. Custom headers are where the
   // user's `Authorization: Bearer ...` lives — never replay them to an
@@ -430,9 +444,10 @@ function followUrl(url) {
 }
 
 function navigateTo(url, headersText) {
-  // Remember what is actually on screen. performRequest can refuse (another
-  // request in flight) or fail, and either way the reader must not be left
-  // looking at page A's data under page B's URL and crumb.
+  cancelInFlight(true);
+  // Remember what is actually on screen. performRequest can refuse (a bad
+  // header) or fail, and either way the reader must not be left looking at
+  // page A's data under page B's URL and crumb.
   var restorePoint = {
     url: state.url,
     urlInput: dom.urlInput.value,

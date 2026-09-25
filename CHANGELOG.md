@@ -2,6 +2,85 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.0.0] - 2026-09-25
+
+The fixes from a full audit (security, correctness, hands-on QA), each with a
+regression test in `test/audit.test.js`.
+
+### Fixed
+
+- **A remembered layout names the response it shows.** Layouts are kept per
+  response shape, but their title was written about one response, so every
+  Pokémon opened after Pikachu was titled "Pikachu". A plan now names the
+  field its title comes from (`titlePath`), and another endpoint of the same
+  shape gets its own title and no borrowed subtitle.
+- **A remembered HTML page stays with its endpoint.** It has one response's
+  values written into it, so it is no longer shown for another endpoint of
+  the same shape, and the "data changed" bar compares against the response
+  it was written from. A page written from a response that needed
+  credentials is not remembered.
+- **A slow request no longer locks the app.** A new request replaces the one
+  in flight (which is aborted), instead of being ignored while the URL you
+  typed was lost. Requests time out after 30 seconds and model calls after
+  two minutes, with a message saying so.
+- **Late model replies are dropped.** A reply for a page you have left no
+  longer replaces the page on screen, and Generate always starts a call,
+  instead of going dead while another page's call was running.
+- **A failed request puts back what was on screen**: the Generate prompt, a
+  generated HTML page (a failed Watch tick no longer wipes it), or the plan.
+  Before, an older page's layout could be drawn over another endpoint's data.
+- **Watch keeps a page live when the response changes shape.** It shows the
+  basic layout with a Generate button, instead of swapping the page for the
+  Generate prompt while the timer kept fetching behind it. Clear all data now
+  stops Watch.
+- **A rejected key stops reading as ready.** After a provider refuses a key,
+  in Test or in a generation, Settings says "Rejected", the ready pill goes,
+  and pages use the basic layout with "rejected your key" until the key
+  changes.
+- Nanosecond and microsecond timestamps render as dates instead of crashing
+  the page.
+- Charts report the series' real length, low and high; thinning keeps each
+  stretch's peak and trough.
+- A search's result list leads its page as a full-width table, with **Show
+  all** for long tables. Numbers repeated under two names (`numFound`,
+  `num_found`) show once, and `start` goes to Details.
+- A list inside a table row is summarised ("hp 35, attack 55 +4") instead of
+  being dropped.
+- `[null, {…}]` is read as a list of objects.
+- An address without `https://` gets one.
+- Error messages keep the response snippet and "Below is …, the last page
+  that loaded" in separate paragraphs; an empty body says so, and an empty
+  200 is "Empty response", not "not JSON".
+- Deleting a saved endpoint moves focus to the next row. Save shows **Saved**
+  with a filled star, and names the endpoint after the page ("Pikachu").
+- The landing hero no longer jumps when the live demo loads or the example
+  changes. **Get started** always puts the cursor in the address box.
+- The meta row hides while another endpoint loads, instead of describing the
+  page that is leaving.
+- A damaged saved request or snapshot entry no longer stops the app booting.
+
+### Security
+
+- **The full-HTML frame loads only what the data holds.** Images, CSS
+  `url()`s and links must be URLs already in the response; refreshes, link
+  tags, media and event attributes are removed; and the frame carries its own
+  policy (`default-src 'none'`). A page can no longer carry the response it
+  was given out to another site in an image URL.
+- **Keys in the address stay home.** Credential parameters (`api_key`,
+  `appid`, `key`, `token`, …) are left out of share links and masked in the
+  prompt sent to the model.
+- **Share links open only public https endpoints**, never `localhost` or a
+  LAN address, and do not start Watch.
+- **Imago refuses to run inside another site's frame**, since the host sends
+  no header against framing and a `<meta>` policy cannot.
+- A response fetched with credential headers is kept in the session only,
+  not in stored snapshots. Only the 30 most recently fetched endpoints keep a
+  history.
+
+### Added
+
+- `npm run test:coverage`, with coverage that maps back onto `js/`.
+
 ## [0.12.1.0] - 2026-09-24
 
 ### Changed

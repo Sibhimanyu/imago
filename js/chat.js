@@ -1,10 +1,10 @@
 import { fetchOllamaModels, getProvider, providerNeedsKey } from './config.js';
 import { dom, state } from './state.js';
-import { getProviderKey, getSessionProvider } from './storage.js';
+import { clearKeyRejected, getProviderKey, getSessionProvider, markKeyRejected, providerUsable } from './storage.js';
 import { clear, el, formatBytes, formatRelative } from './util.js';
 import { fingerprint } from './schema.js';
 import { llmRequest, providerErrorText } from './llm.js';
-import { TEST_TIMEOUT_MS, currentOllamaModel, ollamaFailureText, syncOllamaModelOptions } from './ui.js';
+import { TEST_TIMEOUT_MS, currentOllamaModel, ollamaFailureText, setKeyStatus, syncOllamaModelOptions } from './ui.js';
 
 /* ── Try-it console ──────────────────────────────────────────────────────
    A real conversation against the configured provider, through the same
@@ -30,7 +30,7 @@ function chatTarget() {
 function syncChatTarget() {
   if (!dom.chatTarget) return;
   var t = chatTarget();
-  var ready = !providerNeedsKey(t.id) || !!getProviderKey(t.id);
+  var ready = providerUsable(t.id);
   dom.chatTarget.textContent = t.provider.label + ' · ' + t.model;
   dom.chatTarget.setAttribute('data-state', ready ? 'ready' : 'missing');
   if (dom.chatSendBtn) dom.chatSendBtn.disabled = chatBusy;
@@ -171,11 +171,17 @@ function testProvider(id) {
     line.textContent = 'Testing… ' + Math.round((Date.now() - started) / 1000) + 's';
   }, 1000);
 
-  function finish(ok, text) {
+  function finish(ok, text, badKey) {
     if (done) return;
     done = true;
     window.clearInterval(ticker);
     btn.disabled = false;
+    // A key the provider refused stops reading as ready everywhere, and a
+    // key that answered clears that mark.
+    if ((ok && clearKeyRejected(id)) || (badKey && markKeyRejected(id))) {
+      setKeyStatus();
+      syncChatTarget();
+    }
     line.textContent = text;
     line.setAttribute('data-state', ok ? 'ready' : 'missing');
   }
@@ -230,7 +236,7 @@ function testProvider(id) {
     })
     .catch(function (err) {
       var info = providerErrorText(provider, err);
-      finish(false, info.title + (info.message ? ' — ' + info.message : ''));
+      finish(false, info.title + (info.message ? ' — ' + info.message : ''), info.badKey);
     });
 }
 
@@ -267,7 +273,10 @@ function updateMeta() {
   if (dom.inspectBtn) dom.inspectBtn.disabled = !state.data;
   if (dom.shareBtn) dom.shareBtn.disabled = !state.data;
   if (dom.editBtn) dom.editBtn.disabled = !state.data || !state.spec || state.builder === 'html';
-  if (!state.data) { dom.runMeta.hidden = true; return; }
+  // While another endpoint loads, "Checked 44s ago · 353.8 KB" describes the
+  // page that is leaving, not the one on its way.
+  var leaving = state.inFlight && state.url !== state.dataUrl;
+  if (!state.data || leaving) { dom.runMeta.hidden = true; return; }
   dom.runMeta.hidden = false;
 
   dom.stLastChecked.textContent = state.lastCheckedAt ? formatRelative(state.lastCheckedAt) : '—';
@@ -297,8 +306,8 @@ function updateMeta() {
   // A generated page is a snapshot: flag it the moment fresh data lands.
   var staleBar = dom.interfaceOut.querySelector('.html-stale');
   if (staleBar) {
-    staleBar.hidden = !(state.builder === 'html' && state.htmlBytes >= 0 && state.data &&
-      (state.url !== state.htmlUrl || state.byteSize !== state.htmlBytes));
+    staleBar.hidden = !(state.builder === 'html' && state.htmlSig && state.data &&
+      (state.dataUrl !== state.htmlUrl || state.dataSig !== state.htmlSig));
   }
 }
 

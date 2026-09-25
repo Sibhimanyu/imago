@@ -117,9 +117,12 @@ count works without it.
 **Share** copies a link that opens the same page for someone else: the
 endpoint and its layout, so they see what you see even without a key of their
 own. The link never carries your headers, keys or the response itself; their
-browser fetches fresh data. A layout from a link is checked like a model's plan
-and is not saved into their cache. If the endpoint needed your headers, you are
-told the link may not load for others.
+browser fetches fresh data. A key in the address (`?api_key=`, `?appid=`,
+`?key=`, …) is left out the same way. A layout from a link is checked like a
+model's plan and is not saved into their cache. If the endpoint needed your
+headers or an address key, you are told the link may not load for others.
+Opening a link only ever fetches a public https endpoint (never `localhost` or
+a LAN address), and it does not start Watch.
 
 ### One screen
 

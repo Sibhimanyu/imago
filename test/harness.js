@@ -8,14 +8,25 @@ import { JSDOM } from 'jsdom';
 import { buildSync } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const APP = buildSync({
+// The bundle is written to disk with a source map and evaluated under its
+// own file URL, so V8 coverage can follow it back to the modules in js/.
+// Test files run in parallel workers, each building the same bundle: write
+// it under a private name and rename it into place, so no worker ever reads
+// a half-written file.
+const BUNDLE = path.join(ROOT, '.cache', 'app.js');
+const BUILT = buildSync({
   entryPoints: [path.join(ROOT, 'js/main.js')],
-  bundle: true, format: 'iife', write: false, logLevel: 'silent'
+  bundle: true, format: 'iife', sourcemap: 'inline', outfile: BUNDLE, write: false, logLevel: 'silent'
 }).outputFiles[0].text;
+fs.mkdirSync(path.dirname(BUNDLE), { recursive: true });
+const PRIVATE = BUNDLE + '.' + process.pid + '.' + Math.random().toString(36).slice(2);
+fs.writeFileSync(PRIVATE, BUILT);
+fs.renameSync(PRIVATE, BUNDLE);
+const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
 
 /**
  * @param {object}   opts

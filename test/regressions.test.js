@@ -205,8 +205,9 @@ describe('navigation state stays consistent', () => {
     const app = await boot();
     app.state.url = 'https://a.test/one';
     app.dom.urlInput.value = 'https://a.test/one';
+    app.state.headersText = 'Bad Header: x';   // a header fetch would throw on: refused before sending
+    app.dom.headersInput.value = 'Bad Header: x';
     app.state.stage = true;
-    app.state.inFlight = true;          // something already in flight
 
     const stackBefore = app.state.stack.length;
     app.followUrl('https://a.test/two');
@@ -319,6 +320,7 @@ describe('a model call that races a refresh is discarded', () => {
     });
 
     // The call was started for OLDHASH, before the refresh landed.
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
     await app.callGemini('https://a.test/x', { hash: 'OLDHASH', schema: { a: 'number' } });
 
     const store = app.getSchemaSpecs();
@@ -340,6 +342,8 @@ describe('a model call that races a refresh is discarded', () => {
         title: 'Designed', components: [{ type: 'jsonBlock', path: '' }]
       }) }] } }]
     });
+
+    app.state.url = 'https://a.test/x';   // a reply is used only for the page it was asked for
 
     await app.callGemini('https://a.test/x', { hash: 'SAMEHASH', schema: { a: 'number' } });
 

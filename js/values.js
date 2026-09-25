@@ -25,7 +25,7 @@ var RE_KEY_LAT = /(^|_)(lat|latitude)(_|$)/;
 var RE_KEY_LNG = /(^|_)(lng|lon|long|longitude)(_|$)/;
 // Transport and bookkeeping fields. Still shown, never as the headline.
 var RE_KEY_YEAR = /(^|_)(year|yr|founded|published_year)(_|$)/;
-var RE_KEY_NOISE = /(generation_?time|utc_offset|timezone_abbreviation|interval|elevation|^id$|_id$|etag|checksum|revision|version|request|cursor|offset|page|limit|status_code|copyright|licen[cs]e|attribution)/;
+var RE_KEY_NOISE = /(generation_?time|utc_offset|timezone_abbreviation|interval|elevation|^id$|_id$|etag|checksum|revision|version|request|cursor|offset|page|limit|^start$|^skip$|status_code|copyright|licen[cs]e|attribution)/;
 var RE_KEY_ANGLE = /(azimuth|altitude|bearing|heading|declination|elevation_angle)/;
 var RE_KEY_TIME = /(^|_)(at|time|timestamp|date|epoch|created|updated|modified|published|expires)(_|$)/;
 var RE_KEY_TEMP = /(^|_)(temp|temperature|feels_like|dew_point)/;
@@ -99,6 +99,14 @@ function formatNumber(value) {
   return String(Math.round(value * 100) / 100);
 }
 
+// A big epoch number is milliseconds, microseconds or nanoseconds; its
+// size says which (1.7e12 ms, 1.7e15 µs, 1.7e18 ns are the same moment).
+function epochToMillis(value) {
+  if (Math.abs(value) >= 1e17) return value / 1e6;
+  if (Math.abs(value) >= 1e14) return value / 1e3;
+  return value;
+}
+
 function inferKind(value, component) {
   if (value === undefined) return 'empty';
   if (value === null) return 'null';
@@ -169,8 +177,12 @@ function describeValue(value, component) {
     }
     case 'epoch':
     case 'epochMs': {
-      var ms = kind === 'epoch' ? value * 1000 : value;
-      var iso = new Date(ms).toISOString().replace(/\.\d+Z$/, 'Z');
+      var ms = kind === 'epoch' ? value * 1000 : epochToMillis(value);
+      var when = new Date(ms);
+      // Past about 8.6e15 ms a Date is invalid and toISOString throws, which
+      // used to take the whole page down with it.
+      if (isNaN(when.getTime())) { out.primary = formatNumber(value); break; }
+      var iso = when.toISOString().replace(/\.\d+Z$/, 'Z');
       var ed = formatIsoDateTime(iso);
       out.primary = ed ? ed.primary : String(value);
       out.secondary = ed ? ed.secondary : '';
@@ -288,4 +300,4 @@ function isCompactKind(kind) {
           'email', 'epoch', 'epochMs', 'empty', 'null'].indexOf(kind) !== -1;
 }
 
-export { MONTHS, DAYS, RE_ISO_DATE, RE_ISO_DT, RE_CLOCK, RE_HEX, RE_EMAIL, RE_KEY_PERCENT, RE_KEY_SECONDS, RE_KEY_MILLIS, RE_KEY_BYTES, RE_KEY_LAT, RE_KEY_LNG, RE_KEY_YEAR, RE_KEY_NOISE, RE_KEY_ANGLE, RE_KEY_TIME, RE_KEY_TEMP, RE_KEY_MONEY, lastSegment, keyHint, offsetLabel, weekdayOf, formatIsoDateTime, formatIsoDate, formatDuration, formatNumber, inferKind, describeValue, rawTitle, renderScalar, isCompactKind };
+export { MONTHS, DAYS, RE_ISO_DATE, RE_ISO_DT, RE_CLOCK, RE_HEX, RE_EMAIL, RE_KEY_PERCENT, RE_KEY_SECONDS, RE_KEY_MILLIS, RE_KEY_BYTES, RE_KEY_LAT, RE_KEY_LNG, RE_KEY_YEAR, RE_KEY_NOISE, RE_KEY_ANGLE, RE_KEY_TIME, RE_KEY_TEMP, RE_KEY_MONEY, lastSegment, keyHint, offsetLabel, epochToMillis, weekdayOf, formatIsoDateTime, formatIsoDate, formatDuration, formatNumber, inferKind, describeValue, rawTitle, renderScalar, isCompactKind };

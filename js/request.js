@@ -1,13 +1,13 @@
-import { LARGE_RESPONSE_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, PROVIDER_IDS, getProvider, providerNeedsKey } from './config.js';
+import { LARGE_RESPONSE_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, MAX_SNAPSHOT_ENDPOINTS, PROVIDER_IDS, TIMEOUTS, getProvider, providerNeedsKey } from './config.js';
 import { dom, state } from './state.js';
-import { getActiveKey, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionProvider, getSnapshots, providerUsable, savePrefs, setSchemaSpecs, setSessionProvider, setSnapshots } from './storage.js';
-import { byteLength, el, formatBytes } from './util.js';
-import { diffData, fingerprint, hashString } from './schema.js';
+import { clearKeyRejected, getActiveKey, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionProvider, getSnapshots, keyRejected, markKeyRejected, providerUsable, savePrefs, setSchemaSpecs, setSessionProvider, setSnapshots } from './storage.js';
+import { byteLength, el, formatBytes, isPlainObject } from './util.js';
+import { dataSignature, diffData, fingerprint, hashString } from './schema.js';
 import { applyHtml, compactSample, generateHtml, generateSpec, normalizeHtmlDoc, providerErrorText } from './llm.js';
-import { buildFallbackSpec, normalizeSpec } from './spec.js';
+import { buildFallbackSpec, endpointTitle, fitTitle, normalizeSpec } from './spec.js';
 import { setAppPane, setKeyStatus, syncProviderUi, toast } from './ui.js';
 import { updateMeta } from './chat.js';
-import { applySpec, leaveStage, navigateTo, renderChangesPane, renderRawPane, renderSchemaPane, resetInterfaceOut, rollbackNavigation, showAlert, showGeneratePrompt, showInterfaceLoading } from './panes.js';
+import { applySpec, leaveStage, navigateTo, renderChangesPane, renderRawPane, renderSchemaPane, resetInterfaceOut, rollbackNavigation, showAlert, showGeneratePrompt, showInterfaceEmpty, showInterfaceLoading } from './panes.js';
 import { hostOf, renderHistory, renderSavedList, setUrlInput, touchSavedRequest } from './endpoints.js';
 import { noteWatchedChange } from './main.js';
 
@@ -35,6 +35,45 @@ function redactSecretHeaders(headers) {
 
 function hasSecretHeader(text) {
   return redactSecretHeaders(parseHeaders(text)).redacted.length > 0;
+}
+
+// Query parameters whose values are credentials (?api_key=, ?appid=, ?key=
+// for Google). Matched against the whole name, like SECRET_HEADER.
+var SECRET_PARAM = /^(api[_-]?key|apikey|key|app[_-]?id|appid|app[_-]?key|access[_-]?token|auth[_-]?token|id[_-]?token|refresh[_-]?token|token|auth|secret|client[_-]?secret|password|passwd|pwd|sig|signature|session|session[_-]?id|sessionid|jwt|subscription[_-]?key|x[_-]api[_-]key)$/i;
+
+// Splits a URL's credential parameters from the rest. mode 'mask' keeps
+// each name with a placeholder value (for a model, which should know the
+// parameter exists); 'strip' removes them (for a link someone else opens).
+function secureUrl(url, mode) {
+  var out = { url: String(url || ''), removed: [] };
+  var parsed;
+  try { parsed = new URL(out.url); } catch (err) { return out; }
+  var names = [];
+  parsed.searchParams.forEach(function (value, name) {
+    if (SECRET_PARAM.test(name) && names.indexOf(name) === -1) names.push(name);
+  });
+  if (!names.length) return out;
+  for (var i = 0; i < names.length; i += 1) {
+    if (mode === 'mask') parsed.searchParams.set(names[i], 'REDACTED');
+    else parsed.searchParams.delete(names[i]);
+  }
+  out.url = parsed.toString();
+  out.removed = names;
+  return out;
+}
+
+function maskUrlSecrets(url) { return secureUrl(url, 'mask').url; }
+function stripUrlSecrets(url) { return secureUrl(url, 'strip'); }
+
+// "pokeapi.co/api/v2/pokemon/ditto" is a URL to everyone but new URL().
+// A bare host (with a dot, or localhost) gets a scheme; anything else is
+// left for the validator to refuse.
+function withScheme(text) {
+  var t = String(text || '').trim();
+  if (!t || /^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return t;
+  if (/^localhost(:\d+)?([/?#]|$)/i.test(t) || /^(127\.0\.0\.1|\[::1\])(:\d+)?([/?#]|$)/.test(t)) return 'http://' + t;
+  if (/^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(:\d+)?([/?#]|$)/i.test(t)) return 'https://' + t;
+  return t;
 }
 
 function parseHeaders(text) {
@@ -193,7 +232,9 @@ function headersToText(headers) {
 function getSnapshotsFor(key) {
   if (!key) return [];
   var all = getSnapshots();
-  return Array.isArray(all[key]) ? all[key] : [];
+  // Stored by an older build or edited by hand: an entry that is not an
+  // object would throw in every renderer that reads .id or .changed.
+  return Array.isArray(all[key]) ? all[key].filter(isPlainObject) : [];
 }
 
 function stripBody(snapshot) {
@@ -221,7 +262,23 @@ function pushSnapshot(key, snapshot) {
   list.push(snapshot);
   while (list.length > MAX_SNAPSHOTS) list.shift();
   all[key] = list;
+  dropOldEndpoints(all, key);
   setSnapshots(all);
+}
+
+// Only the most recently fetched endpoints keep a history. Every endpoint
+// ever opened used to keep one body in localStorage for good.
+function dropOldEndpoints(all, keep) {
+  var keys = Object.keys(all);
+  if (keys.length <= MAX_SNAPSHOT_ENDPOINTS) return;
+  function newest(k) {
+    var list = Array.isArray(all[k]) ? all[k] : [];
+    var last = list[list.length - 1];
+    var t = last && last.fetchedAt ? Date.parse(last.fetchedAt) : 0;
+    return isNaN(t) ? 0 : t;
+  }
+  keys.sort(function (a, b) { return (b === keep) - (a === keep) || newest(b) - newest(a); });
+  for (var i = MAX_SNAPSHOT_ENDPOINTS; i < keys.length; i += 1) delete all[keys[i]];
 }
 
 function latestSnapshotWithData(key) {
@@ -247,12 +304,19 @@ function wrapError(title, detail) {
   return error;
 }
 
+// The request in flight: its sequence number, its abort handle and its
+// timer. Only one at a time; a new one replaces it.
+var activeRequest = null;
+var SUPERSEDED = { superseded: true };
+
 // Returns false when the request was refused before any fetch started, so
 // navigateTo can roll back the stack push and URL-bar write it already did.
 function performRequest(isAuto) {
-  if (state.inFlight) return false;
+  // A Watch tick waits its turn; a request the reader asked for does not.
+  if (isAuto && state.inFlight) return false;
 
-  var url = dom.urlInput.value.trim();
+  var typed = dom.urlInput.value.trim();
+  var url = withScheme(typed);
   if (!url) {
     toast('Enter an API URL first.', 'error');
     return false;
@@ -269,6 +333,23 @@ function performRequest(isAuto) {
     return false;
   }
 
+  var headersText = dom.headersInput.value;
+  var problem = headerProblem(parseHeaders(headersText));
+  if (problem) {
+    toast(problem, 'error');
+    return false;
+  }
+
+  // The reader asked for something else while a request was still out: that
+  // one is dropped, and this one goes. It used to be ignored without a word,
+  // and the URL just typed was lost when the slow one finally failed.
+  if (state.inFlight) {
+    cancelInFlight(false);
+    dom.headersInput.value = headersText;
+    syncHeadersChip();
+  }
+  if (url !== typed || dom.urlInput.value !== url) setUrlInput(url);
+
   // A new request leaves edit mode; its page is a different one.
   if (!isAuto && state.editing) {
     state.editing = false;
@@ -276,37 +357,61 @@ function performRequest(isAuto) {
     if (dom.editBtn) dom.editBtn.setAttribute('aria-pressed', 'false');
   }
 
-  var problem = headerProblem(parseHeaders(dom.headersInput.value));
-  if (problem) {
-    toast(problem, 'error');
-    return false;
-  }
-
+  var seq = state.requestSeq + 1;
+  state.requestSeq = seq;
   state.inFlight = true;
   state.url = url;
-  state.headersText = dom.headersInput.value;
+  state.headersText = headersText;
   state.headers = parseHeaders(state.headersText);
   dom.sendBtn.disabled = true;
   dom.inspectorHead.hidden = false;
 
   if (!isAuto) showInterfaceLoading('Fetching ' + parsed.hostname + '…');
+  updateMeta();
 
   var previousData = state.data;
   var previousUrl = state.dataUrl;
   var requestKey = hashString(url);
   var startedAt = Date.now();
+  // Credentials stay in the session, and so does what they unlocked.
+  var isPrivate = redactSecretHeaders(state.headers).redacted.length > 0;
 
-  fetch(url, { method: 'GET', headers: state.headers, mode: 'cors' })
+  var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+  var request = { seq: seq, controller: controller, timedOut: false, timer: null };
+  request.timer = window.setTimeout(function () {
+    request.timedOut = true;
+    if (controller) controller.abort();
+  }, TIMEOUTS.request);
+  activeRequest = request;
+  function current() { return state.requestSeq === seq; }
+
+  var options = { method: 'GET', headers: state.headers, mode: 'cors' };
+  if (controller) options.signal = controller.signal;
+  var timedOut = new Promise(function (resolve, reject) {
+    // Settles the chain even where there is no AbortController to do it.
+    window.setTimeout(function () { if (request.timedOut) reject(new Error('timeout')); }, TIMEOUTS.request + 10);
+  });
+
+  Promise.race([fetch(url, options), timedOut])
     .then(function (response) {
+      if (!current()) throw SUPERSEDED;
       return response.text().then(function (text) { return { response: response, text: text }; });
     })
     .then(function (result) {
+      if (!current()) throw SUPERSEDED;
       var response = result.response;
       var text = result.text;
 
       if (!response.ok) {
+        var snippet = text.trim().slice(0, 300);
         throw wrapError('HTTP ' + response.status + ' ' + (response.statusText || ''),
-          'The endpoint rejected the request. Response began: ' + text.slice(0, 300));
+          'The endpoint rejected the request.' +
+          (snippet ? ' Its response began: \u201c' + snippet + '\u201d' : ' Its response was empty.'));
+      }
+
+      if (!text.trim()) {
+        throw wrapError('Empty response',
+          'The endpoint answered HTTP ' + response.status + ' with no body. Imago draws a page from a JSON body.');
       }
 
       var data;
@@ -315,7 +420,7 @@ function performRequest(isAuto) {
       } catch (err) {
         throw wrapError('Response is not JSON',
           'Imago renders JSON APIs. The endpoint returned ' + formatBytes(byteLength(text)) +
-          ' starting with: ' + text.slice(0, 120));
+          ' starting with: \u201c' + text.trim().slice(0, 120) + '\u201d');
       }
 
       state.status = response.status;
@@ -323,6 +428,7 @@ function performRequest(isAuto) {
       state.byteSize = byteLength(text);
       state.data = data;
       state.dataUrl = url;
+      state.dataSig = dataSignature(data);
       state.lastCheckedAt = Date.now();
 
       var print = fingerprint(data);
@@ -344,7 +450,7 @@ function performRequest(isAuto) {
       if (isAuto && state.changedCount > 0) noteWatchedChange(url);
       if (isAuto) beatLiveDots();
 
-      pushSnapshot(requestKey, {
+      var snapshot = {
         id: 'snap_' + startedAt.toString(36),
         url: url,
         schemaHash: print.hash,
@@ -352,7 +458,8 @@ function performRequest(isAuto) {
         status: response.status,
         changed: state.changedCount,
         data: data
-      });
+      };
+      pushSnapshot(requestKey, isPrivate ? stripBody(snapshot) : snapshot);
       renderHistory();
 
       touchSavedRequest(url);
@@ -369,24 +476,43 @@ function performRequest(isAuto) {
         toast('Large response (' + formatBytes(state.byteSize) + ') — only a compact sample goes to ' + getProvider(getSessionProvider()).label + '.');
       }
 
-      return resolveSpec(url, print, false);
+      return resolveSpec(url, print, false, isAuto);
     })
     .then(function () {
+      if (!current()) return;
       state.dirtySinceSend = false;
       state.navRestorePoint = null;   // the navigation committed
       // A pending Generate prompt is waiting on the reader. Ticking behind it
       // re-renders the prompt (re-enabling the button they just pressed) and
-      // spends another request per tick.
-      if (state.refreshIntervalMs && !state.pendingGenerate) startTimer();
+      // spends another request per tick, so the timer stops until a page is
+      // on screen again.
+      if (state.pendingGenerate) stopTimer();
+      else if (state.refreshIntervalMs) startTimer();
     })
     .catch(function (err) {
-      return explainFailure(err, url, state.headers).then(function (why) { handleRequestFailure(why, isAuto); });
+      if (err === SUPERSEDED || !current()) return undefined;
+      if (request.timedOut) {
+        err = wrapError('Timed out',
+          (hostOf(url) || 'The server') + ' did not answer within ' + Math.round(TIMEOUTS.request / 1000) +
+          ' seconds. It may be down or very slow. Try again, or open another endpoint.');
+      }
+      return explainFailure(err, url, state.headers).then(function (why) {
+        if (current()) handleRequestFailure(why, isAuto);
+      });
     })
     // Both arms, not a trailing .then: if handleRequestFailure itself throws
     // this must still run, or inFlight stays true, the send button stays
     // disabled, and every later request returns at the in-flight guard —
     // the app is silently bricked until reload.
-    .then(finishRequest, finishRequest);
+    .then(done, done);
+
+  function done() {
+    window.clearTimeout(request.timer);
+    if (!current()) return;
+    if (activeRequest === request) activeRequest = null;
+    finishRequest();
+  }
+  return true;
 }
 
 function finishRequest() {
@@ -394,6 +520,75 @@ function finishRequest() {
   if (dom.sendBtn) dom.sendBtn.disabled = false;
   updateMeta();
   savePrefs();
+}
+
+// Drop the request in flight: abort it, ignore anything it still answers,
+// and put the state back on the page that is actually on screen. restore
+// redraws that page too, for callers that will not draw one of their own.
+function cancelInFlight(restore) {
+  if (!state.inFlight) return;
+  state.requestSeq += 1;
+  var request = activeRequest;
+  activeRequest = null;
+  if (request) {
+    window.clearTimeout(request.timer);
+    if (request.controller) { try { request.controller.abort(); } catch (err) { /* already settled */ } }
+  }
+  state.inFlight = false;
+  if (dom.sendBtn) dom.sendBtn.disabled = false;
+  if (state.navRestorePoint) {
+    rollbackNavigation(state.navRestorePoint);
+    state.navRestorePoint = null;
+  }
+  pointAtScreen();
+  if (restore) restoreScreen(false);
+  updateMeta();
+}
+
+// A direct send (Go, or opening a saved endpoint) has no restore point, but
+// it set state.url before fetching. Point the state back at the endpoint
+// whose data is still on screen, or the history strip and rail describe
+// page B over page A. The URL box keeps what was typed, to fix and resend.
+function pointAtScreen() {
+  if (state.data && state.dataUrl && state.url !== state.dataUrl) {
+    state.url = state.dataUrl;
+    var saved = getSavedRequests().filter(function (r) { return r.url === state.dataUrl; })[0];
+    state.activeRequestId = saved ? saved.id : null;
+  }
+}
+
+function removeAlerts() {
+  var alerts = dom.interfaceOut.querySelectorAll('.alert');
+  for (var i = 0; i < alerts.length; i += 1) alerts[i].parentNode.removeChild(alerts[i]);
+}
+
+// Redraw whatever was on screen before a request replaced it with a
+// spinner: the generated page, the plan, or the Generate prompt. Returns
+// false when there was no page to put back. inPlace: the screen was never
+// cleared (a Watch tick), so only stale alerts go; an iframe redrawn every
+// failed tick would flash, and a page in HTML mode has no plan to redraw.
+function restoreScreen(inPlace) {
+  if (!state.data) {
+    if (!inPlace) showInterfaceEmpty();
+    return false;
+  }
+  if (inPlace) { removeAlerts(); return true; }
+  if (state.html && state.builder === 'html') {
+    applyHtml(state.html, state.htmlSource, { url: state.htmlUrl, sig: state.htmlSig });
+  } else if (state.spec) {
+    applySpec(state.spec, state.specSource);
+  } else if (state.pendingGenerate) {
+    showGeneratePrompt();
+  } else {
+    applySpec(null, 'fallback');
+  }
+  return true;
+}
+
+// What the reader will recognise the kept page by.
+function screenName() {
+  if (state.spec && state.spec.title) return state.spec.title;
+  return endpointTitle(state.dataUrl) || hostOf(state.dataUrl) || 'the last page';
 }
 
 // A header fetch would throw on, caught before sending. It used to throw a
@@ -452,25 +647,14 @@ function handleRequestFailure(err, isAuto) {
     rollbackNavigation(state.navRestorePoint);
     state.navRestorePoint = null;
   }
+  pointAtScreen();
 
-  // A direct send (Go, or opening a saved endpoint) has no restore point, but
-  // it set state.url before fetching. Point the state back at the endpoint
-  // whose data is still on screen, or the history strip and rail describe
-  // page B over page A. The URL box keeps what was typed, to fix and resend.
-  if (state.data && state.dataUrl && state.url !== state.dataUrl) {
-    state.url = state.dataUrl;
-    var saved = getSavedRequests().filter(function (r) { return r.url === state.dataUrl; })[0];
-    state.activeRequestId = saved ? saved.id : null;
-  }
-
-  if (state.data && state.spec) {
-    // The loading state cleared the pane — put the last good interface back
-    // so a failure never costs you the view you were reading, and say that it
-    // is the old page: under a banner for another host it read as the answer.
-    applySpec(state.spec, state.specSource);
-    var kept = state.spec.title || hostOf(state.dataUrl) || 'the last page';
+  // The loading state cleared the pane — put the last good page back so a
+  // failure never costs you the view you were reading, and say that it is
+  // the old page: under a banner for another host it read as the answer.
+  if (state.data && restoreScreen(isAuto)) {
     showAlert(isAuto ? 'Auto-refresh failed' : title,
-              detail + ' Below is ' + kept + ', the last page that loaded.');
+              [detail, 'Below is ' + screenName() + ', the last page that loaded.']);
   } else {
     if (state.stage) leaveStage();
     dom.interfaceHead.hidden = true;
@@ -492,10 +676,14 @@ function handleRequestFailure(err, isAuto) {
 function noKeyAlert() {
   state.noKeyLine = true;   // applySpec redraws it on every re-render (edit, Watch, …)
   if (dom.interfaceOut.querySelector('.keyline')) return;
-  var provider = getProvider(getSessionProvider());
+  var id = getSessionProvider();
+  var provider = getProvider(id);
+  var rejected = keyRejected(id);
   var line = el('p', 'keyline');
-  line.appendChild(el('span', null, 'No ' + provider.label + ' key, so this is the basic layout.'));
-  var add = el('button', 'keyline-action', 'Add a key');
+  line.appendChild(el('span', null, rejected
+    ? provider.label + ' rejected your key, so this is the basic layout.'
+    : 'No ' + provider.label + ' key, so this is the basic layout.'));
+  var add = el('button', 'keyline-action', rejected ? 'Fix the key' : 'Add a key');
   add.type = 'button';
   add.addEventListener('click', function () { setAppPane('settings'); });
   line.appendChild(add);
@@ -519,7 +707,7 @@ function useKeyedProvider() {
   // Ollama uninvited, or every keyless user would bounce into localhost.
   if (providerUsable(active)) return true;
   for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
-    if (providerNeedsKey(PROVIDER_IDS[i]) && getProviderKey(PROVIDER_IDS[i])) {
+    if (providerNeedsKey(PROVIDER_IDS[i]) && providerUsable(PROVIDER_IDS[i])) {
       setSessionProvider(PROVIDER_IDS[i]);
       syncProviderUi({ force: true });
       setKeyStatus();
@@ -530,7 +718,9 @@ function useKeyedProvider() {
   return false;
 }
 
-function resolveSpec(url, print, userTriggered) {
+// isAuto: a Watch tick brought this body, and the reader is not waiting on
+// a prompt — they are watching a page.
+function resolveSpec(url, print, userTriggered, isAuto) {
   // A page opened from a share link shows the layout it was shared with,
   // once. It came out of a URL, so it is as untrusted as a model's plan and
   // goes through the same normaliser; it is never written to the cache.
@@ -540,7 +730,7 @@ function resolveSpec(url, print, userTriggered) {
     if (shared) { applySpec(shared, 'shared'); return Promise.resolve(); }
   }
   if (state.builder === 'html') {
-    return resolveHtml(url, print, userTriggered);
+    return resolveHtml(url, print, userTriggered, isAuto);
   }
   var cache = getSchemaSpecs();
   var cached = cache[print.hash];
@@ -551,7 +741,7 @@ function resolveSpec(url, print, userTriggered) {
       cached.lastUsedAt = new Date().toISOString();
       cache[print.hash] = cached;
       setSchemaSpecs(cache);
-      applySpec(normalized, 'cache');
+      applySpec(fitTitle(normalized, state.data, url, cached.sourceUrl), 'cache');
       return Promise.resolve();
     }
   }
@@ -562,14 +752,25 @@ function resolveSpec(url, print, userTriggered) {
     return Promise.resolve();
   }
 
-  if (!userTriggered) {
-    // A brand new shape costs a model call, so ask before spending it.
-    state.pendingGenerate = true;
-    showGeneratePrompt();
-    return Promise.resolve();
-  }
+  if (!userTriggered) return askToGenerate(url, isAuto);
 
   return callGemini(url, print);
+}
+
+// A brand new shape costs a model call, so ask before spending it. Under
+// Watch the page stays live instead: the prompt used to replace the page
+// mid-watch while the timer kept fetching behind it.
+function askToGenerate(url, isAuto) {
+  if (isAuto) {
+    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
+    showAlert('The response changed shape',
+              'This is the basic layout until you generate one for the new shape.', 'note',
+              { label: 'Generate', run: function () { generateInterfaceNow(); } });
+    return Promise.resolve();
+  }
+  state.pendingGenerate = true;
+  showGeneratePrompt();
+  return Promise.resolve();
 }
 
 // One switch, two controls (the playground toggle and the Settings
@@ -598,25 +799,33 @@ function setBuilder(mode, silent) {
   // Re-resolve what is on screen so the switch is visible immediately:
   // a remembered artefact applies, otherwise the generate prompt.
   if (state.data && state.schemaHash) {
-    resolveSpec(state.url, { hash: state.schemaHash, schema: state.schema }, false);
+    resolveSpec(state.dataUrl || state.url, { hash: state.schemaHash, schema: state.schema }, false);
   }
 }
 
 // HTML-mode twin of the spec cache path above: same honesty rules (cache,
 // then key check, then ask before spending), different artefact.
-function resolveHtml(url, print, userTriggered) {
+// A page, unlike a plan, has one response's values written into it, so it
+// is only ever shown again for the endpoint it was written from. Shown for
+// another endpoint of the same shape, it put user 1's values under user 2.
+function cachedHtmlFor(entry, url) {
+  if (!entry || !entry.html || entry.htmlUrl !== url) return null;
+  return normalizeHtmlDoc(entry.html);
+}
+
+function resolveHtml(url, print, userTriggered, isAuto) {
   var cache = getSchemaSpecs();
   var cached = cache[print.hash];
+  var doc = cachedHtmlFor(cached, url);
 
-  if (cached && cached.html) {
-    var doc = normalizeHtmlDoc(cached.html);
-    if (doc) {
-      cached.lastUsedAt = new Date().toISOString();
-      cache[print.hash] = cached;
-      setSchemaSpecs(cache);
-      applyHtml(doc, 'cache');
-      return Promise.resolve();
-    }
+  if (doc) {
+    cached.lastUsedAt = new Date().toISOString();
+    cache[print.hash] = cached;
+    setSchemaSpecs(cache);
+    // The page keeps the baseline it was written from, so the stale bar can
+    // say when fresh data no longer matches it.
+    applyHtml(doc, 'cache', { url: cached.htmlUrl, sig: cached.htmlSig || '' });
+    return Promise.resolve();
   }
 
   if (!useKeyedProvider()) {
@@ -625,35 +834,65 @@ function resolveHtml(url, print, userTriggered) {
     return Promise.resolve();
   }
 
-  if (!userTriggered) {
-    state.pendingGenerate = true;
-    showGeneratePrompt();
-    return Promise.resolve();
-  }
+  if (!userTriggered) return askToGenerate(url, isAuto);
 
   return callHtml(url, print);
 }
 
+// Returns false when nothing was started. A call already running for
+// another page is superseded, not waited on: the reader asked for this one,
+// and a Generate button that silently did nothing looked broken.
 function generateInterfaceNow() {
-  if (!state.data || !state.schemaHash) return;
-  if (state.generating) return;       // one model call at a time
+  if (!state.data || !state.schemaHash) return false;
+  var url = state.dataUrl || state.url;
   // A pressed button with no key behind it would only 401: say so instead.
   if (!useKeyedProvider()) {
-    applySpec(normalizeSpec(buildFallbackSpec(state.data, state.url)), 'fallback');
+    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
     noKeyAlert();
-    return;
+    return true;
   }
   if (state.builder === 'html') {
     showInterfaceLoading('Writing a full HTML page…');
-    callHtml(state.url, { hash: state.schemaHash, schema: state.schema });
-    return;
+    callHtml(url, { hash: state.schemaHash, schema: state.schema });
+    return true;
   }
   showInterfaceLoading('Designing an interface…');
-  callGemini(state.url, { hash: state.schemaHash, schema: state.schema });
+  callGemini(url, { hash: state.schemaHash, schema: state.schema });
+  return true;
+}
+
+// Each model call gets a number. A reply is used only if it is still the
+// newest call and the page it was asked for is still the one on screen;
+// otherwise it is dropped. A late reply for page A used to replace page B.
+function startGeneration() {
+  state.genSeq += 1;
+  state.generating = true;
+  return state.genSeq;
+}
+
+function generationCurrent(token, url) {
+  return token === state.genSeq && state.url === url;
+}
+
+function endGeneration(token) {
+  if (token !== state.genSeq) return;
+  state.generating = false;
+  // Watch stopped for the Generate prompt; a page is on screen again.
+  if (state.refreshIntervalMs && !state.tickHandle && !state.pendingGenerate &&
+      !state.dirtySinceSend && !state.inFlight) startTimer();
+}
+
+// A rejected key is marked so the key line, the pill and the no-key note
+// stop calling it ready; any other answer proves the key works.
+function noteKeyVerdict(providerId, info) {
+  var changed = info ? (info.badKey && markKeyRejected(providerId)) : clearKeyRejected(providerId);
+  if (!changed) return;
+  setKeyStatus();
+  syncProviderUi();
 }
 
 function callHtml(url, print) {
-  state.generating = true;
+  var token = startGeneration();
   var providerId = getSessionProvider();
   var provider = getProvider(providerId);
   var model = (dom.modelName.value || '').trim() || provider.defaultModel;
@@ -667,6 +906,8 @@ function callHtml(url, print) {
     model: model,
     apiKey: apiKey
   }).then(function (doc) {
+    if (!generationCurrent(token, url)) return;
+    noteKeyVerdict(providerId, null);
     // Same mid-flight race as the spec path: a refresh landing while the
     // model writes must not file the page under a shape it never saw.
     if (state.schemaHash !== print.hash) {
@@ -674,37 +915,42 @@ function callHtml(url, print) {
                       'The data was refreshed mid-request. Press Regenerate for the new shape.');
     }
 
-    var store = getSchemaSpecs();
-    var entry = store[print.hash] || {
-      hash: print.hash, schema: print.schema,
-      sourceUrl: url, createdAt: new Date().toISOString()
-    };
-    // A page can be several times fatter than a plan. Cache it only while
-    // it fits — an oversized doc still renders, it just is not remembered.
-    if (doc.length <= MAX_CACHED_HTML_BYTES) {
+    // A page has the response's values in it. One written from a response
+    // that took credentials stays in the session, like the credentials.
+    var remember = doc.length <= MAX_CACHED_HTML_BYTES && !hasSecretHeader(state.headersText);
+    if (remember) {
+      var store = getSchemaSpecs();
+      var entry = store[print.hash] || {
+        hash: print.hash, schema: print.schema,
+        sourceUrl: url, createdAt: new Date().toISOString()
+      };
       entry.html = doc;
+      entry.htmlUrl = url;
+      entry.htmlSig = state.dataSig;
       entry.model = model;
       entry.lastUsedAt = new Date().toISOString();
       store[print.hash] = entry;
       setSchemaSpecs(store);
-    } else {
+    } else if (doc.length > MAX_CACHED_HTML_BYTES) {
       toast('Page too large to remember — it will be rewritten next time.', 'warn');
     }
 
     applyHtml(doc, 'generated');
-    toast('Page generated' + (doc.length <= MAX_CACHED_HTML_BYTES ? ' and remembered as ' + print.hash : ''), 'ok');
+    toast('Page generated' + (remember ? ' and remembered as ' + print.hash : ''), 'ok');
   }).catch(function (err) {
+    if (!generationCurrent(token, url)) return;
     var htmlInfo = providerErrorText(provider, err);
+    noteKeyVerdict(providerId, htmlInfo);
 
     applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
     showAlert(htmlInfo.title, htmlInfo.message);
     toast(htmlInfo.title, 'error');
-  }).then(function () { state.generating = false; },
-          function () { state.generating = false; });
+  }).then(function () { endGeneration(token); },
+          function () { endGeneration(token); });
 }
 
 function callGemini(url, print) {
-  state.generating = true;
+  var token = startGeneration();
   var providerId = getSessionProvider();
   var provider = getProvider(providerId);
   var model = (dom.modelName.value || '').trim() || provider.defaultModel;
@@ -718,6 +964,8 @@ function callGemini(url, print) {
     model: model,
     apiKey: apiKey
   }).then(function (rawSpec) {
+    if (!generationCurrent(token, url)) return;
+    noteKeyVerdict(providerId, null);
     // An auto-refresh tick can land while the model is thinking and replace
     // state.data with a differently shaped body. Caching this spec under the
     // stale print.hash, or applying it to the new data, is how a plan for one
@@ -737,16 +985,18 @@ function callGemini(url, print) {
     };
     setSchemaSpecs(store);
 
-    applySpec(normalized, 'generated');
+    applySpec(fitTitle(normalized, state.data, url, url), 'generated');
     toast('Interface generated and remembered as ' + print.hash, 'ok');
   }).catch(function (err) {
+    if (!generationCurrent(token, url)) return;
     var info = providerErrorText(provider, err);
+    noteKeyVerdict(providerId, info);
 
     applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
     showAlert(info.title, info.message);
     toast(info.title, 'error');
-  }).then(function () { state.generating = false; },
-          function () { state.generating = false; });
+  }).then(function () { endGeneration(token); },
+          function () { endGeneration(token); });
 }
 
 /* ── Auto-refresh ──────────────────────────────────────────────────────── */
@@ -795,4 +1045,4 @@ function syncRefreshUi() {
   if (dom.savedList) renderSavedList();   // the rail's live dot follows
 }
 
-export { beatLiveDots, SECRET_HEADER, sameOrigin, redactSecretHeaders, hasSecretHeader, parseHeaders, BROWSER_OWNED_HEADERS, CURL_NO_ARG, CURL_WITH_ARG, shellWords, looksLikeCurl, parseCurl, importCurl, syncHeadersChip, headersToText, getSnapshotsFor, stripBody, pushSnapshot, latestSnapshotWithData, markDirty, wrapError, performRequest, finishRequest, HEADER_NAME, headerProblem, explainFailure, handleRequestFailure, noKeyAlert, useKeyedProvider, resolveSpec, syncBuilderUi, setBuilder, resolveHtml, generateInterfaceNow, callHtml, callGemini, startTimer, stopTimer, tick, syncRefreshUi };
+export { beatLiveDots, SECRET_HEADER, SECRET_PARAM, secureUrl, maskUrlSecrets, stripUrlSecrets, withScheme, dropOldEndpoints, cancelInFlight, pointAtScreen, removeAlerts, restoreScreen, screenName, askToGenerate, cachedHtmlFor, startGeneration, generationCurrent, endGeneration, noteKeyVerdict, sameOrigin, redactSecretHeaders, hasSecretHeader, parseHeaders, BROWSER_OWNED_HEADERS, CURL_NO_ARG, CURL_WITH_ARG, shellWords, looksLikeCurl, parseCurl, importCurl, syncHeadersChip, headersToText, getSnapshotsFor, stripBody, pushSnapshot, latestSnapshotWithData, markDirty, wrapError, performRequest, finishRequest, HEADER_NAME, headerProblem, explainFailure, handleRequestFailure, noKeyAlert, useKeyedProvider, resolveSpec, syncBuilderUi, setBuilder, resolveHtml, generateInterfaceNow, callHtml, callGemini, startTimer, stopTimer, tick, syncRefreshUi };

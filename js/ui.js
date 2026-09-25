@@ -1,6 +1,6 @@
 import { PROVIDERS, PROVIDER_IDS, detectProvider, fetchOllamaModels, getProvider, ollamaBase, ollamaModels, pickOllamaModel, providerNeedsKey } from './config.js';
 import { dom, state } from './state.js';
-import { getProviderKey, getSessionProvider, hasAnyKey, providerUsable, savePrefs, setProviderKey, setSessionModel, setSessionProvider } from './storage.js';
+import { getProviderKey, getSessionProvider, hasAnyKey, keyRejected, providerUsable, savePrefs, setProviderKey, setSessionModel, setSessionProvider } from './storage.js';
 import { clear, el, qs } from './util.js';
 import { scheduleTimelineLayout } from './render.js';
 import { syncChatTarget } from './chat.js';
@@ -198,8 +198,9 @@ function syncKeyStatusLines() {
     var line = keyStatusFor(id);
     if (!line) continue;
     var key = getProviderKey(id);
-    line.textContent = key ? 'Saved ' + maskKey(key) : 'Not set';
-    line.setAttribute('data-state', key ? 'ready' : 'missing');
+    var refused = keyRejected(id);
+    line.textContent = !key ? 'Not set' : refused ? 'Rejected ' + maskKey(key) + ' — check it' : 'Saved ' + maskKey(key);
+    line.setAttribute('data-state', key && !refused ? 'ready' : 'missing');
   }
 }
 
@@ -213,6 +214,10 @@ function setKeyStatus() {
     title = providerNeedsKey(active)
       ? label + ' key saved — click for Settings'
       : label + ' needs no key — click for Settings';
+  } else if (keyRejected(active)) {
+    text = label + ' key rejected';
+    ready = false;
+    title = label + ' refused this key — click to fix it in Settings';
   } else if (hasAnyKey()) {
     text = 'No ' + label + ' key';
     ready = false;

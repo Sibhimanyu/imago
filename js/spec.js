@@ -1,5 +1,5 @@
 import { ACTION_TYPES, COMPONENT_TYPES, EMPHASIS, LAYOUTS, MAX_ACTIONS, MAX_COMPONENTS } from './config.js';
-import { canonPath, isImageUrl, isPlainObject, isUrl } from './util.js';
+import { canonPath, getByPath, isImageUrl, isPlainObject, isUrl } from './util.js';
 import { RE_ISO_DATE, RE_ISO_DT, RE_KEY_NOISE, inferKind, lastSegment } from './values.js';
 import { HERO_KINDS, ROOT_OK_TYPES, allNumbers, namePathIn, numbersWithGaps } from './render.js';
 import { deriveName } from './endpoints.js';
@@ -16,6 +16,8 @@ function normalizeSpec(spec) {
     actions: normalizeActions(spec.actions),
     components: []
   };
+
+  if (typeof spec.titlePath === 'string' && spec.titlePath.trim()) out.titlePath = spec.titlePath.trim();
 
   var raw = Array.isArray(spec.components) ? spec.components : [];
   var seenPaths = {};
@@ -176,12 +178,14 @@ function rankBlocks(blocks) {
     // Too long to read, or only links: plumbing, not content. It folds into
     // Details at the foot of the page rather than vanishing.
     if (block.__rows > BULK_ROWS || block.__links) { score -= 5; block.emphasis = 'quiet'; }
+    if (block.__main) score += 20;
     return { block: block, index: index, score: score };
   }).sort(function (a, b) {
     return b.score - a.score || a.index - b.index;
   }).map(function (entry) {
     delete entry.block.__rows;
     delete entry.block.__links;
+    delete entry.block.__main;
     return entry.block;
   });
 }
@@ -340,6 +344,93 @@ function formatCoord(value, pos, neg) {
   return Math.abs(value).toFixed(2) + '° ' + (value >= 0 ? pos : neg);
 }
 
+// Title: a human-readable name if the payload has one, else the endpoint.
+function titleKeyOf(data) {
+  if (!isPlainObject(data)) return null;
+  var candidates = ['name', 'title', 'label', 'id'];
+  for (var i = 0; i < candidates.length; i += 1) {
+    var value = data[candidates[i]];
+    if (typeof value === 'string' && value.trim()) return candidates[i];
+  }
+  return null;
+}
+
+// A response about a code identifier (a GitHub login or repo, a package)
+// names it in a form where case and hyphens matter: "left-pad" is not
+// "Left pad", and a login is not a proper noun. Those are shown as written.
+function isCodeIdentity(data) {
+  return isPlainObject(data) && Object.keys(data).some(function (k) { return RE_CODE_IDENTITY.test(k); });
+}
+
+// Otherwise a bare identifier ("pikachu", "the-hobbit") is a name, so it
+// reads as one.
+function nameAsTitle(text, codeIdentity) {
+  var title = String(text).trim();
+  if (!codeIdentity && /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(title)) {
+    title = title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, ' ');
+  }
+  return title;
+}
+
+function fallbackTitle(data, url) {
+  if (Array.isArray(data)) return data.length + (data.length === 1 ? ' item' : ' items');
+  if (!isPlainObject(data)) return 'Response';
+  var key = titleKeyOf(data);
+  var code = isCodeIdentity(data);
+  return nameAsTitle(key ? data[key] : (endpointTitle(url, code) || 'Response'), code);
+}
+
+// A layout is remembered by the shape of a response, but its title and
+// subtitle were written about one response: the plan for /pokemon/pikachu
+// is titled "Pikachu". Any other response of that shape gets its own name,
+// read from the field the plan said names it, or worked out from the data.
+function fitTitle(spec, data, url, sourceUrl) {
+  if (!spec) return spec;
+  var out = Object.assign({}, spec);
+  var foreign = !sourceUrl || sourceUrl !== url;
+  var named = spec.titlePath ? getByPath(data, spec.titlePath) : undefined;
+  if ((typeof named === 'string' && named.trim()) || (typeof named === 'number' && isFinite(named))) {
+    out.title = nameAsTitle(named, isCodeIdentity(data));
+  } else if (foreign) {
+    out.title = fallbackTitle(data, url);
+  }
+  if (foreign) out.subtitle = '';
+  return out;
+}
+
+// The collection a response exists to return: its one list of records,
+// when nothing else in it is structured ({ numFound, start, docs: [...] },
+// { count, next, results: [...] }). Judged by shape, never by key name.
+function mainCollectionKey(data) {
+  if (!isPlainObject(data)) return '';
+  var keys = Object.keys(data);
+  var found = '';
+  for (var i = 0; i < keys.length; i += 1) {
+    var v = data[keys[i]];
+    if (Array.isArray(v) && v.length && isPlainObject(v[0])) {
+      if (found) return '';
+      found = keys[i];
+    } else if ((Array.isArray(v) && v.length) || (isPlainObject(v) && Object.keys(v).length)) {
+      return '';
+    }
+  }
+  return found;
+}
+
+// numFound and num_found holding the same number are one fact said twice.
+function dropEchoes(facts, data) {
+  var seen = Object.create(null);
+  return facts.filter(function (fact) {
+    var name = String(lastSegment(fact.path)).toLowerCase().replace(/[_\-\s]/g, '');
+    var value;
+    try { value = JSON.stringify(getByPath(data, fact.path)); } catch (err) { value = ''; }
+    var sig = name + '=' + value;
+    if (seen[sig]) return false;
+    seen[sig] = true;
+    return true;
+  });
+}
+
 function buildFallbackSpec(data, url) {
   var components = [];
   var title = 'Response';
@@ -369,23 +460,8 @@ function buildFallbackSpec(data, url) {
   var keys = Object.keys(data);
   var i;
 
-  // Title: a human-readable name if the payload has one, else the endpoint.
-  var titleKey = null;
-  var titleCandidates = ['name', 'title', 'label', 'id'];
-  for (i = 0; i < titleCandidates.length; i += 1) {
-    var value = data[titleCandidates[i]];
-    if (typeof value === 'string' && value.trim()) { titleKey = titleCandidates[i]; break; }
-  }
-  // A response about a code identifier (a GitHub login or repo, a package)
-  // names it in a form where case and hyphens matter: "left-pad" is not
-  // "Left pad", and a login is not a proper noun. Those are shown as written.
-  var codeIdentity = keys.some(function (k) { return RE_CODE_IDENTITY.test(k); });
-  title = titleKey ? String(data[titleKey]) : endpointTitle(url, codeIdentity) || 'Response';
-  // Otherwise a bare identifier ("pikachu", "the-hobbit") is a name, so it
-  // reads as one.
-  if (!codeIdentity && /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(title)) {
-    title = title.charAt(0).toUpperCase() + title.slice(1).replace(/-/g, ' ');
-  }
+  var titleKey = titleKeyOf(data);
+  title = fallbackTitle(data, url);
 
   // A located response says where it is in its subtitle; the raw
   // coordinates then belong with the bookkeeping, not in the fact sheet.
@@ -415,6 +491,7 @@ function buildFallbackSpec(data, url) {
 
   var facts = [];
   var blocks = [];
+  var mainKey = mainCollectionKey(data);
 
   // Many APIs bury the answer one level down under "current" or "results".
   // Those fields belong on the surface, not inside a card.
@@ -486,6 +563,10 @@ function buildFallbackSpec(data, url) {
                         labelPath: bars.labelPath, valuePath: bars.valuePath, max: bars.max });
         } else if (namesOnly) {
           blocks.push({ type: 'badges', path: key, label: label, itemPath: namesOnly });
+        } else if (key === mainKey) {
+          // The list the response exists to return is the page, however
+          // long: a search's hundred results do not fold into Details.
+          blocks.push({ type: 'table', path: key, label: label, __main: true });
         } else {
           blocks.push({ type: 'table', path: key, label: label, __rows: v.length });
         }
@@ -513,6 +594,8 @@ function buildFallbackSpec(data, url) {
       __kind: kind
     });
   }
+
+  facts = dropEchoes(facts, data);
 
   // Two headline values, chosen by how much they say, not by key order.
   function heroRank(fact) {
@@ -550,6 +633,7 @@ function buildFallbackSpec(data, url) {
 
   var layout = 'dashboard';
   if (imagePath && facts.length) layout = 'profile';
+  else if (mainKey) layout = 'table';
   else if (moments.length >= 3 && facts.length < 4) layout = 'timeline';
   else if (!facts.length && blocks.length && blocks[0].type === 'table') layout = 'table';
 
@@ -673,4 +757,4 @@ function humanize(key) {
   return words.join(' ');
 }
 
-export { RE_CODE_IDENTITY, normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, humanize, onlyLinks, BULK_ROWS };
+export { mainCollectionKey, dropEchoes, RE_CODE_IDENTITY, titleKeyOf, isCodeIdentity, nameAsTitle, fallbackTitle, fitTitle, normalizeSpec, normalizeActions, pruneContainers, assignEmphasis, RE_KEY_INTERESTING, RE_KEY_BULK, BLOCK_INTEREST, rankBlocks, RE_STAT_VALUE, labelOnlyArray, statBarsShape, endpointTitle, seriesKeys, formatCoord, buildFallbackSpec, RE_KEY_PAGING, deriveActions, imageKeyScore, findFirstImagePath, LABEL_WORDS, humanize, onlyLinks, BULK_ROWS };

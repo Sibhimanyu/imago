@@ -133,6 +133,9 @@ button:focus:not(:focus-visible) { outline: none; }
 
 .btn-lg { height: 44px; padding: 0 20px; font-size: 14.5px; }
 .btn-xs { height: 28px; padding: 0 9px; font-size: 12px; border-radius: var(--r-xs); }
+/* Saved: the star fills in ink. Colour stays reserved for changed, live, failed. */
+#saveBtn.is-saved { color: var(--ink); }
+#saveBtn.is-saved svg path { fill: currentColor; }
 .btn-block { width: 100%; }
 
 .link-btn {
@@ -889,6 +892,11 @@ table.comp-table tr:last-child td { border-bottom: none; }
 }
 
 .more-note { font-size: 12px; color: var(--muted-2); margin-top: 10px; font-style: italic; }
+.table-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.table-foot .more-note { margin-top: 0; }
+.framed-note { max-width: 420px; margin: 20vh auto 0; padding: 0 24px; text-align: center; }
+.framed-title { font-size: 17px; font-weight: 600; margin-bottom: 12px; }
+.framed-link { color: var(--ink); font-weight: 500; }
 
 /* chart */
 .chart-wrap { width: 100%; }
@@ -1481,8 +1489,11 @@ body.inspector-open .inspector { display: block; }
 /* The hero follows the brand banner: the promise on the left, the live
    transformation on the right. A dark response panel sits under the white
    interface card that overlaps it, the way the response becomes the page. */
-.landing-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: center; }
-.landing-hero { text-align: left; }
+/* The hero is pinned to the top of the row, not centred on it: the demo
+   card grows when its live response arrives and differs per example, and a
+   centred hero jumped with it. */
+.landing-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: start; }
+.landing-hero { text-align: left; padding-top: 112px; }
 #landingView .landing-title { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.02; letter-spacing: -0.04em; }
 #landingView .landing-sub { margin: 22px 0 0; max-width: 440px; font-size: 17px; line-height: 1.55; color: var(--muted); }
 .landing-ctas { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
@@ -1539,6 +1550,7 @@ body.inspector-open .inspector { display: block; }
 
 @media (max-width: 1000px) {
   .landing-top { grid-template-columns: 1fr; gap: 44px; }
+  .landing-hero { padding-top: 0; }
 }
 @media (max-width: 860px) {
   .proofs { grid-template-columns: 1fr; margin-top: 56px; }

@@ -36,9 +36,16 @@ function writeJSON(storeKey, value) {
   }
 }
 
+// Only well-formed entries: one null or id-less entry from an older build
+// (or a hand edit) threw inside the rail render during boot, and the app
+// never got as far as opening a share link or showing a view.
 function getSavedRequests() {
   var list = readJSON(STORE.requests, []);
-  return Array.isArray(list) ? list : [];
+  if (!Array.isArray(list)) return [];
+  return list.filter(function (item) {
+    return item !== null && typeof item === 'object' && !Array.isArray(item) &&
+           typeof item.id === 'string' && item.id && typeof item.url === 'string' && item.url;
+  });
 }
 function setSavedRequests(list) { return writeJSON(STORE.requests, list); }
 
@@ -114,10 +121,35 @@ function getProviderKey(id) {
 
 function setProviderKey(id, value) {
   if (!PROVIDERS[id]) return;
+  delete rejectedKeys[id];   // a new key has not been rejected yet
   try {
     if (value) window.localStorage.setItem(KEYS[id], value);
     else window.localStorage.removeItem(KEYS[id]);
   } catch (e) { /* private mode — key simply does not persist */ }
+}
+
+// Keys a provider has refused this session, by the value refused. A key the
+// provider rejected used to stay "Saved" and "ready" in green until the next
+// Generate failed with the same error. Memory only: a reload tries again.
+var rejectedKeys = Object.create(null);
+
+// Each returns true when it changed something.
+function markKeyRejected(id) {
+  var key = getProviderKey(id);
+  if (!key || rejectedKeys[id] === key) return false;
+  rejectedKeys[id] = key;
+  return true;
+}
+
+function clearKeyRejected(id) {
+  if (!(id in rejectedKeys)) return false;
+  delete rejectedKeys[id];
+  return true;
+}
+
+function keyRejected(id) {
+  var key = getProviderKey(id);
+  return !!key && rejectedKeys[id] === key;
 }
 
 // The key that will actually be sent: the active provider's slot.
@@ -132,9 +164,10 @@ function hasAnyKey() {
   return false;
 }
 
-// A provider is usable when it holds a key, or when it never needed one.
+// A provider is usable when it holds a key it has not refused, or when it
+// never needed one.
 function providerUsable(id) {
-  return !providerNeedsKey(id) || !!getProviderKey(id);
+  return !providerNeedsKey(id) || (!!getProviderKey(id) && !keyRejected(id));
 }
 
 function getSessionProvider() {
@@ -168,4 +201,4 @@ function setSessionModel(value) {
   } catch (e) { /* ignore */ }
 }
 
-export { readJSON, writeJSON, getSavedRequests, setSavedRequests, getSchemaSpecs, setSchemaSpecs, snapshotCache, getSnapshots, setSnapshots, invalidateSnapshotCache, getPrefs, setPrefs, savePrefs, getSessionHeaders, setSessionHeaders, getProviderKey, setProviderKey, getActiveKey, hasAnyKey, providerUsable, getSessionProvider, setSessionProvider, getSessionModel, setSessionModel };
+export { readJSON, writeJSON, getSavedRequests, setSavedRequests, getSchemaSpecs, setSchemaSpecs, snapshotCache, getSnapshots, setSnapshots, invalidateSnapshotCache, getPrefs, setPrefs, savePrefs, getSessionHeaders, setSessionHeaders, getProviderKey, setProviderKey, markKeyRejected, clearKeyRejected, keyRejected, getActiveKey, hasAnyKey, providerUsable, getSessionProvider, setSessionProvider, getSessionModel, setSessionModel };

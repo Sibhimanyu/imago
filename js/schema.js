@@ -27,6 +27,9 @@ function deriveSchema(value) {
 
 function mergeSchemas(a, b) {
   if (a === b) return a;
+  // A null item is a gap, not the shape: [null, {…}] is a list of objects.
+  if (a === 'null') return b;
+  if (b === 'null') return a;
   if (typeof a === 'string' || typeof b === 'string') return a; // first wins
   if (isPlainObject(a) && isPlainObject(b)) {
     if (a.type === 'array' && b.type === 'array') {
@@ -73,6 +76,15 @@ function hashString(input) {
     hash = ((hash << 5) + hash) ^ input.charCodeAt(i);
   }
   return 'sch_' + (hash >>> 0).toString(36);
+}
+
+// Identifies one response's values, not its shape: two bodies with the same
+// signature say the same thing. Key order is the parser's, which is stable
+// for a given body whether it came off the network or out of a snapshot.
+function dataSignature(data) {
+  var text;
+  try { text = JSON.stringify(data); } catch (err) { text = ''; }
+  return hashString(text === undefined ? 'undefined' : text);
 }
 
 function fingerprint(data) {
@@ -155,4 +167,4 @@ function pathTouchedByDiff(path, diffMap) {
   return false;
 }
 
-export { deriveSchema, mergeSchemas, stableStringify, hashString, fingerprint, EMPTY_ARRAY, EMPTY_OBJECT, flatten, flatValue, diffData, pathTouchedByDiff };
+export { deriveSchema, mergeSchemas, stableStringify, hashString, dataSignature, fingerprint, EMPTY_ARRAY, EMPTY_OBJECT, flatten, flatValue, diffData, pathTouchedByDiff };

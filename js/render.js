@@ -1,4 +1,4 @@
-import { MAX_ROWS } from './config.js';
+import { MAX_EXPANDED_ROWS, MAX_ROWS } from './config.js';
 import { dom, state } from './state.js';
 import { editBar } from './edits.js';
 import { el, formatValue, getByPath, isPlainObject, isUrl } from './util.js';
@@ -765,6 +765,36 @@ function namePathIn(node) {
   return '';
 }
 
+// A list of records inside a table cell, said in a few words: each item's
+// name and its one number ("hp 35, attack 55 +4"), or its name alone. It
+// used to be dropped, so a row of past stats showed only its generation.
+function summarizeRecords(list) {
+  if (!Array.isArray(list)) return '';
+  var parts = [];
+  for (var i = 0; i < list.length && parts.length < 3; i += 1) {
+    var item = list[i];
+    if (!isPlainObject(item)) continue;
+    var name = namePathIn(item) ? item[namePathIn(item)] : '';
+    var numbers = [];
+    Object.keys(item).forEach(function (key) {
+      var v = item[key];
+      if (!name && isPlainObject(v) && namePathIn(v)) name = v[namePathIn(v)];
+      if (typeof v === 'number' && isFinite(v) && !/^(id|slot|index|order|position|rank)$|_id$/i.test(key)) numbers.push(v);
+    });
+    if (!name && !numbers.length) continue;
+    var text = name ? humanize(String(name)).toLowerCase() : '';
+    if (numbers.length) text += (text ? ' ' : '') + formatNumber(numbers[0]);
+    parts.push(text);
+  }
+  if (!parts.length) return list.length + (list.length === 1 ? ' item' : ' items');
+  var more = list.length - parts.length;
+  return parts.join(', ') + (more > 0 ? ' +' + more : '');
+}
+
+function isRecordList(value) {
+  return Array.isArray(value) && value.length > 0 && isPlainObject(value[0]);
+}
+
 function chooseColumns(rows) {
   var sample = rows[0];
   var keys = [];
@@ -775,7 +805,6 @@ function chooseColumns(rows) {
       if (nested) keys.push({ path: key + '.' + nested, label: humanize(key) });
       return;
     }
-    if (Array.isArray(value) && value.length && typeof value[0] === 'object') return;
     keys.push({ path: key, label: humanize(key) });
   });
 
@@ -821,24 +850,45 @@ function renderTable(value, component) {
   table.appendChild(thead);
 
   var tbody = document.createElement('tbody');
-  var shown = rows.slice(0, MAX_ROWS);
-  for (var r = 0; r < shown.length; r += 1) {
-    var tr = document.createElement('tr');
-    for (var k = 0; k < columns.length; k += 1) {
-      var cellValue = getByPath(shown[r], columns[k].path);
-      var cell = describeValue(cellValue, { path: columns[k].path, label: columns[k].label });
-      var td = el('td', null, cellValue === undefined ? '—' : cell.primary);
-      td.title = rawTitle(cellValue);
-      tr.appendChild(td);
+  function addRows(from, to) {
+    for (var r = from; r < to; r += 1) {
+      var tr = document.createElement('tr');
+      for (var k = 0; k < columns.length; k += 1) {
+        var cellValue = getByPath(rows[r], columns[k].path);
+        var text = isRecordList(cellValue) ? summarizeRecords(cellValue)
+          : describeValue(cellValue, { path: columns[k].path, label: columns[k].label }).primary;
+        var td = el('td', null, cellValue === undefined ? '—' : text);
+        td.title = rawTitle(cellValue);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
     }
-    tbody.appendChild(tr);
   }
+  var shown = Math.min(rows.length, MAX_ROWS);
+  addRows(0, shown);
   table.appendChild(tbody);
   scroll.appendChild(table);
   wrap.appendChild(scroll);
 
-  if (rows.length > shown.length) {
-    wrap.appendChild(el('p', 'more-note', 'Showing ' + shown.length + ' of ' + rows.length + ' rows'));
+  // "Showing 10 of 100 rows" used to be the end of it: the other ninety
+  // were reachable only through Inspect → Response.
+  if (rows.length > shown) {
+    var foot = el('div', 'table-foot');
+    var note = el('p', 'more-note', 'Showing ' + shown + ' of ' + rows.length + ' rows');
+    foot.appendChild(note);
+    var all = Math.min(rows.length, MAX_EXPANDED_ROWS);
+    var more = el('button', 'btn btn-ghost btn-xs table-more',
+                  all === rows.length ? 'Show all ' + rows.length : 'Show ' + all);
+    more.type = 'button';
+    more.addEventListener('click', function () {
+      addRows(shown, all);
+      shown = all;
+      note.textContent = shown === rows.length ? 'All ' + rows.length + ' rows'
+                                                : 'Showing ' + shown + ' of ' + rows.length + ' rows';
+      foot.removeChild(more);
+    });
+    foot.appendChild(more);
+    wrap.appendChild(foot);
   }
   return wrap;
 }
@@ -910,17 +960,17 @@ function renderChart(value, component) {
 
   if (numbers.length < 2) return null;
 
-  // Too many points render as noise at this width; sample evenly instead.
-  var MAX_POINTS = 48;
-  if (numbers.length > MAX_POINTS) {
-    var sampled = [];
-    var step = numbers.length / MAX_POINTS;
-    for (i = 0; i < MAX_POINTS; i += 1) sampled.push(numbers[Math.floor(i * step)]);
-    numbers = sampled;
-  }
+  // The caption and the guides report the series itself: its real length
+  // and extremes, read before any sampling or padding. They used to print
+  // the padded range of a thinned series ("48 points · low 7.2" for 168
+  // points whose low was 8.9).
+  var count = numbers.length;
+  var low = Math.min.apply(null, numbers);
+  var high = Math.max.apply(null, numbers);
+  numbers = thinSeries(numbers, 48);
 
-  var min = Math.min.apply(null, numbers);
-  var max = Math.max.apply(null, numbers);
+  var min = low;
+  var max = high;
   if (max === min) { max = min + 1; }
   var pad = (max - min) * 0.12;
   min -= pad; max += pad;
@@ -949,13 +999,13 @@ function renderChart(value, component) {
     '<stop offset="100%" stop-color="var(--ink)" stop-opacity="0"/></linearGradient>';
   svg.appendChild(defs);
 
-  // three horizontal guides, labelled with their value
+  // three horizontal guides at the high, the middle and the low
   var axis = el('div', 'chart-axis');
   axis.setAttribute('aria-hidden', 'true');
-  for (i = 0; i < 3; i += 1) {
-    var frac = i / 2;
-    var val = max - frac * (max - min);
-    var y = padT + frac * innerH;
+  var guides = high === low ? [high] : [high, (high + low) / 2, low];
+  for (i = 0; i < guides.length; i += 1) {
+    var val = guides[i];
+    var y = py(val);
     var line = document.createElementNS(svgNS, 'line');
     line.setAttribute('class', 'chart-grid');
     line.setAttribute('x1', padL); line.setAttribute('x2', W - padR);
@@ -1004,8 +1054,30 @@ function renderChart(value, component) {
   plot.appendChild(svg);
   wrap.appendChild(plot);
   wrap.appendChild(el('p', 'more-note',
-    numbers.length + ' points · low ' + (Math.round(min * 10) / 10) + ' · high ' + (Math.round(max * 10) / 10)));
+    count + ' points · low ' + (Math.round(low * 10) / 10) + ' · high ' + (Math.round(high * 10) / 10)));
   return wrap;
+}
+
+// Too many points render as noise at chart width. Split the series into
+// buckets and keep each bucket's low and high, in order, so a peak between
+// two evenly spaced samples is never dropped.
+function thinSeries(numbers, buckets) {
+  if (numbers.length <= buckets * 2) return numbers;
+  var out = [];
+  var size = numbers.length / buckets;
+  for (var b = 0; b < buckets; b += 1) {
+    var from = Math.floor(b * size);
+    var to = Math.min(numbers.length, Math.floor((b + 1) * size));
+    var lo = from, hi = from;
+    for (var i = from; i < to; i += 1) {
+      if (numbers[i] < numbers[lo]) lo = i;
+      if (numbers[i] > numbers[hi]) hi = i;
+    }
+    if (lo === hi) out.push(numbers[lo]);
+    else if (lo < hi) { out.push(numbers[lo]); out.push(numbers[hi]); }
+    else { out.push(numbers[hi]); out.push(numbers[lo]); }
+  }
+  return out;
 }
 
 function renderJsonBlock(value) {
@@ -1022,4 +1094,4 @@ function renderJsonBlock(value) {
   return wrap;
 }
 
-export { COMPONENT_SPAN, BLOCK_TYPES, HERO_KINDS, STRUCTURAL_TYPES, ROOT_OK_TYPES, numbersWithGaps, allNumbers, looksLikeDateTimeMap, resolveType, renderComponent, cardFor, factCell, renderHeadline, STRUCTURE_FIRST, isBookkeeping, renderSpecBody, flattenScalars, renderKeyValue, renderSparkline, renderGauge, timelineEntries, renderTimeline, scheduleTimelineLayout, layoutTimelines, renderImage, renderBadges, renderList, columnScore, namePathIn, chooseColumns, renderTable, renderStatBars, renderChart, renderJsonBlock };
+export { COMPONENT_SPAN, BLOCK_TYPES, HERO_KINDS, STRUCTURAL_TYPES, ROOT_OK_TYPES, numbersWithGaps, allNumbers, looksLikeDateTimeMap, resolveType, renderComponent, cardFor, factCell, renderHeadline, STRUCTURE_FIRST, isBookkeeping, renderSpecBody, flattenScalars, renderKeyValue, renderSparkline, renderGauge, timelineEntries, renderTimeline, scheduleTimelineLayout, layoutTimelines, renderImage, renderBadges, renderList, columnScore, namePathIn, summarizeRecords, isRecordList, chooseColumns, renderTable, thinSeries, renderStatBars, renderChart, renderJsonBlock };

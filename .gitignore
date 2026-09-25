@@ -4,3 +4,7 @@ node_modules/
 .context/
 coverage/
 design/shots/*.png
+
+# Illustrator writes a lock file beside an open .ai document.
+~ai-*.tmp
+.cache/

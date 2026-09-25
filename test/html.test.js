@@ -61,8 +61,9 @@ describe('applyHtml', () => {
     const app = await boot();
     app.state.builder = 'html';
     app.state.url = 'https://x.test/api';
-    app.state.byteSize = 42;
     app.state.data = { a: 1 };
+    app.state.dataUrl = 'https://x.test/api';
+    app.state.dataSig = app.dataSignature({ a: 1 });
     app.applyHtml(DOC, 'generated');
     return app;
   }
@@ -71,7 +72,10 @@ describe('applyHtml', () => {
     const app = await applied();
     const frame = app.dom.interfaceOut.querySelector('iframe.html-frame');
     expect(frame).toBeTruthy();
-    expect(frame.srcdoc).toBe(DOC);
+    // The doc goes in as written, behind a policy of its own.
+    expect(frame.srcdoc).toContain('<h1>Pokédex</h1><p>Pikachu</p>');
+    expect(frame.srcdoc).toContain('body{font-family:sans-serif}');
+    expect(frame.srcdoc).toContain('Content-Security-Policy');
     // The whole trust boundary is this token list: popups for _blank links,
     // and nothing that could reach the app (no scripts, no same-origin).
     const tokens = (frame.getAttribute('sandbox') || '').split(/\s+/);
@@ -84,14 +88,15 @@ describe('applyHtml', () => {
   it('marks the render source and snapshots what it was built from', async () => {
     const app = await applied();
     expect(app.dom.cacheBadge.textContent).toBe('Generated');
-    expect(app.state.htmlBytes).toBe(42);
+    expect(app.state.htmlSig).toBe(app.dataSignature({ a: 1 }));
     expect(app.state.htmlUrl).toBe('https://x.test/api');
     expect(app.dom.interfaceOut.querySelector('.html-stale').hidden).toBe(true);
   });
 
   it('flags the page stale the moment fresh data lands', async () => {
     const app = await applied();
-    app.state.byteSize = 43;   // a refresh landed after generation
+    app.state.data = { a: 2 };   // a refresh landed after generation
+    app.state.dataSig = app.dataSignature({ a: 2 });
     app.updateMeta();
     expect(app.dom.interfaceOut.querySelector('.html-stale').hidden).toBe(false);
   });
@@ -103,7 +108,7 @@ describe('html request flow', () => {
     const hash = probe.fingerprint({ hello: 'world' }).hash;
     const app = await boot({
       fetch: jsonFetch({ hello: 'world' }),
-      local: { 'imago.schemaSpecs': { [hash]: { html: DOC } } }
+      local: { 'imago.schemaSpecs': { [hash]: { html: DOC, htmlUrl: 'https://x.test/api' } } }
     });
     app.state.builder = 'html';
     app.navigateTo('https://x.test/api');
@@ -111,7 +116,7 @@ describe('html request flow', () => {
     await flush();
     const frame = app.dom.interfaceOut.querySelector('iframe.html-frame');
     expect(frame).toBeTruthy();
-    expect(frame.srcdoc).toBe(DOC);
+    expect(frame.srcdoc).toContain('<p>Pikachu</p>');
     expect(app.dom.cacheBadge.textContent).toBe('From schema cache');
   });
 

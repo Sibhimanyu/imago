@@ -651,15 +651,26 @@ describe('credentials stay with their endpoint', () => {
     expect(app.dom.headersInput.value).toBe('');
   });
 
-  it('opening an endpoint mid-request leaves the form alone', async () => {
-    const app = await boot({ local: { 'imago.savedRequests': [
-      { id: 'b', name: 'B', url: 'https://b.test/x', headers: { 'X-Api-Key': 'k' }, createdAt: '2026-09-20T08:00:00Z' }
-    ] } });
+  // A click mid-request used to be ignored without a word. Now it replaces
+  // the request in flight, and carries its own endpoint's headers with it.
+  it('opening an endpoint mid-request replaces the request in flight', async () => {
+    const seen = [];
+    const app = await boot({
+      local: { 'imago.savedRequests': [
+        { id: 'b', name: 'B', url: 'https://b.test/x', headers: { 'X-Api-Key': 'k' }, createdAt: '2026-09-20T08:00:00Z' }
+      ] },
+      fetch: (url, init) => { seen.push({ url, headers: init.headers }); return url.includes('a.test') ? new Promise(() => {}) : jsonFetch({ b: 1 })(); }
+    });
     app.setUrlInput('https://a.test/x');
-    app.state.inFlight = true;
+    app.performRequest(false);
+    expect(app.state.inFlight).toBe(true);
     app.loadSavedRequest('b');
-    expect(app.dom.urlInput.value).toBe('https://a.test/x');
-    expect(app.dom.headersInput.value).not.toContain('k');
+    await flush(); await flush();
+    expect(app.dom.urlInput.value).toBe('https://b.test/x');
+    expect(seen.map((s) => s.url)).toEqual(['https://a.test/x', 'https://b.test/x']);
+    expect(seen[1].headers['X-Api-Key']).toBe('k');
+    expect(app.state.dataUrl).toBe('https://b.test/x');
+    expect(app.state.inFlight).toBe(false);
   });
 });
 

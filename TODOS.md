@@ -181,25 +181,6 @@ can never diverge.
 **Priority:** P3
 **Depends on:** None
 
-## Content
-
-### Empty response is labelled "not JSON" and its message dangles
-
-**What:** A 0-byte response renders `Imago renders JSON APIs. The endpoint
-returned 0 B starting with: ` — a clause with nothing after it.
-
-**Why:** The label is wrong (an empty body is not malformed JSON) and the
-sentence visibly runs out, which reads like a bug even though the request was
-handled correctly.
-
-**Context:** The not-JSON branch in `performRequest`'s response handling in
-`app.js`. Give a 0-byte body its own message and drop the "starting with"
-clause when there is no snippet. Found by /qa on 2026-09-22 (ISSUE-006).
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
 ## Infrastructure
 
 ### Mark path duplicated across eight files
@@ -254,6 +235,19 @@ it, or accept it as defence-in-depth and leave the note.
 ## One-screen redesign (0.4.0.0) — deferred
 
 ## Completed
+
+### The 2026-09-24 audit — v0.13.0.0
+
+**What:** Thirty problems from a security, correctness and hands-on QA pass,
+fixed with a regression test each (`test/audit.test.js`, every one
+mutation-checked). The big ones: a remembered layout kept the title of the
+response it was made from; a slow request locked the app; a late model reply
+replaced another page; a failed request put back the wrong page; the
+full-HTML frame could load any https URL, so it could carry data out; keys in
+the query string went into share links and prompts. Also: the empty-response
+message (formerly under Content here).
+
+**Completed:** v0.13.0.0 (2026-09-25)
 
 ### The last design leftovers — v0.10.4.0
 

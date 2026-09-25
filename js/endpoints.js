@@ -5,8 +5,9 @@ import { byteLength, clear, el, formatBytes, formatClock, formatRelative } from 
 import { hashString } from './schema.js';
 import { setAppPane, setKeyStatus, syncKeyInputs, toast } from './ui.js';
 import { updateMeta } from './chat.js';
-import { navigateTo, renderChangesPane, setActiveTab, svgIcon } from './panes.js';
-import { getSnapshotsFor, headersToText, markDirty, parseHeaders, performRequest, redactSecretHeaders, tick } from './request.js';
+import { navigateTo, renderChangesPane, setActiveTab, showInterfaceEmpty, svgIcon } from './panes.js';
+import { endpointTitle } from './spec.js';
+import { getSnapshotsFor, headersToText, markDirty, parseHeaders, performRequest, redactSecretHeaders, stopTimer, syncRefreshUi, tick } from './request.js';
 
 /* ── Saved requests ────────────────────────────────────────────────────── */
 
@@ -230,9 +231,27 @@ function setUrlInput(value) {
   dom.urlInput.value = value;
   syncSaveBtn();
 }
+// The button also says when the address in the box is already saved: the
+// star fills and the label reads Saved. Before, only a toast said so.
 function syncSaveBtn() {
   if (!dom.saveBtn || !dom.urlInput) return;
-  dom.saveBtn.setAttribute('aria-disabled', dom.urlInput.value.trim() ? 'false' : 'true');
+  var url = dom.urlInput.value.trim();
+  dom.saveBtn.setAttribute('aria-disabled', url ? 'false' : 'true');
+  var saved = !!url && getSavedRequests().some(function (r) { return r.url === url; });
+  dom.saveBtn.classList.toggle('is-saved', saved);
+  dom.saveBtn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+  var label = dom.saveBtn.querySelector('.btn-label');
+  if (label) label.textContent = saved ? 'Saved' : 'Save';
+}
+
+// What a saved endpoint is called: the page's own title when that page is
+// on screen ("Pikachu"), else the last word of its address.
+function nameFor(url) {
+  if (state.data && state.dataUrl === url) {
+    var title = state.spec && state.spec.title && state.spec.title !== 'Response' ? state.spec.title : endpointTitle(url);
+    if (title) return String(title).slice(0, 44);
+  }
+  return deriveName(url);
 }
 
 function saveCurrentRequest() {
@@ -259,7 +278,7 @@ function saveCurrentRequest() {
   } else {
     var record = {
       id: 'req_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-      name: deriveName(url),
+      name: nameFor(url),
       url: url,
       headers: headers,
       createdAt: now,
@@ -272,6 +291,7 @@ function saveCurrentRequest() {
 
   setSavedRequests(list);
   renderSavedList();
+  syncSaveBtn();
   savePrefs();
   if (split.redacted.length) {
     toast(split.redacted.join(', ') + ' not saved — credentials stay in this session.', 'warn');
@@ -285,8 +305,8 @@ function loadSavedRequest(id) {
     if (list[i].id === id) { found = list[i]; break; }
   }
   if (!found) return;
-  // A click mid-request would put B's URL and headers over page A.
-  if (state.inFlight) return;
+  // A click mid-request replaces the request in flight (performRequest
+  // drops it); it used to be ignored without a word.
 
   state.activeRequestId = found.id;
   setUrlInput(found.url);
@@ -308,18 +328,41 @@ function deleteSavedRequest(id) {
   if (index === -1) return;
   var removed = before[index];
   var wasActive = state.activeRequestId === id;
+  // The row under focus is about to go. Remember which row sat next to it
+  // on screen, so focus lands there instead of falling to <body>.
+  var nextFocus = neighbourKey(id);
   setSavedRequests(before.filter(function (item) { return item.id !== id; }));
   if (wasActive) state.activeRequestId = null;
   renderSavedList();
+  syncSaveBtn();
   savePrefs();
+  focusByKey(nextFocus);
   toast('Deleted ' + removed.name + '.', null, { label: 'Undo', run: function () {
     var now = getSavedRequests();
     now.splice(Math.min(index, now.length), 0, removed);
     setSavedRequests(now);
     if (wasActive) state.activeRequestId = id;
     renderSavedList();
+    syncSaveBtn();
     savePrefs();
+    focusByKey('delete:' + id);
   } });
+}
+
+// The delete button of the row after this one on screen, or before it, or
+// failing both the New request button.
+function neighbourKey(id) {
+  var buttons = dom.savedList ? [].slice.call(dom.savedList.querySelectorAll('.saved-delete')) : [];
+  var keys = buttons.map(function (b) { return b.getAttribute('data-focus-key'); });
+  var at = keys.indexOf('delete:' + id);
+  if (at === -1) return '';
+  return keys[at + 1] || keys[at - 1] || '';
+}
+
+function focusByKey(key) {
+  var target = key && dom.savedList ? dom.savedList.querySelector('[data-focus-key="' + key + '"]') : null;
+  if (!target) target = dom.newRequestBtn;
+  if (target && target.focus) target.focus();
 }
 
 function touchSavedRequest(url) {
@@ -339,6 +382,11 @@ function touchSavedRequest(url) {
 // tab change or `beforeunload`, and would otherwise write the header text
 // straight back out of state.
 function clearAllData() {
+  // Watch would go on fetching an endpoint that no longer exists, and toast
+  // "Enter an API URL first." every interval.
+  stopTimer();
+  state.refreshIntervalMs = 0;
+  if (dom.refreshToggle) syncRefreshUi();
   try {
     window.localStorage.removeItem(STORE.requests);
     window.localStorage.removeItem(STORE.specs);
@@ -361,8 +409,22 @@ function clearAllData() {
   state.headers = {};
   state.url = '';
   state.stack = [];
+  // The page on screen came out of the data just deleted.
+  state.data = null;
+  state.dataUrl = '';
+  state.dataSig = '';
+  state.rawText = '';
+  state.schema = null;
+  state.schemaHash = '';
+  state.spec = null;
+  state.specSource = '';
+  state.html = null;
+  state.pendingGenerate = false;
   if (dom.headersInput) dom.headersInput.value = '';
   if (dom.urlInput) setUrlInput('');
+  if (dom.interfaceOut) showInterfaceEmpty();
+  if (dom.inspectorHead) dom.inspectorHead.hidden = true;
+  if (dom.tabBar) setActiveTab('interface');
 
   // Write a clean prefs object now rather than waiting for the next
   // savePrefs to serialise whatever is still in memory.
@@ -395,4 +457,4 @@ function renderStorageSummary() {
     snaps + ' snapshot' + (snaps === 1 ? '' : 's') + ' · about ' + formatBytes(bytes);
 }
 
-export { currentRequestKey, deriveName, hostOf, keepFocus, renderSavedList, buildSavedList, renderHistory, buildHistory, renderRailExamples, loadExample, setUrlInput, syncSaveBtn, saveCurrentRequest, loadSavedRequest, deleteSavedRequest, touchSavedRequest, clearAllData, renderStorageSummary };
+export { nameFor, neighbourKey, focusByKey, currentRequestKey, deriveName, hostOf, keepFocus, renderSavedList, buildSavedList, renderHistory, buildHistory, renderRailExamples, loadExample, setUrlInput, syncSaveBtn, saveCurrentRequest, loadSavedRequest, deleteSavedRequest, touchSavedRequest, clearAllData, renderStorageSummary };

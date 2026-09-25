@@ -369,6 +369,18 @@ var MAX_ROWS = 10;
 // from localStorage, so oversized docs render without being cached.
 var MAX_HTML_BYTES = 256 * 1024;
 var MAX_CACHED_HTML_BYTES = 100 * 1024;
+// Snapshot bodies are kept for this many endpoints, the most recently
+// fetched first. Each endpoint used to keep one body forever.
+var MAX_SNAPSHOT_ENDPOINTS = 30;
+// A table shows this many rows until the reader asks for all of them.
+var MAX_EXPANDED_ROWS = 500;
+
+// How long a request may hang before it is given up. Mutable, not
+// constants, so the suite can shorten them instead of waiting.
+var TIMEOUTS = {
+  request: 30000,   // the endpoint itself
+  model: 120000     // a model call; a big local model can take a while
+};
 
 // One-click examples for the picker. Every entry must be a keyless GET
 // that answers from a browser (CORS-open). Key-gated APIs (TMDB, USDA,
@@ -408,6 +420,7 @@ var IMAGO_UI_SPEC_JSON_SCHEMA = {
   type: 'object',
   properties: {
     title: { type: 'string' },
+    titlePath: { type: 'string' },
     subtitle: { type: 'string' },
     layout: { type: 'string', enum: LAYOUTS },
     actions: {
@@ -470,4 +483,4 @@ var IMAGO_UI_SPEC_JSON_SCHEMA = {
   required: ['title', 'layout', 'components']
 };
 
-export { STORE, SESSION, KEYS, PROVIDERS, OLLAMA_OPTIONS, PROVIDER_IDS, DEFAULT_PROVIDER, getProvider, providerNeedsKey, ollamaModels, fetchOllamaModels, isChatModel, pickOllamaModel, OLLAMA_DEFAULT_BASE, ollamaBase, ollamaAltBase, ollamaFetch, detectProvider, DEFAULT_MODEL, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, LARGE_RESPONSE_BYTES, SAMPLE_CHAR_LIMIT, MAX_COMPONENTS, MAX_ROWS, MAX_HTML_BYTES, MAX_CACHED_HTML_BYTES, DEMOS, EMPTY_EXAMPLES, COMPONENT_TYPES, LAYOUTS, EMPHASIS, ACTION_TYPES, MAX_ACTIONS, IMAGO_UI_SPEC_JSON_SCHEMA };
+export { STORE, SESSION, KEYS, PROVIDERS, OLLAMA_OPTIONS, PROVIDER_IDS, DEFAULT_PROVIDER, getProvider, providerNeedsKey, ollamaModels, fetchOllamaModels, isChatModel, pickOllamaModel, OLLAMA_DEFAULT_BASE, ollamaBase, ollamaAltBase, ollamaFetch, detectProvider, DEFAULT_MODEL, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, LARGE_RESPONSE_BYTES, SAMPLE_CHAR_LIMIT, MAX_COMPONENTS, MAX_ROWS, MAX_HTML_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOT_ENDPOINTS, MAX_EXPANDED_ROWS, TIMEOUTS, DEMOS, EMPTY_EXAMPLES, COMPONENT_TYPES, LAYOUTS, EMPHASIS, ACTION_TYPES, MAX_ACTIONS, IMAGO_UI_SPEC_JSON_SCHEMA };
