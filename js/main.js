@@ -684,11 +684,22 @@ function isPrivateHost(hostname) {
          (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
 }
 
+// An open link is the readable kind an API's docs can write by hand:
+// #open=https://api.example.com/v1/thing. Just the endpoint, no layout.
+var OPEN_PREFIX = '#open=';
+
+function openLinkUrl(text) {
+  try { return decodeURIComponent(text); } catch (err) { return text; }
+}
+
 // → { url, spec|null } or null for no link; { error } for a damaged one.
 function readShareLink(hash) {
-  if (!hash || hash.indexOf(SHARE_PREFIX) !== 0) return null;
+  if (!hash) return null;
+  var opening = hash.indexOf(OPEN_PREFIX) === 0;
+  if (!opening && hash.indexOf(SHARE_PREFIX) !== 0) return null;
   try {
-    var payload = JSON.parse(fromBase64Url(hash.slice(SHARE_PREFIX.length)));
+    var payload = opening ? { u: openLinkUrl(hash.slice(OPEN_PREFIX.length)) }
+                          : JSON.parse(fromBase64Url(hash.slice(SHARE_PREFIX.length)));
     var url = payload && typeof payload.u === 'string' ? payload.u : '';
     var parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('scheme');
@@ -864,4 +875,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };

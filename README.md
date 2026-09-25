@@ -140,6 +140,15 @@ headers or an address key, you are told the link may not load for others.
 Opening a link only ever fetches a public https endpoint (never `localhost` or
 a LAN address), and it does not start Watch.
 
+### Open in Imago
+
+For links written by hand, such as a button in an API's docs, there is a
+readable form: `https://imago.onslate.in/#open=<endpoint>`, with the endpoint
+as you would type it. It opens the app and fetches that endpoint once, with no
+layout and Watch off, under the same rule as a share link: public https only.
+The badge is `assets/open-in-imago.svg`. API owners can find the snippet in
+[launch/open-in-imago.md](launch/open-in-imago.md).
+
 ### One screen
 
 Imago is one screen. The command bar (paste a URL) sits on top, your saved endpoints
@@ -420,6 +429,22 @@ response-to-interface step, so everything else stays out of the way.
 
 Snapshots are capped at 10 per endpoint, and only the newest keeps its response body,
 so tracking a 300 KB endpoint costs one body rather than ten.
+
+---
+
+## Pricing
+
+Free, and MIT-licensed. Imago has no server, so a user costs nothing to serve.
+The one paid thing, a model call, runs on your own free Gemini or Groq key
+(or none), once per response shape. Charging would mean accounts, and accounts
+would mean a server holding your keys.
+
+## Help
+
+[SUPPORT.md](SUPPORT.md) covers the common problems (CORS, keys, Ollama, share
+links) using the messages Imago actually shows. If a page came out wrong, press
+**Share** and paste the link into a
+[new issue](https://github.com/Sibhimanyu/imago/issues/new/choose).
 
 ---
 

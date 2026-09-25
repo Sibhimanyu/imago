@@ -2,6 +2,22 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.3.0] - 2026-09-26
+
+The launch: a link an API's docs can write by hand, and somewhere to get help.
+
+### Added
+
+- **Open in Imago links.** `https://imago.onslate.in/#open=<endpoint>` opens
+  the app and fetches that endpoint once, Watch off. Unlike a share link it is
+  readable, so an API's docs can write one by hand. It follows the same rule:
+  public https only. `assets/open-in-imago.svg` is the badge to go with it.
+- **Support.** `SUPPORT.md` walks through each error Imago shows and its fix.
+  GitHub issue forms cover a page that came out wrong (asking for its Share
+  link) and anything else broken.
+- **The launch kit** in `launch/`: who Imago is for, the partner kit for API
+  owners, the partner pitch, the listings and the launch post.
+
 ## [0.13.2.0] - 2026-09-25
 
 ### Changed

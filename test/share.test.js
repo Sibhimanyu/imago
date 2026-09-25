@@ -166,3 +166,35 @@ describe('toolbar buttons on phones', () => {
     }
   });
 });
+
+describe('an open link', () => {
+  it('is the readable kind a docs page writes by hand: the endpoint, encoded or not', async () => {
+    const app = await boot();
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m';
+    expect(app.readShareLink('#open=' + url)).toEqual({ url, spec: null });
+    expect(app.readShareLink('#open=' + encodeURIComponent(url))).toEqual({ url, spec: null });
+    // A stray % that is not an escape is read as written, not refused.
+    expect(app.readShareLink('#open=https://a.test/x?q=100%').url).toBe('https://a.test/x?q=100%');
+  });
+
+  it('is held to the share link rules: public https only', async () => {
+    const app = await boot();
+    expect(app.readShareLink('#open=http://api.test/x').error).toMatch(/not a public https endpoint/);
+    expect(app.readShareLink('#open=https://localhost/x').error).toMatch(/not a public https endpoint/);
+    expect(app.readShareLink('#open=javascript:alert(1)').error).toMatch(/damaged/);
+    expect(app.readShareLink('#open=').error).toMatch(/damaged/);
+  });
+
+  it('opens straight into the app and fetches the endpoint once, Watch off', async () => {
+    const seen = [];
+    const app = await boot({
+      url: 'https://imago.test/#open=https://pokeapi.co/api/v2/pokemon/pikachu',
+      fetch: (url) => { seen.push(String(url)); return jsonFetch({ name: 'pikachu', height: 4 })(url); }
+    });
+    await flush(); await flush();
+    expect(app.state.view).toBe('app');
+    expect(seen).toEqual(['https://pokeapi.co/api/v2/pokemon/pikachu']);
+    expect(app.window.location.hash).toBe('#app');
+    expect(app.state.refreshIntervalMs).toBe(0);
+  });
+});

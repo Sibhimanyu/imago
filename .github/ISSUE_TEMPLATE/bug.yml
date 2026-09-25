@@ -1,0 +1,27 @@
+name: Something is broken
+description: A button does nothing, an error you can't explain, a page that won't load.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check [SUPPORT.md](https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md) first. Most "it won't load" reports are CORS or a key, and the fix is there.
+  - type: textarea
+    id: what
+    attributes:
+      label: What you did, and what happened
+      placeholder: Pasted https://api.example.com/v1/items, pressed Enter, got "Blocked by CORS".
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Browser and device
+      placeholder: Chrome 140, macOS / Safari, iPhone
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Anything in the browser console (optional)
+      render: text

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Help and common problems
+    url: https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md
+    about: CORS, keys, Ollama, share links. Most answers are here.
+  - name: Put "Open in Imago" in your API's docs
+    url: https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md
+    about: One line of Markdown, no sign-up.

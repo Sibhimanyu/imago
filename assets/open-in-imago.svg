@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="28" viewBox="0 0 128 28" role="img" aria-label="Open in Imago">
+  <title>Open in Imago</title>
+  <rect width="128" height="28" rx="6" fill="#1b1b19"/>
+  <g fill="#f6f5f1" transform="translate(7 5) scale(0.5625)">
+    <rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/>
+  </g>
+  <text x="30" y="18.4" fill="#f6f5f1" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" textLength="88" lengthAdjust="spacingAndGlyphs">Open in Imago</text>
+</svg>

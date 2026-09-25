@@ -1,0 +1,41 @@
+name: The page came out wrong
+description: Imago drew an endpoint badly, left out what you came for, or showed something that isn't in the data.
+labels: ["wrong page"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sending this. A bad page is the bug Imago most needs to hear about.
+        The fastest report is a **Share** link: press Share on the page and paste it below.
+        It carries the endpoint and the layout, never your headers or keys.
+  - type: input
+    id: link
+    attributes:
+      label: Share link, or the endpoint URL
+      placeholder: https://imago.onslate.in/#share=…
+    validations:
+      required: true
+  - type: dropdown
+    id: badge
+    attributes:
+      label: Badge beside the page title
+      options:
+        - Generated
+        - From schema cache
+        - Fallback
+        - Shared layout
+        - I don't know
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you came to see, and what you got instead
+      placeholder: I wanted today's rate as the headline. It showed the base currency as the headline and put the rate in Details.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Provider and model (Settings → API keys), if the badge says Generated
+      placeholder: Google Gemini, gemini-2.5-flash-lite
