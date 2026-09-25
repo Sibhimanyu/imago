@@ -1,5 +1,7 @@
-// Task 1 — the Imago logo: primary, reversed, app icon, bare mark, construction.
-newDoc("imago-task1-logo", 640, 240, false);
+// The Imago logo artwork: primary, reversed, app icon, bare mark, construction,
+// one artboard each, for the SVG/PNG/PDF exports. Its pages in the Task 1
+// file are drawn by guidelines.jsx.
+newDoc("imago-logo-master", 640, 240, false);
 var bg = DOC.layers[0], grid = layer("Grid"), art = layer("Logo"), notes = layer("Construction");
 var G = 80; // gap between artboards
 
@@ -45,7 +47,7 @@ stroke(cs, "yellow", 1); cs.strokeDashes = [4, 3];
 text("32-unit grid  ·  clear space = one aperture width (5.3u)", cx + cw / 2, cy + ch - 14,
   { font: "JetBrainsMono-Regular", size: 9, color: "muted", align: "center", into: notes });
 
-saveAI("imago-task1-logo.ai");
+saveAI("build/imago-logo-master.ai");   // exports only; the Task 1 file is guidelines.jsx
 var names = ["logo-primary", "logo-reversed", "app-icon", "mark", "logo-tile", "logo-construction"];
 for (var k = 0; k < names.length; k++) exportPNG("exports/" + names[k] + ".png", k == 2 ? 200 : 300, k);
 // Single-artboard SVGs for the web, paths only.

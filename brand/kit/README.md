@@ -5,7 +5,7 @@ from `scripts/` so every piece shares the same palette, mark geometry and hero.
 
 | Piece | Editable file | Exports |
 |---|---|---|
-| Task 1, the logo and its identity (19 artboards): primary, reversed, app icon, mark, tile lockup, construction; Amigo the mascot standing and resting; and the 11-page brand guidelines (the name, what the mark means, anatomy, construction, versions, misuse, Amigo, colour, type, voice) | `imago-task1-logo.ai` (RGB) | Logo: `exports/imago-task1-logo_*.svg`, `exports/logo-*.png`, `exports/imago-task1-logo.pdf`. Mascot: `exports/imago-mascot_*.svg`, `exports/amigo*.png`. Guidelines: `exports/imago-brand-guidelines.pdf`, `exports/guidelines/*.png` |
+| Task 1, the logo, as a 13-page brand book. **Logo:** the master lockup (primary and reversed), the name, what the mark means, anatomy, construction, versions, misuse. **Mascot:** meet Amigo (standing and resting), using Amigo. **System:** colour, type, voice | `imago-task1-logo.ai` (RGB) | Book: `exports/imago-brand-guidelines.pdf`, `exports/guidelines/*.png`. Logo: `exports/imago-task1-logo_*.svg`, `exports/logo-*.png`, `exports/imago-task1-logo.pdf`. Mascot: `exports/imago-mascot_*.svg`, `exports/amigo*.png` |
 | Task 2, the A4 flyer, CMYK, 3 mm bleed | `imago-task2-flyer-a4.ai` | `exports/imago-task2-flyer-a4-print.pdf` (PDF/X-4), `exports/imago-task2-flyer-a4-preview.png` |
 | Task 3, the blog banner, 1200 × 700 px, RGB | `imago-task3-blog-banner.ai` | `exports/imago-task3-blog-banner.png`, `.jpg`, `@2x.png` |
 
@@ -30,13 +30,14 @@ from `scripts/` so every piece shares the same palette, mark geometry and hero.
 Needs Illustrator plus the Inter, Inter Display and JetBrains Mono fonts.
 
 ```bash
-brand/kit/scripts/build.sh task1    # logo + mascot + guidelines, merged into one file
+brand/kit/scripts/build.sh task1    # the brand book, after the logo and mascot exports
 brand/kit/scripts/build.sh flyer    # or banner
 ```
 
-It runs in whichever Illustrator is open. `task1` builds the mascot and the
-guidelines into `build/` (ignored), then copies their artboards and layers in
-below the logo sheet.
+It runs in whichever Illustrator is open. The logo and the mascot are drawn
+on the book's own pages as editable vectors; `logo.jsx` and `mascot.jsx` build
+their standalone artboards into `build/` (ignored) only to write the SVG, PNG
+and PDF exports.
 
 A rebuild closes and replaces only that piece's own document; nothing else
 open in Illustrator is touched.

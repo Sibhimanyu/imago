@@ -1,17 +1,16 @@
 #!/bin/bash
 # Usage: ./build.sh logo|flyer|banner|mascot|guidelines|task1 — builds that
-# piece in Adobe Illustrator. task1 builds the logo, the mascot and the
-# guidelines, then merges them into imago-task1-logo.ai.
+# piece in Adobe Illustrator. task1 is the brand book (guidelines.jsx), after
+# the logo and mascot exports it shows.
 #
 # Runs in the Illustrator that is open (2026 or the Beta, which share an app
 # id, so they are named by path); ILLUSTRATOR=/path/to/app overrides.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"; kit="$(dirname "$here")"
 if [ "${1:-}" = task1 ]; then
-  for step in logo mascot guidelines task1-merge; do "$0" "$step"; done
+  for step in logo mascot guidelines; do "$0" "$step"; done
   exit 0
 fi
-[ "${1:-}" = task1-merge ] && set -- task1
 if [ -z "${ILLUSTRATOR:-}" ]; then
   # The running Illustrator's own path; pgrep -f on the path would read
   # "(Beta)" as a regex group.
@@ -29,6 +28,9 @@ osascript - "$out" <<OSA
 on run argv
   set f to (POSIX file (item 1 of argv)) as alias
   with timeout of 900 seconds
+    -- In the background (another Space, behind other apps) Illustrator can
+    -- stall mid-script with no dialog; in front it runs in seconds.
+    tell application "$ILLUSTRATOR" to activate
     tell application "$ILLUSTRATOR" to do javascript f
   end timeout
 end run

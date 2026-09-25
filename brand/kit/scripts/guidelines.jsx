@@ -1,10 +1,17 @@
-// Brand guidelines — what the name and the mark mean, and how to use them.
-// Eleven 1280 × 800 pages, one artboard each, exported as one PDF.
+// Task 1 — the Imago brand book: the logo, Amigo the mascot and the system
+// around them, as 1280 × 800 pages, one artboard each, exported as one PDF.
+// The logo and the mascot live on its pages as editable vector artwork; their
+// standalone exports come from logo.jsx and mascot.jsx.
 var PW = 1280, PH = 800, M = 72, GAP = 80, PER_ROW = 5;
-newDoc("imago-brand-guidelines", PW, PH, false);
+newDoc("imago-task1-logo", PW, PH, false);
 var bg = DOC.layers[0], grid = layer("Grid"), art = layer("Artwork"), words = layer("Copy");
-var PAGES = ["Cover", "The name", "What the mark means", "Anatomy", "Construction", "Logo versions",
-  "Misuse", "Mascot", "Colour", "Typography", "Voice and use"];
+// [chapter, page]; the cover lists them by chapter.
+var PAGES = [["", "Cover"],
+  ["Logo", "The logo"], ["Logo", "The name"], ["Logo", "What the mark means"], ["Logo", "Anatomy"],
+  ["Logo", "Construction"], ["Logo", "Logo versions"], ["Logo", "Misuse"],
+  ["Mascot", "Meet Amigo"], ["Mascot", "Using Amigo"],
+  ["System", "Colour"], ["System", "Typography"], ["System", "Voice and use"]];
+function num(i) { return (i < 9 ? "0" : "") + (i + 1); }
 var ox, oy; // current page origin
 
 function hexRGB(n) { var h = PAL[n].hex; return parseInt(h.substr(0, 2), 16) + " " + parseInt(h.substr(2, 2), 16) + " " + parseInt(h.substr(4, 2), 16); }
@@ -15,12 +22,15 @@ function body(s, x, y, w, h, o) {
   o = o || {};
   return para(s, x, y, w, h, { font: o.font || "Inter-Regular", size: o.size || 13, leading: o.leading || 19, color: o.color || "muted", into: words });
 }
-function page(i, dark) {
+// Pages are laid out, numbered and named by their place in PAGES.
+function page(name, dark) {
+  for (var i = 0; i < PAGES.length && PAGES[i][1] != name; i++) {}
+  if (i == PAGES.length) throw new Error("no page " + name);
   ox = (i % PER_ROW) * (PW + GAP); oy = Math.floor(i / PER_ROW) * (PH + GAP);
-  board((i < 9 ? "0" : "") + (i + 1) + " " + PAGES[i], ox, oy, PW, PH, i == 0);
+  board(num(i) + " " + (PAGES[i][0] ? PAGES[i][0] + " · " : "") + name, ox, oy, PW, PH, i == 0);
   rect(ox, oy, PW, PH, dark ? "ink" : "paper", bg).name = "page " + (i + 1);
   if (i == 0) return;
-  label((i < 9 ? "0" : "") + (i + 1) + "  ·  " + PAGES[i], ox + M, oy + M + 4);
+  label(num(i) + "  ·  " + PAGES[i][0] + "  ·  " + name, ox + M, oy + M + 4);
   mark(ox + PW - M - 26, oy + M - 18, 26, "ink", art);
   text("Imago brand guidelines", ox + M, oy + PH - 40, { font: "Inter-Regular", size: 10, color: "muted", into: words });
   text((i + 1) + " / " + PAGES.length, ox + PW - M, oy + PH - 40, { font: MONO, size: 10, color: "muted", align: "right", into: words });
@@ -60,19 +70,37 @@ function place(rel, x, y, w) {
   p.embed(); return w * ph / pw;
 }
 
-// ── 01 Cover ──────────────────────────────────────────────────────────
-page(0, true);
+// ── Cover ──────────────────────────────────────────────────────────
+page("Cover", true);
 lockup(ox + M, oy + M, 40, "card", { outline: true, into: art });
-mark(ox + 740, oy + 96, 480, "onInk2", art).opacity = 45;
+mark(ox + 800, oy + 56, 400, "onInk2", art).opacity = 45;   // clear of the contents below it
 text("Brand\nguidelines", ox + M - 4, oy + 470, { font: "InterDisplay-SemiBold", size: 96, leading: 92, color: "card", tracking: -40, into: words });
 text("APIs become interfaces.", ox + M, oy + 632, { font: "Inter-Regular", size: 22, color: "onInk", tracking: -10, into: words });
 text("Version 1.0  ·  September 2026", ox + M, oy + PH - 52, { font: MONO, size: 11, color: "onInk", into: words });
-var toc = []; for (var t = 1; t < PAGES.length; t++) toc.push((t < 9 ? "0" : "") + (t + 1) + " " + PAGES[t]);
-para(toc.join("\n"), ox + PW - M - 210, oy + PH - 52 - (PAGES.length - 1) * 16 + 4, 210, (PAGES.length - 1) * 16 + 10,
+var toc = [], chap = "";
+for (var t = 1; t < PAGES.length; t++) {
+  if (PAGES[t][0] != chap) { chap = PAGES[t][0]; toc.push((toc.length ? "\n" : "") + chap.toUpperCase()); }
+  toc.push(num(t) + " " + PAGES[t][1]);
+}
+var tocLines = toc.join("\n").split("\n").length;
+var tocBox = para(toc.join("\n"), ox + PW - M - 210, oy + PH - 52 - tocLines * 16 + 4, 210, tocLines * 16 + 10,
   { font: MONO, size: 10.5, leading: 16, color: "onInk", align: "right", into: words });
+for (var c = 0; c < tocBox.paragraphs.length; c++)
+  if (/^[A-Z]+$/.test(tocBox.paragraphs[c].contents)) tocBox.paragraphs[c].characterAttributes.fillColor = col("card");
 
-// ── 02 The name ─────────────────────────────────────────────────────────
-page(1);
+// ── The logo: the master artwork ────────────────────────────────────────
+page("The logo");
+title("The logo", "The Reveal mark and the Imago wordmark, locked up. This is the master artwork; every version on the pages that follow comes from it.");
+var lw = (PW - 2 * M - 32) / 2, lh = 380, ly = oy + 250;
+var lp = rrect(ox + M, ly, lw, lh, 16, "card", art); stroke(lp, "line", 1); lp.name = "primary panel";
+centre(lockup(0, 0, 104, "ink", { outline: true, into: art }), ox + M, ly, lw, lh);
+rrect(ox + M + lw + 32, ly, lw, lh, 16, "ink", art).name = "reversed panel";
+centre(lockup(0, 0, 104, "card", { outline: true, into: art }), ox + M + lw + 32, ly, lw, lh);
+label("Primary  ·  ink on paper or white", ox + M, ly + lh + 34);
+label("Reversed  ·  white on ink", ox + M + lw + 32, ly + lh + 34);
+
+// ── The name ─────────────────────────────────────────────────────────
+page("The name");
 text("imago", ox + M - 8, oy + 300, { font: "InterDisplay-SemiBold", size: 170, color: "ink", tracking: -50, into: words });
 text("(n.)  ih-MAH-go", ox + M, oy + 350, { font: MONO, size: 14, color: "muted", into: words });
 var dx = ox + 700;
@@ -102,8 +130,8 @@ text("Chennai", ix0, sy + 66, { font: "Inter-Regular", size: 12, color: "muted",
 text("28.4°C", ix0 - 2, sy + 118, { font: "InterDisplay-SemiBold", size: 48, color: "ink", tracking: -30, into: words });
 text("Wind  12.1 km/h", ix0, sy + 146, { font: "Inter-Medium", size: 12, color: "ink2", into: words });
 
-// ── 03 What the mark means ──────────────────────────────────────────────
-page(2);
+// ── What the mark means ──────────────────────────────────────────────
+page("What the mark means");
 title("Data in. Interface out.", "The mark tells the product's story in one shape, read left to right.");
 var steps = [
   ["Fields arrive", "Two rounded bars enter from the left: the keys and values an API sends back. They are uneven, because responses are."],
@@ -125,8 +153,8 @@ for (k = 0; k < 3; k++) {
 }
 text("“Incoming API fields become a proper window.”", ox + M, oy + 700, { font: "InterDisplay-Medium", size: 22, color: "ink", tracking: -15, into: words });
 
-// ── 04 Anatomy ──────────────────────────────────────────────────────────
-page(3);
+// ── Anatomy ──────────────────────────────────────────────────────────
+page("Anatomy");
 title("Anatomy", "Four parts, each standing for something the product does.");
 var AS = 440, ax = ox + M + 10, ay = oy + 210, au = AS / 32;
 mark(ax, ay, AS, "ink", art);
@@ -146,8 +174,8 @@ for (k = 0; k < parts.length; k++) {
   body(parts[k][2], lx + 36, ly + 12, 420, 44, { size: 14, leading: 20 });
 }
 
-// ── 05 Construction ─────────────────────────────────────────────────────
-page(4);
+// ── Construction ─────────────────────────────────────────────────────
+page("Construction");
 title("Construction and clear space");
 var u5 = 12, gx5 = ox + M + 20, gy5 = oy + 250;
 for (var i5 = 0; i5 <= 32; i5++) {
@@ -182,8 +210,8 @@ for (k = 0; k < sizes.length; k++) {
 mark(sx5 + 20, oy + 674, 16, "ink", art);
 text("16 px bare", sx5 + 28, oy + 712, { font: MONO, size: 10, color: "muted", align: "center", into: words });
 
-// ── 06 Logo versions ────────────────────────────────────────────────────
-page(5);
+// ── Logo versions ────────────────────────────────────────────────────
+page("Logo versions");
 title("Logo versions", "Four versions cover every surface. Pick by background and size, never by taste.");
 var V = [
   ["Primary", "Mark and wordmark in ink on paper or white. The default everywhere there is room."],
@@ -206,8 +234,8 @@ for (k = 0; k < 4; k++) {
   body(V[k][1], vx, vy + vh + 52, vw - 8, 70);
 }
 
-// ── 07 Misuse ───────────────────────────────────────────────────────────
-page(6);
+// ── Misuse ───────────────────────────────────────────────────────────
+page("Misuse");
 title("Misuse", "The mark only works as drawn. Each of these breaks what it says.");
 var D = ["Don't rotate it", "Don't stretch or squash it", "Don't outline it", "Don't add a shadow or effect",
   "Don't give it a brand colour", "Don't set it on busy imagery"];
@@ -234,9 +262,20 @@ for (k = 0; k < 6; k++) {
   text(D[k], ddx + 34, ddy + dh + 29, { font: "Inter-Medium", size: 14, color: "ink", into: words });
 }
 
-// ── 08 Mascot ───────────────────────────────────────────────────────────
-page(7);
-title("Amigo, the mascot", "Amigo is the Imago system standing up to help. It is built from the mark, so it never needs a face.");
+// ── Meet Amigo: the master poses ────────────────────────────────────────
+page("Meet Amigo");
+title("Meet Amigo", "Swap two letters and imago becomes amigo, Spanish for friend. Amigo is the mark stood up to help, in two poses.");
+var aw = (PW - 2 * M - 32) / 2, ah = 400, ay = oy + 240;
+var ap1 = rrect(ox + M, ay, aw, ah, 16, "card", art); stroke(ap1, "line", 1); ap1.name = "standing panel";
+centre(amigo(0, 0, 250, "ink", art), ox + M, ay, aw, ah);
+var ap2 = rrect(ox + M + aw + 32, ay, aw, ah, 16, "card", art); stroke(ap2, "line", 1); ap2.name = "resting panel";
+centre(amigoResting(0, 0, 250, "ink", art), ox + M + aw + 32, ay, aw, ah);
+label("Standing  ·  helping, onboarding, success", ox + M, ay + ah + 34);
+label("Resting  ·  empty states and paused watches", ox + M + aw + 32, ay + ah + 34);
+
+// ── Mascot ───────────────────────────────────────────────────────────
+page("Using Amigo");
+title("Using Amigo", "Amigo is the Imago system standing up to help. It is built from the mark, so it never needs a face.");
 var hc = rrect(ox + M, oy + 250, 360, 440, 16, "card", art); stroke(hc, "line", 1);
 label("Standing", ox + M + 22, oy + 280);
 amigo(ox + M + 105, oy + 278, 150, "ink", art);
@@ -277,8 +316,8 @@ for (k = 0; k < 3; k++) {
   qy += 44;
 }
 
-// ── 09 Colour ───────────────────────────────────────────────────────────
-page(8);
+// ── Colour ───────────────────────────────────────────────────────────
+page("Colour");
 title("Colour", "Ink and paper are the brand. Imago has no brand hue: colour means the user's data moved, never us.");
 function swatch(n, name, role, x, y, w, h, dark) {
   var r8 = rrect(x, y, w, h, 14, n, art); if (n == "paper" || n == "card") stroke(r8, "line", 1);
@@ -297,8 +336,8 @@ var aw = (PW - 2 * M - 3 * 24) / 4;
 for (k = 0; k < 4; k++) swatch(acc[k][0], acc[k][1], acc[k][2], ox + M + k * (aw + 24), oy + 474, aw, 190, false);
 body("Accents are signals, not decoration. If a colour doesn't carry a meaning, it doesn't go in.", ox + M, oy + 684, 900, 24, { size: 13, color: "ink2" });
 
-// ── 10 Typography ───────────────────────────────────────────────────────
-page(9);
+// ── Typography ───────────────────────────────────────────────────────
+page("Typography");
 title("Typography", "One family does the work through weight and size. Mono is kept for what machines produce.");
 var TF = [
   ["InterDisplay-SemiBold", "Inter Display", "SemiBold · titles and the wordmark", "Tracking −0.035em at display sizes."],
@@ -323,8 +362,8 @@ text("GET api.open-meteo.com/v1/forecast?latitude=13.08", ox + M, ty + 124, { fo
 var specs = ["Display 40–60 · 600 · −0.035em", "Title 26 · 600 · −0.025em", "Body 14 · 400", "Mono 12 · 400"];
 for (k = 0; k < 4; k++) text(specs[k], ox + PW - M, ty + [20, 66, 98, 124][k], { font: MONO, size: 10, color: "muted", align: "right", into: words });
 
-// ── 11 Voice and use ────────────────────────────────────────────────────
-page(10);
+// ── Voice and use ────────────────────────────────────────────────────
+page("Voice and use");
 title("Voice and use");
 h2("APIs become interfaces.", ox + M, oy + 232, 30);
 body("The tagline, always in full, always with its full stop. Plain, precise and accountable: say what happened, give the likely cause and the next step, use exact numbers.",
@@ -355,8 +394,10 @@ lockup(bx10 + ih10 + 28, oy + 210 + bh10 + 60 + 20, 32, "ink", { outline: true, 
 label("App icon · lockup", bx10, oy + 210 + bh10 + 60 + ih10 + 26);
 
 // ── Save and export ─────────────────────────────────────────────────────
-saveAI("build/imago-brand-guidelines.ai");   // merged into imago-task1-logo.ai by task1.jsx
+saveAI("imago-task1-logo.ai");
+var oldPng = new Folder(KIT + "/exports/guidelines").getFiles("*.png");
+for (k = 0; k < oldPng.length; k++) oldPng[k].remove();
 var oldPdf = new File(KIT + "/exports/imago-brand-guidelines.pdf"); if (oldPdf.exists) oldPdf.remove();
 savePDF("exports/imago-brand-guidelines.pdf");
-for (k = 0; k < PAGES.length; k++) exportPNG("exports/guidelines/" + (k < 9 ? "0" : "") + (k + 1) + ".png", 100, k);
+for (k = 0; k < PAGES.length; k++) exportPNG("exports/guidelines/" + num(k) + ".png", 100, k);
 "ok " + DOC.artboards.length;
