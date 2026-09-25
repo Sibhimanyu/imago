@@ -490,12 +490,12 @@ describe('first run, the other paths', () => {
     expect(calls).toHaveLength(0);
     expect(app.dom.urlInput.value).toBe('https://mine.test/api');
 
-    // Try an example with no switch pressed opens the first example.
+    // Try the example before the landing demo has loaded opens the weather one.
     const calls2 = [];
     const app2 = await boot({ fetch: (url) => { calls2.push(String(url)); return jsonFetch({ a: 1 })(url); } });
     app2.dom.landingTry.click();
     await flush();
-    expect(calls2).toContain(app2.DEMOS[0].url);
+    expect(calls2).toContain(app2.specimenDemo('Weather').url);
   });
 
   it('a remembered URL makes Save live on load; none leaves it unavailable', async () => {

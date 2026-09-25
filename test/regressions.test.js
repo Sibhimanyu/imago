@@ -2,7 +2,7 @@
    behaviour that was broken, so a regression fails here rather than in a
    user's browser. */
 import { describe, it, expect, vi } from 'vitest';
-import { boot, jsonFetch, flush } from './harness.js';
+import { boot, jsonFetch, flush, LANDING } from './harness.js';
 
 function quotaError() {
   const e = new Error('quota'); e.name = 'QuotaExceededError'; return e;
@@ -542,5 +542,22 @@ describe('a failed request over a page that stays', () => {
     for (let i = 0; i < 6; i += 1) await flush();
     const alert = app.dom.interfaceOut.querySelector('.alert');
     expect(alert.textContent).toMatch(/Below is Widget, the last page that loaded\./);
+  });
+});
+
+describe('every fetch reaches the API', () => {
+  // A response sent with a long max-age (PokeAPI: a day) used to come back
+  // from the browser's HTTP cache, so Refresh and Watch never saw it change.
+  it('the app and the landing demo both bypass the browser cache', async () => {
+    const inits = [];
+    const app = await boot({ url: LANDING, fetch: (url, init) => { inits.push({ url: String(url), cache: init && init.cache }); return jsonFetch({ a: 1 })(url); } });
+    await flush(); await flush();
+    app.dom.urlInput.value = 'https://mine.test/api';
+    app.dom.reqForm.dispatchEvent(new app.window.Event('submit', { cancelable: true }));
+    await flush(); await flush();
+    const demo = inits.find((c) => c.url.includes('open-meteo.com'));
+    const mine = inits.find((c) => c.url === 'https://mine.test/api');
+    expect(demo.cache).toBe('no-store');
+    expect(mine.cache).toBe('no-store');
   });
 });

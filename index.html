@@ -85,7 +85,7 @@
       <section class="specimen" aria-label="An API response and the interface Imago renders from it">
         <!-- Nothing in here is written by hand: the response is fetched live and
              the page is drawn by the same renderer the app uses, with no model. -->
-        <div class="spec-pane is-active" id="specimenPane" role="tabpanel" aria-busy="true">
+        <div class="spec-pane is-active" id="specimenPane" aria-busy="true">
           <div class="spec-response" aria-label="The API response">
             <p class="specimen-url"><span class="method-chip">GET</span><span class="specimen-url-text" id="specimenUrl"></span></p>
             <pre class="spec-json" id="specimenJson"></pre>
@@ -95,11 +95,6 @@
           </div>
         </div>
         <div class="specimen-foot">
-          <div class="specimen-switch" role="tablist" aria-label="Example">
-            <button type="button" role="tab" aria-selected="false" data-example="Pokémon">Pokémon</button>
-            <button type="button" role="tab" aria-selected="false" data-example="Weather">Weather</button>
-            <button type="button" role="tab" aria-selected="false" data-example="Library">Library</button>
-          </div>
           <p class="spec-key" id="specimenNote">Fetching…</p>
         </div>
       </section>

@@ -2,6 +2,22 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.2.0] - 2026-09-25
+
+### Changed
+
+- **The landing demo is always the weather forecast.** The Pokémon, Weather
+  and Library tabs are gone, and so is the random first pick: the page shows
+  one live Open-Meteo response, the same picture as the banner and flyer.
+
+### Fixed
+
+- **Refresh and Watch always reach the API.** Requests used the browser's
+  HTTP cache, so an API that allows caching (PokeAPI allows a day) was
+  answered from the browser, not the network. It looked fast, and a watched
+  endpoint of that kind could never change. Every fetch, the landing demo's
+  too, now goes to the API.
+
 ## [0.13.1.0] - 2026-09-25
 
 The landing hero takes the banner's call to action.

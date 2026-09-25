@@ -385,7 +385,10 @@ function performRequest(isAuto) {
   activeRequest = request;
   function current() { return state.requestSeq === seq; }
 
-  var options = { method: 'GET', headers: state.headers, mode: 'cors' };
+  // no-store: every fetch goes to the API. With the default, a response sent
+  // with a long max-age (PokeAPI's is a day) came back from the browser's
+  // cache, so Refresh and Watch could never see it change.
+  var options = { method: 'GET', headers: state.headers, mode: 'cors', cache: 'no-store' };
   if (controller) options.signal = controller.signal;
   var timedOut = new Promise(function (resolve, reject) {
     // Settles the chain even where there is no AbortController to do it.

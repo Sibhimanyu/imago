@@ -1535,13 +1535,7 @@ body.inspector-open .inspector { display: block; }
   padding: 22px 26px 26px; border: 1px solid var(--line); border-radius: var(--r-lg);
   background: var(--card); box-shadow: var(--sh-lg);
 }
-.specimen-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; }
-.specimen-switch { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--card-2); flex: 0 0 auto; }
-.specimen-switch button {
-  font: inherit; font-size: 12.5px; font-weight: 500; color: var(--muted);
-  padding: 5px 12px; border: 0; border-radius: 6px; background: none; cursor: pointer;
-}
-.specimen-switch button.is-active { background: var(--ink); color: var(--card); }
+.specimen-foot { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 18px; }
 
 .proofs {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
@@ -1587,8 +1581,7 @@ body.inspector-open .inspector { display: block; }
   .spec-pane { grid-template-columns: 1fr; min-height: 0; }
   .spec-response { grid-column: 1; contain: none; height: 250px; padding-bottom: 48px; }
   .spec-interface { grid-column: 1; grid-row: 2; margin: -32px 12px 0; padding: 18px 16px 22px; }
-  .specimen-foot { flex-direction: column; align-items: stretch; gap: 10px; }
-  .specimen-switch button { flex: 1 1 0; min-height: 40px; }
+  .specimen-foot { justify-content: flex-start; }
   .spec-json { font-size: 11.5px; }
   .si-facts { grid-template-columns: 1fr 1fr; }
   .si-big b { font-size: 52px; }

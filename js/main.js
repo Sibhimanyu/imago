@@ -283,6 +283,9 @@ function wireEvents() {
 // opens first is left to chance so none is favoured.
 var specimen = { name: '', url: '', cache: Object.create(null), started: false };
 var SPECIMEN_LINES = 16;
+// The landing page shows one example, always the same one: a live weather
+// response, the picture the brand banner and flyer are built around.
+var SPECIMEN_EXAMPLE = 'Weather';
 
 function specimenDemo(name) {
   for (var i = 0; i < DEMOS.length; i += 1) if (DEMOS[i].name === name) return DEMOS[i];
@@ -290,29 +293,19 @@ function specimenDemo(name) {
 }
 
 function wireSpecimen() {
-  var root = document.querySelector('.specimen');
-  if (!root) return;
-  var tabs = root.querySelectorAll('.specimen-switch button');
-  for (var t = 0; t < tabs.length; t += 1) {
-    (function (tab) {
-      tab.addEventListener('click', function () { showSpecimen(tab.getAttribute('data-example')); });
-    })(tabs[t]);
-  }
   if (dom.landingTry) {
     dom.landingTry.addEventListener('click', function () {
       enterApp();
-      loadExample(specimen.url || DEMOS[0].url);
+      loadExample(specimen.url || specimenDemo(SPECIMEN_EXAMPLE).url);
     });
   }
 }
 
-// Called whenever the landing page is shown; the first call picks a tab.
+// Called whenever the landing page is shown; the first call fetches the example.
 function startSpecimen() {
-  if (specimen.started) return;
-  var tabs = document.querySelectorAll('.specimen-switch button');
-  if (!tabs.length) return;
+  if (specimen.started || !document.querySelector('.specimen')) return;
   specimen.started = true;
-  showSpecimen(tabs[Math.floor(Math.random() * tabs.length)].getAttribute('data-example'));
+  showSpecimen(SPECIMEN_EXAMPLE);
 }
 
 function showSpecimen(name) {
@@ -320,17 +313,11 @@ function showSpecimen(name) {
   if (!demo) return;
   specimen.name = name;
   specimen.url = demo.url;
-  var tabs = document.querySelectorAll('.specimen-switch button');
-  for (var i = 0; i < tabs.length; i += 1) {
-    var on = tabs[i].getAttribute('data-example') === name;
-    tabs[i].classList.toggle('is-active', on);
-    tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
-  }
   qs('specimenUrl').textContent = demo.url;
   var cached = specimen.cache[name];
   if (cached) { drawSpecimen(cached); return; }
   drawSpecimen({ pending: true, url: demo.url });
-  window.fetch(demo.url, { headers: { Accept: 'application/json' } })
+  window.fetch(demo.url, { headers: { Accept: 'application/json' }, cache: 'no-store' })
     .then(function (response) {
       if (!response.ok) throw new Error('HTTP ' + response.status);
       return response.json();
@@ -841,7 +828,7 @@ window.__imago = {
   getSessionProvider: getSessionProvider, setSessionProvider: setSessionProvider,
   getProvider: getProvider,
   // examples
-  showSpecimen: showSpecimen, startSpecimen: startSpecimen, specimen: specimen,
+  showSpecimen: showSpecimen, startSpecimen: startSpecimen, specimen: specimen, specimenDemo: specimenDemo,
   DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
   parseCurl: parseCurl, shellWords: shellWords, startTimer: startTimer, stopTimer: stopTimer, applyEdits: applyEdits, editsFor: editsFor, setEditing: setEditing, describeChange: describeChange, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
   // full-html builder
@@ -877,4 +864,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };

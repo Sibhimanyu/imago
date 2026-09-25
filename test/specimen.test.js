@@ -1,5 +1,5 @@
 /* The landing demo is a live request drawn by the real renderer: nothing on
-   it is hand-written, and no example is favoured. */
+   it is hand-written. It is always the weather example, with no tabs. */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { boot, jsonFetch, flush, LANDING } from './harness.js';
@@ -27,7 +27,6 @@ describe('the landing demo is live', () => {
     expect(doc.querySelector('#specimenOut .stage-title').textContent).toBe('Widget');
     expect(doc.querySelector('#specimenOut .spec-body')).not.toBeNull();
     expect(doc.getElementById('specimenPane').getAttribute('aria-busy')).toBe('false');
-    expect(doc.querySelector('.specimen-switch [data-example="Library"]').getAttribute('aria-selected')).toBe('true');
   });
 
   it('fetches each example once, then reuses it', async () => {
@@ -50,13 +49,17 @@ describe('the landing demo is live', () => {
     expect(doc.getElementById('specimenOut').children.length).toBe(0);
   });
 
-  it('picks the first example by chance, not always the same one', async () => {
-    const seen = new Set();
-    for (let i = 0; i < 12; i += 1) {
-      const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
-      seen.add(app.specimen.name);
+  it('always shows the weather example, and offers no others', async () => {
+    for (let i = 0; i < 6; i += 1) {
+      const calls = [];
+      const app = await boot({ url: LANDING, fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
+      await settle();
+      expect(app.specimen.name).toBe('Weather');
+      expect(calls).toEqual([app.specimenDemo('Weather').url]);
+      const doc = app.window.document;
+      expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo.com');
+      expect(doc.querySelector('.specimen [role="tab"], .specimen button')).toBeNull();
     }
-    expect(seen.size).toBeGreaterThan(1);
   });
 
   it('starts fetching as soon as the landing page shows', async () => {
@@ -92,17 +95,9 @@ describe('the landing hero follows the brand banner', () => {
     expect([...top.children].map((c) => c.className)).toEqual(['landing-hero', 'specimen']);
     expect(doc.querySelector('.spec-response').contains(doc.getElementById('specimenUrl'))).toBe(true);
     const foot = doc.querySelector('.specimen > .specimen-foot');
-    expect(foot.querySelector('.specimen-switch')).not.toBeNull();
+    expect(foot.querySelector('.specimen-switch')).toBeNull();
     expect(foot.contains(doc.getElementById('specimenNote'))).toBe(true);
     expect(doc.querySelector('.spec-seam')).toBeNull();
-  });
-
-  it('switches examples from the tabs under the composition', async () => {
-    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
-    const doc = app.window.document;
-    doc.querySelector('.specimen-foot [data-example="Weather"]').click();
-    await settle();
-    expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo.com');
   });
 });
 

@@ -331,7 +331,7 @@ a heuristic interface built from the response itself — it finds a title field,
 the most likely primary image, and the first handful of scalar fields — with a
 neutral notice naming the missing key, where a free one lives, and an **Add a
 key** button that opens Settings. The landing page shows a live example before
-asking for anything: one of three example APIs, picked at random, is fetched right
+asking for anything: a live weather forecast (Open-Meteo) is fetched right
 then and drawn by the same renderer, with no model and nothing written by hand.
 In this basic layout, unit tables are applied to their values, time series become
 charts, located responses name the place in the subtitle, and bookkeeping
