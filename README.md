@@ -1,8 +1,23 @@
-# Imago
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/imago-logo-dark.svg">
+    <img src="docs/readme/imago-logo.svg" alt="Imago" width="240">
+  </picture>
+</p>
 
-**APIs become interfaces.**
+<p align="center"><strong>APIs become interfaces.</strong></p>
 
-Live: **<https://imago.onslate.in>**
+<p align="center">
+  <a href="https://imago.onslate.in"><strong>Try it live</strong></a> ·
+  <a href="#running-it">Run it locally</a> ·
+  <a href="#contributing">Contribute</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Sibhimanyu/imago/actions/workflows/test.yml"><img src="https://github.com/Sibhimanyu/imago/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+</p>
+
+![Imago's landing page: a live API response on the left, the interface Imago drew for it on the right](design/shots/landing-desktop.png)
 
 Imago is a browser-only API playground. You give it a GET endpoint; it fetches the
 JSON, works out what *shape* the response is, asks a model to design an interface for
@@ -197,12 +212,15 @@ schema shows a **Generate interface** button rather than silently calling out.
 
 ---
 
-## How this satisfies the assignment
+## Memory and time
 
-**Get something from the internet.** Imago fetches any public GET endpoint you give it
+Imago started from a brief with three requirements: get something from the
+internet, remember something, and react to time. They shaped the whole design.
+
+**The internet.** Imago fetches any public GET endpoint you give it
 with `fetch()`, and calls a model provider REST API to interpret the response.
 
-**Remember something.** In `localStorage`: your saved requests, the schema-to-interface
+**Memory.** In `localStorage`: your saved requests, the schema-to-interface
 mappings Imago has generated, response snapshots, and your session (URL, active tab and
 pane, refresh interval, whether you've onboarded). Reload the page and you land back
 where you were — with the last interface rebuilt from the stored snapshot, without
@@ -213,7 +231,7 @@ so they stay in `sessionStorage`, gone when the tab closes. Saving a request kee
 its ordinary headers and drops the credential ones, and tells you which. Following
 a link out of a response never carries your headers to a different host.
 
-**React to time.** Auto-refresh at 10s / 30s / 60s with a live countdown and a pulsing
+**Time.** Auto-refresh at 10s / 30s / 60s with a live countdown and a pulsing
 Live indicator; a "last checked" clock that ages as you watch it; and snapshot
 comparison that highlights exactly which values changed since the previous fetch —
 both as a list of changed paths and as a `CHANGED` flag on the affected components.
@@ -226,8 +244,8 @@ Memory and time are the product.
 
 ## Running it
 
-No build step, no framework, and nothing the browser has to download but the three
-files in this repo. Any static server works:
+No build step, no framework, and no dependencies in the browser: it loads
+`index.html`, `styles.css` and the native ES modules in `js/`. Any static server works:
 
 ```bash
 python3 -m http.server 5173
@@ -404,7 +422,41 @@ so tracking a 300 KB endpoint costs one body rather than ten.
 
 ---
 
-## Tool usage disclosure
+## Brand kit
 
-ChatGPT was used for ideation and planning. Claude (via Claude Code) was used for
-implementation support.
+The logo, an A4 print flyer, a blog banner, brand guidelines and Amigo the
+mascot live in [`brand/kit/`](brand/kit/), as editable Adobe Illustrator files
+with SVG, PDF and PNG exports. Every piece is drawn by a script in
+`brand/kit/scripts/`, so it can be rebuilt. The design system behind the app is
+in [DESIGN.md](DESIGN.md) and [docs/BRAND-SYSTEM.md](docs/BRAND-SYSTEM.md).
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. Before opening a PR:
+
+```bash
+npm install
+npm test          # the suite, which CI runs on every push
+npm run check     # every cross-module name is imported (no build step to catch it)
+./publish.sh      # the deploy tree still assembles
+```
+
+- Read [TESTING.md](TESTING.md) before writing tests. A bug fix comes with a
+  regression test that fails without the fix.
+- `js/` ships as-is, so keep it dependency-free: no framework, no bundler.
+- A change to what renders (`index.html`, `styles.css`, DOM built in `js/`)
+  also has to be carried into the project's Figma file, and CI's
+  `design:check` fails until it is (see [DESIGN.md](DESIGN.md) → Figma sync).
+  If you don't have Figma access, say so in the PR and a maintainer will do
+  the sync.
+- Keep the voice: plain, precise, no hype. See the voice rules in
+  [docs/BRAND-SYSTEM.md](docs/BRAND-SYSTEM.md).
+
+---
+
+## Credits
+
+Built by [Sibhimanyu](https://github.com/Sibhimanyu). ChatGPT was used for
+ideation and planning, and Claude (via Claude Code) for implementation support.
