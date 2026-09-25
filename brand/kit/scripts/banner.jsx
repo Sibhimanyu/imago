@@ -1,6 +1,6 @@
 // Task 3 — blog banner, 1200 × 700 px, RGB.
 var W = 1200, H = 700, M = 80;
-newDoc("imago-blog-banner", W, H, false);
+newDoc("imago-task3-blog-banner", W, H, false);
 var bg = DOC.layers[0], vis = layer("Visual"), words = layer("Copy");
 DOC.artboards[0].name = "blog banner 1200x700";
 rect(0, 0, W, H, "paper", bg).name = "paper";
@@ -26,8 +26,8 @@ text("response   →   shape   →   plan   →   interface", M, 614,
 hero(552, 204, 1.2, vis);
 text("Live example: Open-Meteo forecast", W - 40, 614, { font: "Inter-Regular", size: 12, color: "muted", align: "right", into: words });
 
-saveAI("imago-blog-banner.ai");
-exportPNG("exports/imago-blog-banner.png", 100);
-exportJPG("exports/imago-blog-banner.jpg", 100);
-exportPNG("exports/imago-blog-banner@2x.png", 200);
+saveAI("imago-task3-blog-banner.ai");
+exportPNG("exports/imago-task3-blog-banner.png", 100);
+exportJPG("exports/imago-task3-blog-banner.jpg", 100);
+exportPNG("exports/imago-task3-blog-banner@2x.png", 200);
 "ok";

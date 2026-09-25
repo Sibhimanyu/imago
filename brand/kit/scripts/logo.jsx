@@ -1,5 +1,5 @@
 // Task 1 — the Imago logo: primary, reversed, app icon, bare mark, construction.
-newDoc("imago-logo", 640, 240, false);
+newDoc("imago-task1-logo", 640, 240, false);
 var bg = DOC.layers[0], grid = layer("Grid"), art = layer("Logo"), notes = layer("Construction");
 var G = 80; // gap between artboards
 
@@ -45,14 +45,14 @@ stroke(cs, "yellow", 1); cs.strokeDashes = [4, 3];
 text("32-unit grid  ·  clear space = one aperture width (5.3u)", cx + cw / 2, cy + ch - 14,
   { font: "JetBrainsMono-Regular", size: 9, color: "muted", align: "center", into: notes });
 
-saveAI("imago-logo.ai");
+saveAI("imago-task1-logo.ai");
 var names = ["logo-primary", "logo-reversed", "app-icon", "mark", "logo-tile", "logo-construction"];
 for (var k = 0; k < names.length; k++) exportPNG("exports/" + names[k] + ".png", k == 2 ? 200 : 300, k);
 // Single-artboard SVGs for the web, paths only.
 var so = new ExportOptionsSVG(); so.embedRasterImages = true; so.fontType = SVGFontType.OUTLINEFONT;
 so.saveMultipleArtboards = true; so.artboardRange = "1-6";
-var old = new Folder(KIT + "/exports").getFiles("imago-logo_*.svg");
+var old = new Folder(KIT + "/exports").getFiles("imago-task1-logo_*.svg");
 for (var f = 0; f < old.length; f++) old[f].remove();
-DOC.exportFile(fileAt("exports/imago-logo.svg"), ExportType.SVG, so);
-savePDF("exports/imago-logo.pdf");
+DOC.exportFile(fileAt("exports/imago-task1-logo.svg"), ExportType.SVG, so);
+savePDF("exports/imago-task1-logo.pdf");
 "ok " + DOC.artboards.length;

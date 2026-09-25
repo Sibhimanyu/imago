@@ -296,8 +296,9 @@ function hero(x, y, k, into, opts) {
   ];
   var ci = opts.changed === undefined ? 5 : opts.changed;
   // A short excerpt is set larger, so it fills the panel instead of floating in it.
-  var big = code.length < 12, fs = big ? 9.4 : 7.4, lh = big ? 16 : 12.2;
-  var top = y + 48 + Math.max(0, (big ? 13 : 17) - code.length) * lh / 2;
+  var big = code.length <= 12, fs = big ? 9.4 : 7.4, lh = big ? 16 : 12.2;
+  // Centred in the panel below the GET rule (y + 31 to y + 262).
+  var top = y + 31 + (231 - code.length * lh) / 2 + fs * 0.8;
   var hl = rrect(x + 10, top + ci * lh - fs * 1.2, big ? 162 : 128, lh + 0.2, 3, "yellow", rp); hl.opacity = 18; hl.name = "changed field";
   for (var i = 0; i < code.length; i++) {
     var t = text(code[i], x + 16, top + i * lh, { font: MONO, size: fs, color: "onInk", into: rp });

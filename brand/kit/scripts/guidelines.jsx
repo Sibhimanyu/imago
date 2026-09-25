@@ -339,11 +339,11 @@ for (k = 0; k < 3; k++) {
 }
 body("No emoji. No exclamation marks. No hype.", ox + M, oy + 640, 520, 24, { size: 13.5, color: "ink2", font: "Inter-Medium" });
 var fx10 = ox + 680, fw10 = 262;
-var fh10 = place("exports/imago-flyer-a4-preview.png", fx10, oy + 210, fw10);
+var fh10 = place("exports/imago-task2-flyer-a4-preview.png", fx10, oy + 210, fw10);
 stroke(rect(fx10, oy + 210, fw10, fh10, null, art), "line", 1);
 label("A4 flyer · CMYK", fx10, oy + 210 + fh10 + 26);
 var bx10 = fx10 + fw10 + 28, bw10 = ox + PW - M - bx10;
-var bh10 = place("exports/imago-blog-banner.png", bx10, oy + 210, bw10);
+var bh10 = place("exports/imago-task3-blog-banner.png", bx10, oy + 210, bw10);
 stroke(rect(bx10, oy + 210, bw10, bh10, null, art), "line", 1);
 label("Blog banner · 1200 × 700", bx10, oy + 210 + bh10 + 26);
 var ih10 = 72; icon(bx10, oy + 210 + bh10 + 60, ih10, "ink", "card", art);
