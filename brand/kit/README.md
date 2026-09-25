@@ -1,15 +1,13 @@
 # Imago brand kit
 
-The logo, an A4 print flyer and a blog banner, built in Adobe Illustrator 2026
-from `scripts/`, so every piece shares the same palette, mark geometry and hero.
+The assignment's three deliverables, one editable Illustrator file each, built
+from `scripts/` so every piece shares the same palette, mark geometry and hero.
 
 | Piece | Editable file | Exports |
 |---|---|---|
-| Logo (6 artboards: primary, reversed, app icon, mark, tile lockup, construction) | `imago-task1-logo.ai` (RGB) | `exports/imago-task1-logo_*.svg`, `exports/logo-*.png`, `exports/imago-task1-logo.pdf` |
-| A4 flyer, CMYK, 3 mm bleed | `imago-task2-flyer-a4.ai` | `exports/imago-task2-flyer-a4-print.pdf` (PDF/X-4), `exports/imago-task2-flyer-a4-preview.png` |
-| Blog banner, 1200 × 700 px, RGB | `imago-task3-blog-banner.ai` | `exports/imago-task3-blog-banner.png`, `.jpg`, `@2x.png` |
-| Mascot: Amigo standing, and resting (lying down, with Zs) | `imago-mascot.ai` | `exports/imago-mascot_*.svg`, `exports/amigo.png`, `exports/amigo-resting.png` |
-| Brand guidelines (11 pages: name, what the mark means, anatomy, construction, versions, misuse, Amigo the mascot, colour, type, voice) | `imago-brand-guidelines.ai` | `exports/imago-brand-guidelines.pdf`, `exports/guidelines/*.png` |
+| Task 1, the logo and its identity (19 artboards): primary, reversed, app icon, mark, tile lockup, construction; Amigo the mascot standing and resting; and the 11-page brand guidelines (the name, what the mark means, anatomy, construction, versions, misuse, Amigo, colour, type, voice) | `imago-task1-logo.ai` (RGB) | Logo: `exports/imago-task1-logo_*.svg`, `exports/logo-*.png`, `exports/imago-task1-logo.pdf`. Mascot: `exports/imago-mascot_*.svg`, `exports/amigo*.png`. Guidelines: `exports/imago-brand-guidelines.pdf`, `exports/guidelines/*.png` |
+| Task 2, the A4 flyer, CMYK, 3 mm bleed | `imago-task2-flyer-a4.ai` | `exports/imago-task2-flyer-a4-print.pdf` (PDF/X-4), `exports/imago-task2-flyer-a4-preview.png` |
+| Task 3, the blog banner, 1200 × 700 px, RGB | `imago-task3-blog-banner.ai` | `exports/imago-task3-blog-banner.png`, `.jpg`, `@2x.png` |
 
 ## Direction
 
@@ -32,8 +30,13 @@ from `scripts/`, so every piece shares the same palette, mark geometry and hero.
 Needs Illustrator plus the Inter, Inter Display and JetBrains Mono fonts.
 
 ```bash
-brand/kit/scripts/build.sh logo    # or flyer, banner, guidelines
+brand/kit/scripts/build.sh task1    # logo + mascot + guidelines, merged into one file
+brand/kit/scripts/build.sh flyer    # or banner
 ```
+
+It runs in whichever Illustrator is open. `task1` builds the mascot and the
+guidelines into `build/` (ignored), then copies their artboards and layers in
+below the logo sheet.
 
 A rebuild closes and replaces only that piece's own document; nothing else
 open in Illustrator is touched.

@@ -11,3 +11,6 @@ design/shots/*.png
 
 # gstack team mode: setup symlinks skills into .claude/skills on each machine.
 .claude/skills/
+
+# Intermediate Illustrator files, merged into the Task 1 file.
+brand/kit/build/

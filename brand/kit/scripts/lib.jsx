@@ -223,6 +223,7 @@ function lockup(x, y, h, c, opts) {
 // ── Export ──────────────────────────────────────────────────────────────
 function fileAt(rel) { return new File(KIT + "/" + rel); }
 function saveAI(rel) {
+  var dir = fileAt(rel).parent; if (!dir.exists) dir.create();
   var o = new IllustratorSaveOptions(); o.pdfCompatible = true; o.embedLinkedFiles = true; o.fontSubsetThreshold = 100;
   DOC.saveAs(fileAt(rel), o);
 }

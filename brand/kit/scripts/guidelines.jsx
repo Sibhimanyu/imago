@@ -355,7 +355,7 @@ lockup(bx10 + ih10 + 28, oy + 210 + bh10 + 60 + 20, 32, "ink", { outline: true, 
 label("App icon · lockup", bx10, oy + 210 + bh10 + 60 + ih10 + 26);
 
 // ── Save and export ─────────────────────────────────────────────────────
-saveAI("imago-brand-guidelines.ai");
+saveAI("build/imago-brand-guidelines.ai");   // merged into imago-task1-logo.ai by task1.jsx
 var oldPdf = new File(KIT + "/exports/imago-brand-guidelines.pdf"); if (oldPdf.exists) oldPdf.remove();
 savePDF("exports/imago-brand-guidelines.pdf");
 for (k = 0; k < PAGES.length; k++) exportPNG("exports/guidelines/" + (k < 9 ? "0" : "") + (k + 1) + ".png", 100, k);
