@@ -31,7 +31,17 @@ function wireEvents() {
   });
 
   // No key gate in front of the product: straight to a rendered page.
-  dom.landingStart.addEventListener('click', function () { enterApp(); });
+  // The landing bar: paste and the app opens on it; empty, it just opens.
+  dom.landingForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    runFromLanding(dom.landingUrl.value);
+  });
+  dom.landingUrl.addEventListener('paste', function (event) {
+    var text = event.clipboardData && event.clipboardData.getData('text');
+    if (!looksLikeCurl(text)) return;
+    event.preventDefault();
+    runFromLanding(text);
+  });
   dom.landingSkip.addEventListener('click', function () { enterApp(); });
   wireSpecimen();
   dom.landingAbout.addEventListener('click', function () {
@@ -65,10 +75,7 @@ function wireEvents() {
 
   dom.reqForm.addEventListener('submit', function (event) {
     event.preventDefault();
-    if (looksLikeCurl(dom.urlInput.value) && !importCurl(dom.urlInput.value)) return;
-    state.stack = [];          // a typed URL starts a new trail
-    state.stagePref = true;
-    performRequest(false);
+    runCommand(dom.urlInput.value);
   });
   // Pasting a curl command runs it, the way pasting a URL and pressing
   // Enter would. The box is a single line, so a multi-line command would
@@ -77,10 +84,7 @@ function wireEvents() {
     var text = event.clipboardData && event.clipboardData.getData('text');
     if (!looksLikeCurl(text)) return;
     event.preventDefault();
-    if (!importCurl(text)) return;
-    state.stack = [];
-    state.stagePref = true;
-    performRequest(false);
+    runCommand(text);
   });
   if (dom.headersChip) dom.headersChip.addEventListener('click', function () { setActiveTab('headers'); });
 
@@ -371,7 +375,7 @@ function drawSpecimen(result) {
 /* ── Bootstrap ─────────────────────────────────────────────────────────── */
 
 function cacheDom() {
-  var ids = ['landingView', 'appView', 'landingStart', 'landingSkip', 'landingAbout', 'landingTry',
+  var ids = ['landingView', 'appView', 'landingStart', 'landingForm', 'landingUrl', 'landingSkip', 'landingAbout', 'landingTry',
               'appNav', 'brandHome', 'keyStatus',
               'panePlayground', 'paneSaved', 'paneSettings', 'reqForm', 'urlInput', 'sendBtn', 'saveBtn',
               'refreshToggle', 'refreshInterval', 'livePill', 'liveCount', 'runMeta', 'stLastChecked',
@@ -397,6 +401,24 @@ function cacheDom() {
 // one. Try an example is the other door, and it loads the example shown.
 // Get started used to load an example too, so the two buttons did the same.
 // No key is ever asked for here; it is offered when it would buy something.
+// What the command bar does with a URL or a curl command. importCurl puts
+// the URL in the box and the headers in Inspect, or refuses with a reason.
+function runCommand(text) {
+  if (looksLikeCurl(text) && !importCurl(text)) return;
+  state.stack = [];          // a typed URL starts a new trail
+  state.stagePref = true;
+  performRequest(false);
+}
+
+function runFromLanding(text) {
+  var value = String(text || '').trim();
+  enterApp();
+  if (!value) return;
+  setUrlInput(value);
+  runCommand(value);
+  dom.landingUrl.value = '';
+}
+
 function enterApp() {
   var prefs = getPrefs();
   prefs.onboarded = true;

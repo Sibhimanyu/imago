@@ -3,14 +3,14 @@
     "id": "landing-desktop",
     "title": "Landing",
     "width": 1440,
-    "height": 1173,
+    "height": 1176,
     "mobile": false
   },
   "landing-mobile": {
     "id": "landing-mobile",
     "title": "Landing",
     "width": 390,
-    "height": 2149,
+    "height": 2060,
     "mobile": true
   },
   "empty-desktop": {

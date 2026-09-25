@@ -1497,7 +1497,23 @@ body.inspector-open .inspector { display: block; }
 #landingView .landing-title { font-size: clamp(40px, 5.2vw, 64px); line-height: 1.02; letter-spacing: -0.04em; }
 #landingView .landing-sub { margin: 22px 0 0; max-width: 440px; font-size: 17px; line-height: 1.55; color: var(--muted); }
 .landing-ctas { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
-.landing-caption { margin-top: 18px; max-width: 420px; font-size: 14px; color: var(--muted); }
+/* The banner's call to action: the app's own command bar, set large. */
+.landing-bar-form {
+  display: flex; align-items: center; gap: 8px; max-width: 480px; margin-top: 30px;
+  padding: 6px 6px 6px 20px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--card); box-shadow: var(--sh-sm);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.landing-bar-form:focus-within { border-color: var(--ink-2); }
+#landingView .landing-url {
+  flex: 1 1 auto; min-width: 0; height: 44px; padding: 0;
+  border: none; background: none; box-shadow: none !important; outline: none;
+  font-family: inherit; font-size: 15px; color: var(--ink);
+}
+#landingView .landing-url::placeholder { color: var(--muted); }
+.landing-go { width: 48px; height: 44px; padding: 0; flex: 0 0 auto; justify-content: center; border-radius: 10px; }
+.landing-try { font-size: inherit; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.landing-caption { margin-top: 18px; max-width: 480px; font-size: 14px; color: var(--muted); }
 
 .specimen { min-width: 0; }
 .spec-pane { display: grid; grid-template-columns: 44% 6% 50%; min-height: 400px; }
@@ -1563,10 +1579,13 @@ body.inspector-open .inspector { display: block; }
   #landingView .landing-sub { margin-left: 0; font-size: 16px; }
   .landing-ctas { flex-direction: column; }
   .landing-ctas .btn { width: 100%; justify-content: center; }
+  .landing-bar-form { max-width: none; padding: 5px 5px 5px 14px; gap: 6px; }
+  .landing-go { width: 44px; }
+  #landingView .landing-url { font-size: 16px; }   /* 16px: iOS does not zoom into the field */
   .landing-top { gap: 32px; }
   /* Phones: the card overlaps the bottom of the panel instead of its side. */
   .spec-pane { grid-template-columns: 1fr; min-height: 0; }
-  .spec-response { grid-column: 1; contain: none; max-height: 250px; padding-bottom: 48px; }
+  .spec-response { grid-column: 1; contain: none; height: 250px; padding-bottom: 48px; }
   .spec-interface { grid-column: 1; grid-row: 2; margin: -32px 12px 0; padding: 18px 16px 22px; }
   .specimen-foot { flex-direction: column; align-items: stretch; gap: 10px; }
   .specimen-switch button { flex: 1 1 0; min-height: 40px; }
@@ -1700,8 +1719,11 @@ body.is-editing .comp, body.is-editing .fact { outline: 1px dashed var(--line); 
 }
 
 /* Landing demo: the real renderer, drawn live, shown at a reduced scale. It is
-   a preview, so it cannot be clicked into and it fades out where it is cut. */
-.spec-interface { position: relative; overflow: hidden; max-height: 520px; }
+   a preview, so it cannot be clicked into and it fades out where it is cut.
+   A fixed height, not a cap: every example, and the moment it is still
+   fetching, fills the same box, so switching tabs never moves the page. */
+.spec-interface { position: relative; overflow: hidden; height: 492px; }
+@media (max-width: 720px) { .spec-interface { height: 380px; } }
 .spec-live { zoom: .62; pointer-events: none; user-select: none; }
 .spec-live-status { margin: 28px 0 0; font-size: 21px; color: var(--muted); }   /* 13px after the zoom */
 .spec-live .stage-title { margin: 6px 0 22px; }

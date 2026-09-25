@@ -2,6 +2,25 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.1.0] - 2026-09-25
+
+The landing hero takes the banner's call to action.
+
+### Added
+
+- **Paste straight into the landing page.** The Get started and Try an
+  example buttons become the banner's bar: paste a URL or a curl command and
+  press Enter, and the app opens and runs it. A pasted curl command runs at
+  once, headers and all. Empty, the arrow just opens the app. "Or try the
+  example" under it opens the demo that is showing.
+
+### Fixed
+
+- **Switching the demo's examples no longer moves the page.** The interface
+  card took its height from whatever it drew, so each tab, and the moment
+  it was still fetching, resized the hero by up to 150px. It now has a fixed
+  height on desktop and on phones.
+
 ## [0.13.0.0] - 2026-09-25
 
 The fixes from a full audit (security, correctness, hands-on QA), each with a

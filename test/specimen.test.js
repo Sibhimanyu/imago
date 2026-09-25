@@ -105,3 +105,87 @@ describe('the landing hero follows the brand banner', () => {
     expect(doc.getElementById('specimenUrl').textContent).toContain('open-meteo.com');
   });
 });
+
+describe('the landing bar is the call to action', () => {
+  const recorder = (calls) => (url, init) => {
+    calls.push({ url: String(url), headers: (init && init.headers) || {} });
+    return jsonFetch({ name: 'widget' })(url);
+  };
+  // A text field keeps the spaces a url field would strip before the code sees them.
+  const runBlank = (app) => { app.dom.landingUrl.setAttribute('type', 'text'); app.dom.landingUrl.value = '   '; submit(app); };
+  const submit = (app) => app.dom.landingForm.dispatchEvent(new app.window.Event('submit', { cancelable: true }));
+
+  it('opens the app on a pasted URL and runs it', async () => {
+    const calls = [];
+    const app = await boot({ url: LANDING, fetch: recorder(calls) });
+    await settle(); calls.length = 0;   // the demo's own fetch
+    app.dom.landingUrl.value = '  https://mine.test/api  ';
+    submit(app);
+    await settle();
+    expect(app.state.view).toBe('app');
+    expect(app.dom.urlInput.value).toBe('https://mine.test/api');
+    expect(calls.map((c) => c.url)).toContain('https://mine.test/api');
+    expect(app.dom.landingUrl.value).toBe('');
+  });
+
+  it('only spaces count as empty: no request, no error', async () => {
+    const calls = [];
+    const app = await boot({ url: LANDING, fetch: recorder(calls) });
+    await settle(); calls.length = 0;
+    runBlank(app);
+    await settle();
+    expect(app.state.view).toBe('app');
+    expect(calls).toHaveLength(0);
+    expect(app.dom.toast.getAttribute('data-kind')).not.toBe('error');
+  });
+
+  it('empty, it only opens the app, with the URL box focused', async () => {
+    const calls = [];
+    const app = await boot({ url: LANDING, fetch: recorder(calls) });
+    await settle(); calls.length = 0;
+    submit(app);
+    await settle();
+    expect(app.state.view).toBe('app');
+    expect(calls).toHaveLength(0);
+    expect(app.window.document.activeElement).toBe(app.dom.urlInput);
+  });
+
+  it('a pasted curl command runs at once, headers and all', async () => {
+    const calls = [];
+    const app = await boot({ url: LANDING, fetch: recorder(calls) });
+    await settle(); calls.length = 0;
+    const ev = new app.window.Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => "curl 'https://a.test/me' -H 'X-Team: blue'" } });
+    app.dom.landingUrl.dispatchEvent(ev);
+    await settle();
+    expect(ev.defaultPrevented).toBe(true);
+    expect(app.state.view).toBe('app');
+    expect(app.dom.urlInput.value).toBe('https://a.test/me');
+    const call = calls.find((c) => c.url === 'https://a.test/me');
+    expect(JSON.stringify(call.headers)).toContain('blue');
+  });
+
+  it('a pasted plain URL is left in the box to be sent', async () => {
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
+    const ev = new app.window.Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'https://a.test/me' } });
+    app.dom.landingUrl.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(false);
+    expect(app.state.view).toBe('landing');
+  });
+});
+
+describe('the demo holds its size', () => {
+  // jsdom has no layout, so the rule is pinned in the stylesheet: a fixed
+  // height, not a cap, or every example and every fetch resizes the hero.
+  const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const base = css.match(/\n\.spec-interface \{ position: relative; overflow: hidden;[^}]*\}/);
+  it('gives the interface card a fixed height, on desktop and on phones', () => {
+    expect(base).not.toBeNull();
+    expect(base[0]).toMatch(/[^-]height: \d+px/);
+    expect(base[0]).not.toMatch(/max-height/);
+    const after = css.slice(base.index + base[0].length);
+    expect(after).toMatch(/@media \(max-width: 720px\) \{ \.spec-interface \{ height: \d+px; \} \}/);
+    expect(css).toMatch(/\.spec-response \{ grid-column: 1; contain: none; height: \d+px;/);
+  });
+});

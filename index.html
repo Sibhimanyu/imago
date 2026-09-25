@@ -73,11 +73,13 @@
       <section class="landing-hero">
         <h1 class="landing-title">APIs become interfaces.</h1>
         <p class="landing-sub">Paste a GET endpoint. Imago reads the response, designs a view that fits its shape, and remembers it.</p>
-        <div class="landing-ctas">
-          <button type="button" class="btn btn-dark btn-lg" id="landingStart">Get started <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button type="button" class="btn btn-ghost btn-lg" id="landingTry">Try an example</button>
-        </div>
-        <p class="landing-caption">Runs in your browser. No account. Bring your own Gemini or Groq key, or use none.</p>
+        <!-- The call to action is the product's first step: paste, and the app
+             opens on it. Empty, the arrow just opens the app. -->
+        <form class="landing-bar-form" id="landingForm" autocomplete="off" novalidate>
+          <input type="url" id="landingUrl" class="landing-url" placeholder="Paste an API URL or a curl command" spellcheck="false" aria-label="API URL or curl command">
+          <button type="submit" class="btn btn-dark landing-go" id="landingStart" aria-label="Open in Imago"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </form>
+        <p class="landing-caption">Runs in your browser. No account. Bring your own Gemini or Groq key, or use none. <button type="button" class="link-btn landing-try" id="landingTry">Or try the example →</button></p>
       </section>
 
       <section class="specimen" aria-label="An API response and the interface Imago renders from it">
