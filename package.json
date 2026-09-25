@@ -3,6 +3,7 @@
   "version": "0.12.0",
   "private": true,
   "description": "Imago — APIs become interfaces. Browser-only API playground.",
+  "license": "MIT",
   "homepage": "https://imago.onslate.in",
   "repository": {
     "type": "git",

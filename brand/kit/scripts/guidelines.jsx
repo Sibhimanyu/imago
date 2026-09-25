@@ -50,7 +50,11 @@ function fields(x, y, size, c, into) {
   return g;
 }
 function place(rel, x, y, w) {
-  var p = art.placedItems.add(); p.file = new File(KIT + "/" + rel);
+  // Illustrator writes the source path into the file's metadata, even when the
+  // image is embedded, so place a copy from a neutral folder, not the checkout.
+  var src = new File(KIT + "/" + rel), copy = new File(Folder.temp + "/imago-" + src.name);
+  if (!src.copy(copy)) throw new Error("could not copy " + rel);
+  var p = art.placedItems.add(); p.file = copy;
   var b = p.geometricBounds, pw = b[2] - b[0], ph = b[1] - b[3];
   p.resize(w / pw * 100, w / pw * 100); p.position = [L(x), T(y)];
   p.embed(); return w * ph / pw;

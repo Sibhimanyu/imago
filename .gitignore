@@ -8,3 +8,6 @@ design/shots/*.png
 # Illustrator writes a lock file beside an open .ai document.
 ~ai-*.tmp
 .cache/
+
+# gstack team mode: setup symlinks skills into .claude/skills on each machine.
+.claude/skills/

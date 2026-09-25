@@ -15,9 +15,10 @@
 
 <p align="center">
   <a href="https://github.com/Sibhimanyu/imago/actions/workflows/test.yml"><img src="https://github.com/Sibhimanyu/imago/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1b1b19" alt="MIT license"></a>
 </p>
 
-![Imago's landing page: a live API response on the left, the interface Imago drew for it on the right](design/shots/landing-desktop.png)
+![Imago's landing page: a live API response on the left, the interface Imago drew for it on the right](docs/readme/landing.png)
 
 Imago is a browser-only API playground. You give it a GET endpoint; it fetches the
 JSON, works out what *shape* the response is, asks a model to design an interface for
@@ -460,3 +461,10 @@ npm run check     # every cross-module name is imported (no build step to catch 
 
 Built by [Sibhimanyu](https://github.com/Sibhimanyu). ChatGPT was used for
 ideation and planning, and Claude (via Claude Code) for implementation support.
+
+---
+
+## License
+
+[MIT](LICENSE). The Imago name, logo and Amigo mascot identify this project;
+please don't use them for a fork in a way that suggests it is the original.

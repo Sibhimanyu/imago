@@ -1,1 +1,0 @@
-/Users/sibhi-zstch1643/conductor/repos/something-that-does-stuff/.claude/skills/gstack/ios-qa/SKILL.md
