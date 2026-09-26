@@ -32,8 +32,8 @@ beforeAll(async () => {
   fs.writeFileSync(pagesense, SNIPPET + '\n');
   const reels = path.join(tmp, 'reels');
   fs.mkdirSync(reels);
-  fs.writeFileSync(path.join(reels, 'paste-to-page.mp4'), 'mp4');
-  fs.writeFileSync(path.join(reels, 'paste-to-page.png'), 'png');
+  fs.writeFileSync(path.join(reels, 'stop-reading-json.mp4'), 'mp4');
+  fs.writeFileSync(path.join(reels, 'stop-reading-json.png'), 'png');
   fs.writeFileSync(path.join(reels, 'watch-live.mp4'), 'mp4');   // no poster
   await build({ out: FILLED, links, pagesense, reels });
 }, 60000);
@@ -222,15 +222,15 @@ describe('reels', () => {
     expect(read(PLAIN, 'pokeapi/index.html')).not.toContain('<video');
     expect(read(PLAIN, 'press/index.html')).not.toContain('<video');
     const video = doc(FILLED, 'pokeapi/index.html').querySelector('video');
-    expect(video.getAttribute('src')).toBe('/reels/paste-to-page.mp4');
-    expect(video.getAttribute('poster')).toBe('/reels/paste-to-page.png');
+    expect(video.getAttribute('src')).toBe('/reels/stop-reading-json.mp4');
+    expect(video.getAttribute('poster')).toBe('/reels/stop-reading-json.png');
     for (const attr of ['muted', 'controls', 'playsinline']) expect(video.hasAttribute(attr)).toBe(true);
-    expect(fs.existsSync(path.join(FILLED, 'reels/paste-to-page.mp4'))).toBe(true);
+    expect(fs.existsSync(path.join(FILLED, 'reels/stop-reading-json.mp4'))).toBe(true);
     const iss = doc(FILLED, 'iss/index.html').querySelector('video');
     expect(iss.getAttribute('src')).toBe('/reels/watch-live.mp4');
     expect(iss.hasAttribute('poster')).toBe(false);
     const press = doc(FILLED, 'press/index.html');
-    expect([...press.querySelectorAll('video')].map((v) => v.getAttribute('src'))).toEqual(['/reels/paste-to-page.mp4', '/reels/watch-live.mp4']);
+    expect([...press.querySelectorAll('video')].map((v) => v.getAttribute('src'))).toEqual(['/reels/stop-reading-json.mp4', '/reels/watch-live.mp4']);
     expect(press.querySelector('a[download][href="/reels/watch-live.mp4"]')).not.toBeNull();
   });
 });

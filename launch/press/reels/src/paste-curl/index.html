@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); font-weight: 500; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; color: #1b1b19; font-family: "Inter", sans-serif; }
+      .clip { position: absolute; inset: 0; }
+      .fill { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+      .cam { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+      .cam img { display: block; position: absolute; left: 0; top: 0; }
+      .shot { width: 1080px; height: 1920px; }
+      .dots { position: absolute; left: -48px; top: -48px; width: 1176px; height: 2016px; background-image: radial-gradient(circle, #dcd9d0 3px, transparent 3.4px); background-size: 48px 48px; }
+
+      .cap { position: absolute; left: 0; right: 0; top: 250px; display: flex; flex-direction: column; align-items: flex-start; padding: 0 64px; z-index: 50; }
+      .cap .ln { display: block; background: #1b1b19; color: #f6f5f1; font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 118px; line-height: 1; letter-spacing: -0.035em; padding: 22px 34px 30px; border-radius: 30px; margin-bottom: 14px; white-space: nowrap; transform-origin: 0% 50%; }
+      .cap .ln.paper { background: #f6f5f1; color: #1b1b19; box-shadow: 0 0 0 5px #1b1b19 inset; }
+      .ring { position: absolute; border: 8px solid #1b1b19; border-radius: 26px; z-index: 30; }
+      #flash { position: absolute; inset: 0; background: #ffffff; opacity: 0; z-index: 90; pointer-events: none; }
+
+      /* generic devtools mock: labelled as such, not any one browser */
+      #dt { position: absolute; left: 40px; top: 640px; width: 1000px; height: 900px; background: #ffffff; border-radius: 28px; box-shadow: 0 0 0 4px #1b1b19, 0 40px 90px rgba(27,27,25,0.18); overflow: hidden; transform-origin: 50% 40%; }
+      .dt-tabs { height: 96px; display: flex; align-items: flex-end; gap: 44px; padding: 0 40px; background: #efede7; border-bottom: 3px solid #dcd9d0; font-family: "Inter", sans-serif; font-weight: 500; font-size: 34px; color: #66655f; }
+      .dt-tabs span { padding-bottom: 22px; }
+      .dt-tabs .on { color: #1b1b19; border-bottom: 6px solid #1b1b19; padding-bottom: 16px; }
+      .dt-head, .dt-row { display: grid; grid-template-columns: 1fr 150px 170px; align-items: center; padding: 0 40px; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 32px; }
+      .dt-head { height: 76px; color: #66655f; font-family: "Inter", sans-serif; font-size: 28px; border-bottom: 3px solid #e7e5df; }
+      .dt-row { height: 92px; border-bottom: 2px solid #efede7; color: #1b1b19; }
+      .dt-row.sel { background: #1b1b19; color: #f6f5f1; }
+      .dt-note { position: absolute; left: 40px; bottom: 26px; font-family: "Inter", sans-serif; font-size: 26px; color: #66655f; }
+      #menu { position: absolute; left: 330px; top: 350px; width: 560px; background: #ffffff; border-radius: 22px; box-shadow: 0 0 0 3px #1b1b19, 0 30px 60px rgba(27,27,25,0.25); padding: 14px 0; font-family: "Inter", sans-serif; font-weight: 500; font-size: 36px; transform-origin: 0 0; }
+      #menu div { padding: 18px 34px; color: #1b1b19; }
+      #menu .sep { height: 3px; padding: 0; margin: 8px 0; background: #e7e5df; }
+      #menu #m-curl { background: #1b1b19; color: #f6f5f1; }
+      #cursor { position: absolute; left: 0; top: 0; width: 64px; height: 64px; z-index: 60; }
+      #copied { position: absolute; left: 50%; top: 740px; transform: translateX(-50%); padding: 18px 34px; background: #1b1b19; color: #f6f5f1; border-radius: 100px; font-family: "Inter", sans-serif; font-weight: 500; font-size: 34px; white-space: nowrap; }
+
+      /* the curl command */
+      #curl { position: absolute; left: 60px; top: 620px; width: 960px; background: #1b1b19; color: #f6f5f1; border-radius: 30px; padding: 46px 48px; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 44px; line-height: 1.5; transform-origin: 50% 50%; }
+      #curl .ln { display: block; white-space: nowrap; }
+      #curl .h { display: inline-block; padding: 0 10px; margin-left: -10px; border-radius: 10px; }
+      #curl .dim { color: #b9b7af; }
+      #curl2 { position: absolute; left: 60px; top: 760px; width: 960px; background: #1b1b19; color: #f6f5f1; border-radius: 30px; padding: 46px 48px; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 44px; line-height: 1.5; transform-origin: 50% 50%; z-index: 20; }
+      #curl2 .ln { display: block; white-space: nowrap; }
+      .mono-chip { position: absolute; left: 64px; padding: 16px 28px; border-radius: 100px; background: #f6f5f1; color: #1b1b19; box-shadow: 0 0 0 3px #1b1b19 inset; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 32px; white-space: nowrap; z-index: 40; }
+
+      #amigo-wrap { position: absolute; left: 700px; top: 1300px; width: 330px; height: 330px; transform-origin: 50% 100%; z-index: 45; }
+      #amigo-wrap svg, #end-amigo svg { width: 100%; height: 100%; display: block; overflow: visible; }
+      #end-amigo { position: absolute; left: 420px; top: 1330px; width: 240px; height: 240px; transform-origin: 50% 100%; }
+      .shadow { position: absolute; border-radius: 50%; background: rgba(27,27,25,0.14); }
+      #e-logo { position: absolute; left: 90px; top: 640px; width: 900px; height: 337.5px; }
+      #e-logo img { width: 100%; height: 100%; display: block; }
+      #e-url { position: absolute; left: 0; right: 0; top: 1060px; text-align: center; font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 62px; color: #1b1b19; }
+      #e-tag { position: absolute; left: 0; right: 0; top: 1170px; text-align: center; font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 56px; }
+      #e-tag span { display: inline-block; background: #1b1b19; color: #f6f5f1; padding: 12px 30px 18px; border-radius: 22px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="14" data-width="1080" data-height="1920">
+
+      <!-- S1 hook: "Copy as cURL" in a generic devtools network panel (0 – 1.50) -->
+      <section id="s-dt" class="clip" data-start="0" data-duration="1.5" data-track-index="1">
+        <div class="fill" id="dt-fill">
+          <div class="dots"></div>
+          <div id="dt">
+            <div class="dt-tabs"><span>Elements</span><span>Console</span><span class="on">Network</span></div>
+            <div class="dt-head"><span>Name</span><span>Status</span><span>Type</span></div>
+            <div class="dt-row"><span>index.html</span><span>200</span><span>document</span></div>
+            <div class="dt-row"><span>app.js</span><span>200</span><span>script</span></div>
+            <div class="dt-row sel" id="dt-sel"><span>pikachu</span><span>200</span><span>fetch</span></div>
+            <div class="dt-row"><span>25.png</span><span>200</span><span>png</span></div>
+            <div class="dt-row"><span>species/25</span><span>200</span><span>fetch</span></div>
+            <div class="dt-note">Browser dev tools · Network panel (generic mock)</div>
+            <div id="menu">
+              <div>Open in new tab</div>
+              <div>Copy URL</div>
+              <div class="sep"></div>
+              <div id="m-curl">Copy as cURL</div>
+              <div>Copy response</div>
+            </div>
+          </div>
+          <div id="copied">Copied to clipboard</div>
+          <svg id="cursor" viewBox="0 0 32 32"><path d="M5 3 L5 25 L11 19.5 L15 28 L19 26.2 L15 17.8 L23 17.8 Z" fill="#1b1b19" stroke="#f6f5f1" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+      </section>
+
+      <!-- S2 the copied command (1.50 – 2.51) -->
+      <section id="s-curl" class="clip" data-start="1.5" data-duration="1.01" data-track-index="1">
+        <div class="fill"><div class="dots"></div>
+          <div id="curl">
+            <span class="ln">curl <span class="dim">'https://pokeapi.co/</span></span>
+            <span class="ln dim">  api/v2/pokemon/pikachu'</span>
+            <span class="ln"><span class="h" id="h1">-H 'Accept: application/json'</span></span>
+            <span class="ln"><span class="h" id="h2">-H 'X-Demo: imago'</span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- S3 paste into the real bar (2.51 – 3.51) -->
+      <section id="s-paste" class="clip" data-start="2.51" data-duration="1.0" data-track-index="1">
+        <div class="fill" id="paste-fill"><div class="dots"></div>
+          <div id="paste-cam" class="cam">
+            <img class="shot" src="assets/cap/pika-empty.png" alt="Imago's empty page, bar focused" />
+            <img class="shot" id="pasted" src="assets/cap/pika-pasted.png" alt="Imago right after the paste: URL, 2 headers chip, Imported from curl" />
+            <div id="ring-chip" class="ring" style="left:700px;top:1783px;width:218px;height:114px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S4 Inspect → Headers (3.51 – 4.51) -->
+      <section id="s-hdr" class="clip" data-start="3.51" data-duration="1.0" data-track-index="1">
+        <div class="fill" style="background:#fff">
+          <div id="hdr-cam" class="cam">
+            <img class="shot" src="assets/cap/pika-headers.png" alt="Inspect, Headers: Accept and X-Demo" />
+            <div id="ring-hdr" class="ring" style="left:45px;top:362px;width:720px;height:170px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S5 fetching (4.51 – 5.00) -->
+      <section id="s-load" class="clip" data-start="4.51" data-duration="0.49" data-track-index="1">
+        <div class="fill" id="load-fill" style="background:#fff">
+          <div id="load-cam" class="cam"><img class="shot" src="assets/cap/pika-pasted.png" alt="Fetching pokeapi.co" /></div>
+        </div>
+      </section>
+
+      <!-- S6 THE DROP: the page (5.00 – 7.01) -->
+      <section id="s-page" class="clip" data-start="5" data-duration="1.0" data-track-index="1">
+        <div class="fill" id="page-fill" style="background:#fff">
+          <div id="page-cam" class="cam"><img class="shot" src="assets/cap/pika-page-toast.png" alt="The page, with Imported from curl: 2 headers" /></div>
+        </div>
+      </section>
+      <section id="s-tall" class="clip" data-start="6" data-duration="1.01" data-track-index="1">
+        <div class="fill" style="background:#fff">
+          <div id="tall-cam" class="cam"><img src="assets/cap/pika-tall.png" style="width:1080px;height:5750px" alt="Pikachu's stats as bars" /></div>
+        </div>
+      </section>
+
+      <!-- S7 basic auth (7.01 – 10.03) -->
+      <section id="s-auth" class="clip" data-start="7.01" data-duration="1.01" data-track-index="1">
+        <div class="fill" id="auth-fill"><div class="dots"></div>
+          <div id="auth-cam" class="cam">
+            <img class="shot" src="assets/cap/auth-empty.png" alt="Imago's empty page" />
+            <img class="shot" id="auth-pasted" src="assets/cap/auth-pasted.png" alt="Imago right after pasting a curl with -u: 1 header" />
+          </div>
+          <div id="curl2">
+            <span class="ln">curl <span style="color:#b9b7af">'https://httpbin.org/</span></span>
+            <span class="ln" style="color:#b9b7af">  basic-auth/imago/demo'</span>
+            <span class="ln">-u imago:demo</span>
+          </div>
+        </div>
+      </section>
+      <section id="s-authhdr" class="clip" data-start="8.02" data-duration="1.01" data-track-index="1">
+        <div class="fill" style="background:#fff">
+          <div id="ahdr-cam" class="cam">
+            <img class="shot" src="assets/cap/auth-headers.png" alt="Inspect, Headers: Authorization Basic" />
+            <div id="ring-auth" class="ring" style="left:40px;top:365px;width:975px;height:110px"></div>
+          </div>
+          <div id="u-chip" class="mono-chip" style="top:1250px">-u imago:demo → Authorization: Basic</div>
+        </div>
+      </section>
+      <section id="s-authpage" class="clip" data-start="9.03" data-duration="1.0" data-track-index="1">
+        <div class="fill" id="apage-fill" style="background:#fff">
+          <div id="apage-cam" class="cam"><img class="shot" src="assets/cap/auth-page-toast.png" alt="httpbin says Authenticated: Yes, User: imago" /></div>
+        </div>
+      </section>
+
+      <!-- S8 Amigo (10.03 – 11.53) -->
+      <section id="s-amigo" class="clip" data-start="10.03" data-duration="1.5" data-track-index="1">
+        <div class="fill" id="amigo-fill" style="background:#fff">
+          <div id="am-cam" class="cam"><img class="shot" src="assets/cap/auth-page.png" alt="" /></div>
+          <div id="amigo-shadow" class="shadow" style="left:730px;top:1612px;width:270px;height:34px"></div>
+          <div id="amigo-wrap">
+            <svg viewBox="0 0 320 320" aria-label="Amigo">
+              <g fill="#1b1b19">
+                <path id="a-leg1" d="M90,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C103.5,300,90,286.5,90,270z"/>
+                <path id="a-leg2" d="M170,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C183.5,300,170,286.5,170,270z"/>
+              </g>
+              <path fill="#1b1b19" fill-rule="evenodd" d="M130,30h60c44,0,70,29,70,73v90c0,42-27,67-69,67h-62c-42,0-69-25-69-67v-90C60,59,86,30,130,30z M132,90c-14,0-23,9-23,23v7c0,14,9,23,23,23h56c14,0,23-9,23-23v-7c0-14-9-23-23-23H132z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- S9 end card (11.53 – 14.00) -->
+      <section id="s-card" class="clip" data-start="11.53" data-duration="2.47" data-track-index="1">
+        <div class="fill" style="background:#f6f5f1">
+          <div class="dots" id="card-dots"></div>
+          <div id="e-logo"><img src="assets/brand/imago-task1-logo_logo-primary.svg" alt="Imago" /></div>
+          <div id="e-url">imago.onslate.in</div>
+          <div id="e-tag"><span>Free · Open source</span></div>
+          <div id="end-shadow" class="shadow" style="left:460px;top:1556px;width:160px;height:22px"></div>
+          <div id="end-amigo">
+            <svg viewBox="0 0 320 320" aria-label="Amigo">
+              <g fill="#1b1b19">
+                <path d="M90,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C103.5,300,90,286.5,90,270z"/>
+                <path d="M170,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C183.5,300,170,286.5,170,270z"/>
+              </g>
+              <path fill="#1b1b19" fill-rule="evenodd" d="M130,30h60c44,0,70,29,70,73v90c0,42-27,67-69,67h-62c-42,0-69-25-69-67v-90C60,59,86,30,130,30z M132,90c-14,0-23,9-23,23v7c0,14,9,23,23,23h56c14,0,23-9,23-23v-7c0-14-9-23-23-23H132z"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- captions -->
+      <div id="c1" class="clip cap" data-start="0" data-duration="1.5" data-track-index="3"><span class="ln" id="c1a">Copied as cURL?</span><span class="ln paper" id="c1b">Paste it.</span></div>
+      <div id="c2" class="clip cap" data-start="1.5" data-duration="1.51" data-track-index="3"><span class="ln" id="c2a">Paste it.</span></div>
+      <div id="c3" class="clip cap" data-start="3.01" data-duration="1.5" data-track-index="3"><span class="ln" id="c3a">Headers</span><span class="ln" id="c3b">picked up.</span></div>
+      <div id="c4" class="clip cap" style="top:1330px" data-start="5" data-duration="1.0" data-track-index="3"><span class="ln" id="c4a">One paste.</span><span class="ln paper" id="c4b">One page.</span></div>
+      <div id="c5" class="clip cap" data-start="7.01" data-duration="2.02" data-track-index="3"><span class="ln" id="c5a">Basic auth too.</span></div>
+      <div id="c6" class="clip cap" style="top:1180px" data-start="9.03" data-duration="1.0" data-track-index="3"><span class="ln" id="c6a">Straight to</span><span class="ln" id="c6b">a page.</span></div>
+      <div id="c7" class="clip cap" data-start="10.03" data-duration="1.5" data-track-index="3"><span class="ln" id="c7a">Share links skip</span><span class="ln paper" id="c7b">your headers.</span></div>
+
+      <div id="flash"></div>
+
+      <!-- audio -->
+      <audio id="music" data-timeline-role="music" src="assets/music/favorite-nakarada.wav" data-start="0" data-duration="14" data-track-index="10" data-volume="0.9"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":1},{"t":1.4,"v":1},{"t":1.6,"v":0.8},{"t":4.8,"v":0.8},{"t":5.0,"v":0.75},{"t":5.5,"v":1},{"t":13.1,"v":1},{"t":14,"v":0}]}]}'></audio>
+      <audio id="sfx-hit0" src="assets/sfx/impact-bass-1.mp3" data-start="0" data-duration="1.2" data-track-index="11" data-volume="0.3"></audio>
+      <audio id="sfx-pop0" src="assets/sfx/pop.mp3" data-start="0.2" data-duration="0.6" data-track-index="12" data-volume="0.6"></audio>
+      <audio id="sfx-click0" src="assets/sfx/click.mp3" data-start="0.98" data-duration="0.36" data-track-index="13" data-volume="1"></audio>
+      <audio id="sfx-ding0" src="assets/sfx/ping.mp3" data-start="0.86" data-duration="1.0" data-track-index="14" data-volume="0.4"></audio>
+      <audio id="sfx-wh1" src="assets/sfx/whoosh.mp3" data-start="1.42" data-duration="0.55" data-track-index="15" data-volume="0.8"></audio>
+      <audio id="sfx-wh2" src="assets/sfx/whoosh-short.mp3" data-start="2.43" data-duration="0.55" data-track-index="16" data-volume="0.8"></audio>
+      <audio id="sfx-pop1" src="assets/sfx/pop.mp3" data-start="2.72" data-duration="0.6" data-track-index="17" data-volume="1"></audio>
+      <audio id="sfx-ding1" src="assets/sfx/chime.mp3" data-start="2.66" data-duration="1.3" data-track-index="18" data-volume="0.5"></audio>
+      <audio id="sfx-wh3" src="assets/sfx/whoosh-short.mp3" data-start="3.43" data-duration="0.55" data-track-index="19" data-volume="0.7"></audio>
+      <audio id="sfx-ding2" src="assets/sfx/ping.mp3" data-start="3.46" data-duration="1.0" data-track-index="20" data-volume="0.45"></audio>
+      <audio id="sfx-riser" src="assets/sfx/riser.mp3" data-start="2.95" data-media-start="1.0" data-duration="2.1" data-track-index="21" data-volume="0.5"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.3},{"t":1.8,"v":1},{"t":2.0,"v":1},{"t":2.1,"v":0}]}]}'></audio>
+      <audio id="sfx-boom" src="assets/sfx/impact-bass-1.mp3" data-start="5" data-duration="2.0" data-track-index="22" data-volume="0.75"></audio>
+      <audio id="sfx-wh4" src="assets/sfx/whoosh-short.mp3" data-start="5.92" data-duration="0.55" data-track-index="23" data-volume="0.7"></audio>
+      <audio id="sfx-wh5" src="assets/sfx/whoosh.mp3" data-start="6.93" data-duration="0.55" data-track-index="24" data-volume="0.75"></audio>
+      <audio id="sfx-pop2" src="assets/sfx/pop.mp3" data-start="7.45" data-duration="0.6" data-track-index="25" data-volume="1"></audio>
+      <audio id="sfx-wh6" src="assets/sfx/whoosh-short.mp3" data-start="7.94" data-duration="0.55" data-track-index="26" data-volume="0.7"></audio>
+      <audio id="sfx-ding3" src="assets/sfx/chime.mp3" data-start="7.96" data-duration="1.3" data-track-index="27" data-volume="0.5"></audio>
+      <audio id="sfx-snap" src="assets/sfx/impact-bass-2.mp3" data-start="8.95" data-media-start="0.35" data-duration="1.2" data-track-index="28" data-volume="0.4"></audio>
+      <audio id="sfx-wh7" src="assets/sfx/whoosh-short.mp3" data-start="8.97" data-duration="0.55" data-track-index="29" data-volume="0.6"></audio>
+      <audio id="sfx-pop3" src="assets/sfx/pop.mp3" data-start="10.14" data-duration="0.6" data-track-index="30" data-volume="0.9"></audio>
+      <audio id="sfx-pop4" src="assets/sfx/pop.mp3" data-start="10.62" data-duration="0.6" data-track-index="31" data-volume="0.6"></audio>
+      <audio id="sfx-wh8" src="assets/sfx/whoosh-short.mp3" data-start="11.45" data-duration="0.55" data-track-index="32" data-volume="0.7"></audio>
+      <audio id="sfx-hit9" src="assets/sfx/impact-bass-1.mp3" data-start="11.57" data-duration="1.6" data-track-index="33" data-volume="0.4"></audio>
+      <audio id="sfx-ding9" src="assets/sfx/chime.mp3" data-start="11.77" data-duration="2.0" data-track-index="34" data-volume="0.45"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const S0 = 1080 / 1296;
+      const B = 0.5015;
+      const D = 5.0;
+      function cam(px, py, z, fx = 540, fy = 960) { return { x: fx - px * S0 * z, y: fy - py * S0 * z, scale: z }; }
+      function punch(sel, t, from = 1.35) {
+        tl.fromTo(sel, { scale: from, opacity: 0, rotation: -2 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.2, ease: "back.out(2.2)", immediateRender: false }, t);
+      }
+      tl.set(["#c1b", "#c3b", "#c4b", "#c6b", "#c7b"], { opacity: 0 }, 0);
+
+      // ---- S1 hook ----
+      tl.set("#c1a", { scale: 1.3 }, 0);
+      tl.to("#c1a", { scale: 1, duration: 0.18, ease: "back.out(2.5)" }, 0);
+      punch("#c1b", 0.22, 1.6);
+      tl.fromTo("#dt", { scale: 1.12, y: 60 }, { scale: 1.0, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+      tl.fromTo("#menu", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.14, ease: "back.out(2)" }, 0.12);
+      tl.set("#m-curl", { backgroundColor: "#ffffff", color: "#1b1b19" }, 0);
+      tl.fromTo("#cursor", { x: 820, y: 1500 }, { x: 590, y: 1199, duration: 0.6, ease: "power3.out" }, 0.2);
+      tl.set("#m-curl", { backgroundColor: "#1b1b19", color: "#f6f5f1" }, 0.82);
+      tl.to("#cursor", { scale: 0.85, duration: 0.06, yoyo: true, repeat: 1 }, 0.98);
+      tl.to("#menu", { opacity: 0, duration: 0.08 }, 1.08);
+      tl.fromTo("#copied", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.14, ease: "back.out(2)" }, 1.1);
+      tl.to("#dt-fill", { scale: 0.9, opacity: 0, duration: 0.1, ease: "power2.in" }, 1.4);
+
+      // ---- S2 the command ----
+      tl.fromTo("#curl", { y: 700, rotation: 4 }, { y: 0, rotation: 0, duration: 0.24, ease: "power3.out" }, 1.5);
+      tl.fromTo("#h1", { backgroundColor: "rgba(246,245,241,0)", color: "#f6f5f1" }, { backgroundColor: "#f6f5f1", color: "#1b1b19", duration: 0.06 }, 1.5 + B);
+      tl.fromTo("#h2", { backgroundColor: "rgba(246,245,241,0)", color: "#f6f5f1" }, { backgroundColor: "#f6f5f1", color: "#1b1b19", duration: 0.06 }, 1.5 + B + 0.22);
+      tl.to("#curl", { y: 900, scale: 0.4, opacity: 0, duration: 0.14, ease: "power3.in" }, 2.37);
+      punch("#c2a", 1.5, 1.5);
+
+      // ---- S3 paste into the real bar ----
+      {
+        const z = 1.6, by = 2208, y0 = 1180 - by * S0 * z;
+        tl.fromTo("#paste-cam", { x: 0, y: y0 + 400, scale: z }, { x: 0, y: y0, scale: z, duration: 0.18, ease: "power3.out" }, 2.51);
+        tl.set("#pasted", { opacity: 0 }, 0);
+        tl.set("#pasted", { opacity: 1 }, 2.76);
+        tl.fromTo("#paste-fill", { y: 0 }, { y: -18, duration: 0.05, yoyo: true, repeat: 1 }, 2.76);
+        tl.to("#paste-cam", { x: -560, duration: 0.3, ease: "expo.inOut" }, 2.9);
+        tl.fromTo("#ring-chip", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.16, ease: "back.out(2)", immediateRender: false }, 3.0);
+        tl.set("#ring-chip", { opacity: 0 }, 0);
+      }
+      punch("#c3a", 3.01, 1.5);
+      punch("#c3b", 3.12, 1.5);
+
+      // ---- S4 Inspect → Headers ----
+      tl.fromTo("#hdr-cam", cam(480, 540, 1.75, 540, 900), { ...cam(480, 540, 1.45, 540, 900), duration: 0.3, ease: "expo.out" }, 3.51);
+      tl.to("#hdr-cam", { ...cam(480, 540, 1.38, 540, 900), duration: 0.7, ease: "none" }, 3.81);
+      tl.fromTo("#ring-hdr", { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 0.16, ease: "back.out(2)", immediateRender: false }, 3.62);
+      tl.set("#ring-hdr", { opacity: 0 }, 0);
+
+      // ---- S5 fetching, shaking into the drop ----
+      tl.fromTo("#load-cam", { scale: 1.25, x: -135, y: -120 }, { scale: 1, x: 0, y: 0, duration: 0.45, ease: "power2.in" }, 4.51);
+      tl.fromTo("#load-fill", { x: 0 }, { x: 7, duration: 0.03, yoyo: true, repeat: 13, ease: "none" }, 4.55);
+
+      // ---- S6 THE DROP ----
+      tl.set("#flash", { opacity: 0 }, 0);
+      tl.fromTo("#flash", { opacity: 0.95 }, { opacity: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, D);
+      tl.fromTo("#page-cam", { scale: 1.18, x: -97, y: -80 }, { scale: 1, x: 0, y: 0, duration: 0.4, ease: "expo.out" }, D);
+      tl.fromTo("#page-fill", { y: 0 }, { y: 14, duration: 0.035, yoyo: true, repeat: 5, ease: "none" }, D);
+      tl.to("#page-cam", { ...cam(648, 1150, 1.08, 540, 960 * 1.0), duration: 0.6, ease: "none" }, D + 0.4);
+      punch("#c4a", D, 1.7);
+      punch("#c4b", D + B, 1.5);
+      tl.fromTo("#tall-cam", cam(648, 3390, 1.15, 540, 1250), { ...cam(648, 3390, 1.0, 540, 1250), duration: 0.3, ease: "expo.out" }, 6.0);
+      tl.to("#tall-cam", { ...cam(648, 3390, 1.04, 540, 1250), duration: 0.7, ease: "none" }, 6.3);
+
+      // ---- S7 basic auth ----
+      {
+        const z = 1.6, by = 2208, y0 = 1180 - by * S0 * z;
+        tl.fromTo("#auth-cam", { x: 0, y: y0, scale: z }, { x: 0, y: y0, scale: z, duration: 0.01 }, 7.01);
+        tl.fromTo("#curl2", { y: -700, rotation: -3 }, { y: 0, rotation: 0, duration: 0.2, ease: "power3.out" }, 7.01);
+        tl.to("#curl2", { y: 560, scale: 0.35, opacity: 0, duration: 0.14, ease: "power3.in" }, 7.36);
+        tl.set("#auth-pasted", { opacity: 0 }, 0);
+        tl.set("#auth-pasted", { opacity: 1 }, 7.5);
+        tl.fromTo("#auth-fill", { y: 0 }, { y: -18, duration: 0.05, yoyo: true, repeat: 1 }, 7.5);
+        tl.to("#auth-cam", { x: -560, duration: 0.3, ease: "expo.inOut" }, 7.62);
+      }
+      punch("#c5a", 7.01, 1.5);
+      tl.fromTo("#ahdr-cam", cam(600, 500, 1.35, 540, 900), { ...cam(600, 500, 1.12, 540, 900), duration: 0.3, ease: "expo.out" }, 8.02);
+      tl.to("#ahdr-cam", { ...cam(600, 500, 1.08, 540, 900), duration: 0.7, ease: "none" }, 8.32);
+      tl.set("#ring-auth", { opacity: 0 }, 0);
+      tl.fromTo("#ring-auth", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.16, ease: "back.out(2)", immediateRender: false }, 8.12);
+      tl.fromTo("#u-chip", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.18, ease: "back.out(2)" }, 8.3);
+      tl.to("#c5a", { scale: 1.05, duration: 0.08, yoyo: true, repeat: 1 }, 8.02);
+      // the authenticated page snaps in
+      tl.fromTo("#apage-cam", { scale: 1.2, x: -108, y: -60 }, { scale: 1, x: 0, y: 0, duration: 0.35, ease: "expo.out" }, 9.03);
+      tl.fromTo("#flash", { opacity: 0.6 }, { opacity: 0, duration: 0.2, ease: "power2.out", immediateRender: false }, 9.03);
+      tl.to("#apage-cam", { ...cam(500, 830, 1.35, 540, 800), duration: 0.6, ease: "power2.inOut" }, 9.4);
+      punch("#c6a", 9.03, 1.5);
+      punch("#c6b", 9.15, 1.5);
+
+      // ---- S8 Amigo peeks in and reacts ----
+      const A = 10.03;
+      tl.set("#am-cam", cam(500, 830, 1.35, 540, 800), A);
+      tl.fromTo("#amigo-wrap", { y: 700, scaleX: 0.8, scaleY: 1.25, rotation: -12 }, { y: -50, scaleX: 1, scaleY: 1, rotation: 0, duration: 0.22, ease: "power3.out" }, A + 0.06);
+      tl.to("#amigo-wrap", { y: 0, duration: 0.14, ease: "power2.in" }, A + 0.28);
+      tl.to("#amigo-wrap", { scaleX: 1.18, scaleY: 0.82, duration: 0.07 }, A + 0.42);
+      tl.to("#amigo-wrap", { scaleX: 1, scaleY: 1, duration: 0.3, ease: "elastic.out(1, 0.4)" }, A + 0.49);
+      tl.fromTo("#amigo-shadow", { scaleX: 0.3, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.3 }, A + 0.2);
+      tl.to("#amigo-wrap", { rotation: -8, y: -40, duration: 0.14, ease: "power2.out" }, A + 2 * B);
+      tl.to("#amigo-wrap", { rotation: 0, y: 0, duration: 0.14, ease: "power2.in" }, A + 2 * B + 0.14);
+      tl.to("#a-leg1", { y: -14, duration: 0.1, yoyo: true, repeat: 1 }, A + 2 * B);
+      tl.to("#a-leg2", { y: -14, duration: 0.1, yoyo: true, repeat: 1 }, A + 2 * B + 0.05);
+      punch("#c7a", A + 0.05, 1.5);
+      punch("#c7b", A + B, 1.5);
+      tl.to("#amigo-fill", { opacity: 0, duration: 0.1 }, 11.43);
+
+      // ---- S9 end card ----
+      const E = 11.53;
+      tl.fromTo("#e-logo", { scale: 1.35, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "expo.out" }, E);
+      tl.fromTo("#e-url", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.26, ease: "power3.out" }, E + 0.24);
+      tl.fromTo("#e-tag", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, E + 0.48);
+      tl.fromTo("#end-amigo", { y: 500, rotation: 10 }, { y: -40, rotation: 0, duration: 0.25, ease: "power3.out" }, E + 0.7);
+      tl.to("#end-amigo", { y: 0, duration: 0.14, ease: "power2.in" }, E + 0.95);
+      tl.to("#end-amigo", { scaleX: 1.15, scaleY: 0.85, duration: 0.06, yoyo: true, repeat: 1 }, E + 1.09);
+      tl.fromTo("#end-shadow", { opacity: 0 }, { opacity: 1, duration: 0.2 }, E + 0.85);
+      tl.fromTo("#card-dots", { y: 0 }, { y: 48, duration: 2.47, ease: "none" }, E);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

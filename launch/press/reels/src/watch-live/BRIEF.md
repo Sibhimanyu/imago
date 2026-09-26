@@ -2,22 +2,28 @@
 workflow: general-video
 flow: automation
 storyboard: no
-message: "Turn on Watch. Imago re-fetches and marks exactly what moved."
+message: "Turn on Watch and Imago marks exactly what moved."
 destination: social-vertical
 aspect: 1080x1920
 language: en
-length: 16.4s
+length: 16.0s
 ---
 
 ## Intent
 
-One of four silent-safe vertical reels for the Imago press kit. On-screen text carries the message; no voiceover, no music.
+Reel 3 of the press kit, remade as real reel material: a hook in the first
+beat, a CC0 music bed, SFX on every action, cuts on the 128 BPM grid.
 
 ## Assets
 
-- Real Imago captures at 540x960 CSS / 2x, taken from https://imago.onslate.in on 26 Sep 2026, plus brand/kit exports (logo, Amigo). Nothing drawn here imitates Imago UI.
+- Real captures of https://imago.onslate.in (432x768 CSS at 3x) on 26 Sep 2026:
+  the ISS endpoint with Watch at 10 s over four re-fetches, CoinGecko prices,
+  Frankfurter rates, a request with an Authorization header.
+- Brand: logo and Amigo from brand/kit/exports; fonts from videos/imago-launch.
+- Music: "Funky House", Of Far Different Nature, CC0 (OpenGameArt).
+- SFX: HyperFrames media-use bundled library (Pixabay Content License).
 
 ## Notes
 
-- Brand: ink #1b1b19, paper #f6f5f1, white cards, line #e7e5df, muted #66655f. Amber only on what changed, green only for live. Inter Display SemiBold headlines, Inter body, JetBrains Mono for URLs.
-- End card is the Imago logo plus imago.onslate.in; Amigo never replaces the logo.
+- index.html is generated: edit scenes.mjs, run `node build.mjs`.
+- Amber only on what changed, green only for Live.

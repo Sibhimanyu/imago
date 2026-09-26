@@ -1,110 +1,386 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1080, height=1920" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
-    <style>
-      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
-      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; }
-      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; }
-      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; }
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; }
-      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f6f5f1; color: #1b1b19; font-family: "Inter", sans-serif; }
-      .bg { position: absolute; left: 0; top: -96px; width: 1080px; height: 2112px; background-image: radial-gradient(circle, #e2dfd7 2.4px, transparent 2.6px); background-size: 48px 48px; }
-      .chrome { position: absolute; left: 72px; right: 72px; top: 112px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-      .brand { display: flex; align-items: center; gap: 16px; font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 40px; letter-spacing: -0.02em; }
-      .brand svg { width: 56px; height: 56px; display: block; }
-      .url-meta { font-family: "JetBrains Mono", monospace; font-size: 28px; color: #66655f; }
-      .scene { position: absolute; inset: 0; }
-      .wrap { position: absolute; inset: 0; }
-      .h1 { font-family: "Inter Display", sans-serif; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; color: #1b1b19; }
-      .card { position: absolute; background: #ffffff; border: 3px solid #e7e5df; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 90px rgba(27, 27, 25, 0.10); }
-
-      #head { position: absolute; left: 72px; right: 60px; top: 270px; }
-      #l1 { display: block; font-size: 100px; }
-      #l2 { display: block; margin-top: 24px; font-family: "Inter", sans-serif; font-weight: 500; font-size: 54px; line-height: 1.22; letter-spacing: -0.015em; color: #1b1b19; max-width: 920px; }
-
-      #card { left: 90px; top: 600px; width: 900px; height: 1200px; }
-      #shots { position: absolute; left: 0; top: 0; width: 894px; height: 1589px; }
-      #shots img { position: absolute; left: 0; top: 0; width: 894px; height: 1589px; display: block; }
-      .ring { position: absolute; border-radius: 100px; }
-      #ring-watch { left: 150px; top: 700px; width: 170px; height: 100px; border: 5px solid #1b1b19; }
-      #ring-v { left: 522px; top: 1228px; width: 140px; height: 66px; border: 5px solid #f5ce47; }
-      #ring-f { left: 402px; top: 1403px; width: 140px; height: 66px; border: 5px solid #f5ce47; }
-      #src { position: absolute; left: 72px; top: 1826px; font-family: "JetBrains Mono", monospace; font-size: 26px; color: #66655f; }
-
-      #e-logo { position: absolute; left: 60px; top: 690px; width: 960px; height: 360px; }
-      #e-logo img { width: 100%; height: 100%; display: block; }
-      #e-url { position: absolute; left: 0; right: 0; top: 1090px; text-align: center; font-family: "JetBrains Mono", monospace; font-size: 50px; color: #1b1b19; }
-    </style>
-  </head>
-  <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="16.4" data-width="1080" data-height="1920">
-      <div class="bg" id="bg"></div>
-
-      <section id="scene-a" class="scene clip" data-start="0" data-duration="13.4" data-track-index="1">
-        <div class="wrap" id="a-wrap">
-          <div class="chrome">
-            <div class="brand"><svg viewBox="0 0 32 32"><g fill="#1b1b19"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago</div>
-            <div class="url-meta">imago.onslate.in</div>
-          </div>
-          <div id="head"><span id="l1" class="h1">Turn on Watch.</span><span id="l2">Imago re-fetches and marks exactly what moved.</span></div>
-          <div id="card" class="card">
-            <div id="shots" data-layout-allow-overflow>
-              <img data-layout-allow-overflow id="s0" src="assets/iss-0.png" alt="The ISS endpoint in Imago with Watch off" />
-              <img data-layout-allow-overflow id="s1" src="assets/iss-w1.png" alt="Watch on, marked Live" />
-              <img data-layout-allow-overflow id="s2" src="assets/iss-w3.png" alt="After a re-fetch, the values that moved are marked CHANGED" />
-            </div>
-          </div>
-          <div id="ring-watch" class="ring"></div>
-          <div id="ring-v" class="ring"></div>
-          <div id="ring-f" class="ring"></div>
-          <div id="src">api.wheretheiss.at/v1/satellites/25544</div>
-        </div>
-      </section>
-
-      <section id="scene-e" class="scene clip" data-start="13.4" data-duration="3" data-track-index="1">
-        <div class="wrap" id="e-wrap">
-          <div id="e-logo"><img src="assets/logo-primary.svg" alt="Imago" /></div>
-          <div id="e-url">imago.onslate.in</div>
-        </div>
-      </section>
-    </div>
-    <script>
-      const tl = gsap.timeline({ paused: true });
-      tl.fromTo("#bg", { y: 0 }, { y: 48, duration: 16.4, ease: "none" }, 0);
-
-      tl.fromTo("#l1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 0.2);
-      tl.fromTo("#card", { opacity: 0, y: 220 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.45);
-      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out" }, 1.0);
-
-      // point at the Watch switch, then it turns on (real capture)
-      tl.fromTo("#ring-watch", { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 1.5);
-      tl.fromTo("#s1", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "none" }, 2.6);
-      tl.to("#ring-watch", { scale: 0.9, duration: 0.12, ease: "power2.in" }, 2.5);
-      tl.to("#ring-watch", { scale: 1, duration: 0.3, ease: "back.out(2)" }, 2.62);
-      tl.to("#ring-watch", { opacity: 0, duration: 0.4, ease: "power1.in" }, 3.6);
-
-      tl.fromTo("#l2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 4.4);
-
-      // the re-fetch lands: CHANGED marks
-      tl.fromTo("#s2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 5.6);
-      tl.fromTo("#ring-v", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 6.2);
-      tl.fromTo("#ring-f", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 6.4);
-      tl.fromTo(["#ring-v", "#ring-f"], { scale: 1 }, { scale: 1.08, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3, immediateRender: false }, 6.9);
-      tl.to(["#ring-v", "#ring-f"], { opacity: 0, duration: 0.35, ease: "power1.in" }, 8.9);
-
-      // move down through the rows that changed
-      tl.fromTo("#shots", { y: 0 }, { y: -389, duration: 2.6, ease: "power2.inOut" }, 9.2);
-      tl.to("#a-wrap", { opacity: 0, duration: 0.35, ease: "power1.in" }, 13.05);
-
-      const E = 13.4;
-      tl.fromTo("#e-logo", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, E + 0.1);
-      tl.fromTo("#e-url", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, E + 0.6);
-
-      window.__timelines["main"] = tl;
-    </script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, height=1920">
+<!-- Generated by build.mjs from scenes.mjs. Edit those, not this file. -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+@font-face { font-family: 'Inter Display'; src: url('assets/fonts/InterDisplay-SemiBold.otf'); font-weight: 600; }
+@font-face { font-family: 'Inter'; src: url('assets/fonts/Inter-Medium.otf'); font-weight: 500; }
+@font-face { font-family: 'JetBrains Mono'; src: url('assets/fonts/JetBrainsMono-Medium.ttf'); font-weight: 500; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f6f5f1; font-family: 'Inter', sans-serif; }
+.shot { position: absolute; inset: 0; overflow: hidden; background: #f6f5f1; }
+.punch { position: absolute; inset: 0; }
+.cam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; }
+.cam img { display: block; width: 1080px; height: 1920px; }
+.ring { position: absolute; border: 9px solid #f5ce47; border-radius: 22px; box-shadow: 0 0 0 6px rgba(245,206,71,.28); }
+.cap { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.line { display: block; font-family: 'Inter Display', sans-serif; font-weight: 600; font-size: 118px; line-height: 1.02; letter-spacing: -0.035em; color: #f6f5f1; background: #1b1b19; padding: 14px 34px 22px; border-radius: 26px; white-space: nowrap; }
+.line.small { font-size: 84px; padding: 12px 28px 18px; }
+.line.hook { font-size: 150px; padding: 16px 40px 26px; }
+.w { display: inline-block; }
+.amigo { position: absolute; }
+.amigo-rig { width: 100%; height: 100%; transform-origin: 50% 90%; }
+.amigo-rig svg, .end-logo svg, .end-amigo svg { display: block; width: 100%; height: 100%; }
+.end { position: absolute; inset: 0; background: #f6f5f1; }
+.end-logo { position: absolute; left: -260px; top: 420px; width: 1600px; height: 600px; }
+.end-url { position: absolute; left: 0; right: 0; top: 1010px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 74px; color: #1b1b19; letter-spacing: -0.01em; }
+.end-tag { position: absolute; left: 0; right: 0; top: 1130px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 60px; color: #57564f; }
+.end-amigo { position: absolute; left: 365px; top: 1320px; width: 350px; height: 280px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="16" data-width="1080" data-height="1920">
+<div class="clip shot" id="s1a" data-start="0" data-duration="0.529" data-track-index="1">
+  <div class="punch" id="s1a-punch"><div class="cam" id="s1a-cam"><img src="assets/img/iss-c1.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s1b" data-start="0.529" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s1b-punch"><div class="cam" id="s1b-cam"><img src="assets/img/iss-c2.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s1c" data-start="0.998" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s1c-punch"><div class="cam" id="s1c-cam"><img src="assets/img/iss-c3.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s1d" data-start="1.466" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s1d-punch"><div class="cam" id="s1d-cam"><img src="assets/img/iss-c4.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s2a" data-start="1.935" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s2a-punch"><div class="cam" id="s2a-cam"><img src="assets/img/iss-off.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s2b" data-start="2.873" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s2b-punch"><div class="cam" id="s2b-cam"><img src="assets/img/iss-on.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s3a" data-start="3.81" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s3a-punch"><div class="cam" id="s3a-cam"><img src="assets/img/iss-pre.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s3b" data-start="4.279" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s3b-punch"><div class="cam" id="s3b-cam"><img src="assets/img/iss-c1.png" alt=""><div class="ring" id="s3b-ring0" style="left:660px;top:959px;width:189px;height:75px"></div><div class="ring" id="s3b-ring1" style="left:570px;top:1223px;width:189px;height:75px"></div></div></div>
+</div>
+<div class="clip shot" id="s3c" data-start="5.216" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s3c-punch"><div class="cam" id="s3c-cam"><img src="assets/img/iss-rows.png" alt=""><div class="ring" id="s3c-ring0" style="left:463px;top:711px;width:586px;height:82px"></div><div class="ring" id="s3c-ring1" style="left:463px;top:951px;width:586px;height:82px"></div></div></div>
+</div>
+<div class="clip shot" id="s3d" data-start="6.154" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s3d-punch"><div class="cam" id="s3d-cam"><img src="assets/img/iss-changes.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s4a" data-start="6.623" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s4a-punch"><div class="cam" id="s4a-cam"><img src="assets/img/iss-c1.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s4b" data-start="7.091" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s4b-punch"><div class="cam" id="s4b-cam"><img src="assets/img/iss-c2.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s4c" data-start="7.56" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s4c-punch"><div class="cam" id="s4c-cam"><img src="assets/img/iss-c3.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s4d" data-start="8.029" data-duration="0.469" data-track-index="1">
+  <div class="punch" id="s4d-punch"><div class="cam" id="s4d-cam"><img src="assets/img/iss-c4.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s5a" data-start="8.498" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s5a-punch"><div class="cam" id="s5a-cam"><img src="assets/img/prices.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s5b" data-start="9.435" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s5b-punch"><div class="cam" id="s5b-cam"><img src="assets/img/rates.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s6" data-start="11.31" data-duration="1.875" data-track-index="1">
+  <div class="punch" id="s6-punch"><div class="cam" id="s6-cam"><img src="assets/img/iss-on.png" alt=""></div></div>
+</div>
+<div class="clip shot" id="s5c" data-start="10.373" data-duration="0.938" data-track-index="1">
+  <div class="punch" id="s5c-punch"><div class="cam" id="s5c-cam"><img src="assets/img/headers.png" alt=""></div></div>
+</div>
+<div class="clip cap" id="cap0" data-start="0" data-duration="1.935" data-track-index="5" style="top:250px"><div class="line hook" id="cap0-l0"><span class="w" id="cap0-l0w0">This</span> <span class="w" id="cap0-l0w1">number</span></div><div class="line hook" id="cap0-l1"><span class="w" id="cap0-l1w0">is</span> <span class="w" id="cap0-l1w1">moving.</span></div></div>
+<div class="clip cap" id="cap1" data-start="1.935" data-duration="1.875" data-track-index="5" style="top:640px"><div class="line" id="cap1-l0"><span class="w" id="cap1-l0w0">Turn</span> <span class="w" id="cap1-l0w1">on</span> <span class="w" id="cap1-l0w2">Watch.</span></div></div>
+<div class="clip cap" id="cap2" data-start="3.81" data-duration="1.406" data-track-index="5" style="top:250px"><div class="line" id="cap2-l0"><span class="w" id="cap2-l0w0">It</span> <span class="w" id="cap2-l0w1">re-fetches.</span></div></div>
+<div class="clip cap" id="cap3" data-start="5.216" data-duration="0.938" data-track-index="5" style="top:1180px"><div class="line" id="cap3-l0"><span class="w" id="cap3-l0w0">It</span> <span class="w" id="cap3-l0w1">marks</span></div><div class="line" id="cap3-l1"><span class="w" id="cap3-l1w0">exactly</span></div><div class="line" id="cap3-l2"><span class="w" id="cap3-l2w0">what</span> <span class="w" id="cap3-l2w1">moved.</span></div></div>
+<div class="clip cap" id="cap4" data-start="6.623" data-duration="1.875" data-track-index="5" style="top:720px"><div class="line small" id="cap4-l0"><span class="w" id="cap4-l0w0">Each</span> <span class="w" id="cap4-l0w1">fetch,</span> <span class="w" id="cap4-l0w2">a</span> <span class="w" id="cap4-l0w3">tick.</span></div></div>
+<div class="clip cap" id="cap5" data-start="8.498" data-duration="0.938" data-track-index="5" style="top:250px"><div class="line" id="cap5-l0"><span class="w" id="cap5-l0w0">Prices.</span></div></div>
+<div class="clip cap" id="cap6" data-start="9.435" data-duration="0.938" data-track-index="5" style="top:250px"><div class="line" id="cap6-l0"><span class="w" id="cap6-l0w0">Rates.</span></div></div>
+<div class="clip cap" id="cap7" data-start="10.373" data-duration="0.938" data-track-index="5" style="top:250px"><div class="line" id="cap7-l0"><span class="w" id="cap7-l0w0">Your</span> <span class="w" id="cap7-l0w1">own</span> <span class="w" id="cap7-l0w2">API.</span></div></div>
+<div class="clip cap" id="cap8" data-start="11.31" data-duration="1.875" data-track-index="5" style="top:860px"><div class="line" id="cap8-l0"><span class="w" id="cap8-l0w0">Every</span> <span class="w" id="cap8-l0w1">10,</span> <span class="w" id="cap8-l0w2">30</span></div><div class="line" id="cap8-l1"><span class="w" id="cap8-l1w0">or</span> <span class="w" id="cap8-l1w1">60</span> <span class="w" id="cap8-l1w2">seconds.</span></div></div>
+<div class="clip amigo" id="amigo0" data-start="2.035" data-duration="1.775" data-track-index="6" style="left:760px;top:1560px;width:280px;height:280px">
+  <div class="amigo-rig" id="amigo0-rig"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 320 320" style="enable-background:new 0 0 320 320;" xml:space="preserve">
+<g id="Background">
+</g>
+<g id="Mascot">
+	<g id="Amigo">
+		<path id="leg" style="fill:#1B1B19;" d="M90,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0
+			C103.5,300,90,286.5,90,270z"/>
+		<path id="leg_00000125603809708971401360000018151216325267069593_" style="fill:#1B1B19;" d="M170,270v-25c0-16.5,13.5-30,30-30
+			h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C183.5,300,170,286.5,170,270z"/>
+		<path id="body__x2B__aperture" style="fill-rule:evenodd;clip-rule:evenodd;fill:#1B1B19;" d="M130,30h60c44,0,70,29,70,73v90
+			c0,42-27,67-69,67h-62c-42,0-69-25-69-67v-90C60,59,86,30,130,30z M132,90c-14,0-23,9-23,23v7c0,14,9,23,23,23h56c14,0,23-9,23-23
+			v-7c0-14-9-23-23-23H132z"/>
+	</g>
+</g>
+</svg></div>
+</div>
+<div class="clip amigo" id="amigo1" data-start="11.31" data-duration="1.875" data-track-index="6" style="left:290px;top:1240px;width:500px;height:500px">
+  <div class="amigo-rig" id="amigo1-rig"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 320 320" style="enable-background:new 0 0 320 320;" xml:space="preserve">
+<g id="Background">
+</g>
+<g id="Mascot">
+	<g id="Amigo">
+		<path id="leg" style="fill:#1B1B19;" d="M90,270v-25c0-16.5,13.5-30,30-30h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0
+			C103.5,300,90,286.5,90,270z"/>
+		<path id="leg_00000125603809708971401360000018151216325267069593_" style="fill:#1B1B19;" d="M170,270v-25c0-16.5,13.5-30,30-30
+			h0c16.5,0,30,13.5,30,30v25c0,16.5-13.5,30-30,30h0C183.5,300,170,286.5,170,270z"/>
+		<path id="body__x2B__aperture" style="fill-rule:evenodd;clip-rule:evenodd;fill:#1B1B19;" d="M130,30h60c44,0,70,29,70,73v90
+			c0,42-27,67-69,67h-62c-42,0-69-25-69-67v-90C60,59,86,30,130,30z M132,90c-14,0-23,9-23,23v7c0,14,9,23,23,23h56c14,0,23-9,23-23
+			v-7c0-14-9-23-23-23H132z"/>
+	</g>
+</g>
+</svg></div>
+</div>
+<div class="clip end" id="end" data-start="13.185" data-duration="2.815" data-track-index="7">
+  <div class="end-logo" id="end-logo"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 640 240" style="enable-background:new 0 0 640 240;" xml:space="preserve">
+<g id="Background">
+	<rect id="paper" style="fill:#F6F5F1;" width="640" height="240"/>
+</g>
+<g id="Grid">
+</g>
+<g id="Logo">
+	<g id="Imago_lockup">
+		<g id="Imago_mark">
+			<path id="field_1" style="fill:#1B1B19;" d="M176.326,95.639L176.326,95.639c0-4.95,4.05-9,9-9h20.4c4.95,0,9,4.05,9,9v0
+				c0,4.95-4.05,9-9,9h-20.4C180.376,104.639,176.326,100.589,176.326,95.639z"/>
+			<path id="field_2" style="fill:#1B1B19;" d="M172.726,119.339L172.726,119.339c0-4.95,4.05-9,9-9h16.5c4.95,0,9,4.05,9,9v0
+				c0,4.95-4.05,9-9,9h-16.5C176.776,128.339,172.726,124.289,172.726,119.339z"/>
+			<path id="body__x2B__aperture" style="fill-rule:evenodd;clip-rule:evenodd;fill:#1B1B19;" d="M204.526,86.639h24
+				c13.2,0,21,8.7,21,21.9v21.3c0,12.6-8.1,20.4-20.7,20.4h-24.3c-11.4,0-18-6.9-18-18.3v-27
+				C186.526,93.539,193.126,86.639,204.526,86.639z M227.926,105.239c-4.2,0-6.9,2.7-6.9,6.9v13.2c0,4.2,2.7,6.9,6.9,6.9h2.1
+				c4.2,0,6.9-2.7,6.9-6.9v-13.2c0-4.2-2.7-6.9-6.9-6.9H227.926z"/>
+		</g>
+		<g id="wordmark">
+			<path style="fill:#1B1B19;" d="M302.229,139.439h-8.508V91.421h8.508V139.439z"/>
+			<path style="fill:#1B1B19;" d="M308.251,105.408h7.863v5.897c2.062-4.383,5.962-6.574,10.248-6.574
+				c4.608,0,8.379,2.546,9.797,6.445c1.805-3.932,5.865-6.445,10.828-6.445c6.445,0,11.408,4.254,11.408,12.246v22.462h-8.153
+				v-21.302c0-4.512-2.836-6.51-6.316-6.51c-4.125,0-6.671,2.868-6.671,6.929v20.883h-7.896v-21.688
+				c0-3.706-2.578-6.123-6.188-6.123c-3.674,0-6.8,2.643-6.8,7.509v20.303h-8.121V105.408z"/>
+			<path style="fill:#1B1B19;" d="M362.612,129.771c0-7.734,6.349-9.636,13.374-10.377c6.316-0.709,8.476-0.806,8.476-3.126v-0.258
+				c0-2.9-2.32-4.963-6.22-4.963c-3.964,0-6.606,2.062-6.832,4.931h-7.831c0.387-6.768,5.93-11.247,14.824-11.247
+				c8.862,0,14.115,4.415,14.115,11.505v23.203h-7.992v-4.802h-0.129c-1.611,3.029-4.479,5.35-10.022,5.35
+				C367.607,139.987,362.612,136.571,362.612,129.771z M384.494,126.838v-3.674c-0.999,0.645-4.157,1.16-7.509,1.676
+				c-3.48,0.516-6.445,1.772-6.445,4.866c0,2.675,2.288,4.254,5.833,4.254C381.69,133.961,384.494,130.802,384.494,126.838z"/>
+			<path style="fill:#1B1B19;" d="M398.218,142.597h7.96c0.773,2.933,3.577,4.479,7.38,4.479c5.092,0,8.024-2.804,8.024-8.024
+				v-5.188h-0.032c-2.191,3.996-5.801,5.801-10.28,5.801c-8.895,0-14.728-7.154-14.728-17.402c0-10.345,5.93-17.531,14.663-17.531
+				c4.415,0,8.121,1.837,10.377,5.736h0.032v-5.06h8.024v33.161c0,10.538-6.864,14.792-16.081,14.792
+				C404.566,153.361,399.12,149.204,398.218,142.597z M421.969,122.166c0-6.542-3.48-10.796-8.798-10.796
+				c-5.027,0-8.411,3.867-8.411,10.796c0,6.961,3.384,10.796,8.411,10.796C418.488,132.962,421.969,128.708,421.969,122.166z"/>
+			<path style="fill:#1B1B19;" d="M433.694,122.456c0-10.57,6.768-17.821,16.79-17.821s16.79,7.251,16.79,17.821
+				s-6.768,17.757-16.79,17.757S433.694,133.026,433.694,122.456z M459.024,122.456c0-6.8-3.352-11.021-8.54-11.021
+				c-5.221,0-8.572,4.189-8.572,11.021c0,6.8,3.319,10.957,8.572,10.957C455.705,133.413,459.024,129.223,459.024,122.456z"/>
+		</g>
+	</g>
+</g>
+<g id="Construction">
+</g>
+</svg></div>
+  <div class="end-url" id="end-url">imago.onslate.in</div>
+  <div class="end-tag" id="end-tag">Free · Open source</div>
+  <div class="end-amigo" id="end-amigo"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 320" style="enable-background:new 0 0 400 320;" xml:space="preserve">
+<g id="Background">
+</g>
+<g id="Mascot">
+	<g id="Amigo_x2C__resting">
+		<g id="Amigo_00000113335498973663234410000004653106157762107527_">
+			<path id="leg_00000098924558852901936070000011349227432547897475_" style="fill:#1B1B19;" d="M62.5,143.75h20.313
+				c13.406,0,24.375,10.969,24.375,24.375v0c0,13.406-10.969,24.375-24.375,24.375H62.5c-13.406,0-24.375-10.969-24.375-24.375v0
+				C38.125,154.719,49.094,143.75,62.5,143.75z"/>
+			<path id="leg_00000120526844600344110930000006377108876126784657_" style="fill:#1B1B19;" d="M62.5,208.75h20.313
+				c13.406,0,24.375,10.969,24.375,24.375v0c0,13.406-10.969,24.375-24.375,24.375H62.5c-13.406,0-24.375-10.969-24.375-24.375v0
+				C38.125,219.719,49.094,208.75,62.5,208.75z"/>
+			
+				<path id="body__x2B__aperture_00000070108012334485376650000011051357734948183210_" style="fill-rule:evenodd;clip-rule:evenodd;fill:#1B1B19;" d="
+				M257.5,176.25V225c0,35.75-23.562,56.875-59.312,56.875h-73.125c-34.125,0-54.438-21.938-54.438-56.062v-50.375
+				c0-34.125,20.313-56.063,54.438-56.062h73.125C233.938,119.375,257.5,140.5,257.5,176.25z M208.75,177.875
+				c0-11.375-7.312-18.688-18.688-18.688h-5.688c-11.375,0-18.688,7.312-18.688,18.688v45.5c0,11.375,7.312,18.688,18.688,18.688
+				h5.688c11.375,0,18.688-7.312,18.688-18.688V177.875z"/>
+		</g>
+		<g id="Zs">
+			
+				<polyline style="fill:none;stroke:#1B1B19;stroke-width:10.5625;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" points="
+				233.125,73.062 262.375,73.062 233.125,102.312 262.375,102.312 			"/>
+			
+				<polyline style="fill:none;stroke:#1B1B19;stroke-width:10.5625;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" points="
+				268.875,42.187 311.125,42.187 268.875,84.438 311.125,84.438 			"/>
+		</g>
+	</g>
+</g>
+</svg></div>
+</div>
+<audio id="music" src="assets/audio/music.mp3" data-start="0" data-duration="16" data-media-start="0" data-volume="1" data-track-index="10" data-timeline-role="music" data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.36},{"t":0.01,"v":0.22},{"t":0.31,"v":0.36},{"t":0.489,"v":0.36},{"t":0.529,"v":0.22},{"t":0.829,"v":0.36},{"t":0.958,"v":0.36},{"t":0.998,"v":0.22},{"t":1.298,"v":0.36},{"t":1.426,"v":0.36},{"t":1.466,"v":0.22},{"t":1.766,"v":0.36},{"t":1.895,"v":0.36},{"t":1.935,"v":0.22},{"t":2.235,"v":0.36},{"t":2.245,"v":0.22},{"t":2.545,"v":0.36},{"t":2.833,"v":0.36},{"t":2.873,"v":0.22},{"t":3.173,"v":0.36},{"t":3.183,"v":0.22},{"t":3.483,"v":0.36},{"t":3.77,"v":0.36},{"t":3.81,"v":0.22},{"t":4.11,"v":0.36},{"t":4.239,"v":0.36},{"t":4.279,"v":0.22},{"t":4.579,"v":0.36},{"t":4.589,"v":0.22},{"t":4.889,"v":0.36},{"t":4.899,"v":0.22},{"t":5.199,"v":0.36},{"t":5.216,"v":0.22},{"t":5.516,"v":0.36},{"t":5.526,"v":0.22},{"t":5.826,"v":0.36},{"t":5.836,"v":0.22},{"t":6.136,"v":0.36},{"t":6.154,"v":0.22},{"t":6.454,"v":0.36},{"t":6.583,"v":0.36},{"t":6.623,"v":0.22},{"t":6.922,"v":0.36},{"t":7.051,"v":0.36},{"t":7.091,"v":0.22},{"t":7.391,"v":0.36},{"t":7.52,"v":0.36},{"t":7.56,"v":0.22},{"t":7.86,"v":0.36},{"t":7.989,"v":0.36},{"t":8.029,"v":0.22},{"t":8.329,"v":0.36},{"t":8.458,"v":0.36},{"t":8.498,"v":0.22},{"t":8.798,"v":0.36},{"t":9.395,"v":0.36},{"t":9.435,"v":0.22},{"t":9.735,"v":0.36},{"t":10.333,"v":0.36},{"t":10.373,"v":0.22},{"t":10.673,"v":0.36},{"t":10.942,"v":0.36},{"t":10.982,"v":0.22},{"t":11.282,"v":0.36},{"t":11.292,"v":0.22},{"t":11.592,"v":0.36},{"t":11.602,"v":0.22},{"t":11.902,"v":0.36},{"t":11.912,"v":0.22},{"t":12.212,"v":0.36},{"t":12.222,"v":0.22},{"t":12.522,"v":0.36},{"t":12.676,"v":0.36},{"t":12.716,"v":0.22},{"t":13.016,"v":0.36},{"t":13.145,"v":0.36},{"t":13.185,"v":0.22},{"t":13.485,"v":0.36},{"t":13.495,"v":0.22},{"t":13.795,"v":0.36},{"t":13.805,"v":0.22},{"t":14.105,"v":0.36},{"t":14.115,"v":0.22},{"t":14.415,"v":0.36},{"t":14.425,"v":0.22},{"t":14.725,"v":0.36},{"t":14.735,"v":0.22},{"t":15.035,"v":0.36},{"t":15.55,"v":0.36},{"t":16,"v":0}]}]}'></audio>
+<audio id="sfx0-impact-bass-1" src="assets/sfx/impact-bass-1.mp3" data-start="0" data-duration="1.2" data-volume="0.5" data-track-index="11"></audio>
+<audio id="sfx1-key-press" src="assets/sfx/key-press.mp3" data-start="0.529" data-duration="0.4" data-volume="1" data-track-index="12"></audio>
+<audio id="sfx2-key-press" src="assets/sfx/key-press.mp3" data-start="0.998" data-duration="0.4" data-volume="1" data-track-index="12"></audio>
+<audio id="sfx3-key-press" src="assets/sfx/key-press.mp3" data-start="1.466" data-duration="0.4" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx4-whoosh" src="assets/sfx/whoosh.mp3" data-start="1.835" data-duration="0.57" data-volume="0.6" data-track-index="12"></audio>
+<audio id="sfx5-pop" src="assets/sfx/pop.mp3" data-start="2.005" data-duration="0.72" data-volume="0.9" data-track-index="11"></audio>
+<audio id="sfx6-click" src="assets/sfx/click.mp3" data-start="2.873" data-duration="0.36" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx7-pop" src="assets/sfx/pop.mp3" data-start="2.973" data-duration="0.72" data-volume="0.9" data-track-index="12"></audio>
+<audio id="sfx8-whoosh-short" src="assets/sfx/whoosh-short.mp3" data-start="3.71" data-duration="0.57" data-volume="0.55" data-track-index="11"></audio>
+<audio id="sfx9-riser" src="assets/sfx/riser.mp3" data-start="2.879" data-duration="1.5" data-media-start="1.6" data-volume="0.35" data-track-index="13"></audio>
+<audio id="sfx10-ping" src="assets/sfx/ping.mp3" data-start="3.999" data-duration="1.32" data-volume="1" data-track-index="12"></audio>
+<audio id="sfx11-ping" src="assets/sfx/ping.mp3" data-start="4.467" data-duration="1.32" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx12-whoosh-short" src="assets/sfx/whoosh-short.mp3" data-start="5.116" data-duration="0.57" data-volume="0.55" data-track-index="13"></audio>
+<audio id="sfx13-ping" src="assets/sfx/ping.mp3" data-start="4.986" data-duration="1.32" data-volume="1" data-track-index="14"></audio>
+<audio id="sfx14-ping" src="assets/sfx/ping.mp3" data-start="5.405" data-duration="1.32" data-volume="1" data-track-index="12"></audio>
+<audio id="sfx15-ping" src="assets/sfx/ping.mp3" data-start="5.874" data-duration="1.32" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx16-whoosh" src="assets/sfx/whoosh.mp3" data-start="6.523" data-duration="0.57" data-volume="0.6" data-track-index="13"></audio>
+<audio id="sfx17-click-soft" src="assets/sfx/click-soft.mp3" data-start="7.091" data-duration="0.36" data-volume="0.85" data-track-index="12"></audio>
+<audio id="sfx18-click-soft" src="assets/sfx/click-soft.mp3" data-start="7.56" data-duration="0.36" data-volume="0.85" data-track-index="11"></audio>
+<audio id="sfx19-click-soft" src="assets/sfx/click-soft.mp3" data-start="8.029" data-duration="0.36" data-volume="0.85" data-track-index="11"></audio>
+<audio id="sfx20-whoosh" src="assets/sfx/whoosh.mp3" data-start="8.398" data-duration="0.57" data-volume="0.6" data-track-index="12"></audio>
+<audio id="sfx21-whoosh" src="assets/sfx/whoosh.mp3" data-start="9.335" data-duration="0.57" data-volume="0.6" data-track-index="11"></audio>
+<audio id="sfx22-whoosh" src="assets/sfx/whoosh.mp3" data-start="10.273" data-duration="0.57" data-volume="0.6" data-track-index="11"></audio>
+<audio id="sfx23-whoosh-short" src="assets/sfx/whoosh-short.mp3" data-start="10.882" data-duration="0.57" data-volume="0.55" data-track-index="11"></audio>
+<audio id="sfx24-click-soft" src="assets/sfx/click-soft.mp3" data-start="11.216" data-duration="0.36" data-volume="0.85" data-track-index="12"></audio>
+<audio id="sfx25-pop" src="assets/sfx/pop.mp3" data-start="11.23" data-duration="0.72" data-volume="0.9" data-track-index="13"></audio>
+<audio id="sfx26-sparkle" src="assets/sfx/sparkle.mp3" data-start="11.26" data-duration="1.8" data-volume="0.4" data-track-index="14"></audio>
+<audio id="sfx27-pop" src="assets/sfx/pop.mp3" data-start="11.699" data-duration="0.72" data-volume="0.9" data-track-index="11"></audio>
+<audio id="sfx28-pop" src="assets/sfx/pop.mp3" data-start="12.636" data-duration="0.72" data-volume="0.9" data-track-index="11"></audio>
+<audio id="sfx29-riser" src="assets/sfx/riser.mp3" data-start="11.785" data-duration="1.5" data-media-start="1.6" data-volume="0.35" data-track-index="12"></audio>
+<audio id="sfx30-whoosh" src="assets/sfx/whoosh.mp3" data-start="13.085" data-duration="0.57" data-volume="0.6" data-track-index="13"></audio>
+<audio id="sfx31-impact-bass-1" src="assets/sfx/impact-bass-1.mp3" data-start="13.185" data-duration="1.2" data-volume="0.5" data-track-index="14"></audio>
+<audio id="sfx32-key-press" src="assets/sfx/key-press.mp3" data-start="13.654" data-duration="0.4" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx33-key-press" src="assets/sfx/key-press.mp3" data-start="14.123" data-duration="0.4" data-volume="1" data-track-index="11"></audio>
+<audio id="sfx34-pop" src="assets/sfx/pop.mp3" data-start="14.511" data-duration="0.72" data-volume="0.9" data-track-index="12"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.set('#s1a-cam', {"scale":1.3,"x":-32,"y":-444}, 0);
+tl.to('#s1a-cam', { ...{"scale":1.37,"x":-62.8,"y":-519.6}, duration: 0.529, ease: 'none' }, 0);
+tl.fromTo('#s1a-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 0);
+tl.set('#s1b-cam', {"scale":1.3,"x":-32,"y":-444}, 0.529);
+tl.to('#s1b-cam', { ...{"scale":1.37,"x":-62.8,"y":-519.6}, duration: 0.469, ease: 'none' }, 0.529);
+tl.fromTo('#s1b-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 0.529);
+tl.set('#s1c-cam', {"scale":1.3,"x":-32,"y":-444}, 0.998);
+tl.to('#s1c-cam', { ...{"scale":1.37,"x":-62.8,"y":-519.6}, duration: 0.469, ease: 'none' }, 0.998);
+tl.fromTo('#s1c-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 0.998);
+tl.set('#s1d-cam', {"scale":1.3,"x":-32,"y":-444}, 1.466);
+tl.to('#s1d-cam', { ...{"scale":1.37,"x":-62.8,"y":-519.6}, duration: 0.469, ease: 'none' }, 1.466);
+tl.fromTo('#s1d-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 1.466);
+tl.set('#s2a-cam', {"scale":1.55,"x":-33.5,"y":0}, 1.935);
+tl.to('#s2a-cam', { ...{"scale":1.75,"x":-37.5,"y":0}, duration: 0.938, ease: 'power3.inOut' }, 1.935);
+tl.fromTo('#s2a-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 1.935);
+tl.set('#s2b-cam', {"scale":1.75,"x":-37.5,"y":0}, 2.873);
+tl.to('#s2b-cam', { ...{"scale":1.6,"x":-36,"y":0}, duration: 0.469, ease: 'expo.out' }, 2.873);
+tl.to('#s2b-cam', { ...{"scale":1.63,"x":-46.8,"y":0}, duration: 0.469, ease: 'none' }, 3.341);
+tl.fromTo('#s2b-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 2.873);
+tl.set('#s3a-cam', {"scale":1.25,"x":-35,"y":-265}, 3.81);
+tl.to('#s3a-cam', { ...{"scale":1.3,"x":-58,"y":-314}, duration: 0.469, ease: 'none' }, 3.81);
+tl.fromTo('#s3a-punch', { yPercent: 60, scale: 0.9 }, { yPercent: 0, scale: 1, duration: 0.28, ease: 'expo.out' }, 3.81);
+tl.set('#s3b-cam', {"scale":1.25,"x":-35,"y":-480}, 4.279);
+tl.to('#s3b-cam', { ...{"scale":1.3,"x":-58,"y":-576}, duration: 0.938, ease: 'none' }, 4.279);
+tl.fromTo('#s3b-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 4.279);
+tl.fromTo('#s3b-ring0', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(2)' }, 4.279);
+tl.to('#s3b-ring0', { opacity: 0, scale: 1.12, duration: 0.3, ease: 'power2.in' }, 4.829);
+tl.fromTo('#s3b-ring1', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(2)' }, 4.748);
+tl.to('#s3b-ring1', { opacity: 0, scale: 1.12, duration: 0.3, ease: 'power2.in' }, 5.297);
+tl.set('#s3c-cam', {"scale":1.25,"x":0,"y":-115}, 5.216);
+tl.to('#s3c-cam', { ...{"scale":1.25,"x":0,"y":-290}, duration: 0.938, ease: 'power3.inOut' }, 5.216);
+tl.fromTo('#s3c-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 5.216);
+tl.fromTo('#s3c-ring0', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(2)' }, 5.266);
+tl.to('#s3c-ring0', { opacity: 0, scale: 1.12, duration: 0.3, ease: 'power2.in' }, 5.666);
+tl.fromTo('#s3c-ring1', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.22, ease: 'back.out(2)' }, 5.685);
+tl.to('#s3c-ring1', { opacity: 0, scale: 1.12, duration: 0.3, ease: 'power2.in' }, 6.085);
+tl.set('#s3d-cam', {"scale":1.3,"x":0,"y":0}, 6.154);
+tl.to('#s3d-cam', { ...{"scale":1.34,"x":0,"y":0}, duration: 0.469, ease: 'none' }, 6.154);
+tl.fromTo('#s3d-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 6.154);
+tl.set('#s4a-cam', {"scale":1.1,"x":-54,"y":0}, 6.623);
+tl.to('#s4a-cam', { ...{"scale":1.14,"x":-75.6,"y":0}, duration: 0.469, ease: 'none' }, 6.623);
+tl.fromTo('#s4a-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 6.623);
+tl.set('#s4b-cam', {"scale":1.1,"x":-54,"y":0}, 7.091);
+tl.to('#s4b-cam', { ...{"scale":1.14,"x":-75.6,"y":0}, duration: 0.469, ease: 'none' }, 7.091);
+tl.set('#s4c-cam', {"scale":1.1,"x":-54,"y":0}, 7.56);
+tl.to('#s4c-cam', { ...{"scale":1.14,"x":-75.6,"y":0}, duration: 0.469, ease: 'none' }, 7.56);
+tl.set('#s4d-cam', {"scale":1.1,"x":-54,"y":0}, 8.029);
+tl.to('#s4d-cam', { ...{"scale":1.14,"x":-75.6,"y":0}, duration: 0.469, ease: 'none' }, 8.029);
+tl.set('#s5a-cam', {"scale":1.5,"x":-15,"y":-90}, 8.498);
+tl.to('#s5a-cam', { ...{"scale":1.6,"x":-20,"y":-192}, duration: 0.938, ease: 'none' }, 8.498);
+tl.fromTo('#s5a-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 8.498);
+tl.set('#s5b-cam', {"scale":1.4,"x":-20,"y":-768}, 9.435);
+tl.to('#s5b-cam', { ...{"scale":1.5,"x":-30,"y":-960}, duration: 0.938, ease: 'none' }, 9.435);
+tl.fromTo('#s5b-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 9.435);
+tl.set('#s6-cam', {"scale":2.4,"x":-708,"y":0}, 11.31);
+tl.to('#s6-cam', { ...{"scale":2.6,"x":-812,"y":0}, duration: 1.875, ease: 'power3.inOut' }, 11.31);
+tl.fromTo('#s6-punch', { scale: 1.12 }, { scale: 1, duration: 0.32, ease: 'expo.out' }, 11.31);
+tl.set('#s5c-cam', {"scale":1.6,"x":0,"y":0}, 10.373);
+tl.to('#s5c-cam', { ...{"scale":1.65,"x":0,"y":0}, duration: 0.609, ease: 'power3.inOut' }, 10.373);
+tl.to('#s5c-cam', { ...{"scale":1.9,"x":-942,"y":-1728}, duration: 0.234, ease: 'expo.inOut' }, 10.982);
+tl.to('#s5c-cam', { ...{"scale":1.92,"x":-957.6,"y":-1766.4}, duration: 0.094, ease: 'none' }, 11.216);
+tl.fromTo('#s5c-punch', { xPercent: 100, rotation: 4 }, { xPercent: 0, rotation: 0, duration: 0.26, ease: 'expo.out' }, 10.373);
+tl.fromTo('#cap0-l0', { scale: 2.1, rotation: -4, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.24, ease: 'expo.out' }, 0);
+tl.fromTo('#cap0-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 0.04);
+tl.fromTo('#cap0-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 0.09);
+tl.fromTo('#cap0-l1', { scale: 2.1, rotation: 4, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.24, ease: 'expo.out' }, 0.529);
+tl.fromTo('#cap0-l1w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 0.569);
+tl.fromTo('#cap0-l1w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 0.619);
+tl.to('#cap0', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 1.835);
+tl.fromTo('#cap1-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 1.935);
+tl.fromTo('#cap1-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 1.975);
+tl.fromTo('#cap1-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 2.025);
+tl.fromTo('#cap1-l0w2', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 2.075);
+tl.to('#cap1', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 3.71);
+tl.fromTo('#cap2-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 3.81);
+tl.fromTo('#cap2-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 3.85);
+tl.fromTo('#cap2-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 3.9);
+tl.to('#cap2', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 5.116);
+tl.fromTo('#cap3-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 5.216);
+tl.fromTo('#cap3-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 5.256);
+tl.fromTo('#cap3-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 5.306);
+tl.fromTo('#cap3-l1', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 5.451);
+tl.fromTo('#cap3-l1w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 5.491);
+tl.fromTo('#cap3-l2', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 5.685);
+tl.fromTo('#cap3-l2w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 5.725);
+tl.fromTo('#cap3-l2w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 5.775);
+tl.to('#cap3', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 6.054);
+tl.fromTo('#cap4-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 6.623);
+tl.fromTo('#cap4-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 6.663);
+tl.fromTo('#cap4-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 6.713);
+tl.fromTo('#cap4-l0w2', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 6.763);
+tl.fromTo('#cap4-l0w3', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 6.813);
+tl.to('#cap4', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 8.398);
+tl.fromTo('#cap5-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 8.498);
+tl.fromTo('#cap5-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 8.538);
+tl.to('#cap5', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 9.335);
+tl.fromTo('#cap6-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 9.435);
+tl.fromTo('#cap6-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 9.475);
+tl.to('#cap6', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 10.273);
+tl.fromTo('#cap7-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 10.373);
+tl.fromTo('#cap7-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 10.413);
+tl.fromTo('#cap7-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 10.463);
+tl.fromTo('#cap7-l0w2', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 10.513);
+tl.to('#cap7', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 11.21);
+tl.fromTo('#cap8-l0', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 11.31);
+tl.fromTo('#cap8-l0w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.35);
+tl.fromTo('#cap8-l0w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.4);
+tl.fromTo('#cap8-l0w2', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.45);
+tl.fromTo('#cap8-l1', { scale: 0.5, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.28, ease: 'back.out(2.2)' }, 11.779);
+tl.fromTo('#cap8-l1w0', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.819);
+tl.fromTo('#cap8-l1w1', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.869);
+tl.fromTo('#cap8-l1w2', { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.2, ease: 'power3.out' }, 11.919);
+tl.to('#cap8', { scale: 0.9, opacity: 0, duration: 0.1, ease: 'power2.in' }, 13.085);
+tl.fromTo('#amigo0-rig', { y: 420, scale: 0.4, rotation: -20 }, { y: 0, scale: 1, rotation: 0, duration: 0.42, ease: 'back.out(1.8)' }, 2.035);
+tl.to('#amigo0-rig', { rotation: -16, duration: 0.25, ease: 'back.out(2)' }, 2.404);
+tl.to('#amigo0-rig', { y: -90, duration: 0.16, ease: 'power2.out', yoyo: true, repeat: 1 }, 2.873);
+tl.fromTo('#amigo0-rig', { scaleY: 0.8, scaleX: 1.15 }, { scaleY: 1, scaleX: 1, duration: 0.3, ease: 'elastic.out(1,0.4)' }, 3.107);
+tl.to('#amigo0-rig', { y: 500, rotation: 15, duration: 0.25, ease: 'power3.in' }, 3.55);
+tl.fromTo('#amigo1-rig', { y: 700, scale: 0.4, rotation: -20 }, { y: 0, scale: 1, rotation: 0, duration: 0.42, ease: 'back.out(1.8)' }, 11.31);
+tl.to('#amigo1-rig', { y: -90, duration: 0.16, ease: 'power2.out', yoyo: true, repeat: 1 }, 11.779);
+tl.fromTo('#amigo1-rig', { scaleY: 0.8, scaleX: 1.15 }, { scaleY: 1, scaleX: 1, duration: 0.3, ease: 'elastic.out(1,0.4)' }, 12.107);
+tl.to('#amigo1-rig', { rotation: 10, duration: 0.09, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 12.248);
+tl.to('#amigo1-rig', { y: -90, duration: 0.16, ease: 'power2.out', yoyo: true, repeat: 1 }, 12.716);
+tl.fromTo('#amigo1-rig', { scaleY: 0.8, scaleX: 1.15 }, { scaleY: 1, scaleX: 1, duration: 0.3, ease: 'elastic.out(1,0.4)' }, 13.044);
+tl.fromTo('#end-logo', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }, 13.185);
+tl.fromTo('#end-url', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'expo.out' }, 13.654);
+tl.fromTo('#end-tag', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'expo.out' }, 14.123);
+tl.fromTo('#end-amigo', { y: 300, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 14.591);
+tl.to('#end-amigo', { y: -14, duration: 0.469, ease: 'sine.inOut', yoyo: true, repeat: 3 }, 15.06);
+window.__timelines["main"] = tl;
+</script>
+</body>
 </html>

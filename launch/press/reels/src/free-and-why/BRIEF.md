@@ -2,22 +2,29 @@
 workflow: general-video
 flow: automation
 storyboard: no
-message: "Free and open source, because there is no server to pay for."
+message: "An AI tool that wants nothing: no account, no key needed, keys stay in your browser, MIT."
 destination: social-vertical
 aspect: 1080x1920
 language: en
-length: 20.4s
+length: 16.8s
 ---
 
 ## Intent
 
-One of four silent-safe vertical reels for the Imago press kit. On-screen text carries the message; no voiceover, no music.
+Reel 4 of the press kit, remade as real reel material: a hook in the first
+beat, a CC0 music bed, SFX on every action, cuts on the 123 BPM grid. Each
+claim is shown with its proof on a real screen.
 
 ## Assets
 
-- Real Imago captures at 540x960 CSS / 2x, taken from https://imago.onslate.in on 26 Sep 2026, plus brand/kit exports (logo, Amigo). Nothing drawn here imitates Imago UI.
+- Real captures of https://imago.onslate.in and github.com/Sibhimanyu/imago
+  (432x768 CSS at 3x) on 26 Sep 2026: landing paste bar, the basic-layout
+  note, Settings, Share and its toast, the MIT license.
+- Brand: logo and Amigo from brand/kit/exports; fonts from videos/imago-launch.
+- Music: "Hella Bumps", The Cynic Project, CC0 (OpenGameArt).
+- SFX: HyperFrames media-use bundled library (Pixabay Content License).
 
 ## Notes
 
-- Brand: ink #1b1b19, paper #f6f5f1, white cards, line #e7e5df, muted #66655f. Amber only on what changed, green only for live. Inter Display SemiBold headlines, Inter body, JetBrains Mono for URLs.
-- End card is the Imago logo plus imago.onslate.in; Amigo never replaces the logo.
+- index.html is generated: edit scenes.mjs, run `node build.mjs`.
+- Never say "your key never leaves your browser".

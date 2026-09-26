@@ -37,7 +37,7 @@ export const APIS = [
     label: 'Pokémon',
     endpoint: 'https://pokeapi.co/api/v2/pokemon/pikachu',
     shot: 'launch/social/pokemon.png',
-    reel: 'paste-to-page',
+    reel: 'stop-reading-json',
     summary: 'One Pokémon as a page: sprite, stat bars, type badge.',
     about: [
       'PokeAPI’s /pokemon endpoint returns one Pokémon as a single large record: its id, height and weight, base experience, six base stats, its type and abilities, the items it can hold, and more than a hundred moves.',
@@ -50,7 +50,7 @@ export const APIS = [
     label: 'Weather',
     endpoint: 'https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1',
     shot: 'launch/social/weather.png',
-    reel: 'paste-to-page',
+    reel: 'stop-reading-json',
     credit: { text: 'Weather data by Open-Meteo.com', href: 'https://open-meteo.com/', licence: 'CC BY 4.0' },
     summary: 'A forecast read for a human: units rejoined, hours charted.',
     about: [
@@ -64,7 +64,7 @@ export const APIS = [
     label: 'Books',
     endpoint: 'https://openlibrary.org/search.json?title=the+hobbit&limit=5',
     shot: 'launch/social/library.png',
-    reel: 'paste-to-page',
+    reel: 'stop-reading-json',
     summary: 'A search result becomes a table of books.',
     about: [
       'Open Library’s search endpoint returns how many books match “the hobbit” and the first five as an array of records, each with a title, authors, first publish year, edition count, languages and ebook access.',
@@ -77,7 +77,7 @@ export const APIS = [
     label: 'Exchange rates',
     endpoint: 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,INR',
     shot: 'gallery/shots/frankfurter.png',
-    reel: 'paste-to-page',
+    reel: 'stop-reading-json',
     summary: 'The day’s exchange rates, as a headline and a short list.',
     about: [
       'Frankfurter returns the latest reference exchange rates published by the European Central Bank: the amount, the base currency, the date the rates were set, and a rates object keyed by currency code.',
@@ -90,7 +90,7 @@ export const APIS = [
     label: 'Encyclopedia',
     endpoint: 'https://en.wikipedia.org/api/rest_v1/page/summary/Chennai',
     shot: 'gallery/shots/wikipedia.png',
-    reel: 'paste-to-page',
+    reel: 'stop-reading-json',
     summary: 'An article summary: thumbnail, description, opening paragraph.',
     about: [
       'Wikipedia’s REST summary endpoint returns the lead of an article in a compact form: the title, a one-line description, the opening paragraph as plain text, a thumbnail, coordinates, the last-edited time and links to the full page.',
@@ -118,10 +118,10 @@ export const openLink = (endpoint) => APP + '/#open=' + endpoint;
 const FREE_NOTE = 'Imago is free and open source. Bring your own free Gemini or Groq key, or use none.';
 
 const REELS = [
-  { name: 'amigo-intro', title: 'Meet Amigo', note: 'Imago’s mascot introduces the tool.' },
-  { name: 'paste-to-page', title: 'Paste to page', note: 'An API URL becomes a page.' },
-  { name: 'watch-live', title: 'Watch it live', note: 'Watch re-fetches and marks what changed.' },
-  { name: 'free-and-why', title: 'Free, and why', note: 'Why Imago costs nothing to use.' }
+  { name: 'stop-reading-json', title: 'Stop reading raw JSON', note: 'Paste a URL; the JSON becomes a page on the beat.' },
+  { name: 'paste-curl', title: 'Copied as cURL? Paste it', note: 'Headers and Basic auth come along; straight to a page.' },
+  { name: 'watch-live', title: 'This number is moving', note: 'Watch re-fetches and marks exactly what changed.' },
+  { name: 'free-and-why', title: 'An AI tool that wants nothing', note: 'No account, no key needed, your key stays in your browser.' }
 ];
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
@@ -449,7 +449,7 @@ export async function build(opts = {}) {
     copy(path.join(ROOT, api.shot), path.join(out, api.slug, 'shot.png'));
     emit(api.slug + '/index.html', apiPage(api, links, reels[api.reel]));
   }
-  emit('index.html', homePage(links, reels['amigo-intro']));
+  emit('index.html', homePage(links, reels['stop-reading-json']));
 
   // Press kit
   const captions = readCaptions(read('launch/social-posts.md'));
