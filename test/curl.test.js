@@ -179,6 +179,30 @@ describe('explaining a failed fetch', () => {
     expect(probed).toBe(false);
   });
 
+  // http://3.1.62.165:8080/... was reported as "Could not reach": the probe
+  // is blocked exactly like the request, so it blamed a server that was up.
+  it('a plain http:// address off this machine is named as the cause, without probing', async () => {
+    let probed = false;
+    const app = await boot({ fetch: () => { probed = true; return Promise.reject(network()); } });
+    const why = await app.explainFailure(network(), 'http://3.1.62.165:8080/api/v1/x?', {});
+    expect(why.title).toBe('Browsers block plain http:// addresses here');
+    expect(why.detail).toContain('3.1.62.165:8080 is an http:// address, and an https page');
+    expect(why.detail).toContain('https:// address');
+    expect(probed).toBe(false);
+  });
+
+  it('on a page served over http, the reason given is the localhost rule', async () => {
+    const app = await boot({ url: 'http://imago.test/#app', fetch: () => Promise.reject(network()) });
+    const why = await app.explainFailure(network(), 'http://192.168.1.20/api', {});
+    expect(why.detail).toContain('192.168.1.20 is an http:// address, and Imago only calls http:// on this computer');
+  });
+
+  it('http://localhost and 127.0.0.1 are still probed and explained as before', async () => {
+    const app = await boot({ fetch: () => Promise.reject(network()) });
+    expect((await app.explainFailure(network(), 'http://localhost:3000/x', {})).title).toBe('Could not reach localhost');
+    expect((await app.explainFailure(network(), 'http://127.0.0.1:8080/x', {})).title).toBe('Could not reach 127.0.0.1');
+  });
+
   it('an error that already has a title passes through untouched', async () => {
     const app = await boot();
     const err = Object.assign(new Error('HTTP 404'), { title: 'HTTP 404', detail: 'Not found' });

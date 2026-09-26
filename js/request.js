@@ -613,6 +613,16 @@ function headerProblem(headers) {
 // tells the last two apart: a no-cors GET, with no headers and no cookies,
 // succeeds (opaquely) when the server answered at all. Resolves to an error
 // with a title and detail the reader can act on.
+// The host of an http:// URL that is not this machine, or ''. localhost and
+// 127.0.0.1 are the http:// hosts both browsers and the page policy allow.
+function plainHttpHost(url) {
+  var parsed;
+  try { parsed = new URL(url); } catch (e) { return ''; }
+  if (parsed.protocol !== 'http:') return '';
+  var h = parsed.hostname.toLowerCase();
+  return h === 'localhost' || h === '127.0.0.1' ? '' : parsed.host;
+}
+
 function explainFailure(err, url, headers) {
   var isNetwork = err && !err.title && err.message && /failed to fetch|networkerror|load failed/i.test(err.message);
   if (!isNetwork) return Promise.resolve(err);
@@ -620,6 +630,19 @@ function explainFailure(err, url, headers) {
   if (window.navigator && window.navigator.onLine === false) {
     return Promise.resolve(wrapError('You are offline',
       'Connect and try again. Pages you opened before still show from their last snapshot.'));
+  }
+  // A plain http:// address off this machine never leaves the browser: an
+  // https page may not call it (mixed content), and Imago's own policy only
+  // allows http:// for localhost. The browser gives no reason, and the probe
+  // below would fail the same way and blame the server, so say it here.
+  var plain = plainHttpHost(url);
+  if (plain) {
+    return Promise.resolve(wrapError('Browsers block plain http:// addresses here',
+      (window.location.protocol === 'https:'
+        ? plain + ' is an http:// address, and an https page like Imago is not allowed to call one. '
+        : plain + ' is an http:// address, and Imago only calls http:// on this computer (localhost). ') +
+      'The request never left your browser, so the API may be fine. Use its https:// address, ' +
+      'or reach it through localhost, for example with an SSH tunnel.'));
   }
   var probe = fetch(url, { method: 'GET', mode: 'no-cors', credentials: 'omit', cache: 'no-store' });
   var timeout = new Promise(function (resolve, reject) { window.setTimeout(function () { reject(new Error('timeout')); }, 6000); });

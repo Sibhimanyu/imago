@@ -2,6 +2,17 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.19.1.0] - 2026-09-26
+
+### Fixed
+
+- **A plain http:// API says why it fails.** Browsers block an https page
+  from calling an http:// address, and Imago only allows http:// on
+  localhost, so such a request never leaves the browser. Imago used to say
+  "Could not reach" the host, blaming a server that was up. It now names the
+  real cause and the two ways round it: the API's https:// address, or
+  localhost (for example through an SSH tunnel).
+
 ## [0.19.0.0] - 2026-09-26
 
 The model is a choice, and it is remembered.
