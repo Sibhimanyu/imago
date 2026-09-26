@@ -19,11 +19,18 @@ from `scripts/` so every piece shares the same palette, mark geometry and hero.
   change chip, the history ticks, the "Watches endpoints change" rule), which is
   what amber means in the app. Green is the live dot. The flyer uses hand-set
   CMYK values; every colour is also a swatch in the "Imago" group.
-- **Hero.** A raw Open-Meteo response on the left becomes its interface on the
-  right, the product's promise shown rather than described. The flyer and the
-  banner draw the same hero at different scales.
-- **Call to action.** The app's own command bar ("Paste an API URL or a curl
-  command"), so the ad shows the first thing you do.
+- **Hero.** A raw Open-Meteo response becomes its interface, the product's
+  promise shown rather than described. The flyer draws it in full, with the
+  steps and benefits a handout has room for.
+- **The banner is not the landing hero.** The hero is interactive and seen by
+  someone already on the site: live demo, URL box, buttons. The banner is the
+  header and share image of the launch post ("Introducing Imago"), often seen
+  300 to 500 px wide in a feed. So it has a few big words, one idea drawn
+  large enough to read at that size (two fields becoming one value, amber on
+  what changed), the logo as a frame, the address, and nothing that looks
+  clickable.
+- **Call to action.** The flyer carries it: the address and a QR code. The
+  site's own is the working paste bar.
 
 ## Rebuild
 
