@@ -68,5 +68,33 @@
     "width": 390,
     "height": 844,
     "mobile": true
+  },
+  "landing-desktop-dark": {
+    "id": "landing-desktop-dark",
+    "title": "Landing · dark",
+    "width": 1440,
+    "height": 1468,
+    "mobile": false
+  },
+  "page-desktop-dark": {
+    "id": "page-desktop-dark",
+    "title": "Page · weather · dark",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "settings-desktop-dark": {
+    "id": "settings-desktop-dark",
+    "title": "Settings sheet · dark",
+    "width": 1440,
+    "height": 900,
+    "mobile": false
+  },
+  "page-mobile-dark": {
+    "id": "page-mobile-dark",
+    "title": "Page · weather · dark",
+    "width": 390,
+    "height": 844,
+    "mobile": true
   }
 }

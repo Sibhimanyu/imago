@@ -45,6 +45,20 @@ export function parseRootTokens(css) {
   return out;
 }
 
+/** The colour overrides in the dark theme block, in order. Empty if none. */
+export function parseDarkTokens(css) {
+  const start = css.search(/:root\[data-theme="dark"\]\s*\{/);
+  if (start < 0) return [];
+  const open = css.indexOf('{', start);
+  const close = css.indexOf('}', open);
+  const body = css.slice(open + 1, close).replace(/\/\*[\s\S]*?\*\//g, '');
+  const out = [];
+  const re = /(--[\w-]+)\s*:\s*([^;]+);/g;
+  let m;
+  while ((m = re.exec(body))) if (/^#/.test(m[2].trim())) out.push([m[1].slice(2), m[2].trim().toLowerCase()]);
+  return out;
+}
+
 /** Group tokens the way the Figma file does: color/, radius/, shadow/, font/. */
 export function groupTokens(pairs) {
   const t = { color: {}, radius: {}, shadow: {}, font: {} };
@@ -59,7 +73,10 @@ export function groupTokens(pairs) {
 }
 
 export function tokensJson(css) {
-  return JSON.stringify(groupTokens(parseRootTokens(css)), null, 2) + '\n';
+  const t = groupTokens(parseRootTokens(css));
+  const dark = parseDarkTokens(css);
+  if (dark.length) t.dark = { color: Object.fromEntries(dark) };
+  return JSON.stringify(t, null, 2) + '\n';
 }
 
 export function surfaceHash(read) {
@@ -129,6 +146,21 @@ function upsert(name, type, value, scopes) {
   if (!same) { v.setValueForMode(mode, value); if (existing[name]) changed.push('~' + name); }
 }
 for (const [k, h] of Object.entries(TOKENS.color)) if (/^#[0-9a-f]{6}$/.test(h)) upsert('color/' + k, 'COLOR', hex(h), ['ALL_FILLS', 'STROKE_COLOR', 'EFFECT_COLOR']);
+// The dark theme is a second mode of the same variables.
+let darkMode = null, darkError = null;
+if (TOKENS.dark) {
+  try {
+    darkMode = (col.modes.find((m) => m.name === 'Dark') || {}).modeId || col.addMode('Dark');
+    const light = col.modes[0];
+    if (light.name !== 'Light') col.renameMode(light.modeId, 'Light');
+    const all = {};
+    for (const id of col.variableIds) { const v = await figma.variables.getVariableByIdAsync(id); all[v.name] = v; }
+    for (const [k, h] of Object.entries(TOKENS.dark.color)) {
+      const v = all['color/' + k];
+      if (v && /^#[0-9a-f]{6}$/.test(h)) v.setValueForMode(darkMode, hex(h));
+    }
+  } catch (e) { darkError = String(e && e.message || e); }
+}
 for (const [k, n] of Object.entries(TOKENS.radius)) upsert('radius/' + k, 'FLOAT', n, ['CORNER_RADIUS']);
 
 let page = figma.root.children.find((p) => p.name === '00 Shipped');
@@ -159,7 +191,7 @@ for (const s of SHOTS) {
   frames[s.id] = f.id;
   row.x += s.width + 120;
 }
-return { pageId: page.id, frames, tokensChanged: changed };
+return { pageId: page.id, frames, tokensChanged: changed, darkMode, darkError };
 `;
 }
 

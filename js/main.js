@@ -16,6 +16,7 @@ import { applyHtml, buildHtmlPrompt, buildImagoPrompt, normalizeHtmlDoc, provide
 import { buildFallbackSpec, deriveActions, endpointTitle, fitTitle, humanize, normalizeActions, normalizeSpec } from './spec.js';
 import { isBookkeeping, renderComponent, renderSpecBody, scheduleTimelineLayout } from './render.js';
 import { keyInputFor, setAppPane, setKeyStatus, showView, storeKeyFromInput, syncKeyInputs, syncProviderUi, toast, trapSheetFocus } from './ui.js';
+import { THEMES, applyTheme, htmlPalette, resolvedTheme, setTheme, themePref, watchSystemTheme } from './theme.js';
 import { chatBusy, chatTarget, chatTurns, clearChat, sendChat, syncChatTarget, testProvider, updateMeta } from './chat.js';
 import { applySpec, enterStage, escapeHtml, followUrl, goBack, highlightJson, leaveStage, minimalSpec, navigateTo, pushHistory, renderChangesPane, renderRawPane, renderSchemaPane, rollbackNavigation, setActiveTab, showGeneratePrompt, showInterfaceEmpty, stepBack } from './panes.js';
 import { clearAllData, currentRequestKey, hostOf, loadExample, loadSavedRequest, renderHistory, renderRailExamples, renderSavedList, saveCurrentRequest, setUrlInput, syncSaveBtn } from './endpoints.js';
@@ -227,6 +228,9 @@ function wireEvents() {
   dom.modelName.addEventListener('input', function () {
     setSessionModel(dom.modelName.value.trim());
   });
+  dom.themeSelect.addEventListener('change', function () {
+    if (setTheme(dom.themeSelect.value)) repaintForTheme();
+  });
   dom.builderToggle.addEventListener('click', function () {
     setBuilder(state.builder === 'html' ? 'spec' : 'html');
   });
@@ -360,7 +364,7 @@ function cacheDom() {
               'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
               'geminiKeyStatus', 'groqKeyStatus', 'modelName',
               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderToggle',
-              'builderWarn',
+              'builderWarn', 'themeSelect',
               'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
               'modelNote',
              'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
@@ -810,8 +814,18 @@ function applyWaitlist(url) {
   }
 }
 
+// A Full HTML page carries the theme's colours in its srcdoc, so a theme
+// change redraws it. Everything else follows the CSS variables on its own.
+function repaintForTheme() {
+  if (state.html && state.builder === 'html') {
+    applyHtml(state.html, state.htmlSource, { url: state.htmlUrl, sig: state.htmlSig });
+  }
+}
+
 function init() {
   cacheDom();
+  applyTheme();
+  watchSystemTheme(repaintForTheme);
   applyWaitlist(WAITLIST_URL);
   if (isFramed(window)) { showFramedNotice(); return; }
   baseTitle = document.title;
@@ -900,6 +914,8 @@ window.__imago = {
   cancelInFlight: cancelInFlight, callHtml: callHtml, TIMEOUTS: TIMEOUTS,
   saveCurrentRequest: saveCurrentRequest, restoreLastView: restoreLastView, showGeneratePrompt: showGeneratePrompt,
   applyWaitlist: applyWaitlist, WAITLIST_URL: WAITLIST_URL,
+  THEMES: THEMES, applyTheme: applyTheme, setTheme: setTheme, themePref: themePref, resolvedTheme: resolvedTheme,
+  htmlPalette: htmlPalette, repaintForTheme: repaintForTheme,
   init: init
 };
 

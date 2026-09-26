@@ -1,3 +1,4 @@
+import { htmlPalette } from './theme.js';
 import { COMPONENT_TYPES, IMAGO_UI_SPEC_JSON_SCHEMA, MAX_ACTIONS, MAX_COMPONENTS, MAX_HTML_BYTES, SAMPLE_CHAR_LIMIT, TIMEOUTS, getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { el, isPlainObject, isUrl } from './util.js';
@@ -243,12 +244,17 @@ function buildHtmlPrompt(options) {
     '  several parts.',
     '- The page sits inside Imago, a light, quiet app, so it must look like',
     '  it belongs there. Colour is limited:',
-    '  - Background #ffffff; cards #faf9f6 or white with a #e7e5df border;',
-    '    text #1b1b19, secondary text #66655f. No dark themes, no dark or',
-    '    full-bleed coloured backgrounds, no neon.',
-    '  - At most ONE accent colour, chosen to suit the data, used sparingly:',
-    '    a progress bar, a chip, one key number. Status may use green',
-    '    #4fa96a and red #d9534f, and only for status.',
+    '  - Colours come ONLY from these CSS custom properties. Declare them',
+    '    first in your <style>, exactly: :root { --bg: #ffffff; --card: #faf9f6;',
+    '    --line: #e7e5df; --ink: #1b1b19; --muted: #66655f; --accent: <yours> }.',
+    '    Background var(--bg); cards var(--card) with a var(--line) border;',
+    '    text var(--ink), secondary text var(--muted). Imago swaps these for',
+    '    the reader\'s light or dark theme, so write no other colour values.',
+    '    No dark themes of your own, no coloured backgrounds, no neon.',
+    '  - --accent is ONE mid-tone colour, chosen to suit the data, that reads on',
+    '    both white and near-black. Use it sparingly: a progress bar, a chip,',
+    '    one key number. Status may use green #4fa96a and red #d9534f, and',
+    '    only for status.',
     '  - No large gradients or glows. Shadows, if any, are soft and small.',
     '- Be creative with layout instead: a type scale, how corners, borders',
     '  and spacing feel. Use CSS grid and flexbox, badges, pills, avatars,',
@@ -369,7 +375,7 @@ function cspImageSources(allowed) {
   return out;
 }
 
-function sanitizeHtmlDoc(html, data) {
+function sanitizeHtmlDoc(html, data, palette) {
   var allowed = dataUrls(data);
   var doc;
   try { doc = new window.DOMParser().parseFromString(String(html), 'text/html'); }
@@ -408,6 +414,14 @@ function sanitizeHtmlDoc(html, data) {
                                  cspImageSources(allowed).join(' '));
   var head = doc.head || doc.documentElement.insertBefore(doc.createElement('head'), doc.body);
   head.insertBefore(policy, head.firstChild);
+  // The theme's colours go last, so they win over the page's own :root.
+  // Values come from HTML_PALETTE, never from the model or the data.
+  if (palette) {
+    var theme = doc.createElement('style');
+    theme.textContent = ':root{--bg:' + palette.bg + ';--card:' + palette.card + ';--line:' + palette.line +
+                        ';--ink:' + palette.ink + ';--muted:' + palette.muted + '}';
+    head.appendChild(theme);
+  }
   return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
 }
 
@@ -459,7 +473,7 @@ function applyHtml(html, source, baseline) {
   // sandboxed opener is capability-less anyway. Never add allow-scripts
   // with allow-same-origin — the frame could drop its own sandbox.
   frame.setAttribute('sandbox', 'allow-popups');
-  frame.srcdoc = sanitizeHtmlDoc(html, state.data);
+  frame.srcdoc = sanitizeHtmlDoc(html, state.data, htmlPalette());
   dom.interfaceOut.appendChild(frame);
 
   dom.stageSource.textContent = dom.cacheBadge.textContent;

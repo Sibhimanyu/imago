@@ -3,7 +3,7 @@
    ReferenceError (a blank page); this is the gate that catches it first. */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { scan } from '../scripts/check-modules.mjs';
+import { CLASSIC, scan } from '../scripts/check-modules.mjs';
 
 const ok = {
   main: "import { helper, LIMIT } from './util.js';\nfunction init() { return helper(LIMIT); }\nexport { init };\n",
@@ -46,7 +46,7 @@ describe('module check', () => {
   it('the shipped modules pass', () => {
     const dir = new URL('../js/', import.meta.url);
     const files = {};
-    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js'))) files[f.replace(/\.js$/, '')] = readFileSync(new URL(f, dir), 'utf8');
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js') && !CLASSIC.has(x))) files[f.replace(/\.js$/, '')] = readFileSync(new URL(f, dir), 'utf8');
     expect(Object.keys(files).length).toBeGreaterThan(10);
     expect(scan(files)).toEqual([]);
   });

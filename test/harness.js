@@ -36,6 +36,9 @@ export const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
  * @param {object}   opts.session   seed sessionStorage
  * @param {object}   opts.local     seed localStorage (values are JSON-encoded)
  * @param {string}   opts.app       a patched copy of APP to evaluate instead (e.g. a constant changed)
+ * @param {boolean}  opts.systemDark give the window a prefers-color-scheme media query that
+ *                                  answers this; flip it later with window.__setSystemDark(bool).
+ *                                  Omitted, jsdom has no matchMedia at all.
  */
 // The bare URL is the landing page, which fetches its live demo; most tests
 // are about the app, so that is where boot() lands unless told otherwise.
@@ -69,6 +72,7 @@ export async function boot(opts = {}) {
   window.confirm = () => (opts.confirm === undefined ? true : opts.confirm);
   window.scrollTo = () => {};
   window.alert = () => {};
+  if (opts.systemDark !== undefined) installColorScheme(window, opts.systemDark);
 
   // jsdom has no layout, so every measurement is 0. Give the timeline layout
   // pass non-zero boxes so it exercises its real branches.
@@ -88,6 +92,17 @@ export async function boot(opts = {}) {
   if (!api.dom.urlInput) throw new Error('js/main.js did not initialise (cacheDom never ran)');
 
   return { dom, window, ...api, api };
+}
+
+// A prefers-color-scheme query that tests can flip, change events and all.
+export function installColorScheme(window, dark) {
+  const listeners = [];
+  const mq = {
+    matches: !!dark, media: '(prefers-color-scheme: dark)',
+    addEventListener: (type, fn) => { if (type === 'change') listeners.push(fn); }
+  };
+  window.matchMedia = (q) => (/prefers-color-scheme:\s*dark/.test(q) ? mq : { matches: false, addEventListener() {} });
+  window.__setSystemDark = (next) => { mq.matches = !!next; listeners.forEach((fn) => fn({ matches: mq.matches })); };
 }
 
 /** A fetch stub returning one JSON body. */

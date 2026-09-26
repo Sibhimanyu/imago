@@ -12,9 +12,13 @@
     "page-mobile": "26:21",
     "endpoints-mobile": "26:23",
     "settings-mobile": "26:25",
-    "empty-mobile": "28:2"
+    "empty-mobile": "28:2",
+    "landing-desktop-dark": "55:19",
+    "page-desktop-dark": "55:21",
+    "settings-desktop-dark": "55:23",
+    "page-mobile-dark": "55:25"
   },
-  "surfaceHash": "7e221419d2eacce5",
+  "surfaceHash": "06c8b2f7bf3c0e28",
   "syncedAt": "2026-09-26",
-  "syncedCommit": "0e6eee6"
+  "syncedCommit": "43a559f"
 }

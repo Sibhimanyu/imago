@@ -69,9 +69,14 @@ What is mirrored:
   extracted to `design/tokens.json` and written to the Figma `imago` variable
   collection (`color/*`, `radius/*`). A new kind of token fails the extractor
   until it is given a group.
+  The `:root[data-theme="dark"]` block is the dark theme: its colours land in
+  `tokens.json` under `dark` and become the **Dark** mode of the same
+  variables (the first mode is **Light**). A colour a dark theme needs to
+  restate must be a token, never a literal in a rule.
 - **Screens.** Page **00 Shipped** holds a screenshot of every screen as it
   ships, desktop (1440) and mobile (390): landing, empty page, a page, the
-  inspector, the Settings sheet and the Endpoints sheet. They are captured
+  inspector, the Settings sheet and the Endpoints sheet. The `*-dark` shots are
+  the landing, a page and Settings from a dark system. They are captured
   from the real app, so they cannot drift from it. Never edit them by hand.
 - **The stamp.** `design/figma-sync.json` records a hash of the UI surface
   (`index.html` + `styles.css`) at the last sync, plus the Figma node ids.

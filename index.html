@@ -18,6 +18,7 @@
 <title>Imago — APIs become interfaces</title>
 <meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">
 <meta name="theme-color" content="#f6f5f1">
+<script src="js/theme-boot.js"></script>
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Imago">
@@ -406,6 +407,17 @@
                  placeholder="Ask it something…" aria-label="Message">
           <button type="submit" class="btn" id="chatSendBtn">Send</button>
         </form>
+      </div>
+
+      <div class="card settings-card">
+        <h3 class="sub-head">Appearance</h3>
+        <label class="field-label" for="themeSelect">Theme</label>
+        <select id="themeSelect" class="text-input">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <p class="muted-note">System follows your device and switches with it. Saved in this browser.</p>
       </div>
 
       <div class="card settings-card">

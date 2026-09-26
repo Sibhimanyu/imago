@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'nod
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseRootTokens, groupTokens, tokensJson, surfaceHash, figmaScript, SURFACE } from '../scripts/design-sync.mjs';
+import { parseRootTokens, parseDarkTokens, groupTokens, tokensJson, surfaceHash, figmaScript, SURFACE } from '../scripts/design-sync.mjs';
 import { SHOTS } from '../scripts/design-shots.mjs';
 
 const read = (f) => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
@@ -79,6 +79,20 @@ describe('design:check', () => {
     const r = sandbox((d) => writeFileSync(join(d, 'styles.css'), read('styles.css').replace('--ink:        #1b1b19', '--ink:        #000000')));
     expect(r.code).toBe(1);
     expect(r.out).toMatch(/tokens\.json is stale/);
+  });
+});
+
+describe('dark tokens', () => {
+  const css = ':root { --bg: #FFFFFF; --r: 12px; } :root[data-theme="dark"] { color-scheme: dark; /* x */ --bg: #161614; --sh: 0 1px 2px rgba(0,0,0,.3); }';
+  it('reads the hex colours of the dark block only', () => {
+    expect(parseDarkTokens(css)).toEqual([['bg', '#161614']]);
+  });
+  it('is empty without a dark block, and tokens.json then has no dark key', () => {
+    expect(parseDarkTokens(':root { --bg: #fff; }')).toEqual([]);
+    expect(JSON.parse(tokensJson(':root { --bg: #ffffff; }')).dark).toBeUndefined();
+  });
+  it('lands in tokens.json as a second colour set', () => {
+    expect(JSON.parse(tokensJson(css)).dark).toEqual({ color: { bg: '#161614' } });
   });
 });
 

@@ -37,7 +37,11 @@ export const SHOTS = [
   { id: 'empty-mobile', title: 'Empty page', view: MOBILE, onboarded: true },
   { id: 'page-mobile', title: 'Page · weather', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true },
   { id: 'endpoints-mobile', title: 'Endpoints sheet', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('saved')" },
-  { id: 'settings-mobile', title: 'Settings sheet', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('settings')" }
+  { id: 'settings-mobile', title: 'Settings sheet', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('settings')" },
+  { id: 'landing-desktop-dark', title: 'Landing · dark', view: DESKTOP, full: true, dark: true },
+  { id: 'page-desktop-dark', title: 'Page · weather · dark', view: DESKTOP, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, dark: true },
+  { id: 'settings-desktop-dark', title: 'Settings sheet · dark', view: DESKTOP, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, after: "__imago.setAppPane('settings')", dark: true },
+  { id: 'page-mobile-dark', title: 'Page · weather · dark', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, dark: true }
 ];
 
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.woff2': 'font/woff2' };
@@ -140,6 +144,9 @@ async function shoot(page, base, shot) {
   const { width, height, mobile } = shot.view;
   await page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile });
   await page.send('Emulation.setTouchEmulationEnabled', { enabled: mobile });
+  // `dark` shots come from a dark system with the theme left on System, so
+  // they go through the same boot path a dark-mode reader does.
+  await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: shot.dark ? 'dark' : 'light' }] });
   await page.send('Storage.clearDataForOrigin', { origin: base, storageTypes: 'all' });
   if (shot.onboarded) {
     // Runs before the app's modules, so it boots straight into the app view.

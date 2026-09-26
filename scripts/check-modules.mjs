@@ -21,6 +21,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'js');
+// Classic scripts index.html loads on their own, outside the module graph.
+// theme-boot.js must run before first paint, so it cannot be a module.
+export const CLASSIC = new Set(['theme-boot.js']);
 
 const DECL = /^(?:export\s+)?(?:function\s+([A-Za-z_$][\w$]*)|var\s+([A-Za-z_$][\w$]*)|(?:let|const)\s+([A-Za-z_$][\w$]*))/;
 const IMPORT = /^import\s*\{([^}]*)\}\s*from\s*'\.\/([\w-]+)\.js';/;
@@ -89,7 +92,7 @@ function main() {
     }
   }
   const files = {};
-  for (const f of readdirSync(DIR).filter((x) => x.endsWith('.js'))) files[f.replace(/\.js$/, '')] = readFileSync(join(DIR, f), 'utf8');
+  for (const f of readdirSync(DIR).filter((x) => x.endsWith('.js') && !CLASSIC.has(x))) files[f.replace(/\.js$/, '')] = readFileSync(join(DIR, f), 'utf8');
   problems.push(...scan(files));
   if (problems.length) {
     console.error('Module check failed:\n\n- ' + problems.join('\n- '));

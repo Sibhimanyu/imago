@@ -60,9 +60,10 @@ describe('buildHtmlPrompt', () => {
   it('limits colour to the app palette and one accent', async () => {
     const app = await boot();
     const prompt = app.buildHtmlPrompt({ url: 'https://x.test/api', schema: {}, sample: '{}' });
-    expect(prompt).toContain('Background #ffffff');
-    expect(prompt).toContain('No dark themes');
-    expect(prompt).toContain('At most ONE accent colour');
+    expect(prompt).toContain('Colours come ONLY from these CSS custom properties');
+    expect(prompt).toContain('--bg: #ffffff');
+    expect(prompt).toContain('No dark themes of your own');
+    expect(prompt).toContain('--accent is ONE mid-tone colour');
     expect(prompt).toContain('Never add facts, judgements or advice the data does not contain');
   });
 });

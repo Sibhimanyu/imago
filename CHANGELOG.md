@@ -2,6 +2,28 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.18.0.0] - 2026-09-26
+
+A dark theme.
+
+### Added
+
+- **Dark theme.** Settings → Appearance has a Theme choice: System, Light or
+  Dark. System is the default: it follows your device and switches with it
+  while Imago is open. The choice is saved in this browser. A small script in
+  the page head applies it before the first paint, so a dark reader never
+  sees a white flash.
+- **Full HTML pages follow the theme.** The model now builds its page from a
+  fixed set of colour variables, and Imago fills them in for the current
+  theme when it shows the page, so a page written in light mode sits right
+  in a dark app and changes with it.
+
+### Changed
+
+- Every colour a theme needs to restate is now a named token in `styles.css`,
+  and Figma's `imago` variables have a Dark mode next to Light. The 00 Shipped
+  page gains dark captures of the landing, a page and Settings.
+
 ## [0.17.0.0] - 2026-09-26
 
 Full HTML is a switch on the page again, and its pages sit in the app.
