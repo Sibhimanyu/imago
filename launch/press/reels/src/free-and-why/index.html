@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f6f5f1; color: #1b1b19; font-family: "Inter", sans-serif; }
+      .bg { position: absolute; left: 0; top: -96px; width: 1080px; height: 2112px; background-image: radial-gradient(circle, #e2dfd7 2.4px, transparent 2.6px); background-size: 48px 48px; }
+      .chrome { position: absolute; left: 72px; right: 72px; top: 112px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+      .brand { display: flex; align-items: center; gap: 16px; font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 40px; letter-spacing: -0.02em; }
+      .brand svg { width: 56px; height: 56px; display: block; }
+      .url-meta { font-family: "JetBrains Mono", monospace; font-size: 28px; color: #66655f; }
+      .scene { position: absolute; inset: 0; }
+      .wrap { position: absolute; inset: 0; }
+      .h1 { font-family: "Inter Display", sans-serif; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; color: #1b1b19; }
+      .sub { font-family: "Inter", sans-serif; font-weight: 500; font-size: 54px; line-height: 1.22; letter-spacing: -0.015em; color: #66655f; }
+      .card { position: absolute; background: #ffffff; border: 3px solid #e7e5df; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 90px rgba(27, 27, 25, 0.10); }
+      .ring { position: absolute; border: 5px solid #1b1b19; border-radius: 26px; }
+      .mono { font-family: "JetBrains Mono", monospace; }
+
+      /* Beat 1 */
+      #f1 { position: absolute; left: 64px; top: 300px; font-size: 280px; line-height: 0.95; }
+      #f2 { position: absolute; left: 64px; top: 590px; font-size: 150px; }
+      #lic { left: 72px; top: 900px; width: 936px; height: 400px; padding: 64px 64px; }
+      #lic .t { font-size: 40px; color: #1b1b19; }
+      #lic .c { margin-top: 36px; font-size: 32px; color: #66655f; }
+      #lic .p { margin-top: 36px; font-size: 30px; line-height: 1.5; color: #66655f; }
+      #repo { position: absolute; left: 72px; top: 1360px; font-size: 34px; color: #1b1b19; }
+
+      /* Beat 2 */
+      #n1 { position: absolute; left: 64px; right: 60px; top: 300px; font-size: 128px; }
+      #n2 { position: absolute; left: 72px; right: 60px; top: 760px; }
+      #flow { position: absolute; left: 72px; right: 72px; top: 940px; height: 400px; }
+      .pill { position: absolute; top: 0; height: 120px; padding: 0 44px; display: flex; align-items: center; border-radius: 100px; background: #ffffff; border: 3px solid #e7e5df; font-family: "Inter", sans-serif; font-weight: 500; font-size: 44px; color: #1b1b19; }
+      #p-browser { left: 0; }
+      #p-api { right: 0; }
+      #wire { position: absolute; left: 392px; top: 58px; width: 268px; height: 4px; background: #1b1b19; transform-origin: left center; }
+      #wire-lbl { position: absolute; left: 0; right: 0; top: 180px; text-align: center; font-size: 32px; color: #66655f; }
+
+      /* Beat 3 */
+      #k-head { position: absolute; left: 64px; right: 50px; top: 270px; }
+      #k1 { display: block; font-size: 100px; }
+      #k2 { display: block; margin-top: 24px; }
+      #k-card { left: 90px; top: 740px; width: 900px; height: 801px; }
+      #k-card img { position: absolute; left: 0; top: 0; width: 894px; height: 795px; display: block; }
+      #k-ring { left: 128px; top: 1414px; width: 570px; height: 96px; }
+
+      /* Beat 4 */
+      #w-head { position: absolute; left: 64px; right: 50px; top: 290px; font-size: 128px; }
+      #w-card { left: 90px; top: 660px; width: 900px; height: 775px; }
+      #w-card img { position: absolute; left: 0; top: 24px; width: 894px; height: 745px; display: block; }
+      #w-ring { left: 103px; top: 776px; width: 690px; height: 74px; }
+      #w-note { position: absolute; left: 72px; right: 300px; top: 1480px; }
+      #w-amigo { position: absolute; left: 790px; top: 1330px; width: 230px; height: 230px; }
+      #w-amigo img { width: 100%; height: 100%; display: block; }
+
+      #e-logo { position: absolute; left: 60px; top: 690px; width: 960px; height: 360px; }
+      #e-logo img { width: 100%; height: 100%; display: block; }
+      #e-url { position: absolute; left: 0; right: 0; top: 1090px; text-align: center; font-family: "JetBrains Mono", monospace; font-size: 50px; color: #1b1b19; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20.4" data-width="1080" data-height="1920">
+      <div class="bg" id="bg"></div>
+      <div class="chrome" id="chrome">
+        <div class="brand"><svg viewBox="0 0 32 32"><g fill="#1b1b19"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago</div>
+        <div class="url-meta">imago.onslate.in</div>
+      </div>
+
+      <section id="beat-1" class="scene clip" data-start="0" data-duration="4.4" data-track-index="1">
+        <div class="wrap" id="w1">
+          <div id="f1" class="h1">Free.</div>
+          <div id="f2" class="h1">Open source.</div>
+          <div id="lic" class="card mono">
+            <div class="t">MIT License</div>
+            <div class="c">Copyright (c) 2026 Sibhimanyu</div>
+            <div class="p">Permission is hereby granted, free of charge, to any person obtaining a copy</div>
+          </div>
+          <div id="repo" class="mono">github.com/Sibhimanyu/imago</div>
+        </div>
+      </section>
+
+      <section id="beat-2" class="scene clip" data-start="4.4" data-duration="4.4" data-track-index="1">
+        <div class="wrap" id="w2">
+          <div id="n1" class="h1">No server, so nothing to charge for.</div>
+          <div id="n2" class="sub">Runs in your browser. No account.</div>
+          <div id="flow">
+            <div id="p-browser" class="pill">Your browser</div>
+            <div id="wire"></div>
+            <div id="p-api" class="pill">The API</div>
+            <div id="wire-lbl" class="mono">one request, straight there</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="beat-3" class="scene clip" data-start="8.8" data-duration="4.6" data-track-index="1">
+        <div class="wrap" id="w3">
+          <div id="k-head"><span id="k1" class="h1">Your key stays in your browser.</span><span id="k2" class="sub">It goes only to the provider you chose.</span></div>
+          <div id="k-card" class="card"><img src="assets/settings-model.png" alt="Imago Settings: Keys stay in this browser" /></div>
+          <div id="k-ring" class="ring"></div>
+        </div>
+      </section>
+
+      <section id="beat-4" class="scene clip" data-start="13.4" data-duration="4" data-track-index="1">
+        <div class="wrap" id="w4">
+          <div id="w-head" class="h1">No key? It still works.</div>
+          <div id="w-card" class="card"><img src="assets/pika-top.png" alt="Pikachu drawn with no key: the basic layout" /></div>
+          <div id="w-ring" class="ring"></div>
+          <div id="w-note" class="sub">Without a key you get the basic layout, drawn in your browser.</div>
+          <div id="w-amigo"><img src="assets/amigo.svg" alt="Amigo" /></div>
+        </div>
+      </section>
+
+      <section id="scene-e" class="scene clip" data-start="17.4" data-duration="3" data-track-index="1">
+        <div class="wrap" id="e-wrap">
+          <div id="e-logo"><img src="assets/logo-primary.svg" alt="Imago" /></div>
+          <div id="e-url">imago.onslate.in</div>
+        </div>
+      </section>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#bg", { y: 0 }, { y: 48, duration: 20.4, ease: "none" }, 0);
+      tl.fromTo("#chrome", { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.1);
+      tl.to("#chrome", { opacity: 0, duration: 0.3, ease: "power1.in" }, 17.1);
+
+      // Beat 1
+      tl.fromTo("#f1", { opacity: 0, scale: 0.8, transformOrigin: "0% 100%" }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.2);
+      tl.fromTo("#f2", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 0.8);
+      tl.fromTo("#lic", { opacity: 0, y: 160 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.3);
+      tl.fromTo("#repo", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 1.9);
+      tl.to("#w1", { opacity: 0, duration: 0.3, ease: "power1.in" }, 4.1);
+
+      // Beat 2
+      tl.fromTo("#n1", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 4.5);
+      tl.fromTo("#n2", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.1);
+      tl.fromTo("#p-browser", { opacity: 0, x: -80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 5.5);
+      tl.fromTo("#wire", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.inOut" }, 5.9);
+      tl.fromTo("#p-api", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 6.3);
+      tl.fromTo("#wire-lbl", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power1.out" }, 6.7);
+      tl.to("#w2", { opacity: 0, duration: 0.3, ease: "power1.in" }, 8.5);
+
+      // Beat 3
+      tl.fromTo("#k1", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 8.9);
+      tl.fromTo("#k2", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 9.6);
+      tl.fromTo("#k-card", { opacity: 0, y: 200 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 9.2);
+      tl.fromTo("#k-ring", { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 10.6);
+      tl.to("#w3", { opacity: 0, duration: 0.3, ease: "power1.in" }, 13.1);
+
+      // Beat 4
+      tl.fromTo("#w-head", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 13.5);
+      tl.fromTo("#w-card", { opacity: 0, y: 200 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 13.7);
+      tl.fromTo("#w-ring", { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 14.6);
+      tl.fromTo("#w-note", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.9);
+      tl.fromTo("#w-amigo", { opacity: 0, y: 160, rotation: -8 }, { opacity: 1, y: 0, rotation: 0, duration: 0.7, ease: "back.out(1.8)" }, 15.2);
+      tl.fromTo("#w-amigo", { y: 0 }, { y: -10, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, 15.95);
+      tl.to("#w4", { opacity: 0, duration: 0.3, ease: "power1.in" }, 17.1);
+
+      const E = 17.4;
+      tl.fromTo("#e-logo", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, E + 0.1);
+      tl.fromTo("#e-url", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, E + 0.6);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f6f5f1; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #f6f5f1; color: #1b1b19; font-family: "Inter", sans-serif; }
+      .bg { position: absolute; left: 0; top: -96px; width: 1080px; height: 2112px; background-image: radial-gradient(circle, #e2dfd7 2.4px, transparent 2.6px); background-size: 48px 48px; }
+      .chrome { position: absolute; left: 72px; right: 72px; top: 112px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+      .brand { display: flex; align-items: center; gap: 16px; font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 40px; letter-spacing: -0.02em; }
+      .brand svg { width: 56px; height: 56px; display: block; }
+      .url-meta { font-family: "JetBrains Mono", monospace; font-size: 28px; color: #66655f; }
+      .scene { position: absolute; inset: 0; }
+      .wrap { position: absolute; inset: 0; }
+      .h1 { font-family: "Inter Display", sans-serif; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; color: #1b1b19; }
+      .card { position: absolute; background: #ffffff; border: 3px solid #e7e5df; border-radius: 44px; overflow: hidden; box-shadow: 0 40px 90px rgba(27, 27, 25, 0.10); }
+
+      #head { position: absolute; left: 72px; right: 60px; top: 270px; }
+      #l1 { display: block; font-size: 100px; }
+      #l2 { display: block; margin-top: 24px; font-family: "Inter", sans-serif; font-weight: 500; font-size: 54px; line-height: 1.22; letter-spacing: -0.015em; color: #1b1b19; max-width: 920px; }
+
+      #card { left: 90px; top: 600px; width: 900px; height: 1200px; }
+      #shots { position: absolute; left: 0; top: 0; width: 894px; height: 1589px; }
+      #shots img { position: absolute; left: 0; top: 0; width: 894px; height: 1589px; display: block; }
+      .ring { position: absolute; border-radius: 100px; }
+      #ring-watch { left: 150px; top: 700px; width: 170px; height: 100px; border: 5px solid #1b1b19; }
+      #ring-v { left: 522px; top: 1228px; width: 140px; height: 66px; border: 5px solid #f5ce47; }
+      #ring-f { left: 402px; top: 1403px; width: 140px; height: 66px; border: 5px solid #f5ce47; }
+      #src { position: absolute; left: 72px; top: 1826px; font-family: "JetBrains Mono", monospace; font-size: 26px; color: #66655f; }
+
+      #e-logo { position: absolute; left: 60px; top: 690px; width: 960px; height: 360px; }
+      #e-logo img { width: 100%; height: 100%; display: block; }
+      #e-url { position: absolute; left: 0; right: 0; top: 1090px; text-align: center; font-family: "JetBrains Mono", monospace; font-size: 50px; color: #1b1b19; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="16.4" data-width="1080" data-height="1920">
+      <div class="bg" id="bg"></div>
+
+      <section id="scene-a" class="scene clip" data-start="0" data-duration="13.4" data-track-index="1">
+        <div class="wrap" id="a-wrap">
+          <div class="chrome">
+            <div class="brand"><svg viewBox="0 0 32 32"><g fill="#1b1b19"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago</div>
+            <div class="url-meta">imago.onslate.in</div>
+          </div>
+          <div id="head"><span id="l1" class="h1">Turn on Watch.</span><span id="l2">Imago re-fetches and marks exactly what moved.</span></div>
+          <div id="card" class="card">
+            <div id="shots" data-layout-allow-overflow>
+              <img data-layout-allow-overflow id="s0" src="assets/iss-0.png" alt="The ISS endpoint in Imago with Watch off" />
+              <img data-layout-allow-overflow id="s1" src="assets/iss-w1.png" alt="Watch on, marked Live" />
+              <img data-layout-allow-overflow id="s2" src="assets/iss-w3.png" alt="After a re-fetch, the values that moved are marked CHANGED" />
+            </div>
+          </div>
+          <div id="ring-watch" class="ring"></div>
+          <div id="ring-v" class="ring"></div>
+          <div id="ring-f" class="ring"></div>
+          <div id="src">api.wheretheiss.at/v1/satellites/25544</div>
+        </div>
+      </section>
+
+      <section id="scene-e" class="scene clip" data-start="13.4" data-duration="3" data-track-index="1">
+        <div class="wrap" id="e-wrap">
+          <div id="e-logo"><img src="assets/logo-primary.svg" alt="Imago" /></div>
+          <div id="e-url">imago.onslate.in</div>
+        </div>
+      </section>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#bg", { y: 0 }, { y: 48, duration: 16.4, ease: "none" }, 0);
+
+      tl.fromTo("#l1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 0.2);
+      tl.fromTo("#card", { opacity: 0, y: 220 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.45);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out" }, 1.0);
+
+      // point at the Watch switch, then it turns on (real capture)
+      tl.fromTo("#ring-watch", { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 1.5);
+      tl.fromTo("#s1", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "none" }, 2.6);
+      tl.to("#ring-watch", { scale: 0.9, duration: 0.12, ease: "power2.in" }, 2.5);
+      tl.to("#ring-watch", { scale: 1, duration: 0.3, ease: "back.out(2)" }, 2.62);
+      tl.to("#ring-watch", { opacity: 0, duration: 0.4, ease: "power1.in" }, 3.6);
+
+      tl.fromTo("#l2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 4.4);
+
+      // the re-fetch lands: CHANGED marks
+      tl.fromTo("#s2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 5.6);
+      tl.fromTo("#ring-v", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 6.2);
+      tl.fromTo("#ring-f", { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 6.4);
+      tl.fromTo(["#ring-v", "#ring-f"], { scale: 1 }, { scale: 1.08, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3, immediateRender: false }, 6.9);
+      tl.to(["#ring-v", "#ring-f"], { opacity: 0, duration: 0.35, ease: "power1.in" }, 8.9);
+
+      // move down through the rows that changed
+      tl.fromTo("#shots", { y: 0 }, { y: -389, duration: 2.6, ease: "power2.inOut" }, 9.2);
+      tl.to("#a-wrap", { opacity: 0, duration: 0.35, ease: "power1.in" }, 13.05);
+
+      const E = 13.4;
+      tl.fromTo("#e-logo", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, E + 0.1);
+      tl.fromTo("#e-url", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, E + 0.6);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

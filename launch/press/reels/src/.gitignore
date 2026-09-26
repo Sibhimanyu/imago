@@ -1,0 +1,8 @@
+# HyperFrames working files; the rendered reels live one level up.
+node_modules/
+*/renders/
+*/snapshots/
+*/.hyperframes/
+*/.media/
+*/.cache/
+*.log
