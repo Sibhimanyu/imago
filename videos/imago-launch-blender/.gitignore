@@ -1,0 +1,5 @@
+tools/node_modules/
+*/renders/
+*.blend1
+__pycache__/
+probe/

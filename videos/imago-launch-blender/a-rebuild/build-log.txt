@@ -1,0 +1,53 @@
+== 01-groove (offset 0.00 frames)
+f01-brace.y: eased keys off by 0.0235 at frames [94, 95, 96, 98] -> baked; keys=[(0.0, 12.94, 'LINEAR'), (84.69, 12.94, 'CONSTANT'), (84.69, 12.939, 'QUART'), (88.29, 9.0, 'CUBIC'), (91.71, 9.0, 'EXPO'), (98.73, 5.54, 'CONSTANT'), (98.73, 5.54, 'CUBIC'), (101.13, 5.8, 'CUBIC')]
+f01-w1: code-driven filter not converted
+f01-w1: animated filter not converted
+f01-w2#38 skewX ignored -12
+f01-w2.x: eased keys off by 0.0313 at frames [72, 74, 75, 76, 77, 78] -> baked; keys=[(0.0, 4.3, 'CONSTANT'), (70.62, 4.299, 'EXPO'), (80.82, -0.3, 'CONSTANT')]
+f01-w2: animated skewX not converted
+== 02-avalanche (offset 0.50 frames)
+f02-code: code-driven filter not converted
+02 Avalanche: 3 depth layers
+== 03-paste (offset 0.00 frames)
+f03-bar#9 skewX ignored -14
+f03-bar.x: eased keys off by 0.1117 at frames [1, 2, 3, 4, 5, 6] -> baked; keys=[(0.0, 17.0, 'CONSTANT'), (0.0, 16.996, 'EXPO'), (9.0, 0.0, 'CONSTANT')]
+f03-bar: animated skewX not converted
+e24#24 skewX ignored 360
+e38#38 skewX ignored 360
+f03-ashake.x: eased keys off by 0.0543 at frames [78, 80, 81, 83, 84, 85] -> baked; keys=[(0.0, 0.0, 'CONSTANT'), (98.49, 0.0, 'CONSTANT')]
+f03-ashake.rotation: eased keys off by 0.0258 at frames [83, 86, 88, 89, 92, 93] -> baked; keys=[(0.0, -0.0, 'CONSTANT'), (98.49, -0.0, 'CONSTANT')]
+f03-press.scaleX: eased keys off by 0.0074 at frames [101, 102] -> baked; keys=[(0.0, 2.2, 'CONSTANT'), (98.49, 2.2, 'EXPO'), (104.49, 1, 'CONSTANT')]
+f03-press.scaleY: eased keys off by 0.0074 at frames [101, 102] -> baked; keys=[(0.0, 2.2, 'CONSTANT'), (98.49, 2.2, 'EXPO'), (104.49, 1, 'CONSTANT')]
+== 04-shape (offset 0.50 frames)
+04 Shape: 31 depth layers
+== 05-drop (offset 0.00 frames)
+f05-card-0.y: eased keys off by 0.0514 at frames [1, 2, 3, 4, 5, 6] -> baked; keys=[(0.0, -6.9, 'CONSTANT'), (0.0, -6.899, 'EXPO'), (12.6, 0.7, 'CONSTANT'), (98.49, 0.7, 'QUART'), (107.49, 0.01, 'CONSTANT')]
+f05-card-1.x: eased keys off by 0.0914 at frames [13, 14, 15, 16, 17, 18] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (12.57, 16.81, 'EXPO'), (23.97, 3.313, 'CONSTANT'), (98.73, 3.312, 'QUART'), (107.73, 1.627, 'CONSTANT')]
+f05-card-1.y: eased keys off by 0.0162 at frames [14, 17, 18, 19, 20] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (12.57, -1.62, 'EXPO'), (23.97, 0.78, 'CONSTANT'), (98.73, 0.78, 'QUART'), (107.73, 0.132, 'CONSTANT')]
+f05-card-2.x: eased keys off by 0.0907 at frames [27, 28, 29, 30, 31, 32] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (26.64, -10.057, 'EXPO'), (38.04, 3.44, 'CONSTANT'), (98.97, 3.44, 'QUART'), (107.97, 2.293, 'CONSTANT')]
+f05-card-2.y: eased keys off by 0.0161 at frames [31, 32, 33, 34] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (26.64, -1.54, 'EXPO'), (38.04, 0.86, 'CONSTANT'), (98.97, 0.86, 'QUART'), (107.97, 0.214, 'CONSTANT')]
+f05-card-3.x: eased keys off by 0.0899 at frames [41, 42, 43, 44, 45, 46] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (40.71, 16.925, 'EXPO'), (52.11, 3.427, 'CONSTANT'), (99.21, 3.427, 'QUART'), (108.21, 2.964, 'CONSTANT')]
+f05-card-3.y: eased keys off by 0.0160 at frames [45, 46, 47, 48] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (40.71, -1.46, 'EXPO'), (52.11, 0.94, 'CONSTANT'), (99.21, 0.94, 'QUART'), (108.21, 0.255, 'CONSTANT')]
+f05-card-4.x: eased keys off by 0.0900 at frames [56, 57, 59, 60, 61, 62] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (54.78, -9.804, 'EXPO'), (66.18, 3.694, 'CONSTANT'), (99.45, 3.694, 'QUART'), (108.45, 3.636, 'CONSTANT')]
+f05-card-4.y: eased keys off by 0.0160 at frames [59, 60, 61, 62] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (54.78, -1.38, 'EXPO'), (66.18, 1.02, 'CONSTANT'), (99.45, 1.02, 'QUART'), (108.45, 0.255, 'CONSTANT')]
+f05-card-5.x: eased keys off by 0.0907 at frames [70, 71, 73, 74, 75, 76] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (68.85, 17.014, 'EXPO'), (80.25, 3.517, 'CONSTANT'), (99.69, 3.517, 'QUART'), (108.69, 4.307, 'CONSTANT')]
+f05-card-5.y: eased keys off by 0.0161 at frames [73, 74, 75, 76] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (68.85, -1.3, 'EXPO'), (80.25, 1.1, 'CONSTANT'), (99.69, 1.1, 'QUART'), (108.69, 0.214, 'CONSTANT')]
+f05-card-6.x: eased keys off by 0.0913 at frames [84, 85, 87, 88, 89, 90] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (82.92, -9.967, 'EXPO'), (94.32, 3.53, 'CONSTANT'), (99.93, 3.53, 'QUART'), (108.93, 4.973, 'CONSTANT')]
+f05-card-6.y: eased keys off by 0.0162 at frames [88, 89, 90] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (82.92, -1.22, 'EXPO'), (94.32, 1.18, 'CONSTANT'), (99.93, 1.18, 'QUART'), (108.93, 0.132, 'CONSTANT')]
+f05-card-7.x: eased keys off by 0.0799 at frames [98, 99, 101, 102, 103, 104] -> baked; keys=[(0.0, 3.5, 'CONSTANT'), (96.99, 17.632, 'EXPO'), (107.79, 5.634, 'CONSTANT')]
+f05-card-7.y: eased keys off by 0.0173 at frames [101, 102, 103, 104] -> baked; keys=[(0.0, 0.7, 'CONSTANT'), (96.99, -2.59, 'EXPO'), (107.79, 0.01, 'CONSTANT')]
+f05-l1.x: eased keys off by 0.0106 at frames [5, 6] -> baked; keys=[(0.0, -5.2, 'CONSTANT'), (0.0, -5.2, 'EXPO'), (10.8, -3.6, 'CONSTANT')]
+== 06-plan (offset 0.50 frames)
+f06-dot3.scaleX: eased keys off by 0.0067 at frames [18, 19] -> baked; keys=[(0.5, 0, 'CONSTANT'), (14.57, 0.0, 'EXPO'), (23.57, 1, 'CONSTANT')]
+f06-dot3.scaleY: eased keys off by 0.0067 at frames [18, 19] -> baked; keys=[(0.5, 0, 'CONSTANT'), (14.57, 0.0, 'EXPO'), (23.57, 1, 'CONSTANT')]
+f06-dot4.scaleX: eased keys off by 0.0067 at frames [32, 33] -> baked; keys=[(0.5, 0, 'CONSTANT'), (28.64, 0.0, 'EXPO'), (37.64, 1, 'CONSTANT')]
+f06-dot4.scaleY: eased keys off by 0.0067 at frames [32, 33] -> baked; keys=[(0.5, 0, 'CONSTANT'), (28.64, 0.0, 'EXPO'), (37.64, 1, 'CONSTANT')]
+f06-dot5.scaleX: eased keys off by 0.0067 at frames [46, 47, 48] -> baked; keys=[(0.5, 0, 'CONSTANT'), (42.71, 0.0, 'EXPO'), (51.71, 1, 'CONSTANT')]
+f06-dot5.scaleY: eased keys off by 0.0067 at frames [46, 47, 48] -> baked; keys=[(0.5, 0, 'CONSTANT'), (42.71, 0.0, 'EXPO'), (51.71, 1, 'CONSTANT')]
+== 07-watch (offset 0.00 frames)
+f07-win.x: eased keys off by 0.0518 at frames [1, 2, 3, 4, 6, 7] -> baked; keys=[(0.0, 10.5, 'CONSTANT'), (0.0, 10.499, 'EXPO'), (18.6, 2.9, 'CONSTANT')]
+07 Watch: 2 depth layers
+== 08-facts (offset 0.50 frames)
+== 09-sting (offset 0.75 frames)
+f09-squash.scaleX: eased keys off by 0.2887 at frames [12, 13, 14] -> baked; keys=[(0.75, 0.9, 'CUBIC'), (6.75, 1, 'CONSTANT'), (11.82, 1, 'CUBIC'), (14.82, 1.24, 'CONSTANT'), (14.82, 1.24, 'BACK'), (19.32, 1, 'CONSTANT')]
+f09-squash.scaleY: eased keys off by 0.2514 at frames [12, 13, 14] -> baked; keys=[(0.75, 1.1, 'CUBIC'), (6.75, 1, 'CONSTANT'), (11.82, 1, 'CUBIC'), (14.82, 0.8, 'CONSTANT'), (14.82, 0.8, 'BACK'), (19.32, 1, 'CONSTANT')]

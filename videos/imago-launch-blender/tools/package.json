@@ -1,0 +1,1 @@
+{"name":"imago-blender-tools","private":true,"type":"module","dependencies":{"gsap":"^3.14.2","playwright-core":"^1.63.0"}}
