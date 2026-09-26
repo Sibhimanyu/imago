@@ -4,6 +4,10 @@
     {
       "name": "imago",
       "source": "dist"
+    },
+    {
+      "name": "imago-apis",
+      "source": "gallery/dist"
     }
   ]
 }

@@ -14,3 +14,6 @@ design/shots/*.png
 
 # Intermediate Illustrator files, merged into the Task 1 file.
 brand/kit/build/
+
+# The API gallery build output (node gallery/build.mjs).
+gallery/dist/
