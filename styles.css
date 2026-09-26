@@ -442,18 +442,15 @@ input:focus, textarea:focus, select:focus {
 .empty-body { margin: 9px auto 0; font-size: 13.5px; color: var(--muted); max-width: 400px; line-height: 1.6; }
 
 
-/* ─── Builder segmented toggle ─────────────────────────────── */
+/* ─── Full HTML switch: its quota warning takes a row of its own ── */
 
-.seg-btn {
-  font-family: inherit; font-size: 12.5px; font-weight: 500;
-  color: var(--muted);
-  background: var(--card); border: 1px solid var(--line);
-  padding: 5px 12px; cursor: pointer;
-  transition: color .15s ease, background .15s ease;
+.builder-warn {
+  flex-basis: 100%; margin: 0; padding: 8px 12px;
+  font-size: 12.5px; line-height: 1.5;
+  color: var(--yellow-ink); background: var(--yellow-bg);
+  border: 1px solid var(--yellow-line); border-radius: var(--r-sm);
 }
-.seg-btn:first-of-type { border-radius: 999px 0 0 999px; }
-.seg-btn:last-of-type { border-radius: 0 999px 999px 0; margin-left: -1px; }
-.seg-btn.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.builder-warn[hidden] { display: none; }
 
 /* ─── Full-HTML builder ──────────────────────────────────────── */
 
@@ -1304,7 +1301,6 @@ button.key-pill:hover { border-color: #cfccc3; color: var(--ink-2); }
 .page-tools .meta-chip { border: 0; background: none; padding: 0; font-size: 12px; }
 .page-tools .meta-chip.is-hot { background: var(--yellow-bg); padding: 1px 8px; }
 .page-tools-right { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; }
-.page-tools .builder-group { display: none !important; }
 .btn-sm { height: 32px; padding: 0 11px; font-size: 13px; gap: 6px; }
 #inspectBtn[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
 
@@ -1725,6 +1721,8 @@ body.is-editing .comp, body.is-editing .fact { outline: 1px dashed var(--line); 
      it, so they wrap together instead of stranding one on a second line. */
   .page-tools-right { gap: 8px; }
   .page-tools-right:has(#refreshToggle[aria-checked="true"]) .watch-group { flex-basis: 100%; }
+  /* Full HTML gets its own row, so Watch and the four buttons keep theirs. */
+  .page-tools-right .builder-group { flex-basis: 100%; }
 }
 @media (max-width: 360px) {
   .page-tools-right .watch-group { flex-basis: 100%; }

@@ -772,18 +772,12 @@ function askToGenerate(url, isAuto) {
   return Promise.resolve();
 }
 
-// One switch, two controls (the playground toggle and the Settings
-// select). Every change routes through here so they can never disagree.
+// The Full HTML switch, and the quota warning that stays up while it is on:
+// a page costs a call per endpoint, not per shape, and a longer reply.
 function syncBuilderUi() {
-  if (dom.builderSelect) dom.builderSelect.value = state.builder;
-  var pairs = [[dom.builderPlanBtn, 'spec'], [dom.builderHtmlBtn, 'html']];
-  for (var i = 0; i < pairs.length; i += 1) {
-    var btn = pairs[i][0], mode = pairs[i][1];
-    if (!btn) continue;
-    var on = state.builder === mode;
-    btn.className = on ? 'seg-btn is-active' : 'seg-btn';
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
+  var on = state.builder === 'html';
+  dom.builderToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+  dom.builderWarn.hidden = !on;
 }
 
 function setBuilder(mode, silent) {
@@ -792,8 +786,8 @@ function setBuilder(mode, silent) {
   syncBuilderUi();
   if (!silent) {
     toast(state.builder === 'html'
-      ? 'Full-HTML builder on — the model writes the whole page, sandboxed.'
-      : 'Structured-plan builder on.');
+      ? 'Full HTML on. Each new endpoint is a larger model call.'
+      : 'Full HTML off. Back to structured plans.');
   }
   // Re-resolve what is on screen so the switch is visible immediately:
   // a remembered artefact applies, otherwise the generate prompt.

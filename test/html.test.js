@@ -50,9 +50,20 @@ describe('buildHtmlPrompt', () => {
     const app = await boot();
     const prompt = app.buildHtmlPrompt({ url: 'https://x.test/api', schema: {}, sample: '{}' });
     expect(prompt).toContain('designed app screen, not a document');
-    expect(prompt).toContain('Commit to a visual direction');
+    expect(prompt).toContain('Be creative with layout');
     expect(prompt).toContain('read like a Markdown file, redesign it');
     expect(prompt).not.toMatch(/max-width around 900px/);
+  });
+
+  // A dark navy page with neon accents stood out of the light app like a
+  // pasted-in screenshot. Colour is pinned to Imago's palette plus one accent.
+  it('limits colour to the app palette and one accent', async () => {
+    const app = await boot();
+    const prompt = app.buildHtmlPrompt({ url: 'https://x.test/api', schema: {}, sample: '{}' });
+    expect(prompt).toContain('Background #ffffff');
+    expect(prompt).toContain('No dark themes');
+    expect(prompt).toContain('At most ONE accent colour');
+    expect(prompt).toContain('Never add facts, judgements or advice the data does not contain');
   });
 });
 
@@ -151,10 +162,11 @@ describe('html request flow', () => {
 });
 
 describe('builder setting', () => {
-  it('defaults to the structured plan', async () => {
+  it('defaults to the structured plan, switch off and no warning', async () => {
     const app = await boot();
     expect(app.state.builder).toBe('spec');
-    expect(app.dom.builderSelect.value).toBe('spec');
+    expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('false');
+    expect(app.dom.builderWarn.hidden).toBe(true);
   });
   it('persists across reloads', async () => {
     const app = await boot();
@@ -163,22 +175,25 @@ describe('builder setting', () => {
     expect(app.getPrefs().builder).toBe('html');
     const again = await boot({ local: { 'imago.preferences': { builder: 'html' } } });
     expect(again.state.builder).toBe('html');
-    expect(again.dom.builderSelect.value).toBe('html');
-    expect(again.dom.builderHtmlBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(again.dom.builderToggle.getAttribute('aria-checked')).toBe('true');
+    expect(again.dom.builderWarn.hidden).toBe(false);
   });
 
-  it('the playground toggle and the Settings select stay in sync', async () => {
+  // The switch lives on the page, not in Settings, and says what it costs
+  // for as long as it is on.
+  it('the page switch turns Full HTML on with a quota warning, and off again', async () => {
     const app = await boot();
-    expect(app.dom.builderPlanBtn.getAttribute('aria-pressed')).toBe('true');
-    app.dom.builderHtmlBtn.click();
+    expect(app.window.document.getElementById('builderSelect')).toBeNull();
+    app.dom.builderToggle.click();
     expect(app.state.builder).toBe('html');
-    expect(app.dom.builderSelect.value).toBe('html');
-    expect(app.dom.builderHtmlBtn.getAttribute('aria-pressed')).toBe('true');
-    expect(app.dom.builderPlanBtn.getAttribute('aria-pressed')).toBe('false');
-    app.dom.builderSelect.value = 'spec';
-    app.dom.builderSelect.dispatchEvent(new app.window.Event('change', { bubbles: true }));
+    expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('true');
+    expect(app.dom.builderWarn.hidden).toBe(false);
+    expect(app.dom.builderWarn.textContent).toContain('more of your API quota');
+    expect(app.dom.builderToggle.getAttribute('aria-describedby')).toBe('builderWarn');
+    app.dom.builderToggle.click();
     expect(app.state.builder).toBe('spec');
-    expect(app.dom.builderPlanBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('false');
+    expect(app.dom.builderWarn.hidden).toBe(true);
   });
 
   it('switching with data on screen re-resolves instead of going blank', async () => {

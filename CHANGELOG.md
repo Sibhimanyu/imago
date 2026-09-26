@@ -2,6 +2,26 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.17.0.0] - 2026-09-26
+
+Full HTML is a switch on the page again, and its pages sit in the app.
+
+### Changed
+
+- **Full HTML is a switch beside Watch, not a Settings dropdown.** Turn it
+  on and a yellow note stays under the toolbar for as long as it is on: a
+  page costs a model call per endpoint rather than per shape, a much longer
+  reply, and another call when the data changes. The Interface card is gone
+  from Settings.
+- **Full HTML pages keep to Imago's colours.** The model is told to use a
+  white page, the app's ink and border colours and at most one accent, with
+  no dark themes or big gradients, so a page no longer stands out of the app
+  like a pasted-in screenshot. It is also told never to add facts the data
+  does not contain.
+- **The Endpoints list says how to fill it.** Its empty text names the Save
+  button and what the dot and the number mean, and the + says it clears the
+  URL bar.
+
 ## [0.16.0.0] - 2026-09-26
 
 A designed page now comes from a hosted provider, with your own key.

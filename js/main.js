@@ -227,17 +227,9 @@ function wireEvents() {
   dom.modelName.addEventListener('input', function () {
     setSessionModel(dom.modelName.value.trim());
   });
-  if (dom.builderSelect) {
-    dom.builderSelect.addEventListener('change', function () {
-      setBuilder(dom.builderSelect.value);
-    });
-  }
-  var segBtns = [[dom.builderPlanBtn, 'spec'], [dom.builderHtmlBtn, 'html']];
-  for (var bi = 0; bi < segBtns.length; bi += 1) {
-    (function (btn, mode) {
-      if (btn) btn.addEventListener('click', function () { setBuilder(mode); });
-    })(segBtns[bi][0], segBtns[bi][1]);
-  }
+  dom.builderToggle.addEventListener('click', function () {
+    setBuilder(state.builder === 'html' ? 'spec' : 'html');
+  });
   dom.clearKeyBtn.addEventListener('click', function () {
     for (var ci = 0; ci < PROVIDER_IDS.length; ci += 1) {
       setProviderKey(PROVIDER_IDS[ci], '');
@@ -367,8 +359,8 @@ function cacheDom() {
              'inspectorHead', 'inspectorClose', 'headersChip', 'shareBtn', 'editBtn', 'rawOut', 'copyRaw', 'schemaOut', 'schemaHashChip', 'changesOut', 'snapshotsOut',
               'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
               'geminiKeyStatus', 'groqKeyStatus', 'modelName',
-              'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
-              'builderPlanBtn', 'builderHtmlBtn',
+              'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderToggle',
+              'builderWarn',
               'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
               'modelNote',
              'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',

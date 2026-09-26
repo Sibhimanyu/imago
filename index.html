@@ -226,10 +226,9 @@
           </div>
 
           <div class="page-tools-right">
-            <div class="refresh-group builder-group" role="group" aria-label="Interface builder">
-              <span class="refresh-label">Build</span>
-              <button type="button" class="seg-btn is-active" id="builderPlanBtn" data-builder="spec" aria-pressed="true" title="Structured plan: the model returns JSON, Imago renders it">Structured</button>
-              <button type="button" class="seg-btn" id="builderHtmlBtn" data-builder="html" aria-pressed="false" title="Full HTML: the model writes the whole page, shown sandboxed">HTML</button>
+            <div class="refresh-group builder-group">
+              <span class="refresh-label" id="builderLabel">Full HTML</span>
+              <button type="button" class="switch" id="builderToggle" role="switch" aria-checked="false" aria-labelledby="builderLabel" aria-describedby="builderWarn" title="The model writes the whole page instead of a plan Imago draws"><span class="switch-knob"></span></button>
             </div>
 
             <div class="refresh-group watch-group">
@@ -260,6 +259,7 @@
               <span class="btn-label">Inspect</span>
             </button>
           </div>
+          <p class="builder-warn" id="builderWarn" hidden>Full HTML spends more of your API quota: a model call for every endpoint rather than every shape, a much longer reply each time, and another call to redraw the page when the data changes.</p>
         </div>
 
         <!-- One tick per fetch; yellow where that fetch changed something. -->
@@ -406,15 +406,6 @@
                  placeholder="Ask it something…" aria-label="Message">
           <button type="submit" class="btn" id="chatSendBtn">Send</button>
         </form>
-      </div>
-
-      <div class="card settings-card">
-        <h3 class="sub-head">Interface</h3>
-        <select id="builderSelect" class="text-input" aria-label="Interface builder">
-          <option value="spec">Structured plan (default)</option>
-          <option value="html">Full HTML page</option>
-        </select>
-        <p class="muted-note">Full HTML renders sandboxed with scripts disabled. Applies to the next request.</p>
       </div>
 
       <div class="card settings-card">
