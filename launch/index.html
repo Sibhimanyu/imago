@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Day: Imago · Business assignment</title>
+<link rel="icon" href="../favicon.svg">
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --sink: #f1efe9; --line: #e7e5df; --line-soft: #efede8;
+    --ink: #1b1b19; --ink-2: #45443f; --muted: #66655f;
+    --yellow: #f5ce47; --yellow-bg: #fdf3cd; --yellow-ink: #6f570b;
+    --green: #4fa96a; --green-bg: #e4f4e8; --link: #3f6fb5;
+    --sans: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --display: "Inter Display", Inter, -apple-system, Helvetica, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: #c9c6bd; }
+  a:hover { text-decoration-color: var(--ink); }
+  code { font: 0.86em var(--mono); background: var(--sink); padding: 1px 5px; border-radius: 4px; }
+  img { max-width: 100%; display: block; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  header.top { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
+  header.top .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
+  .brand svg { width: 28px; height: 28px; }
+  nav.jump { display: flex; gap: 18px; margin-left: auto; font-size: 14px; overflow-x: auto; white-space: nowrap; }
+  nav.jump a { color: var(--muted); text-decoration: none; }
+  nav.jump a:hover { color: var(--ink); }
+
+  .hero { padding-top: 72px; padding-bottom: 56px; }
+  .eyebrow { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  h1 { font: 600 64px/1.02 var(--display); letter-spacing: -0.035em; margin: 0 0 20px; }
+  .lede { font-size: 20px; color: var(--ink-2); max-width: 720px; margin: 0 0 28px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; font-size: 14px; text-decoration: none; }
+  .chip.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  h2 { font: 600 36px/1.1 var(--display); letter-spacing: -0.025em; margin: 0 0 8px; }
+  h3 { font: 600 22px/1.25 var(--display); letter-spacing: -0.015em; margin: 40px 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 32px; max-width: 720px; }
+  .num { font: 500 14px var(--mono); color: var(--muted); display: block; margin-bottom: 10px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .card h4 { margin: 0 0 8px; font-size: 17px; }
+  .card p { margin: 0 0 10px; color: var(--ink-2); }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
+  .card li { margin: 4px 0; }
+  .big { font: 600 26px/1.3 var(--display); letter-spacing: -0.015em; margin: 0 0 12px; }
+
+  .funnel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--card); }
+  .funnel > div { padding: 24px; border-right: 1px solid var(--line); position: relative; }
+  .funnel > div:last-child { border-right: 0; }
+  .funnel .step { font: 500 13px var(--mono); color: var(--muted); }
+  .funnel h4 { margin: 6px 0 6px; font: 600 22px var(--display); }
+  .funnel p { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 15px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--sink); }
+  tr:last-child td { border-bottom: 0; }
+  .yes { color: #2d7a45; font-weight: 600; }
+  .no { color: var(--muted); font-weight: 600; }
+
+  figure { margin: 0; }
+  figure img { border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .posts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .post { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .post img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top left; border-bottom: 1px solid var(--line); }
+  .post-body { padding: 18px 20px 20px; }
+  .post-day { font: 500 12px var(--mono); color: var(--muted); margin: 0; }
+  .post h4 { margin: 2px 0 10px; font-size: 17px; }
+  .post-x, .post-li { font-size: 14px; color: var(--ink-2); }
+  .post-x p, .post-li p { margin: 0 0 8px; }
+  .net { display: inline-block; font: 500 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; margin-bottom: 8px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  details[open] summary { margin-bottom: 8px; }
+
+  blockquote { margin: 0; padding: 18px 20px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--ink); border-radius: 12px; color: var(--ink-2); font-size: 15px; }
+  blockquote p { margin: 0 0 10px; }
+  blockquote p:last-child { margin: 0; }
+
+  .fix { background: var(--yellow-bg); border: 1px solid #efe0a8; border-radius: 16px; padding: 22px 24px; }
+  .fix .tag { display: inline-block; font: 600 11px var(--mono); letter-spacing: .06em; color: var(--yellow-ink); background: var(--card); border: 1px solid #efe0a8; border-radius: 6px; padding: 2px 7px; margin-bottom: 8px; }
+  .fix p { margin: 0 0 8px; color: #4d3f0c; }
+
+  .badge-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .badge-row img { width: 192px; border: 0; }
+  pre { font: 13px/1.6 var(--mono); background: var(--ink); color: #e9e7e1; padding: 16px 18px; border-radius: 12px; white-space: pre-wrap; word-break: break-all; margin: 0; }
+
+  .dropped { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .dropped .card { padding: 18px; }
+  .dropped h4 { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
+  .dropped p { font-size: 14px; }
+
+  .timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; padding: 0 0 20px 24px; }
+  .timeline li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--ink); }
+  .timeline li.done::before { background: var(--green); border-color: var(--green); }
+  .timeline b { display: block; }
+  .timeline span { color: var(--ink-2); font-size: 15px; }
+  .who-tag { font: 500 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+
+  footer { padding: 40px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 860px) {
+    h1 { font-size: 44px; }
+    .grid2, .grid3, .posts, .funnel, .dropped { grid-template-columns: 1fr; }
+    .funnel > div { border-right: 0; border-bottom: 1px solid var(--line); }
+    .funnel > div:last-child { border-bottom: 0; }
+    nav.jump { display: none; }
+    .wrap { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Launch Day</a>
+    <nav class="jump">
+      <a href="#who">Who</a><a href="#jobs">Three jobs</a><a href="#marketing">Marketing</a><a href="#partners">Partners</a><a href="#support">Support</a><a href="#dropped">Dropped</a><a href="#shipped">Shipped</a><a href="#next">Next</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <p class="eyebrow">Business assignment · Launch Day · Faculty: Geetha B</p>
+    <h1>Launch Day: Imago</h1>
+    <p class="lede">Imago turns an API response into an interface: paste a URL and it draws the page the data deserves. The app worked, but nobody knew it existed. This is the launch: who it's for, the three jobs it needs, and the things I built that keep working without me.</p>
+    <div class="meta">
+      <a class="chip dark" href="https://imago.onslate.in">Live: imago.onslate.in</a>
+      <a class="chip" href="https://github.com/Sibhimanyu/imago">github.com/Sibhimanyu/imago</a>
+      <span class="chip">Free · MIT · open source</span>
+      <span class="chip">Spent: ₹0</span>
+    </div>
+  </div>
+
+  <section id="who">
+    <div class="wrap">
+      <span class="num">01</span>
+      <h2>Who it is for</h2>
+      <p class="sub">Stated narrowly enough that some people are left out.</p>
+      <div class="grid3">
+        <div class="card">
+          <h4>For</h4>
+          <p class="big">Developers meeting a public JSON API for the first time.</p>
+          <p>The ten minutes between finding an API and writing the first line of code against it, when the only question is whether the data is any good.</p>
+        </div>
+        <div class="card">
+          <h4>What they do today</h4>
+          <p>Paste the URL into a browser tab and scroll raw JSON, or send it through Postman and scroll it there.</p>
+          <p>Then, to really see the data, they write a throwaway page they'll delete by evening.</p>
+          <p><b>Imago is that throwaway page, drawn for them.</b></p>
+        </div>
+        <div class="card">
+          <h4>Left out, on purpose</h4>
+          <ul>
+            <li>Private or internal APIs that block browser apps (CORS)</li>
+            <li>Anyone sending POSTs or running API tests. Postman does that well.</li>
+            <li>Non-developers. You need to know what an endpoint is.</li>
+            <li>Teams who want a production dashboard</li>
+          </ul>
+        </div>
+      </div>
+      <h3>The product, in nine seconds</h3>
+      <figure>
+        <img src="../docs/readme/demo.gif" alt="Pasting a PokeAPI URL into Imago turns the response into a page with stat bars">
+        <figcaption>Recorded on the live site: paste a PokeAPI URL and the response becomes a profile page. This GIF opens the GitHub README.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="jobs">
+    <div class="wrap">
+      <span class="num">02</span>
+      <h2>The three jobs</h2>
+      <p class="sub">The brief's problem is "nobody knows it exists". These three take a developer from hearing about Imago, to arriving through an API's docs, to getting past their first problem. Each one runs without me there.</p>
+      <div class="funnel">
+        <div><span class="step">1 · Hear</span><h4>Marketing</h4><p>Developers hear about it: 14 scheduled Zoho Social posts, then Show HN, dev.to and Reddit on launch day.</p></div>
+        <div><span class="step">2 · Arrive</span><h4>Partners</h4><p>Someone with an audience spreads it: a listing in Open-Meteo's README, read by developers checking out a free API.</p></div>
+        <div><span class="step">3 · Stay</span><h4>Support</h4><p>People who get stuck or complain are answered in public on GitHub, by pages and forms that work while I'm away.</p></div>
+      </div>
+      <h3>How the three were chosen</h3>
+      <div class="grid2">
+        <div class="card"><h4>The facts that decided it</h4><ul>
+          <li>Free and open source, with no server, so nothing to sell and no sign-up funnel</li>
+          <li>Users are reading an API's docs at the moment they need it</li>
+          <li>The biggest failure is CORS: many APIs refuse browser apps, and a first-time user who hits that leaves</li>
+          <li>Nothing to spend, and everything has to keep working without me</li>
+        </ul></div>
+        <div class="card"><h4>Tools, chosen to fit an open-source project</h4><ul>
+          <li><b>Zoho Social</b> (free plan) schedules the LinkedIn and X run</li>
+          <li><b>GitHub</b> for support: public issues, forms and saved replies. A private help desk like Zoho Desk would hide the answers, so I didn't use one.</li>
+          <li>No email campaign tool, because developers watch a repo for releases instead</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="marketing">
+    <div class="wrap">
+      <span class="num">03 · Job 1</span>
+      <h2>Marketing: developers hear about it</h2>
+      <p class="sub">Free and open source, so the marketing is too: show the product working, link to the code, and ask for one thing, <b>try it, then star the repo</b>.</p>
+      <table>
+        <tr><th>Where</th><th>What</th><th>When</th><th>Runs without me</th></tr>
+        <tr><td><b>Landing page</b></td><td>The live demo: a real forecast turns into an interface before the page asks for anything</td><td>Live</td><td>Always</td></tr>
+        <tr><td><b>README</b></td><td>The nine-second demo GIF at the top</td><td>Live</td><td>Always</td></tr>
+        <tr><td><b>Zoho Social</b></td><td>14 daily posts on LinkedIn and X, each showing one real API</td><td>Days 1 to 14</td><td>Scheduled once</td></tr>
+        <tr><td><b>Hacker News</b></td><td>Show HN post and first comment</td><td>Day 1, 7 pm IST</td><td>Found by search</td></tr>
+        <tr><td><b>dev.to</b></td><td>Launch post: "You found an API. Now what?"</td><td>Day 1</td><td>Found by search</td></tr>
+        <tr><td><b>Reddit</b></td><td>r/opensource, r/SideProject, and r/webdev on its showcase day</td><td>Week 1</td><td>Found by search</td></tr>
+      </table>
+
+      <h3>The 14-day Zoho Social run</h3>
+      <p class="sub">Every image is a screenshot of the live site, and every <code>#open=</code> link opens that API's page directly, so each post is also a demo. The X character counts treat each link as 23 characters, as X does. Open-Meteo is credited wherever its data appears.</p>
+      <div class="posts">
+<article class="post">
+  <img src="social/demo.gif" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 1</p>
+    <h4>Imago is live</h4>
+    <div class="post-x"><span class="net">X · 235/280</span><p>Imago is live.</p><p>Paste an API URL. Instead of a wall of JSON, you get a page: headline values, a fact sheet, tables and charts.</p><p>Free, open source, runs in your browser. No account.</p><p><a href="https://imago.onslate.in">https://imago.onslate.in</a><br>Code: <a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>You found a free API. Before you use it, you want to know what&#x27;s in it. So<br>you open the URL and scroll a wall of JSON, or write a throwaway page just<br>to see the data.</p><p>I built Imago to be that throwaway page. Paste an API URL and it draws the<br>response as a page: the values that matter up top, a fact sheet under them,<br>tables and charts for the rest.</p><p>It&#x27;s free and open source. It runs in your browser, with no account and no<br>server, so your keys stay on your machine.</p><p>Try it: <a href="https://imago.onslate.in">https://imago.onslate.in</a><br>Code (a star helps): <a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/pokemon.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 2</p>
+    <h4>A Pokémon, not a JSON tree</h4>
+    <div class="post-x"><span class="net">X · 174/280</span><p>PokeAPI&#x27;s Pikachu, drawn by Imago: sprite, stat bars, type badge, links as buttons.</p><p>Nobody told it what a Pokémon is. It read the shape of the JSON.</p><p><a href="https://imago.onslate.in/#open=https://pokeapi.co/api/v2/pokemon/pikachu">https://imago.onslate.in/#open=https://pokeapi…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>PokeAPI&#x27;s Pikachu, as Imago draws it: the sprite, stat bars, the type as a<br>badge, and the links in the response turned into buttons you can follow.</p><p>Nobody told Imago what a Pokémon is. It reads the shape of the JSON, such as<br>a named array of numbers or an image URL, and picks a component for each.</p><p>Open it yourself:<br><a href="https://imago.onslate.in/#open=https://pokeapi.co/api/v2/pokemon/pikachu">https://imago.onslate.in/#open=https://pokeapi…</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/weather.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 3</p>
+    <h4>A forecast, read for a human</h4>
+    <div class="post-x"><span class="net">X · 219/280</span><p>Open-Meteo puts 31.2 in one object and &quot;°C&quot; in another.</p><p>Imago puts them back together: the temperature as the headline, humidity as a meter, the hourly forecast as a chart.</p><p>Data: Open-Meteo.com<br><a href="https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&amp;longitude=80.27&amp;current=temperature_2m,relative_humidity_2m,wind_speed_10m&amp;hourly=temperature_2m&amp;forecast_days=1">https://imago.onslate.in/#open=https://api.ope…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Open-Meteo&#x27;s forecast for Chennai. The raw response puts 31.2 in one object<br>and &quot;°C&quot; in another. Imago puts them back together: temperature as the<br>headline with its unit, humidity as a meter, the hourly forecast as a chart,<br>and bookkeeping like generation time folded into Details.</p><p>Weather data by Open-Meteo.com (CC BY 4.0).</p><p><a href="https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&amp;longitude=80.27&amp;current=temperature_2m,relative_humidity_2m,wind_speed_10m&amp;hourly=temperature_2m&amp;forecast_days=1">https://imago.onslate.in/#open=https://api.ope…</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/watch.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 4</p>
+    <h4>Watch an endpoint change</h4>
+    <div class="post-x"><span class="net">X · 148/280</span><p>Watch re-fetches an endpoint every 10, 30 or 60s and marks exactly what changed.</p><p>Here&#x27;s the ISS, watched every 10 seconds.</p><p><a href="https://imago.onslate.in/#open=https://api.wheretheiss.at/v1/satellites/25544">https://imago.onslate.in/#open=https://api.whe…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Turn on Watch and Imago fetches the endpoint again every 10, 30 or 60<br>seconds and marks exactly what changed since the last fetch. The history<br>strip shows when things changed.</p><p>This is the International Space Station&#x27;s position, watched every 10<br>seconds. Every value that changed has a CHANGED tag.</p><p><a href="https://imago.onslate.in/#open=https://api.wheretheiss.at/v1/satellites/25544">https://imago.onslate.in/#open=https://api.whe…</a><br>(Turn on Watch once it opens.)</p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/schema.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 5</p>
+    <h4>The model never writes HTML</h4>
+    <div class="post-x"><span class="net">X · 255/280</span><p>The model never writes HTML.</p><p>It gets the response&#x27;s shape and returns a small JSON plan: which fields matter, which component shows each. Imago&#x27;s own renderer draws it as text. Nothing from an API or a model is treated as markup.</p><p><a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>A design choice I&#x27;d make again: the model never writes HTML.</p><p>Imago works out the response&#x27;s shape (the schema on the right) and sends it<br>to the model with a short sample of values. The model returns a small JSON<br>plan: which fields matter and which component shows each one. Imago&#x27;s own renderer draws<br>the plan, and every value goes in as text. Nothing from an API or a model is<br>ever treated as markup.</p><p>The code is open: <a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/library.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 6</p>
+    <h4>A search becomes a table</h4>
+    <div class="post-x"><span class="net">X · 144/280</span><p>An array of objects becomes a table. Columns are picked by what tells one row from another.</p><p>Open Library, &quot;the hobbit&quot;:<br><a href="https://imago.onslate.in/#open=https://openlibrary.org/search.json?title=the+hobbit&amp;limit=5">https://imago.onslate.in/#open=https://openlib…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Open Library, searching &quot;the hobbit&quot;. An array of objects becomes a table,<br>with columns chosen by what tells one row from another: title, author,<br>edition count, first published.</p><p><a href="https://imago.onslate.in/#open=https://openlibrary.org/search.json?title=the+hobbit&amp;limit=5">https://imago.onslate.in/#open=https://openlib…</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/landing.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 7</p>
+    <h4>No key? It still works</h4>
+    <div class="post-x"><span class="net">X · 268/280</span><p>No key, no account, still works.</p><p>Without a model, Imago&#x27;s renderer runs on rules that know no particular API. A test fails if a sample API&#x27;s field names leak into them.</p><p>A free Gemini or Groq key gets you a designed page.</p><p>Data: Open-Meteo.com<br><a href="https://imago.onslate.in">https://imago.onslate.in</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Imago works with no key and no account. With no model, the same renderer<br>runs on rules: it finds the title, pairs numbers with their units, turns<br>time series into charts, and tucks bookkeeping away.</p><p>None of those rules knows any particular API. A test fails if a sample<br>API&#x27;s field names turn up in them.</p><p>For a designed page, add a free Gemini or Groq key. It stays in your<br>browser.</p><p>Weather data in the image by Open-Meteo.com (CC BY 4.0).</p><p><a href="https://imago.onslate.in">https://imago.onslate.in</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/landing.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 8</p>
+    <h4>Paste a curl command</h4>
+    <div class="post-x"><span class="net">X · 251/280</span><p>Paste a curl command, not just a URL. Straight from the docs or &quot;Copy as cURL&quot;.</p><p>Headers go to Inspect, -u becomes Basic auth, -G -d a query string. Headers the browser sets itself are left out, and named.</p><p>Data: Open-Meteo.com<br><a href="https://imago.onslate.in">https://imago.onslate.in</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>The box takes a curl command as well as a URL, straight from an API&#x27;s docs<br>or your browser&#x27;s &quot;Copy as cURL&quot;.</p><p>Headers go into Inspect → Headers, <code>-u</code> becomes Basic auth, and <code>-G -d</code><br>becomes a query string. Headers the browser sets itself (Cookie,<br>User-Agent) are left out, and Imago tells you which. Headers only last as<br>long as the tab is open.</p><p>Weather data in the image by Open-Meteo.com (CC BY 4.0).</p><p><a href="https://imago.onslate.in">https://imago.onslate.in</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/thirukkural.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 9</p>
+    <h4>திருக்குறள், drawn from JSON</h4>
+    <div class="post-x"><span class="net">X · 146/280</span><p>Kural 1, straight from a Thirukkural API: the Tamil verse, its transliteration and meaning, laid out from the JSON alone.</p><p><a href="https://imago.onslate.in/#open=https://tamil-kural-api.vercel.app/api/kural/1">https://imago.onslate.in/#open=https://tamil-k…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Kural 1 from a Thirukkural API: the Tamil verse, its transliteration, its<br>meaning and its section, laid out from the response alone. Imago doesn&#x27;t<br>know what a kural is. It reads what the JSON holds.</p><p><a href="https://imago.onslate.in/#open=https://tamil-kural-api.vercel.app/api/kural/1">https://imago.onslate.in/#open=https://tamil-k…</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/watch.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 10</p>
+    <h4>360 fetches, one model call</h4>
+    <div class="post-x"><span class="net">X · 183/280</span><p>Watching an endpoint every 10s for an hour: ~360 fetches, one model call.</p><p>Imago caches each plan by the response&#x27;s shape. The values change, the shape doesn&#x27;t, so the plan is reused.</p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Watching an endpoint every 10 seconds for an hour is about 360 fetches and,<br>if the response keeps the same shape, one model call.</p><p>Imago saves each plan under a fingerprint of the response&#x27;s shape. The<br>values change and the shape doesn&#x27;t, so the plan is reused. That makes<br>Watch cheap enough to leave on, even on a free key.</p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/pokemon.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 11</p>
+    <h4>Share a page, not your keys</h4>
+    <div class="post-x"><span class="net">X · 177/280</span><p>Share copies a link that opens the same page for someone else.</p><p>It carries the endpoint and the layout, never your headers, keys or the response. Their browser fetches it fresh.</p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Share copies a link that opens the same page for someone else: the endpoint<br>and the layout. It never carries your headers, keys or the response itself.<br>Their browser fetches the data fresh. A key in the address (<code>?api_key=</code>) is<br>left out too, and Imago warns you if that means the link may not load for<br>them.</p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/badge.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 12</p>
+    <h4>For people who run APIs</h4>
+    <div class="post-x"><span class="net">X · 197/280</span><p>Run a public API? One line in your README gives readers an &quot;Open in Imago&quot; button.</p><p>imago.onslate.in/#open= plus your endpoint. No sign-up, no script, no server in between.</p><p><a href="https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md">https://github.com/Sibhimanyu/imago/blob/maste…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>If you run a public API, one line in your README gives your readers an<br>&quot;Open in Imago&quot; button that opens your example response as a page. No<br>sign-up, no script on your site, and nothing passes through a server.</p><p>The link is imago.onslate.in/#open= followed by your endpoint. The badge and<br>snippet are here:<br><a href="https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md">https://github.com/Sibhimanyu/imago/blob/maste…</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/landing.png" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 13</p>
+    <h4>Open source, no build step</h4>
+    <div class="post-x"><span class="net">X · 170/280</span><p>Imago is MIT-licensed with no build step: native ES modules, no framework. A static server runs it.</p><p>Issues and PRs welcome.</p><p>Data: Open-Meteo.com<br><a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Imago is MIT-licensed, and there&#x27;s no build step: native ES modules, no<br>framework, nothing extra loaded in the browser. A static server runs it.</p><p>Issues and pull requests are welcome. If a page comes out wrong, the issue<br>form asks for a Share link, which shows exactly what you saw.</p><p>Weather data in the image by Open-Meteo.com (CC BY 4.0).</p><p><a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+  </div>
+</article>
+<article class="post">
+  <img src="social/demo.gif" alt="" loading="lazy">
+  <div class="post-body">
+    <p class="post-day">Day 14</p>
+    <h4>Send me your worst endpoint</h4>
+    <div class="post-x"><span class="net">X · 155/280</span><p>Two weeks in. Send me an endpoint Imago draws badly.</p><p>Press Share, paste the link into an issue. It shows me exactly what you saw.</p><p><a href="https://github.com/Sibhimanyu/imago/issues/new/choose">https://github.com/Sibhimanyu/imago/issues/new…</a></p></div>
+    <details><summary>LinkedIn version</summary><div class="post-li"><p>Two weeks since launch. The most useful thing you can send me is an<br>endpoint Imago draws badly. Press Share on the page and paste the link into<br>an issue. It shows exactly what you saw, and it&#x27;s how the rules get better.</p><p><a href="https://github.com/Sibhimanyu/imago/issues/new/choose">https://github.com/Sibhimanyu/imago/issues/new…</a></p></div></details>
+  </div>
+</article>
+      </div>
+
+      <h3>Launch day: Show HN</h3>
+      <blockquote>
+        <p><b>Show HN: Imago – paste an API URL, get an interface instead of JSON</b></p>
+        <p>I kept doing the same thing with every new API: open the URL, scroll a screen of raw JSON, then write a throwaway page to see whether the data was any use. Imago skips the throwaway page…</p>
+        <p>The model never writes HTML. It returns a small JSON plan, and Imago's own renderer draws it with textContent · The plan is cached by the response's shape: ~360 fetches an hour, one model call · Works with no key at all · No backend, MIT, no build step.</p>
+      </blockquote>
+      <p style="margin-top:12px;font-size:14px;color:var(--muted)">Full text in <a href="marketing.md">marketing.md</a>. The dev.to post is <a href="launch-post.md">launch-post.md</a>, with the Task 3 blog banner as its cover.</p>
+    </div>
+  </section>
+
+  <section id="partners">
+    <div class="wrap">
+      <span class="num">04 · Job 2</span>
+      <h2>Partners: someone spreads it for me</h2>
+      <p class="sub">My users are reading a free API's docs when they need Imago. The people who own those docs are the partners. I checked every API in Imago's examples for a place in its README where Imago would belong.</p>
+      <table>
+        <tr><th>API</th><th>Verdict</th><th>Why</th></tr>
+        <tr><td><b>Open-Meteo</b> · 6.3k stars</td><td class="yes">Asked</td><td>Its README has a "Who is using Open-Meteo?" list and asks: <i>"Please open a pull request and add your repository or app to the list!"</i> A dozen were merged in 2026. Imago's landing demo really does use their forecast.</td></tr>
+        <tr><td>PokeAPI</td><td class="no">Skipped</td><td>Its README only lists code libraries, and Imago isn't one. A badge would be self-promotion in someone else's README.</td></tr>
+        <tr><td>Frankfurter</td><td class="no">Skipped</td><td>Its README covers only deployment and contributing.</td></tr>
+        <tr><td>Free Dictionary API</td><td class="no">Skipped</td><td>No commits since November 2023, and the API timed out.</td></tr>
+        <tr><td>Thirukkural API</td><td class="no">Skipped</td><td>No public repository.</td></tr>
+      </table>
+
+      <h3>What the check found first</h3>
+      <div class="fix">
+        <span class="tag">FIXED BEFORE ASKING · v0.13.4.0</span>
+        <p><b>Imago was showing Open-Meteo's data without the credit its licence requires.</b> Their data is CC BY 4.0: <i>"Include an attribution link next to any location where Open-Meteo data is displayed."</i> The landing demo had none, and their maintainer looks at the apps people submit.</p>
+        <p>Now the demo carries "Weather data by Open-Meteo.com", linked. A test ties the credit to the demo, Figma is synced, and the posts credit them too.</p>
+      </div>
+      <figure style="margin-top:16px"><img src="evidence/credit.png" alt="The live landing page with the Open-Meteo credit under the demo"><figcaption>Live on imago.onslate.in: the credit under the demo, bottom right.</figcaption></figure>
+
+      <h3>The one yes: pull request #2155</h3>
+      <div class="grid2">
+        <figure><a href="https://github.com/open-meteo/open-meteo/pull/2155"><img src="evidence/pr-2155.png" alt="Pull request 2155 on open-meteo/open-meteo"></a><figcaption><a href="https://github.com/open-meteo/open-meteo/pull/2155">open-meteo/open-meteo#2155</a>, opened 2026-09-26, awaiting review</figcaption></figure>
+        <figure><img src="evidence/pr-2155-diff.png" alt="The one-line diff adding Imago to the Apps list"><figcaption>One line, in alphabetical order after Home Assistant, in the list's own format</figcaption></figure>
+      </div>
+
+      <h3>For any API owner who asks: Open in Imago</h3>
+      <div class="grid2">
+        <div class="card">
+          <div class="badge-row"><img src="../assets/open-in-imago.svg" alt="Open in Imago badge"></div>
+          <p style="margin-top:14px">New in the app: a link an API's docs can write by hand. It opens the endpoint as a page in one click, with no sign-up and no server in between. Public https only.</p>
+        </div>
+        <pre>imago.onslate.in/#open=&lt;endpoint&gt;
+
+[![Open in Imago](…/open-in-imago.svg)](https://imago.onslate.in/#open=https://api.example.com/v1/items/1)</pre>
+      </div>
+      <p style="margin-top:12px;font-size:14px;color:var(--muted)">Guide for API owners: <a href="open-in-imago.md">open-in-imago.md</a> · Research and tracking: <a href="partners.md">partners.md</a></p>
+    </div>
+  </section>
+
+  <section id="support">
+    <div class="wrap">
+      <span class="num">05 · Job 3</span>
+      <h2>Support: people who get stuck, and people who complain</h2>
+      <p class="sub">Free and open source, so support happens in public on GitHub. A question answered in an issue answers the next person who searches for it, and a complaint becomes a bug report the fix links back to.</p>
+      <div class="grid3">
+        <div class="card"><h4>1 · The app explains itself</h4><p>Each failure says what happened and what to try, for example <i>"This API does not allow browser apps"</i>, with the reason and the fix.</p></div>
+        <div class="card"><h4>2 · SUPPORT.md</h4><p>Each error the app shows, word for word, with its fix: CORS, unreachable, Fallback, rejected key, Ollama, share links. Linked from the README and the new-issue page.</p></div>
+        <div class="card"><h4>3 · Issue forms</h4><p><b>"The page came out wrong"</b> asks for a Share link, so every complaint arrives with a way to reproduce it. <b>"Something is broken"</b> points to SUPPORT.md first.</p></div>
+      </div>
+      <div class="grid2" style="margin-top:20px">
+        <figure><a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md"><img src="evidence/support-md.png" alt="SUPPORT.md on GitHub"></a><figcaption>SUPPORT.md, public on GitHub</figcaption></figure>
+        <div class="card">
+          <h4>What I do</h4>
+          <ul>
+            <li><b>Reply to every issue within two days.</b> SUPPORT.md promises it.</li>
+            <li><b>Five saved replies:</b> CORS, wrong page, key problems, out of scope, a complaint</li>
+            <li><b>Labels created:</b> <code>wrong page</code>, <code>cors</code>, <code>out of scope</code></li>
+            <li><b>Close with the fix:</b> reply with the release number, so the person who complained sees they were heard</li>
+          </ul>
+          <p style="margin-top:12px">Runbook: <a href="support.md">support.md</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dropped">
+    <div class="wrap">
+      <span class="num">06</span>
+      <h2>What I dropped, and why</h2>
+      <p class="sub">Five of the eight jobs, each for a reason specific to Imago.</p>
+      <div class="dropped">
+        <div class="card"><h4>Sales</h4><p>For a free tool, the "one yes" is Open-Meteo merging the listing, and that's Partners.</p></div>
+        <div class="card"><h4>Pricing</h4><p>Free, decided by how it's built: no server means nothing to pay for. Charging would need accounts, and a server holding people's keys.</p></div>
+        <div class="card"><h4>Marketplace</h4><p>Developers don't browse marketplaces for this. Zoho Marketplace is for Zoho add-ons, and Product Hunt is a one-day spike.</p></div>
+        <div class="card"><h4>Public relations</h4><p>No one writes about a tool with no users. There's a story once Open-Meteo lists it.</p></div>
+        <div class="card"><h4>Community</h4><p>A launch with no users has nobody to talk to each other. GitHub issues cover talking to me for now.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shipped">
+    <div class="wrap">
+      <span class="num">07</span>
+      <h2>What shipped to the product</h2>
+      <p class="sub">The launch needed real changes to the app, not just documents. Each one was tested, deliberately broken to confirm its test fails, deployed and checked on the live site.</p>
+      <table>
+        <tr><th>Version</th><th>Change</th><th>Why the launch needed it</th></tr>
+        <tr><td><code>0.13.3.0</code></td><td><b>Open in Imago links</b> (<code>#open=&lt;endpoint&gt;</code>) and a badge. <b>SUPPORT.md</b> and <b>GitHub issue forms</b>.</td><td>Partners need a link they can write by hand. Support needs a place to answer from.</td></tr>
+        <tr><td><code>0.13.3.1</code></td><td>A share or open link pasted into a tab already on Imago now opens. A demo GIF opens the README.</td><td>Found while capturing the post images: the tab showed the landing page instead of the link.</td></tr>
+        <tr><td><code>0.13.4.0</code></td><td>The landing demo credits Open-Meteo, as its CC BY 4.0 licence requires.</td><td>Found while checking partners. Required before asking them.</td></tr>
+      </table>
+      <div class="grid3" style="margin-top:20px">
+        <div class="card"><p class="big">397</p><p>tests passing, including 5 new ones</p></div>
+        <div class="card"><p class="big">Public</p><p>The repo went open source, with topics, labels and issue forms in place</p></div>
+        <div class="card"><p class="big">Synced</p><p>Figma updated to match the landing page change</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <span class="num">08</span>
+      <h2>Where it stands, and what's next</h2>
+      <div class="grid2">
+        <ul class="timeline">
+          <li class="done"><b>Kit built, repo public, app changes live</b><span>Everything above</span></li>
+          <li class="done"><b>Open-Meteo pull request opened</b><span>#2155, awaiting review</span></li>
+          <li><b>Schedule the 14 posts in Zoho Social</b><span>9:30 am IST daily from launch day</span><span class="who-tag">me</span></li>
+          <li><b>Add the five saved replies on GitHub</b><span>Settings → Saved replies</span><span class="who-tag">me</span></li>
+          <li><b>Launch day</b><span>dev.to and Reddit in the morning; Show HN at about 7 pm IST, staying in the thread for three hours</span><span class="who-tag">me</span></li>
+          <li><b>Day 7</b><span>One follow-up on #2155 if it hasn't been answered; r/webdev on its showcase day</span><span class="who-tag">me</span></li>
+          <li><b>After two weeks</b><span>Add a "What happened" section: stars, visits, issues, the merge</span></li>
+        </ul>
+        <div class="card">
+          <h4>Known and left open</h4>
+          <ul>
+            <li>Catalyst serves the site with a one-year browser cache, so returning visitors miss updates. The fix is a switch in the Catalyst console.</li>
+            <li>The Task 2 flyer and Task 3 banner show Open-Meteo data and need its credit line.</li>
+            <li>With the Inspect drawer open at 1200px, large numbers wrap onto two lines.</li>
+          </ul>
+          <h4 style="margin-top:18px">Tools used</h4>
+          <p>Claude (Claude Code), Zoho Social, Zoho Catalyst Slate (hosting), GitHub, Figma. Brand pieces from earlier tasks: Adobe Illustrator.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/master/launch">launch/</a> on GitHub.</div>
+</footer>
+</body>
+</html>
