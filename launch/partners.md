@@ -60,7 +60,7 @@ in the list's own format:
 
 | Partner | Pull request | Opened | Followed up | Result |
 |---|---|---|---|---|
-| Open-Meteo | | | | |
+| Open-Meteo | [#2155](https://github.com/open-meteo/open-meteo/pull/2155) | 2026-09-26 | | Open |
 
 One follow-up after a week, on the same thread, if there's no answer. After
 that, leave it.
