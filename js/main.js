@@ -5,9 +5,9 @@
    rest of js/ is imported from here. See the module table in README.md.
    ========================================================================== */
 
-import { WAITLIST_URL, DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, getProvider } from './config.js';
+import { WAITLIST_URL, DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDERS, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, getProvider } from './config.js';
 import { dom, state } from './state.js';
-import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getSessionModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setSessionModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
+import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
 import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
 import { byteLength, canonPath, el, formatBytes, formatValue, getByPath, isImageUrl, isPlainObject, isUrl, parsePath, qs } from './util.js';
 import { lastSegment } from './values.js';
@@ -118,12 +118,10 @@ function wireEvents() {
     // leave the page silently and pop the phone keyboard into the URL box.
     if (state.stage && state.stack.length) goBack();
   });
-  if (dom.modelName) {
-    dom.modelName.addEventListener('input', function () {
-      setSessionModel(dom.modelName.value.trim());
-      syncChatTarget();
-    });
-  }
+  dom.modelName.addEventListener('change', function () {
+    setModel(getSessionProvider(), dom.modelName.value);
+    syncChatTarget();
+  });
 
   dom.urlInput.addEventListener('input', function () {
     state.activeRequestId = null;
@@ -212,7 +210,7 @@ function wireEvents() {
 
   dom.providerSelect.addEventListener('change', function () {
     setSessionProvider(dom.providerSelect.value);
-    syncProviderUi({ force: true });
+    syncProviderUi();
     setKeyStatus();
     toast('Provider set to ' + getProvider(dom.providerSelect.value).label + '.');
   });
@@ -225,9 +223,6 @@ function wireEvents() {
       if (testBtn) testBtn.addEventListener('click', function () { testProvider(id); });
     })(PROVIDER_IDS[wi]);
   }
-  dom.modelName.addEventListener('input', function () {
-    setSessionModel(dom.modelName.value.trim());
-  });
   dom.themeSelect.addEventListener('change', function () {
     if (setTheme(dom.themeSelect.value)) repaintForTheme();
   });
@@ -368,7 +363,7 @@ function cacheDom() {
               'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
               'modelNote',
              'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
-              'providerSelect', 'modelHint',
+              'providerSelect',
              'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource',
              'inspectBtn', 'inspector', 'historyStrip', 'railExamples', 'railClose',
              'settingsClose', 'sheetScrim'];
@@ -473,8 +468,25 @@ function migrateRemovedOllama() {
     delete prefs.ollamaEndpoint;
     setPrefs(prefs);
   }
-  if (wasActive) setSessionModel('');
+  if (wasActive) dropSessionModel();
   return wasActive;
+}
+
+// Before 0.19.0.0 the model was a text box kept in sessionStorage, gone with
+// the tab. A reader who had picked one keeps it: it moves to the saved
+// per-provider choice, once, for the provider it was used with.
+function adoptSessionModel() {
+  var typed = '';
+  try { typed = (window.sessionStorage.getItem(SESSION.model) || '').trim(); } catch (e) { /* ignore */ }
+  if (!typed) return;
+  var id = getSessionProvider();
+  var saved = getPrefs().models;
+  if (!(saved && saved[id])) setModel(id, typed);
+  dropSessionModel();
+}
+
+function dropSessionModel() {
+  try { window.sessionStorage.removeItem(SESSION.model); } catch (e) { /* ignore */ }
 }
 
 function restoreSession() {
@@ -485,8 +497,7 @@ function restoreSession() {
     toast('Ollama is no longer supported. Imago now uses ' + getProvider(getSessionProvider()).label + '.');
   }
   syncKeyInputs();
-  dom.modelName.value = getSessionModel() || getProvider(getSessionProvider()).defaultModel;
-  setSessionModel(dom.modelName.value);
+  adoptSessionModel();
   syncProviderUi();
   setKeyStatus();
 }
@@ -870,7 +881,7 @@ window.__imago = {
   sameOrigin: sameOrigin, redactSecretHeaders: redactSecretHeaders,
   // storage
   readJSON: readJSON, writeJSON: writeJSON,
-  getPrefs: getPrefs, setPrefs: setPrefs, savePrefs: savePrefs,
+  getPrefs: getPrefs, setPrefs: setPrefs, savePrefs: savePrefs, PROVIDERS: PROVIDERS, getModel: getModel, setModel: setModel,
   getSnapshots: getSnapshots, setSnapshots: setSnapshots,
   invalidateSnapshotCache: invalidateSnapshotCache,
   migrateRemovedOllama: migrateRemovedOllama,

@@ -191,14 +191,22 @@ function setSessionProvider(id) {
   prefs.provider = id;
   setPrefs(prefs);
 }
-function getSessionModel() {
-  try { return window.sessionStorage.getItem(SESSION.model) || ''; } catch (e) { return ''; }
+// The chosen model, one per provider, in imago.preferences.models so it
+// survives a restart. Empty means the provider's default.
+function getModel(id) {
+  var models = getPrefs().models;
+  var m = models && typeof models === 'object' ? models[id] : '';
+  return typeof m === 'string' && m ? m : (PROVIDERS[id] ? PROVIDERS[id].defaultModel : '');
 }
-function setSessionModel(value) {
-  try {
-    if (value) window.sessionStorage.setItem(SESSION.model, value);
-    else window.sessionStorage.removeItem(SESSION.model);
-  } catch (e) { /* ignore */ }
+function setModel(id, value) {
+  if (!PROVIDERS[id]) return;
+  var prefs = getPrefs();
+  var models = prefs.models && typeof prefs.models === 'object' ? prefs.models : {};
+  if (value && value !== PROVIDERS[id].defaultModel) models[id] = value;
+  else delete models[id];   // the default is the absence of a choice
+  if (Object.keys(models).length) prefs.models = models;
+  else delete prefs.models;
+  setPrefs(prefs);
 }
 
-export { readJSON, writeJSON, getSavedRequests, setSavedRequests, getSchemaSpecs, setSchemaSpecs, snapshotCache, getSnapshots, setSnapshots, invalidateSnapshotCache, getPrefs, setPrefs, savePrefs, getSessionHeaders, setSessionHeaders, getProviderKey, setProviderKey, markKeyRejected, clearKeyRejected, keyRejected, getActiveKey, hasAnyKey, providerUsable, getSessionProvider, setSessionProvider, getSessionModel, setSessionModel };
+export { readJSON, writeJSON, getSavedRequests, setSavedRequests, getSchemaSpecs, setSchemaSpecs, snapshotCache, getSnapshots, setSnapshots, invalidateSnapshotCache, getPrefs, setPrefs, savePrefs, getSessionHeaders, setSessionHeaders, getProviderKey, setProviderKey, markKeyRejected, clearKeyRejected, keyRejected, getActiveKey, hasAnyKey, providerUsable, getSessionProvider, setSessionProvider, getModel, setModel };

@@ -89,7 +89,8 @@ describe('a saved Ollama choice migrates cleanly', () => {
     expect(app.getSessionProvider()).toBe('gemini');
     expect(app.dom.providerSelect.value).toBe('gemini');
     expect(app.dom.modelName.value).toBe(GEMINI_DEFAULT);
-    expect(app.window.sessionStorage.getItem('imago.modelName')).toBe(GEMINI_DEFAULT);
+    expect(app.window.sessionStorage.getItem('imago.modelName'), 'the local model name is dropped, not adopted').toBeNull();
+    expect(app.getPrefs().models).toBeUndefined();
     const prefs = app.getPrefs();
     expect('ollamaEndpoint' in prefs).toBe(false);
     expect(prefs.provider).toBeUndefined();
@@ -138,5 +139,85 @@ describe('a saved Ollama choice migrates cleanly', () => {
     } finally { app.window.Storage.prototype.setItem = real; }
     expect(writes).toEqual([]);
     expect(app.getPrefs().provider).toBe('groq');
+  });
+});
+
+describe('the Model dropdown', () => {
+  const pick = (app, value) => {
+    app.dom.modelName.value = value;
+    app.dom.modelName.dispatchEvent(new app.window.Event('change', { bubbles: true }));
+  };
+  const switchTo = (app, id) => {
+    app.dom.providerSelect.value = id;
+    app.dom.providerSelect.dispatchEvent(new app.window.Event('change', { bubbles: true }));
+  };
+  const options = (app) => [...app.dom.modelName.options].map((o) => o.value);
+
+  it('is a select listing the provider\'s models, the default chosen', async () => {
+    const app = await boot();
+    expect(app.dom.modelName.tagName).toBe('SELECT');
+    expect(options(app)).toEqual(app.PROVIDERS.gemini.models);
+    expect(app.dom.modelName.value).toBe(GEMINI_DEFAULT);
+    expect(app.dom.modelName.selectedOptions[0].textContent).toContain('(default)');
+  });
+
+  it('a choice is saved in localStorage and survives a reload', async () => {
+    const app = await boot();
+    pick(app, 'gemini-3.5-flash');
+    expect(JSON.parse(app.window.localStorage.getItem(PREFS)).models).toEqual({ gemini: 'gemini-3.5-flash' });
+    expect(app.dom.chatTarget.textContent).toContain('gemini-3.5-flash');
+    const again = await boot({ local: { [PREFS]: app.getPrefs() } });
+    expect(again.dom.modelName.value).toBe('gemini-3.5-flash');
+  });
+
+  it('each provider remembers its own model', async () => {
+    const app = await boot();
+    pick(app, 'gemini-2.5-flash');
+    switchTo(app, 'groq');
+    expect(options(app)).toEqual(app.PROVIDERS.groq.models);
+    expect(app.dom.modelName.value).toBe(GROQ_DEFAULT);
+    pick(app, 'openai/gpt-oss-120b');
+    switchTo(app, 'gemini');
+    expect(app.dom.modelName.value).toBe('gemini-2.5-flash');
+    expect(app.getPrefs().models).toEqual({ gemini: 'gemini-2.5-flash', groq: 'openai/gpt-oss-120b' });
+  });
+
+  it('going back to the default forgets the choice', async () => {
+    const app = await boot({ local: { [PREFS]: { models: { gemini: 'gemini-2.5-flash' }, onboarded: true } } });
+    pick(app, GEMINI_DEFAULT);
+    expect(app.getPrefs().models).toBeUndefined();
+    expect(app.getPrefs().onboarded).toBe(true);
+  });
+
+  it('a saved model the list does not have stays selectable', async () => {
+    const app = await boot({ local: { [PREFS]: { models: { gemini: 'gemini-exp-1206' } } } });
+    expect(options(app)).toContain('gemini-exp-1206');
+    expect(app.dom.modelName.value).toBe('gemini-exp-1206');
+  });
+
+  it('the generate call uses the chosen model', async () => {
+    let body = null;
+    const app = await boot({
+      local: { 'imago.key.gemini': 'AIzaTEST', [PREFS]: { models: { gemini: 'gemini-3.5-flash' } } },
+      fetch: (url, init) => {
+        if (String(url).includes('generativelanguage')) { body = String(url); return Promise.reject(new Error('stop')); }
+        return jsonFetch({ a: 1 })();
+      }
+    });
+    app.state.data = { a: 1 }; app.state.schemaHash = 'h'; app.state.schema = {}; app.state.url = 'https://x.test/a';
+    app.generateInterfaceNow();
+    await flush();
+    expect(body).toContain('gemini-3.5-flash');
+  });
+
+  // Before the dropdown, a typed model lived in sessionStorage for the tab.
+  it('adopts a model typed in an older build, once, without overriding a saved one', async () => {
+    const a = await boot({ session: { 'imago.modelName': 'gemini-2.5-flash' } });
+    expect(a.dom.modelName.value).toBe('gemini-2.5-flash');
+    expect(a.getPrefs().models).toEqual({ gemini: 'gemini-2.5-flash' });
+    expect(a.window.sessionStorage.getItem('imago.modelName')).toBeNull();
+    const b = await boot({ session: { 'imago.modelName': 'gemini-2.5-flash' }, local: { [PREFS]: { models: { gemini: 'gemini-3.5-flash' } } } });
+    expect(b.dom.modelName.value).toBe('gemini-3.5-flash');
+    expect(b.window.sessionStorage.getItem('imago.modelName')).toBeNull();
   });
 });

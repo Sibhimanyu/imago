@@ -708,7 +708,7 @@ function useKeyedProvider() {
   for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
     if (providerUsable(PROVIDER_IDS[i])) {
       setSessionProvider(PROVIDER_IDS[i]);
-      syncProviderUi({ force: true });
+      syncProviderUi();
       setKeyStatus();
       toast('Switched to ' + getProvider(PROVIDER_IDS[i]).label + ' — it has a key.', 'ok');
       return true;

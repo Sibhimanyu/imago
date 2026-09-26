@@ -2,6 +2,19 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.19.0.0] - 2026-09-26
+
+The model is a choice, and it is remembered.
+
+### Changed
+
+- **Model is a dropdown.** Settings lists each provider's models, lightest
+  first, with the default marked. The choice is saved in this browser, one
+  per provider, so switching providers and back keeps what you picked. It
+  used to be a text box that forgot itself when the tab closed.
+- A model you typed in an older build is kept: it moves into the saved choice
+  once, and stays in the list even if the list does not have it.
+
 ## [0.18.0.0] - 2026-09-26
 
 A dark theme.

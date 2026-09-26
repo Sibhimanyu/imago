@@ -48,6 +48,8 @@ var PROVIDERS = {
     keyHint: 'aistudio.google.com/apikey',
     defaultModel: 'gemini-2.5-flash-lite',
     modelHint: 'gemini-3.5-flash',
+    // The Settings dropdown, lightest first. The default must be in it.
+    models: ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.5-flash'],
     endpoint: function (model) {
       return 'https://generativelanguage.googleapis.com/v1beta/models/' +
              encodeURIComponent(model) + ':generateContent';
@@ -118,6 +120,7 @@ var PROVIDERS = {
     // of ignoring it, so it is the hint rather than the default.
     defaultModel: 'openai/gpt-oss-20b',
     modelHint: 'openai/gpt-oss-120b',
+    models: ['openai/gpt-oss-20b', 'openai/gpt-oss-120b'],
     endpoint: function () { return 'https://api.groq.com/openai/v1/chat/completions'; },
     headers: function (apiKey) {
       return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey };

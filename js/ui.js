@@ -1,6 +1,6 @@
-import { PROVIDERS, PROVIDER_IDS, detectProvider, getProvider } from './config.js';
+import { PROVIDER_IDS, detectProvider, getProvider } from './config.js';
 import { dom, state } from './state.js';
-import { getProviderKey, getSessionProvider, hasAnyKey, keyRejected, providerUsable, savePrefs, setProviderKey, setSessionModel, setSessionProvider } from './storage.js';
+import { getProviderKey, getSessionProvider, hasAnyKey, keyRejected, providerUsable, savePrefs, setProviderKey, getModel, setSessionProvider } from './storage.js';
 import { el } from './util.js';
 import { scheduleTimelineLayout } from './render.js';
 import { syncChatTarget } from './chat.js';
@@ -114,29 +114,34 @@ function trapSheetFocus(event) {
 
 // Keeps the provider select, hints and model default in step. Called on
 // boot, when the provider changes, and when a key is pasted.
-function syncProviderUi(opts) {
-  var id = getSessionProvider();
+// The Model dropdown lists the provider's models and shows the one saved for
+// it. A saved name the list no longer has (typed in an older build, or a
+// model since dropped from the list) stays selectable rather than being
+// silently swapped for another.
+function syncModelSelect(id) {
+  if (!dom.modelName) return;
   var provider = getProvider(id);
+  var chosen = getModel(id);
+  var names = provider.models.slice();
+  if (names.indexOf(chosen) === -1) names.push(chosen);
+  while (dom.modelName.firstChild) dom.modelName.removeChild(dom.modelName.firstChild);
+  for (var i = 0; i < names.length; i += 1) {
+    var opt = document.createElement('option');
+    opt.value = names[i];
+    opt.textContent = names[i] + (names[i] === provider.defaultModel ? ' (default)' : '');
+    dom.modelName.appendChild(opt);
+  }
+  dom.modelName.value = chosen;
+}
+
+function syncProviderUi() {
+  var id = getSessionProvider();
   if (dom.providerSelect) dom.providerSelect.value = id;
   // Only the chosen provider's key and test are on screen.
   var blocks = document.querySelectorAll('.provider-block');
   for (var b = 0; b < blocks.length; b += 1) blocks[b].hidden = blocks[b].getAttribute('data-provider') !== id;
-  if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
+  syncModelSelect(id);
   syncChatTarget();
-
-  // Only rewrite the model box when it is empty or still holds another
-  // provider's default, so a hand-typed model is never clobbered.
-  if (dom.modelName) {
-    var current = (dom.modelName.value || '').trim();
-    var isOtherDefault = false;
-    for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
-      if (current === PROVIDERS[PROVIDER_IDS[i]].defaultModel) isOtherDefault = true;
-    }
-    if (!current || (isOtherDefault && current !== provider.defaultModel) || (opts && opts.force)) {
-      dom.modelName.value = provider.defaultModel;
-      setSessionModel(provider.defaultModel);
-    }
-  }
 }
 
 function maskKey(key) {
@@ -155,7 +160,7 @@ function storeKeyFromInput(input, id) {
   if (owner && owner !== id) id = owner;
   setProviderKey(id, key);
   if (key) setSessionProvider(id);
-  syncProviderUi({ force: !!key });
+  syncProviderUi();
   syncKeyInputs();
   setKeyStatus();
   if (key) toast(getProvider(id).label + ' key saved on this device.', 'ok');
