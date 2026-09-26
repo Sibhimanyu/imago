@@ -33,7 +33,7 @@
   nav.jump a:hover { color: var(--ink); }
 
   .hero { padding-top: 72px; padding-bottom: 56px; }
-  .eyebrow { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  .eyebrow { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
   h1 { font: 600 64px/1.02 var(--display); letter-spacing: -0.035em; margin: 0 0 20px; }
   .lede { font-size: 20px; color: var(--ink-2); max-width: 720px; margin: 0 0 28px; }
   .meta { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -42,14 +42,14 @@
 
   section { padding: 64px 0; border-top: 1px solid var(--line); }
   h2 { font: 600 36px/1.1 var(--display); letter-spacing: -0.025em; margin: 0 0 8px; }
-  h3 { font: 600 22px/1.25 var(--display); letter-spacing: -0.015em; margin: 40px 0 12px; }
+  h3 { font: 600 22px/1.3 var(--display); letter-spacing: -0.015em; margin: 40px 0 12px; }
   .sub { color: var(--muted); margin: 0 0 32px; max-width: 720px; }
   .num { font: 500 14px var(--mono); color: var(--muted); display: block; margin-bottom: 10px; }
 
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
-  .card h4 { margin: 0 0 8px; font-size: 17px; }
+  h3.t { font: 600 17px/1.35 var(--sans); letter-spacing: 0; margin: 0 0 8px; }
   .card p { margin: 0 0 10px; color: var(--ink-2); }
   .card p:last-child { margin-bottom: 0; }
   .card ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
@@ -60,7 +60,7 @@
   .funnel > div { padding: 24px; border-right: 1px solid var(--line); position: relative; }
   .funnel > div:last-child { border-right: 0; }
   .funnel .step { font: 500 13px var(--mono); color: var(--muted); }
-  .funnel h4 { margin: 6px 0 6px; font: 600 22px var(--display); }
+  .funnel h3.t { margin: 6px 0 6px; font: 600 22px/1.3 var(--display); }
   .funnel p { margin: 0; color: var(--ink-2); font-size: 15px; }
 
   table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 15px; }
@@ -101,7 +101,7 @@
 
   .dropped { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
   .dropped .card { padding: 18px; }
-  .dropped h4 { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
+  .dropped h3.t { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
   .dropped p { font-size: 14px; }
 
   .timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
@@ -155,18 +155,18 @@
       <p class="sub">Stated narrowly enough that some people are left out.</p>
       <div class="grid3">
         <div class="card">
-          <h4>For</h4>
+          <h3 class="t">For</h3>
           <p class="big">Developers meeting a public JSON API for the first time.</p>
           <p>The ten minutes between finding an API and writing the first line of code against it, when the only question is whether the data is any good.</p>
         </div>
         <div class="card">
-          <h4>What they do today</h4>
+          <h3 class="t">What they do today</h3>
           <p>Paste the URL into a browser tab and scroll raw JSON, or send it through Postman and scroll it there.</p>
           <p>Then, to really see the data, they write a throwaway page they'll delete by evening.</p>
           <p><b>Imago is that throwaway page, drawn for them.</b></p>
         </div>
         <div class="card">
-          <h4>Left out, on purpose</h4>
+          <h3 class="t">Left out, on purpose</h3>
           <ul>
             <li>Private or internal APIs that block browser apps (CORS)</li>
             <li>Anyone sending POSTs or running API tests. Postman does that well.</li>
@@ -189,19 +189,19 @@
       <h2>The three jobs</h2>
       <p class="sub">The brief's problem is "nobody knows it exists". These three take a developer from hearing about Imago, to arriving through an API's docs, to getting past their first problem. Each one runs without me there.</p>
       <div class="funnel">
-        <div><span class="step">1 · Hear</span><h4>Marketing</h4><p>Developers hear about it: 14 scheduled Zoho Social posts, then Show HN, dev.to and Reddit on launch day.</p></div>
-        <div><span class="step">2 · Arrive</span><h4>Partners</h4><p>Someone with an audience spreads it: a listing in Open-Meteo's README, read by developers checking out a free API.</p></div>
-        <div><span class="step">3 · Stay</span><h4>Support</h4><p>People who get stuck or complain are answered in public on GitHub, by pages and forms that work while I'm away.</p></div>
+        <div><span class="step">1 · Hear</span><h3 class="t">Marketing</h3><p>Developers hear about it: 14 scheduled Zoho Social posts, then Show HN, dev.to and Reddit on launch day.</p></div>
+        <div><span class="step">2 · Arrive</span><h3 class="t">Partners</h3><p>Someone with an audience spreads it: a listing in Open-Meteo's README, read by developers checking out a free API.</p></div>
+        <div><span class="step">3 · Stay</span><h3 class="t">Support</h3><p>People who get stuck or complain are answered in public on GitHub, by pages and forms that work while I'm away.</p></div>
       </div>
       <h3>How the three were chosen</h3>
       <div class="grid2">
-        <div class="card"><h4>The facts that decided it</h4><ul>
+        <div class="card"><h3 class="t">The facts that decided it</h3><ul>
           <li>Free and open source, with no server, so nothing to sell and no sign-up funnel</li>
           <li>Users are reading an API's docs at the moment they need it</li>
           <li>The biggest failure is CORS: many APIs refuse browser apps, and a first-time user who hits that leaves</li>
           <li>Nothing to spend, and everything has to keep working without me</li>
         </ul></div>
-        <div class="card"><h4>Tools, chosen to fit an open-source project</h4><ul>
+        <div class="card"><h3 class="t">Tools, chosen to fit an open-source project</h3><ul>
           <li><b>Zoho Social</b> (free plan) schedules the LinkedIn and X run</li>
           <li><b>GitHub</b> for support: public issues, forms and saved replies. A private help desk like Zoho Desk would hide the answers, so I didn't use one.</li>
           <li>No email campaign tool, because developers watch a repo for releases instead</li>
@@ -414,14 +414,14 @@
       <h2>Support: people who get stuck, and people who complain</h2>
       <p class="sub">Free and open source, so support happens in public on GitHub. A question answered in an issue answers the next person who searches for it, and a complaint becomes a bug report the fix links back to.</p>
       <div class="grid3">
-        <div class="card"><h4>1 · The app explains itself</h4><p>Each failure says what happened and what to try, for example <i>"This API does not allow browser apps"</i>, with the reason and the fix.</p></div>
-        <div class="card"><h4>2 · SUPPORT.md</h4><p>Each error the app shows, word for word, with its fix: CORS, unreachable, Fallback, rejected key, Ollama, share links. Linked from the README and the new-issue page.</p></div>
-        <div class="card"><h4>3 · Issue forms</h4><p><b>"The page came out wrong"</b> asks for a Share link, so every complaint arrives with a way to reproduce it. <b>"Something is broken"</b> points to SUPPORT.md first.</p></div>
+        <div class="card"><h3 class="t">1 · The app explains itself</h3><p>Each failure says what happened and what to try, for example <i>"This API does not allow browser apps"</i>, with the reason and the fix.</p></div>
+        <div class="card"><h3 class="t">2 · SUPPORT.md</h3><p>Each error the app shows, word for word, with its fix: CORS, unreachable, Fallback, rejected key, Ollama, share links. Linked from the README and the new-issue page.</p></div>
+        <div class="card"><h3 class="t">3 · Issue forms</h3><p><b>"The page came out wrong"</b> asks for a Share link, so every complaint arrives with a way to reproduce it. <b>"Something is broken"</b> points to SUPPORT.md first.</p></div>
       </div>
       <div class="grid2" style="margin-top:20px">
         <figure><a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md"><img src="evidence/support-md.png" alt="SUPPORT.md on GitHub"></a><figcaption>SUPPORT.md, public on GitHub</figcaption></figure>
         <div class="card">
-          <h4>What I do</h4>
+          <h3 class="t">What I do</h3>
           <ul>
             <li><b>Reply to every issue within two days.</b> SUPPORT.md promises it.</li>
             <li><b>Five saved replies:</b> CORS, wrong page, key problems, out of scope, a complaint</li>
@@ -440,11 +440,11 @@
       <h2>What I dropped, and why</h2>
       <p class="sub">Five of the eight jobs, each for a reason specific to Imago.</p>
       <div class="dropped">
-        <div class="card"><h4>Sales</h4><p>For a free tool, the "one yes" is Open-Meteo merging the listing, and that's Partners.</p></div>
-        <div class="card"><h4>Pricing</h4><p>Free, decided by how it's built: no server means nothing to pay for. Charging would need accounts, and a server holding people's keys.</p></div>
-        <div class="card"><h4>Marketplace</h4><p>Developers don't browse marketplaces for this. Zoho Marketplace is for Zoho add-ons, and Product Hunt is a one-day spike.</p></div>
-        <div class="card"><h4>Public relations</h4><p>No one writes about a tool with no users. There's a story once Open-Meteo lists it.</p></div>
-        <div class="card"><h4>Community</h4><p>A launch with no users has nobody to talk to each other. GitHub issues cover talking to me for now.</p></div>
+        <div class="card"><h3 class="t">Sales</h3><p>For a free tool, the "one yes" is Open-Meteo merging the listing, and that's Partners.</p></div>
+        <div class="card"><h3 class="t">Pricing</h3><p>Free, decided by how it's built: no server means nothing to pay for. Charging would need accounts, and a server holding people's keys.</p></div>
+        <div class="card"><h3 class="t">Marketplace</h3><p>Developers don't browse marketplaces for this. Zoho Marketplace is for Zoho add-ons, and Product Hunt is a one-day spike.</p></div>
+        <div class="card"><h3 class="t">Public relations</h3><p>No one writes about a tool with no users. There's a story once Open-Meteo lists it.</p></div>
+        <div class="card"><h3 class="t">Community</h3><p>A launch with no users has nobody to talk to each other. GitHub issues cover talking to me for now.</p></div>
       </div>
     </div>
   </section>
@@ -483,13 +483,13 @@
           <li><b>After two weeks</b><span>Add a "What happened" section: stars, visits, issues, the merge</span></li>
         </ul>
         <div class="card">
-          <h4>Known and left open</h4>
+          <h3 class="t">Known and left open</h3>
           <ul>
             <li>Catalyst serves the site with a one-year browser cache, so returning visitors miss updates. The fix is a switch in the Catalyst console.</li>
             <li>The Task 2 flyer and Task 3 banner show Open-Meteo data and need its credit line.</li>
             <li>With the Inspect drawer open at 1200px, large numbers wrap onto two lines.</li>
           </ul>
-          <h4 style="margin-top:18px">Tools used</h4>
+          <h3 class="t" style="margin-top:18px">Tools used</h3>
           <p>Claude (Claude Code), Zoho Social, Zoho Catalyst Slate (hosting), GitHub, Figma. Brand pieces from earlier tasks: Adobe Illustrator.</p>
         </div>
       </div>
