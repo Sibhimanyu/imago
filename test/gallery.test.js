@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { build, APIS, APP, SITE, readCaptions, stubSource } from '../gallery/build.mjs';
+import { build, APIS, APP, SITE, WAITLIST_FN, readCaptions, stubSource } from '../gallery/build.mjs';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'imago-gallery-'));
 const PLAIN = path.join(tmp, 'plain');     // links.json all empty, no PageSense, no reels
@@ -263,5 +263,22 @@ describe('press kit and site files', () => {
     expect(read(PLAIN, '.catalyst/slate-config.toml')).toBe('framework = "static"\ndeployment_name = "default"\n');
     const home = doc(PLAIN, 'index.html');
     expect([...home.querySelectorAll('.g-card a')].map((a) => a.getAttribute('href'))).toEqual(APIS.map((a) => '/' + a.slug + '/'));
+  });
+});
+
+describe('the hosted-AI waitlist page', () => {
+  it('posts to the Catalyst function, with a spam trap and consent, and says it is not built', () => {
+    const d = doc(PLAIN, 'waitlist/index.html');
+    const form = d.getElementById('waitlistForm');
+    expect(form.getAttribute('data-endpoint')).toBe(WAITLIST_FN);
+    expect(new URL(WAITLIST_FN).protocol).toBe('https:');
+    expect(form.querySelector('input[name="website"][tabindex="-1"]')).not.toBeNull();
+    expect(form.querySelector('input[name="consent"][required]')).not.toBeNull();
+    expect([...form.querySelectorAll('input[name="price"]')].map((i) => i.value)).toEqual(['49', '99', '199', 'free']);
+    expect(d.body.textContent).toMatch(/not built yet, and nobody pays anything now/);
+    const scripts = [...d.querySelectorAll('script[src]')].map((s) => s.getAttribute('src'));
+    expect(scripts).toEqual(['/assets/waitlist.js']);
+    expect(fs.existsSync(path.join(PLAIN, 'assets/waitlist.js'))).toBe(true);
+    expect(read(PLAIN, 'sitemap.xml')).toContain(SITE + '/waitlist/');
   });
 });

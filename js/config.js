@@ -5,10 +5,11 @@ import { init } from './main.js';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
 
-// The hosted-AI waitlist form (Zoho Forms), the one place its address lives.
-// Empty hides every waitlist link. It is only ever a plain link: no form
-// script, iframe or embed is loaded on this origin. See launch/pricing.md.
-var WAITLIST_URL = '';
+// The hosted-AI waitlist, the one place its address lives: a page on the
+// gallery's own origin that posts to a Catalyst function. Empty hides every
+// waitlist link. It is only ever a plain link: no form script, iframe or
+// embed is loaded on this origin. See launch/pricing.md.
+var WAITLIST_URL = 'https://imago-apis-oavuixyf.onslate.in/waitlist/';
 
 var STORE = {
   requests: 'imago.savedRequests',

@@ -18,6 +18,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 export const SITE = 'https://imago-apis-oavuixyf.onslate.in';   // where the gallery is served; change at will
 export const APP = 'https://imago.onslate.in';
 export const REPO = 'https://github.com/Sibhimanyu/imago';
+// The waitlist function (Catalyst Advanced I/O). It accepts this site's origin only.
+export const WAITLIST_FN = 'https://imago-60083782173.development.catalystserverless.in/server/waitlist/';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -375,6 +377,33 @@ function pressPage(links, reels, images, brand) {
   }, 'press', body, links, ['/assets/copy.js']);
 }
 
+function waitlistPage(links) {
+  const radio = (name, value, label, required) => '<label class="g-choice"><input type="radio" name="' + name + '" value="' + value + '"' + (required ? ' required' : '') + '><span>' + esc(label) + '</span></label>';
+  const body =
+    '<div class="g-wrap">\n<header class="g-hero">\n<h1>Hosted AI: waitlist</h1>\n' +
+    '<p class="g-lede">Imago is free with your own free Gemini or Groq key, or with none. Hosted AI would be for people with no key: Imago would run the model for you. That needs a server and costs money on every call, so it would be paid. <strong>It is not built yet, and nobody pays anything now.</strong> Tell us whether you would use it and what it is worth to you, and we will email you once, if it opens.</p>\n' +
+    '</header>\n' +
+    '<form class="g-form" id="waitlistForm" data-endpoint="' + esc(WAITLIST_FN) + '" novalidate>\n' +
+    '<label class="g-field"><span>Email</span><input class="text-input" type="email" name="email" required autocomplete="email" maxlength="254"></label>\n' +
+    '<label class="g-field"><span>What would you use Imago for? <em>Optional</em></span><input class="text-input" type="text" name="use_case" maxlength="255"></label>\n' +
+    '<fieldset class="g-field"><legend>Do you already have a Gemini or Groq key?</legend><div class="g-choices">' +
+      radio('has_key', 'yes', 'Yes') + radio('has_key', 'no', 'No') + radio('has_key', 'unsure', 'Not sure') + '</div></fieldset>\n' +
+    '<fieldset class="g-field"><legend>Which monthly price would you pay for hosted AI (100 new layouts)?</legend><div class="g-choices">' +
+      radio('price', '49', '₹49', true) + radio('price', '99', '₹99') + radio('price', '199', '₹199') + radio('price', 'free', 'I would only use the free version') + '</div></fieldset>\n' +
+    '<label class="g-trap" aria-hidden="true">Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label>\n' +
+    '<label class="g-check"><input type="checkbox" name="consent" required><span>Email me if hosted AI opens.</span></label>\n' +
+    '<div class="g-actions"><button class="btn btn-dark btn-lg" type="submit">Join the waitlist</button></div>\n' +
+    '<p class="g-form-status" id="waitlistStatus" role="status" aria-live="polite"></p>\n' +
+    '<p class="g-muted">We keep only what this form asks for, in Zoho Catalyst, and use it only to tell you if hosted AI opens. Imago itself still has no server: this list is the only thing stored.</p>\n' +
+    '</form>\n</div>\n';
+  return page({
+    path: '/waitlist/',
+    title: 'Hosted AI waitlist · Imago',
+    description: 'Imago is free with your own key. Hosted AI would be paid and is not built yet: join the waitlist and say what it is worth to you.',
+    image: '/assets/og.png'
+  }, 'waitlist', body, links, ['/assets/waitlist.js']);
+}
+
 /* ── Build ──────────────────────────────────────────────────────────── */
 
 export function applyPagesense(html, snippet) {
@@ -399,6 +428,7 @@ export async function build(opts = {}) {
   copy(path.join(ROOT, 'styles.css'), path.join(out, 'assets/imago.css'));
   copy(path.join(HERE, 'gallery.css'), path.join(out, 'assets/gallery.css'));
   copy(path.join(HERE, 'copy.js'), path.join(out, 'assets/copy.js'));
+  copy(path.join(HERE, 'waitlist.js'), path.join(out, 'assets/waitlist.js'));
   copy(path.join(ROOT, 'favicon.svg'), path.join(out, 'favicon.svg'));
   copy(path.join(ROOT, 'og.png'), path.join(out, 'assets/og.png'));
   copy(path.join(ROOT, 'assets/imago-mark.svg'), path.join(out, 'assets/imago-mark.svg'));
@@ -439,10 +469,11 @@ export async function build(opts = {}) {
     const words = name.replace(/-/g, ' ');
     return { src: '/press/brand/' + file, name: words.charAt(0).toUpperCase() + words.slice(1), dark: /reversed/.test(name) };
   });
+  emit('waitlist/index.html', waitlistPage(links));
   emit('press/index.html', pressPage(links, REELS.map((r) => reels[r.name]).filter(Boolean), images, brand));
 
   // Crawlers and hosting
-  const urls = ['/', ...APIS.map((a) => '/' + a.slug + '/'), '/press/'];
+  const urls = ['/', ...APIS.map((a) => '/' + a.slug + '/'), '/press/', '/waitlist/'];
   write(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map((u) => '  <url><loc>' + esc(SITE + u) + '</loc></url>').join('\n') + '\n</urlset>\n');
   write(path.join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n\nSitemap: ' + SITE + '/sitemap.xml\n');

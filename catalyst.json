@@ -9,5 +9,12 @@
       "name": "imago-apis",
       "source": "gallery/dist"
     }
-  ]
+  ],
+  "functions": {
+    "targets": [
+      "waitlist"
+    ],
+    "ignore": [],
+    "source": "functions"
+  }
 }

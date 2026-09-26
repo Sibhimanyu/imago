@@ -40,15 +40,16 @@ describe('pricing block on the landing page', () => {
 });
 
 describe('waitlist links', () => {
-  it('ships with WAITLIST_URL empty', async () => {
+  it('ships pointing at the gallery waitlist page, which is https and off this origin', async () => {
     const app = await boot();
-    expect(app.WAITLIST_URL).toBe('');
+    expect(app.WAITLIST_URL).toBe('https://imago-apis-oavuixyf.onslate.in/waitlist/');
+    expect(new URL(app.WAITLIST_URL).hostname).not.toBe('imago.onslate.in');
   });
 
   it('are all hidden at boot while WAITLIST_URL is empty, and carry no href', async () => {
     // The landing link and the Settings note: if these showed with no
     // address, a user would click a link that goes nowhere.
-    const app = await boot({ url: LANDING });
+    const app = await boot({ url: LANDING, app: APP.replace(/var WAITLIST_URL = "[^"]*";/, 'var WAITLIST_URL = "";') });
     const nodes = waitlistNodes(app);
     expect(nodes.length).toBe(2);
     for (const n of nodes) expect(n.hidden).toBe(true);
@@ -58,7 +59,7 @@ describe('waitlist links', () => {
   it('render at boot when WAITLIST_URL is set in js/config.js', async () => {
     // The real boot path with the constant changed, the way the owner will
     // change it: init must carry it to every link without any other edit.
-    const DECL = /var WAITLIST_URL = "";/;
+    const DECL = /var WAITLIST_URL = "[^"]*";/;
     expect(APP).toMatch(DECL);
     const app = await boot({ url: LANDING, app: APP.replace(DECL, 'var WAITLIST_URL = ' + JSON.stringify(FORM) + ';') });
     expect(app.WAITLIST_URL).toBe(FORM);

@@ -2,6 +2,18 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.15.0.0] - 2026-09-26
+
+### Added
+
+- **The hosted-AI waitlist is open.** "Join the waitlist" on the landing page
+  and in Settings now lead to a waitlist page on the API gallery's own origin.
+  It posts to a Catalyst Advanced I/O function (`functions/waitlist`) that
+  checks the form, drops bots that fill a hidden field, keeps only the four
+  answers (email, use case, has a key, price) in a Catalyst Data Store table,
+  and says "already on the list" for a repeat. Only the gallery's origin may
+  call it. Imago itself still has no server.
+
 ## [0.14.1.0] - 2026-09-26
 
 ### Fixed
