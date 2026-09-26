@@ -561,3 +561,23 @@ describe('every fetch reaches the API', () => {
     expect(mine.cache).toBe('no-store');
   });
 });
+
+describe('a value that is one HTML element', () => {
+  it('reads as its words, never as markup, and keeps the raw value on hover', async () => {
+    // Wikipedia's summary sends displaytitle as '<span class="mw-page-title-main">Chennai</span>';
+    // it rendered as that literal string.
+    const app = await boot();
+    const data = { title: 'Chennai', displaytitle: '<span class="mw-page-title-main">Chennai</span>', motto: '<i>Tom &amp; Jerry</i>', type: 'standard' };
+    const spec = app.normalizeSpec(app.buildFallbackSpec(data, 'https://a.test/page/summary/Chennai'));
+    const body = app.renderSpecBody(spec, data, null);
+    expect(body.textContent).toContain('Tom & Jerry');
+    expect(body.textContent).not.toContain('<span');
+    expect(body.textContent).not.toContain('&amp;');
+    expect(body.querySelector('span.mw-page-title-main')).toBeNull();
+    expect(body.querySelector('[title*="<span"]')).not.toBeNull();
+    // Text that merely mentions a tag is left alone.
+    const plain = { note: 'Use <b> for bold', name: 'x' };
+    const p = app.renderSpecBody(app.normalizeSpec(app.buildFallbackSpec(plain, 'https://a.test/x')), plain, null);
+    expect(p.textContent).toContain('Use <b> for bold');
+  });
+});

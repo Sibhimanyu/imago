@@ -2,6 +2,16 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.14.1.0] - 2026-09-26
+
+### Fixed
+
+- **A value that is one HTML element reads as its words.** A field such as a
+  display title wrapped in a `<span>` showed its tags as text. It now shows
+  the words inside, with entities decoded; nothing is parsed as HTML, and the
+  raw value stays in the element's title on hover. Text that only mentions a
+  tag is left alone.
+
 ## [0.14.0.0] - 2026-09-26
 
 ### Added

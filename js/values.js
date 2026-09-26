@@ -16,6 +16,8 @@ var RE_ISO_DT = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d
 var RE_CLOCK = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp]\.?[Mm]\.?)?$/;
 var RE_HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// A value that is one HTML element, e.g. a display title wrapped in a <span>.
+var RE_MARKUP = /^<([a-z][a-z0-9-]*)\b[^>]*>[\s\S]*<\/\1>$/i;
 
 var RE_KEY_PERCENT = /(percent|percentage|pct|illumination|humidity|probability|saturation|lightness|battery|progress|score_pct)/;
 var RE_KEY_SECONDS = /(^|_)(seconds|secs?|duration|length|elapsed|uptime|runtime|ttl|expires_in)(_|$)/;
@@ -30,6 +32,15 @@ var RE_KEY_ANGLE = /(azimuth|altitude|bearing|heading|declination|elevation_angl
 var RE_KEY_TIME = /(^|_)(at|time|timestamp|date|epoch|created|updated|modified|published|expires)(_|$)/;
 var RE_KEY_TEMP = /(^|_)(temp|temperature|feels_like|dew_point)/;
 var RE_KEY_MONEY = /(^|_)(price|cost|amount|total|balance|revenue|salary|fee)(_|$)/;
+
+// The words inside markup, for reading. The tags are dropped as text: nothing
+// is parsed as HTML, and the untouched value stays in the element's title.
+function markupText(value) {
+  return String(value).replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ').trim();
+}
 
 function lastSegment(path) {
   var segments = parsePath(path);
@@ -141,6 +152,7 @@ function inferKind(value, component) {
     if (isUrl(text)) return 'url';
     if (RE_HEX.test(text)) return 'color';
     if (RE_EMAIL.test(text)) return 'email';
+    if (RE_MARKUP.test(text)) return 'markup';
     if (RE_ISO_DT.test(text)) return 'datetime';
     if (RE_ISO_DATE.test(text)) return 'date';
     if (RE_CLOCK.test(text)) return 'clock';
@@ -217,6 +229,7 @@ function describeValue(value, component) {
     case 'email':   out.primary = String(value); out.href = 'mailto:' + String(value); break;
     case 'color':   out.primary = String(value).toUpperCase(); break;
     case 'prose':   out.primary = String(value); break;
+    case 'markup':  out.primary = markupText(value) || '—'; break;
     case 'array': {
       var scalars = [];
       for (var a = 0; a < value.length && a < 4; a += 1) {
@@ -296,8 +309,8 @@ function renderScalar(value, component, size) {
 // Short values sit in a dense fact strip; anything tall or wide earns a card.
 function isCompactKind(kind) {
   return ['boolean', 'datetime', 'date', 'clock', 'duration', 'durationMs', 'percent',
-          'bytes', 'coordinate', 'temperature', 'money', 'number', 'string', 'color',
+          'bytes', 'coordinate', 'temperature', 'money', 'number', 'string', 'markup', 'color',
           'email', 'epoch', 'epochMs', 'empty', 'null'].indexOf(kind) !== -1;
 }
 
-export { MONTHS, DAYS, RE_ISO_DATE, RE_ISO_DT, RE_CLOCK, RE_HEX, RE_EMAIL, RE_KEY_PERCENT, RE_KEY_SECONDS, RE_KEY_MILLIS, RE_KEY_BYTES, RE_KEY_LAT, RE_KEY_LNG, RE_KEY_YEAR, RE_KEY_NOISE, RE_KEY_ANGLE, RE_KEY_TIME, RE_KEY_TEMP, RE_KEY_MONEY, lastSegment, keyHint, offsetLabel, epochToMillis, weekdayOf, formatIsoDateTime, formatIsoDate, formatDuration, formatNumber, inferKind, describeValue, rawTitle, renderScalar, isCompactKind };
+export { MONTHS, DAYS, RE_ISO_DATE, RE_ISO_DT, RE_CLOCK, RE_HEX, RE_EMAIL, RE_MARKUP, RE_KEY_PERCENT, RE_KEY_SECONDS, RE_KEY_MILLIS, RE_KEY_BYTES, RE_KEY_LAT, RE_KEY_LNG, RE_KEY_YEAR, RE_KEY_NOISE, RE_KEY_ANGLE, RE_KEY_TIME, RE_KEY_TEMP, RE_KEY_MONEY, markupText, lastSegment, keyHint, offsetLabel, epochToMillis, weekdayOf, formatIsoDateTime, formatIsoDate, formatDuration, formatNumber, inferKind, describeValue, rawTitle, renderScalar, isCompactKind };

@@ -842,7 +842,7 @@ window.__imago = {
   stableStringify: stableStringify, hashString: hashString,
   fingerprint: fingerprint, flatten: flatten, diffData: diffData,
   normalizeSpec: normalizeSpec, normalizeActions: normalizeActions,
-  buildFallbackSpec: buildFallbackSpec, deriveActions: deriveActions,
+  buildFallbackSpec: buildFallbackSpec, renderSpecBody: renderSpecBody, deriveActions: deriveActions,
   escapeHtml: escapeHtml, highlightJson: highlightJson,
   parseHeaders: parseHeaders, headersToText: headersToText,
   endpointTitle: endpointTitle, hostOf: hostOf,
