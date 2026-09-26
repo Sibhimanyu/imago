@@ -38,13 +38,20 @@ browser, and cannot see Imago's storage.
 ## Measuring it: Zoho PageSense
 
 Free forever up to 5,000 visitors a month: visitor analytics, heatmaps,
-funnels and 5 goals.
+funnels and 5 goals. Set up on 2026-09-26:
 
-1. Create a PageSense project for the gallery address.
-2. Put the tracking snippet in `gallery/pagesense.html`; the build places it
-   in every page's `<head>`.
-3. Goals: clicks on links starting `https://imago.onslate.in/#open=` (visitors
-   who went on to Imago), and clicks to the waitlist and to Discussions.
+- **Project:** "Imago API gallery" (`imago1`) in the `sibhimanyugt0` portal,
+  with MCP access on so goals and reports can be read and changed from here.
+- **Tracking code:** `gallery/pagesense.html`, placed in every gallery page's
+  `<head>` by the build. It is on the gallery only; imago.onslate.in carries
+  no PageSense code (checked on the live sites).
+- **Goals** (link clicks, tracked on gallery pages):
+  - *Opened Imago from the gallery*: links starting `https://imago.onslate.in/#open=`
+  - *Went to a Discussions thread*: links containing `github.com/Sibhimanyu/imago/discussions`
+  - *Downloaded a press-kit reel*: links containing `onslate.in/reels/`
+  - A waitlist goal follows once the Zoho Forms link exists.
+- **Heatmap:** "Gallery heatmap" on every gallery page (created; launched in
+  the PageSense screen, as the MCP launch call is refused for this project).
 
 **How we'll know it worked:** visits from search, which API pages they land
 on, and the share who click through to Imago.
