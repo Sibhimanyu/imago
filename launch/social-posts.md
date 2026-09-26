@@ -15,8 +15,8 @@ Imago does that other tools don't.
   open the same link and replace the image.
 - X counts every link as 23 characters. Every X post below fits in 280.
 - **Open-Meteo credit.** Their data is CC BY 4.0, so any post showing it
-  names them: Day 3 in the text, and the landing page image (Days 7, 8, 13)
-  carries the credit under the demo.
+  names them in the text: Day 3, and Days 7, 8 and 13, whose landing page
+  image shows the live forecast.
 
 ---
 
@@ -173,6 +173,8 @@ Imago does that other tools don't.
 > For a designed page, add a free Gemini or Groq key. It stays in your
 > browser.
 >
+> Weather data in the image by Open-Meteo.com (CC BY 4.0).
+>
 > https://imago.onslate.in
 
 **X**
@@ -182,6 +184,7 @@ Imago does that other tools don't.
 >
 > A free Gemini or Groq key gets you a designed page.
 >
+> Data: Open-Meteo.com
 > https://imago.onslate.in
 
 ---
@@ -198,6 +201,8 @@ Imago does that other tools don't.
 > User-Agent) are left out, and Imago tells you which. Headers only last as
 > long as the tab is open.
 >
+> Weather data in the image by Open-Meteo.com (CC BY 4.0).
+>
 > https://imago.onslate.in
 
 **X**
@@ -205,6 +210,7 @@ Imago does that other tools don't.
 >
 > Headers go to Inspect, -u becomes Basic auth, -G -d a query string. Headers the browser sets itself are left out, and named.
 >
+> Data: Open-Meteo.com
 > https://imago.onslate.in
 
 ---
@@ -292,6 +298,8 @@ Imago does that other tools don't.
 > Issues and pull requests are welcome. If a page comes out wrong, the issue
 > form asks for a Share link, which shows exactly what you saw.
 >
+> Weather data in the image by Open-Meteo.com (CC BY 4.0).
+>
 > https://github.com/Sibhimanyu/imago
 
 **X**
@@ -299,6 +307,7 @@ Imago does that other tools don't.
 >
 > Issues and PRs welcome.
 >
+> Data: Open-Meteo.com
 > https://github.com/Sibhimanyu/imago
 
 ---
