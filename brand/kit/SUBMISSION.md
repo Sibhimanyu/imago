@@ -4,6 +4,9 @@ Submission notes for the *Web App – Branding & Promotional Design* assignment.
 The web app is **Imago** (<https://imago.onslate.in>): paste an API URL or a
 curl command, and it reads the JSON's shape and draws a live interface for it.
 
+The same story as a page, with the files and the versions they replaced:
+<https://sibhimanyu.github.io/imago/brand/>
+
 ## What to submit
 
 Three editable Illustrator files, one per task, in `brand/kit/`:

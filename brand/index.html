@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Branding Imago · Design assignment</title>
+<meta name="description" content="Imago's visual identity: the logo and its brand book, an A4 print flyer and a blog banner, made in Adobe Illustrator with Claude.">
+<link rel="icon" href="../favicon.svg">
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --sink: #f1efe9; --line: #e7e5df; --line-soft: #efede8;
+    --ink: #1b1b19; --ink-2: #45443f; --muted: #66655f;
+    --yellow: #f5ce47; --yellow-bg: #fdf3cd; --yellow-ink: #6f570b;
+    --green: #4fa96a; --red: #d9534f; --link: #3f6fb5;
+    --sans: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --display: "Inter Display", Inter, -apple-system, Helvetica, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: #c9c6bd; }
+  a:hover { text-decoration-color: var(--ink); }
+  code { font: 0.86em/1.5 var(--mono); background: var(--sink); padding: 1px 5px; border-radius: 4px; }
+  img { max-width: 100%; display: block; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  header.top { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
+  header.top .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
+  .brand svg { width: 28px; height: 28px; }
+  nav.jump { display: flex; gap: 18px; margin-left: auto; font-size: 14px; overflow-x: auto; white-space: nowrap; }
+  nav.jump a { color: var(--muted); text-decoration: none; }
+  nav.jump a:hover { color: var(--ink); }
+
+  .hero { padding-top: 72px; padding-bottom: 56px; }
+  .eyebrow { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+  h1 { font: 600 64px/1.02 var(--display); letter-spacing: -0.035em; margin: 0 0 20px; }
+  .lede { font-size: 20px; color: var(--ink-2); max-width: 760px; margin: 0 0 28px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; font-size: 14px; text-decoration: none; }
+  .chip.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  h2 { font: 600 36px/1.1 var(--display); letter-spacing: -0.025em; margin: 0 0 8px; }
+  h3 { font: 600 22px/1.3 var(--display); letter-spacing: -0.015em; margin: 40px 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 32px; max-width: 760px; }
+  .num { font: 500 14px/1.5 var(--mono); color: var(--muted); display: block; margin-bottom: 10px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .split { display: grid; grid-template-columns: 5fr 6fr; gap: 28px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  h3.t { font: 600 17px/1.35 var(--sans); letter-spacing: 0; margin: 0 0 8px; }
+  .card p { margin: 0 0 10px; color: var(--ink-2); }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
+  .card li { margin: 4px 0; }
+  .big { font: 600 26px/1.3 var(--display); letter-spacing: -0.015em; margin: 0 0 12px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 15px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--sink); }
+  tr:last-child td { border-bottom: 0; }
+  td.ok::before { content: "✓ "; color: #2d7a45; font-weight: 600; }
+
+  figure { margin: 0; }
+  figure img { border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .fix { background: var(--yellow-bg); border: 1px solid #efe0a8; border-radius: 16px; padding: 22px 24px; }
+  .fix .tag { display: inline-block; font: 600 11px/1.5 var(--mono); letter-spacing: .04em; color: var(--yellow-ink); background: var(--card); border: 1px solid #efe0a8; border-radius: 6px; padding: 2px 7px; margin-bottom: 8px; }
+  .fix p { margin: 0 0 8px; color: #4d3f0c; }
+  .fix p:last-child { margin: 0; }
+
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+  .sw i { display: block; height: 64px; }
+  .sw span { display: block; padding: 8px 10px; font: 12px/1.4 var(--mono); color: var(--muted); }
+  .sw b { display: block; font: 600 13px/1.4 var(--sans); color: var(--ink); }
+
+  .book { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .book figcaption { margin-top: 6px; }
+  .chapter { font: 500 12px/1.5 var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin: 28px 0 10px; }
+
+  .rounds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+  .round .step { font: 500 13px/1.5 var(--mono); color: var(--muted); }
+  .round h3.t { margin: 4px 0 6px; }
+  .round p { margin: 8px 0 0; font-size: 14px; color: var(--ink-2); }
+  .stamp { display: inline-block; font: 600 11px/1.5 var(--mono); border-radius: 6px; padding: 1px 7px; border: 1px solid var(--line); background: var(--card); color: var(--muted); }
+  .stamp.final { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .tick { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+  .tick::before { content: ""; width: 16px; height: 16px; border-radius: 4px; background: var(--ink); box-shadow: inset 0 0 0 4px var(--ink), inset 0 0 0 6px #fff; }
+
+  footer { padding: 40px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 860px) {
+    h1 { font-size: 44px; }
+    .grid2, .grid3, .split, .rounds, .tools { grid-template-columns: 1fr; }
+    .book { grid-template-columns: 1fr 1fr; }
+    .swatches { grid-template-columns: repeat(3, 1fr); }
+    nav.jump { display: none; }
+    .wrap { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Branding</a>
+    <nav class="jump">
+      <a href="#brief">Brief</a><a href="#idea">Idea</a><a href="#logo">Logo</a><a href="#flyer">Flyer</a><a href="#banner">Banner</a><a href="#together">Together</a><a href="#process">Process</a><a href="#tools">Tools</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <p class="eyebrow">Design assignment · Web App – Branding &amp; Promotional Design · Faculty: Aaron A</p>
+    <h1>Branding Imago</h1>
+    <p class="lede">Imago turns an API response into an interface: paste a URL and it draws the page the data deserves. This is its visual identity: a logo with the brand book behind it, an A4 print flyer and a blog banner. All three are made in Adobe Illustrator with Claude, and one idea connects them: raw data becoming something a person can read.</p>
+    <div class="meta">
+      <a class="chip dark" href="https://github.com/Sibhimanyu/imago/tree/master/brand/kit">The three editable .ai files</a>
+      <a class="chip" href="kit/exports/imago-brand-guidelines.pdf">Brand book (PDF)</a>
+      <a class="chip" href="kit/exports/imago-task2-flyer-a4-print.pdf">Flyer (print PDF)</a>
+      <a class="chip" href="kit/exports/imago-task3-blog-banner.png">Banner (PNG)</a>
+      <a class="chip" href="https://imago.onslate.in">App: imago.onslate.in</a>
+    </div>
+  </div>
+
+  <section id="brief">
+    <div class="wrap">
+      <span class="num">01</span>
+      <h2>The brief, and the three files</h2>
+      <p class="sub">One editable Illustrator file per task. Every requirement below was checked in the exported files themselves, not taken on trust.</p>
+      <table>
+        <tr><th style="width:18%">Task</th><th style="width:26%">Editable file</th><th>What the brief asks for, and what the file has</th></tr>
+        <tr><td><b>1 · App logo</b></td><td><code>imago-task1-logo.ai</code></td><td class="ok">Original, simple, scalable; suitable colours and type; editable vector. The file is a 13-page brand book: the logo, what it means, how to use it, the mascot, colour and type.</td></tr>
+        <tr><td><b>2 · A4 flyer</b></td><td><code>imago-task2-flyer-a4.ai</code></td><td class="ok">A4, CMYK, for print: PDF/X-4 with bleed; the PDF's trim box is exactly A4 and it holds no RGB. Logo and name, headline, key benefits, a visual, and a call to action with a working QR code.</td></tr>
+        <tr><td><b>3 · Blog banner</b></td><td><code>imago-task3-blog-banner.ai</code></td><td class="ok">1200 × 700 px, RGB. App identity, a headline, a relevant visual, and the same style as the logo and flyer.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="idea">
+    <div class="wrap">
+      <span class="num">02</span>
+      <h2>One idea across all three</h2>
+      <p class="sub">Imago's promise is a change of form: a response goes in, an interface comes out. Every piece shows that, in the same two colours, with one colour kept for one meaning.</p>
+      <div class="grid3">
+        <div class="card"><h3 class="t">The idea</h3><p class="big">Data in. Interface out.</p><p>The mark tells it, the flyer and banner show it with a real weather response, and the name means it: <i>imago</i> is the finished adult form an insect reaches after metamorphosis.</p></div>
+        <div class="card"><h3 class="t">Two colours, one meaning</h3><p>Ink and paper carry everything. <b>Amber means "this changed since the last fetch"</b>, as it does in the app, so it appears once per piece and only there. Green is the live dot, red is an error.</p></div>
+        <div class="card"><h3 class="t">Type</h3><p><b>Inter Display</b> for headlines, <b>Inter</b> for text, <b>JetBrains Mono</b> for anything that is data: URLs, JSON, labels. The wordmark is Inter Display, outlined so it never depends on the font.</p></div>
+      </div>
+      <div class="swatches" style="margin-top:20px">
+        <div class="sw"><i style="background:#1b1b19"></i><span><b>Ink</b>#1B1B19</span></div>
+        <div class="sw"><i style="background:#f6f5f1"></i><span><b>Paper</b>#F6F5F1</span></div>
+        <div class="sw"><i style="background:#f5ce47"></i><span><b>Amber</b>changed</span></div>
+        <div class="sw"><i style="background:#4fa96a"></i><span><b>Green</b>live</span></div>
+        <div class="sw"><i style="background:#d9534f"></i><span><b>Red</b>error</span></div>
+        <div class="sw"><i style="background:#3f6fb5"></i><span><b>Blue</b>link</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="logo">
+    <div class="wrap">
+      <span class="num">03 · Task 1</span>
+      <h2>The logo, and the brand book behind it</h2>
+      <p class="sub">The Reveal mark: two rounded bars (the keys and values an API sends back) join one body, and a window opens in it (the interface Imago finds in the data). One flat shape on a 32-unit grid, so it holds from a 16 px favicon to a poster.</p>
+      <div class="grid2">
+        <figure><img src="kit/exports/logo-primary.png" alt="The Imago logo: the Reveal mark and the Imago wordmark in ink on paper"><figcaption>Primary lockup</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/04.png" alt="Brand book page: Data in. Interface out., the mark's story in three steps"><figcaption>What the mark means: fields arrive, they become one body, a window opens</figcaption></figure>
+      </div>
+
+      <h3>13 pages, three chapters</h3>
+      <p class="sub" style="margin-bottom:0">The Task 1 file is the brand book itself. The logo and the mascot are drawn on its pages as editable vectors, not pasted in as pictures.</p>
+      <p class="chapter">Logo</p>
+      <div class="book">
+        <figure><img src="kit/exports/guidelines/01.png" alt="Cover" loading="lazy"><figcaption>01 Cover</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/02.png" alt="The logo, primary and reversed" loading="lazy"><figcaption>02 The logo</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/03.png" alt="The name" loading="lazy"><figcaption>03 The name</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/04.png" alt="What the mark means" loading="lazy"><figcaption>04 What the mark means</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/05.png" alt="Anatomy" loading="lazy"><figcaption>05 Anatomy</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/06.png" alt="Construction and clear space" loading="lazy"><figcaption>06 Construction</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/07.png" alt="Logo versions" loading="lazy"><figcaption>07 Logo versions</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/08.png" alt="Misuse" loading="lazy"><figcaption>08 Misuse</figcaption></figure>
+      </div>
+      <p class="chapter">Mascot</p>
+      <div class="book">
+        <figure><img src="kit/exports/guidelines/09.png" alt="Meet Amigo" loading="lazy"><figcaption>09 Meet Amigo</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/10.png" alt="Using Amigo" loading="lazy"><figcaption>10 Using Amigo</figcaption></figure>
+      </div>
+      <p class="chapter">System</p>
+      <div class="book">
+        <figure><img src="kit/exports/guidelines/11.png" alt="Colour" loading="lazy"><figcaption>11 Colour</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/12.png" alt="Typography" loading="lazy"><figcaption>12 Typography</figcaption></figure>
+        <figure><img src="kit/exports/guidelines/13.png" alt="Voice and use" loading="lazy"><figcaption>13 Voice and use</figcaption></figure>
+      </div>
+
+      <h3>Amigo, the mascot</h3>
+      <div class="split">
+        <div class="grid2">
+          <figure><img src="kit/exports/amigo.png" alt="Amigo standing"><figcaption>Standing: helping, onboarding, success</figcaption></figure>
+          <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down with two Zs"><figcaption>Resting: empty states and paused watches</figcaption></figure>
+        </div>
+        <div class="card">
+          <p class="big">Swap two letters and <i>imago</i> becomes <i>amigo</i>, Spanish for friend.</p>
+          <p>Amigo is the mark stood up: the same body and window, the two incoming fields becoming two legs. It has no face, arms or clothes; its personality comes from the words beside it.</p>
+          <p>It appears in loading and empty states, onboarding and success messages, never in the favicon, the app icon or dense data views. The Zs belong only to Amigo lying down.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flyer">
+    <div class="wrap">
+      <span class="num">04 · Task 2</span>
+      <h2>The A4 flyer: a handout that makes the case</h2>
+      <p class="sub">An A4 promotional flyer is held and read, not glanced at across a room, so it carries a short argument, not just a slogan. It is written for two readers: a skimmer who gets about 15 words, and a reader who gets about 130.</p>
+      <div class="split">
+        <figure><a href="kit/exports/imago-task2-flyer-a4-print.pdf"><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The A4 flyer"></a><figcaption>Print PDF: PDF/X-4, CMYK, A4 trim with an 8 pt (about 2.8 mm) bleed</figcaption></figure>
+        <div>
+          <table>
+            <tr><th>The brief asks for</th><th>On the flyer</th></tr>
+            <tr><td>App logo and name</td><td class="ok">Top left, with who it is for: "For anyone who works with APIs"</td></tr>
+            <tr><td>Headline or tagline</td><td class="ok">"APIs become interfaces."</td></tr>
+            <tr><td>Key features or benefits</td><td class="ok"><i>Reads the shape</i>, <i>Remembers it</i>, <i>Watches it change</i>, each with one line; four plain facts in place of testimonials</td></tr>
+            <tr><td>Visuals</td><td class="ok">A real Open-Meteo response becoming its interface, and a three-step "how it works"</td></tr>
+            <tr><td>Call to action</td><td class="ok">"Paste your first endpoint." with the address and a vector QR code, 3.4 cm with its quiet zone, which decodes to the live site</td></tr>
+          </table>
+          <div class="card" style="margin-top:20px">
+            <h3 class="t">Built from research, in reading order (AIDA)</h3>
+            <ul>
+              <li><b>Attention:</b> the headline and the picture</li>
+              <li><b>Interest:</b> the problem ("Raw JSON is hard to read") and what Imago does about it</li>
+              <li><b>Desire:</b> three benefits, then the facts that build trust</li>
+              <li><b>Action:</b> free, no account, nothing to install; the link and the QR code</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="banner">
+    <div class="wrap">
+      <span class="num">05 · Task 3</span>
+      <h2>The blog banner: the picture that earns the click</h2>
+      <p class="sub">A blog banner is the header image of a post, its card on the blog index, and the preview when the link is shared, where it is often shown 300 to 500 px wide. So it names the post, says the promise in a few big words, and shows one idea large enough to read small.</p>
+      <figure><img src="kit/exports/imago-task3-blog-banner.png" alt="The blog banner: Introducing Imago, APIs become interfaces, and a weather response becoming 28.4°C"><figcaption>1200 × 700, RGB: the header and share image of the launch post, "Introducing Imago"</figcaption></figure>
+      <div class="grid2" style="margin-top:20px">
+        <table>
+          <tr><th></th><th>Website hero</th><th>Blog banner</th></tr>
+          <tr><td><b>Seen</b></td><td>On the site, full screen</td><td>In feeds and cards, 300–500 px wide</td></tr>
+          <tr><td><b>Interactive</b></td><td>Yes: live demo, paste bar</td><td>No: nothing looks clickable</td></tr>
+          <tr><td><b>Job</b></td><td>Turn a visitor into a user</td><td>Get a stranger to click</td></tr>
+          <tr><td><b>Words</b></td><td>As many as it needs</td><td>A few, in large type</td></tr>
+        </table>
+        <figure><img src="../docs/readme/landing.png" alt="Imago's landing page hero, with the live demo and the paste bar"><figcaption>The website's hero keeps the interactive version: a live demo and a working paste bar</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="together">
+    <div class="wrap">
+      <span class="num">06</span>
+      <h2>Three pieces, one identity</h2>
+      <p class="sub">The same palette, type, mark and idea, at three sizes and for three jobs. All three are drawn by the same Illustrator scripts from one shared library, so a colour or a change to the mark reaches every piece.</p>
+      <div class="grid3" style="align-items:start">
+        <figure><img src="kit/exports/guidelines/02.png" alt="The logo"><figcaption>Logo: the mark and wordmark</figcaption></figure>
+        <figure><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The flyer"><figcaption>Flyer: the full case, for print</figcaption></figure>
+        <figure><img src="kit/exports/imago-task3-blog-banner.png" alt="The banner"><figcaption>Banner: one idea, for a feed</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="process">
+    <div class="wrap">
+      <span class="num">07</span>
+      <h2>Not the first answer</h2>
+      <p class="sub">The brief asks not to accept the first AI-generated solution. These are the calls that changed the work, with the versions they replaced.</p>
+
+      <h3 style="margin-top:0">The flyer took three rounds</h3>
+      <div class="rounds">
+        <div class="round"><span class="step">Round 1 <span class="stamp">replaced</span></span><h3 class="t">About 160 words</h3><img src="evidence/flyer-v1-160-words.png" alt="The first flyer, with long paragraphs" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Four feature paragraphs and a long standfirst: a brochure, not a flyer. I asked what a promotional flyer is for.</p></div>
+        <div class="round"><span class="step">Round 2 <span class="stamp">replaced</span></span><h3 class="t">29 words</h3><img src="evidence/flyer-v2-29-words.png" alt="The second flyer, cut to 29 words" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Cut to a poster's glance. It undersold the product, so I asked for research on how much a promotional handout should carry.</p></div>
+        <div class="round"><span class="step">Round 3 <span class="stamp final">final</span></span><h3 class="t">About 130 words</h3><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The final flyer" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Handouts carry 50 to 150 words, in AIDA order, with a skim layer and a read layer. The link and QR code became real once the live address was found.</p></div>
+      </div>
+
+      <h3>The banner stopped copying the hero</h3>
+      <div class="grid2">
+        <figure><img src="evidence/banner-v1-at-400.png" alt="The first banner at 400 px: small JSON and captions blur" loading="lazy"><figcaption><span class="stamp">replaced</span> The first banner, at feed size: a copy of the hero. The JSON, the captions and a drawn URL bar nobody can click turn to noise.</figcaption></figure>
+        <figure><img src="evidence/banner-v2-at-400.png" alt="The final banner at 400 px: everything still reads" loading="lazy"><figcaption><span class="stamp final">final</span> After researching what a blog banner is for: at the same size, every element still reads.</figcaption></figure>
+      </div>
+
+      <h3>Amigo's Zs moved</h3>
+      <div class="grid2">
+        <figure><img src="evidence/amigo-v1-standing-zs.png" alt="Amigo standing, with Zs" loading="lazy" style="max-width:260px"><figcaption><span class="stamp">replaced</span> The first resting pose put the Zs on the standing Amigo.</figcaption></figure>
+        <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down, with Zs" loading="lazy" style="max-width:320px"><figcaption><span class="stamp final">final</span> Zs only when Amigo lies down. It is now a rule in the brand book.</figcaption></figure>
+      </div>
+
+      <div class="grid2" style="margin-top:20px">
+        <div class="card"><h3 class="t">Kept on purpose: the mark</h3><p>The logo is the app's existing Reveal mark, drawn exactly from its recorded geometry rather than redrawn. An exploration of alternative marks ran alongside and did not replace it.</p></div>
+        <div class="card"><h3 class="t">Five files became three</h3><p>The logo, the mascot and the guidelines began as separate files. They became one Task 1 brand book, with the logo and mascot woven into its pages, so the submission is one file per task.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools">
+    <div class="wrap">
+      <span class="num">08</span>
+      <h2>Tools, and how it was made</h2>
+      <p class="sub">Every piece is a real, layered Illustrator document. Illustrator drew them from scripts, so any piece can be rebuilt in seconds after a change.</p>
+      <div class="tools">
+        <div class="card"><h3 class="t">Adobe Illustrator</h3><p>All three files, all vector. Claude wrote Illustrator scripts (ExtendScript) that draw every shape and line of text, with named layers, swatches and artboards; Illustrator ran them and wrote the .ai files and exports.</p></div>
+        <div class="card"><h3 class="t">Claude (Claude Code)</h3><p>Research (what a flyer and a banner are for), copy, the scripts, and checking: every export viewed, the banner tested at 400 px, the print PDF checked for PDF/X, CMYK and trim, and the QR code decoded.</p></div>
+        <div class="card"><h3 class="t">For the tool usage form</h3><p class="tick">Adobe Illustrator</p><p class="tick">Claude</p><p style="margin-top:10px">Not used: Photoshop. Nothing here needed pixel editing; the few raster images are exports of the vector files.</p></div>
+      </div>
+      <div class="fix" style="margin-top:20px">
+        <span class="tag">KNOWN AND LEFT OPEN</span>
+        <p>The flyer and the banner show Open-Meteo weather data and should carry its credit line, "Weather data by Open-Meteo.com".</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/master/brand">brand/</a> on GitHub. The business assignment is at <a href="../launch/">launch/</a>.</div>
+</footer>
+</body>
+</html>
