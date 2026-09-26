@@ -1547,6 +1547,24 @@ body.inspector-open .inspector { display: block; }
 .proof-ev code { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .proof-ev .live-pill { display: inline-flex; }
 
+/* Pricing: the proofs' grid, with the heading in the first column. */
+.pricing {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--line);
+}
+.pricing-title { font-size: 21px; letter-spacing: -0.02em; }
+.price h3 { font-size: 16px; letter-spacing: -0.01em; }
+.price p { margin-top: 10px; font-size: 16px; line-height: 1.55; color: var(--ink-2); max-width: 340px; }
+.price-link, .waitlist-note a {
+  color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line);
+}
+.price-link { font-size: 14px; }
+.price-link:hover, .waitlist-note a:hover { color: var(--ink); text-decoration-color: currentColor; }
+/* Touch: a 44px target without moving the text around it. */
+@media (pointer: coarse) {
+  .price-link, .waitlist-note a { display: inline-block; padding: 12px 0; margin: -12px 0; }
+}
+
 .landing-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   max-width: 1180px; width: 100%; margin: 48px auto 0; padding: 28px 24px 48px;
@@ -1564,6 +1582,7 @@ body.inspector-open .inspector { display: block; }
 }
 @media (max-width: 860px) {
   .proofs { grid-template-columns: 1fr; margin-top: 56px; }
+  .pricing { grid-template-columns: 1fr; gap: 28px; margin-top: 48px; }
 }
 @media (max-width: 720px) {
   #landingView .landing-bar { padding: 16px 20px; }

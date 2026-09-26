@@ -6,3 +6,6 @@ contact_links:
   - name: Put "Open in Imago" in your API's docs
     url: https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md
     about: One line of Markdown, no sign-up.
+  - name: Questions and ideas
+    url: https://github.com/Sibhimanyu/imago/discussions
+    about: Ask for help, share a page Imago drew, or suggest what it should draw better.

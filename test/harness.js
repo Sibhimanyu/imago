@@ -26,7 +26,7 @@ fs.mkdirSync(path.dirname(BUNDLE), { recursive: true });
 const PRIVATE = BUNDLE + '.' + process.pid + '.' + Math.random().toString(36).slice(2);
 fs.writeFileSync(PRIVATE, BUILT);
 fs.renameSync(PRIVATE, BUNDLE);
-const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
+export const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
 
 /**
  * @param {object}   opts
@@ -35,6 +35,7 @@ const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
  * @param {string}   opts.url       document URL (default: the app, #app; pass LANDING for the landing page)
  * @param {object}   opts.session   seed sessionStorage
  * @param {object}   opts.local     seed localStorage (values are JSON-encoded)
+ * @param {string}   opts.app       a patched copy of APP to evaluate instead (e.g. a constant changed)
  */
 // The bare URL is the landing page, which fetches its live demo; most tests
 // are about the app, so that is where boot() lands unless told otherwise.
@@ -77,7 +78,7 @@ export async function boot(opts = {}) {
     clientWidth: { get() { return 800; }, configurable: true }
   });
 
-  window.eval(APP);
+  window.eval(opts.app || APP);
 
   const api = window.__imago;
   if (!api) throw new Error('js/main.js did not expose its test seam');

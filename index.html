@@ -119,6 +119,22 @@
         <div class="proof-ev"><span class="live-pill"><span class="live-dot"></span>Live<span class="live-count">· 24s</span></span><span class="meta-chip is-hot">Changed <b>3</b></span></div>
       </div>
     </section>
+
+    <!-- Pricing. The waitlist link is a plain link to the form, never an
+         embed; it stays hidden until WAITLIST_URL in js/config.js is set. -->
+    <section class="pricing" aria-labelledby="pricingTitle">
+      <h2 class="pricing-title" id="pricingTitle">Free, and why</h2>
+      <div class="price">
+        <h3>Free forever</h3>
+        <p>Bring your own free Gemini or Groq key, or use none: the basic layout needs no key. Imago has no server, so there is nothing to charge for. Your key stays in your browser and goes only to the provider you chose.</p>
+        <div class="proof-ev"><span class="meta-chip">MIT licensed</span><span class="meta-chip">No account</span></div>
+      </div>
+      <div class="price">
+        <h3>Hosted AI · waitlist</h3>
+        <p>No key? Imago could provide the model. That needs a server and costs money on every call, so it would be paid. Not built yet. No payment now.</p>
+        <div class="proof-ev"><span class="meta-chip">Not built yet</span><a class="price-link" data-waitlist hidden>Join the waitlist →</a></div>
+      </div>
+    </section>
   </main>
 
   <footer class="landing-foot">
@@ -371,6 +387,8 @@
           </div>
           <p class="muted-note">No key needed. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
         </div>
+
+        <p class="muted-note waitlist-note" data-waitlist hidden>No key? <a>Join the hosted-AI waitlist.</a></p>
 
         <label class="field-label" for="modelName">Model</label>
         <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off" placeholder="Model name" list="modelOptions">

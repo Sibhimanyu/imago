@@ -5,7 +5,7 @@
    rest of js/ is imported from here. See the module table in README.md.
    ========================================================================== */
 
-import { DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, fetchOllamaModels, getProvider, ollamaAltBase, ollamaBase } from './config.js';
+import { WAITLIST_URL, DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, fetchOllamaModels, getProvider, ollamaAltBase, ollamaBase } from './config.js';
 import { dom, state } from './state.js';
 import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getSessionModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setSessionModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
 import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
@@ -781,8 +781,31 @@ function showFramedNotice() {
   body.appendChild(box);
 }
 
+// Every waitlist link in the page is marked data-waitlist. With no form
+// address (or anything but https), they stay hidden and the text around
+// them reads on its own; with one, they open the form in a new tab.
+function applyWaitlist(url) {
+  var ok = /^https:\/\//i.test(String(url || ''));
+  var marked = document.querySelectorAll('[data-waitlist]');
+  for (var i = 0; i < marked.length; i += 1) {
+    var node = marked[i];
+    node.hidden = !ok;
+    var links = node.tagName === 'A' ? [node] : node.querySelectorAll('a');
+    for (var j = 0; j < links.length; j += 1) {
+      if (ok) {
+        links[j].href = url;
+        links[j].target = '_blank';
+        links[j].rel = 'noopener';
+      } else {
+        links[j].removeAttribute('href');
+      }
+    }
+  }
+}
+
 function init() {
   cacheDom();
+  applyWaitlist(WAITLIST_URL);
   if (isFramed(window)) { showFramedNotice(); return; }
   baseTitle = document.title;
   document.addEventListener('visibilitychange', clearUnseen);
@@ -869,6 +892,7 @@ window.__imago = {
   withScheme: withScheme, isPrivateHost: isPrivateHost, isFramed: isFramed, showFramedNotice: showFramedNotice,
   cancelInFlight: cancelInFlight, callHtml: callHtml, TIMEOUTS: TIMEOUTS,
   saveCurrentRequest: saveCurrentRequest, restoreLastView: restoreLastView, showGeneratePrompt: showGeneratePrompt,
+  applyWaitlist: applyWaitlist, WAITLIST_URL: WAITLIST_URL,
   init: init
 };
 
@@ -878,4 +902,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, applyWaitlist, init };

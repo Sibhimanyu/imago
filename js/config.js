@@ -5,6 +5,11 @@ import { init } from './main.js';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
 
+// The hosted-AI waitlist form (Zoho Forms), the one place its address lives.
+// Empty hides every waitlist link. It is only ever a plain link: no form
+// script, iframe or embed is loaded on this origin. See launch/pricing.md.
+var WAITLIST_URL = '';
+
 var STORE = {
   requests: 'imago.savedRequests',
   specs: 'imago.schemaSpecs',
@@ -483,4 +488,4 @@ var IMAGO_UI_SPEC_JSON_SCHEMA = {
   required: ['title', 'layout', 'components']
 };
 
-export { STORE, SESSION, KEYS, PROVIDERS, OLLAMA_OPTIONS, PROVIDER_IDS, DEFAULT_PROVIDER, getProvider, providerNeedsKey, ollamaModels, fetchOllamaModels, isChatModel, pickOllamaModel, OLLAMA_DEFAULT_BASE, ollamaBase, ollamaAltBase, ollamaFetch, detectProvider, DEFAULT_MODEL, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, LARGE_RESPONSE_BYTES, SAMPLE_CHAR_LIMIT, MAX_COMPONENTS, MAX_ROWS, MAX_HTML_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOT_ENDPOINTS, MAX_EXPANDED_ROWS, TIMEOUTS, DEMOS, EMPTY_EXAMPLES, COMPONENT_TYPES, LAYOUTS, EMPHASIS, ACTION_TYPES, MAX_ACTIONS, IMAGO_UI_SPEC_JSON_SCHEMA };
+export { WAITLIST_URL, STORE, SESSION, KEYS, PROVIDERS, OLLAMA_OPTIONS, PROVIDER_IDS, DEFAULT_PROVIDER, getProvider, providerNeedsKey, ollamaModels, fetchOllamaModels, isChatModel, pickOllamaModel, OLLAMA_DEFAULT_BASE, ollamaBase, ollamaAltBase, ollamaFetch, detectProvider, DEFAULT_MODEL, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, LARGE_RESPONSE_BYTES, SAMPLE_CHAR_LIMIT, MAX_COMPONENTS, MAX_ROWS, MAX_HTML_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOT_ENDPOINTS, MAX_EXPANDED_ROWS, TIMEOUTS, DEMOS, EMPTY_EXAMPLES, COMPONENT_TYPES, LAYOUTS, EMPHASIS, ACTION_TYPES, MAX_ACTIONS, IMAGO_UI_SPEC_JSON_SCHEMA };

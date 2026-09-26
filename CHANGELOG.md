@@ -2,6 +2,23 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.14.0.0] - 2026-09-26
+
+### Added
+
+- **Free, and why.** The landing page says what Imago costs and why: free
+  forever when you bring your own free Gemini or Groq key, or none, because
+  there is no server to pay for; and a hosted-AI plan that would be paid,
+  because it would need a server and costs money on every call. The hosted
+  plan is a waitlist only: not built, no payment.
+- **Waitlist links, off until there is a form.** "Join the waitlist" on the
+  landing page and "No key? Join the hosted-AI waitlist." in Settings read
+  their address from one constant, `WAITLIST_URL`. Empty, they stay hidden;
+  only an https address shows them, opening in a new tab. No third-party
+  script or embed is allowed on this origin, and a test says so.
+- **Questions and ideas** go to GitHub Discussions, linked from the new-issue
+  page.
+
 ## [0.13.4.0] - 2026-09-26
 
 ### Fixed
