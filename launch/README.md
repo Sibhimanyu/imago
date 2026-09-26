@@ -62,9 +62,10 @@ provide the model. That needs a server and costs money on every call, so it
 would be paid: price follows cost. Draft price ₹99 a month for 100 new
 layouts, about ₹40 of model cost. It isn't built, and nobody pays now.
 
-- **Zoho Forms** runs the waitlist and asks which price people would pay
-  (₹49, ₹99, ₹199, or only free). That's demand and price data, collected
-  without me.
+- **Zoho Catalyst** runs the waitlist: a page on the gallery that posts to a
+  Catalyst function storing each sign-up in the Data Store. It asks which
+  price people would pay (₹49, ₹99, ₹199, or only free): demand and price
+  data, collected without me. <https://imago-apis-oavuixyf.onslate.in/waitlist/>
 - The landing page says all of this under "Free, and why".
 
 [pricing.md](pricing.md)
@@ -106,7 +107,7 @@ gallery API, linked from that API's page.
 
 ## Tools
 
-Zoho Catalyst Slate (hosting the app and the gallery), Zoho PageSense
-(measuring the marketing), Zoho Forms (the pricing waitlist), GitHub
+Zoho Catalyst (Slate hosting the app and the gallery; Functions and Data
+Store for the pricing waitlist), Zoho PageSense (measuring the marketing), GitHub
 (Discussions, issues), Claude (Claude Code), HyperFrames (the reels), Figma
 (design sync). Brand pieces from earlier tasks: Adobe Illustrator.

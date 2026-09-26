@@ -100,3 +100,27 @@ answer to whether to build it.
    in the app stays hidden. Once set, the link appears on the landing page
    ("Free, and why", under Hosted AI) and in Settings under the key boxes. It
    must be an `https://` link.
+
+## The waitlist, as built (2026-09-26)
+
+Zoho Forms' MCP could not create forms, so the waitlist runs on **Zoho
+Catalyst**, which already hosts both sites:
+
+- **Page:** <https://imago-apis-oavuixyf.onslate.in/waitlist/>, on the
+  gallery's origin, in Imago's design. Same questions: email, use case, has a
+  key, the price they would pay (₹49 / ₹99 / ₹199 / only free), consent.
+- **Function:** `functions/waitlist` (Advanced I/O). It validates, drops bots
+  that fill a hidden field, lower-cases the email, trims the use case to 255
+  characters and stores only those four answers. A repeat email answers
+  "already on the list". Only the gallery's origin may call it (Catalyst
+  Authorized Domains).
+- **Data:** the `Waitlist` table in the Catalyst Data Store (email unique).
+  Count and price split with ZCQL, for example
+  `SELECT price, COUNT(ROWID) FROM Waitlist GROUP BY price`.
+- **Links:** `WAITLIST_URL` in `js/config.js` points at the page, so "Join the
+  waitlist" shows on Imago's landing page and in Settings; the gallery links
+  it too. PageSense counts clicks to it ("Went to the waitlist").
+- **Privacy line on the page:** only what the form asks for, used only to say
+  if hosted AI opens; Imago itself still has no server.
+
+The Zoho Forms spec above is kept as the original plan.

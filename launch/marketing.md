@@ -49,9 +49,11 @@ funnels and 5 goals. Set up on 2026-09-26:
   - *Opened Imago from the gallery*: links starting `https://imago.onslate.in/#open=`
   - *Went to a Discussions thread*: links containing `github.com/Sibhimanyu/imago/discussions`
   - *Downloaded a press-kit reel*: links containing `onslate.in/reels/`
-  - A waitlist goal follows once the Zoho Forms link exists.
-- **Heatmap:** "Gallery heatmap" on every gallery page (created; launched in
-  the PageSense screen, as the MCP launch call is refused for this project).
+  - *Went to the waitlist*: links containing `onslate.in/waitlist/`
+- **Heatmap:** "Gallery heatmap" on every gallery page, 5,000 visitors. It is
+  created and configured; PageSense will let it launch once it registers the
+  snippet (the snippet loads and sends data; the dashboard lags).
+- **Cookie banner:** on, "notify visitors and allow to opt out".
 
 **How we'll know it worked:** visits from search, which API pages they land
 on, and the share who click through to Imago.

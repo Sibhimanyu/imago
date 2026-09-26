@@ -199,13 +199,13 @@
       <p class="sub">The brief's problem is "nobody knows it exists". Marketing brings developers in, Pricing answers the first question anyone asks of an AI tool, Public relations lets other people talk about it, and Community gives the ones who stay a place to talk. Each runs without me.</p>
       <div class="grid2">
         <div class="card"><span class="num" style="margin:0">Job 1</span><h3 class="t" style="font-size:22px">Marketing</h3><p>The API gallery: one live page per popular free API, found through search. <b>Zoho Catalyst Slate</b> hosts it; <b>Zoho PageSense</b> measures it.</p></div>
-        <div class="card"><span class="num" style="margin:0">Job 2</span><h3 class="t" style="font-size:22px">Pricing</h3><p>Free forever with your own key, and why. An optional hosted-AI plan, waitlist only, asking what people would pay. <b>Zoho Forms</b> runs the waitlist.</p></div>
+        <div class="card"><span class="num" style="margin:0">Job 2</span><h3 class="t" style="font-size:22px">Pricing</h3><p>Free forever with your own key, and why. An optional hosted-AI plan, waitlist only, asking what people would pay. <b>Zoho Catalyst</b> runs the waitlist: a page, a function and a Data Store table.</p></div>
         <div class="card"><span class="num" style="margin:0">Job 3</span><h3 class="t" style="font-size:22px">Public relations</h3><p>A press kit: four reels, ready posts, the mascot and a fact sheet, for anyone who wants to write about or share Imago. Hosted beside the gallery.</p></div>
         <div class="card"><span class="num" style="margin:0">Job 4</span><h3 class="t" style="font-size:22px">Community</h3><p>GitHub Discussions, one tab from the code, seeded with threads useful before anyone replies. Each gallery page links to its API's thread.</p></div>
       </div>
       <div class="fix" style="margin-top:20px">
         <span class="tag">ONE RULE ACROSS ALL FOUR</span>
-        <p><b>No third-party script ever runs on imago.onslate.in.</b> Imago keeps people's model keys in the browser, where any script on that site could read them. So the gallery and press kit (with PageSense) live on their own address, and the waitlist is a plain link to Zoho Forms.</p>
+        <p><b>No third-party script ever runs on imago.onslate.in.</b> Imago keeps people's model keys in the browser, where any script on that site could read them. So the gallery and press kit (with PageSense) live on their own address, and Imago only links out to them, including the waitlist.</p>
       </div>
     </div>
   </section>
@@ -240,8 +240,8 @@
       <div class="grid2" style="margin-top:20px">
         <figure><a href="https://imago.onslate.in"><img src="evidence/pricing-landing.png" alt="The Free, and why section on Imago's landing page"></a><figcaption>Live on the landing page: "Free, and why"</figcaption></figure>
         <div class="card">
-          <h3 class="t">The waitlist, on Zoho Forms</h3>
-          <p>Collects demand and price data without me, for free (3 forms, 500 responses a month):</p>
+          <h3 class="t">The waitlist, on Zoho Catalyst</h3>
+          <p>A <a href="https://imago-apis-oavuixyf.onslate.in/waitlist/">page on the gallery</a> posts to a Catalyst function that stores each sign-up in the Data Store. It collects demand and price data without me:</p>
           <ul>
             <li>Email</li>
             <li>What would you use Imago for?</li>
@@ -249,7 +249,7 @@
             <li><b>Which monthly price would you pay?</b> ₹49 / ₹99 / ₹199 / only free</li>
             <li>Email me if hosted AI opens</li>
           </ul>
-          <p style="margin-top:10px">Linked from the landing page and Settings. The links stay hidden until the form exists.</p>
+          <p style="margin-top:10px">Linked from Imago's landing page and Settings, and from every gallery page. Bots that fill a hidden field are dropped; a repeat email is told it is already on the list.</p>
         </div>
       </div>
     </div>
@@ -469,14 +469,14 @@
           <li class="done"><b>Pricing live on the landing page</b><span>Waitlist links hidden until the form exists</span></li>
           <li class="done"><b>Discussions open, 11 threads</b><span>Linked from every gallery page</span></li>
           <li class="done"><b>Four reels in the press kit</b><span>Also embedded in the gallery</span></li>
-          <li><b>PageSense snippet on the gallery</b><span>Create the project, send the snippet, set the click goal</span><span class="who-tag">me</span></li>
-          <li><b>Waitlist form on Zoho Forms</b><span>Build from the spec, send the link; the links go live</span><span class="who-tag">me</span></li>
+          <li class="done"><b>PageSense live on the gallery</b><span>Project, snippet, four goals, cookie banner; heatmap launches once PageSense registers the snippet</span></li><li class="done"><b>Waitlist live on Catalyst</b><span>/waitlist on the gallery, tested end to end</span></li>
+          
           <li><b>Pin two Discussions threads</b><span>#13 and #14, in the web UI</span><span class="who-tag">me</span></li>
           <li><b>After two weeks</b><span>PageSense visits and clicks, waitlist sign-ups and price picks, Discussions replies</span></li>
         </ul>
         <div class="card">
           <h3 class="t">Tools used</h3>
-          <p>Zoho Catalyst Slate (hosting both sites), Zoho PageSense (measuring the gallery), Zoho Forms (the pricing waitlist), GitHub (Discussions, issues), Claude (Claude Code), HyperFrames (reels), Figma (design sync). Brand pieces from earlier tasks: Adobe Illustrator.</p>
+          <p>Zoho Catalyst (Slate hosting both sites; Functions and Data Store for the waitlist), Zoho PageSense (measuring the gallery), GitHub (Discussions, issues), Claude (Claude Code), HyperFrames (reels), Figma (design sync). Brand pieces from earlier tasks: Adobe Illustrator.</p>
           <h3 class="t" style="margin-top:18px">Known and left open</h3>
           <ul>
             <li>Catalyst serves the app with a one-year browser cache, so returning visitors can miss updates.</li>
