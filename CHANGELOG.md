@@ -2,6 +2,21 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.4.0] - 2026-09-26
+
+### Fixed
+
+- **The landing demo credits Open-Meteo.** Their forecast data is licensed
+  CC BY 4.0, which asks for an attribution link wherever it is shown, and the
+  demo showed it with none. "Weather data by Open-Meteo.com" now sits under
+  the demo, linked; on phones it goes on its own line under the note.
+
+### Changed
+
+- **One partner, not five.** Of the example APIs, only Open-Meteo has a
+  README list where Imago belongs, and it asks for pull requests. The launch
+  kit now asks there, and says why the others were dropped.
+
 ## [0.13.3.1] - 2026-09-26
 
 ### Fixed

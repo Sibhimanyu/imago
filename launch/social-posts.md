@@ -14,6 +14,9 @@ Imago does that other tools don't.
   visitor sees first. If you want Generated pages for any post, add your key,
   open the same link and replace the image.
 - X counts every link as 23 characters. Every X post below fits in 280.
+- **Open-Meteo credit.** Their data is CC BY 4.0, so any post showing it
+  names them: Day 3 in the text, and the landing page image (Days 7, 8, 13)
+  carries the credit under the demo.
 
 ---
 
@@ -78,6 +81,8 @@ Imago does that other tools don't.
 > headline with its unit, humidity as a meter, the hourly forecast as a chart,
 > and bookkeeping like generation time folded into Details.
 >
+> Weather data by Open-Meteo.com (CC BY 4.0).
+>
 > https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
 
 **X**
@@ -85,6 +90,7 @@ Imago does that other tools don't.
 >
 > Imago puts them back together: the temperature as the headline, humidity as a meter, the hourly forecast as a chart.
 >
+> Data: Open-Meteo.com
 > https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
 
 ---

@@ -1,73 +1,69 @@
 # Partners: API owners spread it for you
 
 Imago's users are already in one place at the moment they need it: reading a
-free API's docs. The people who own those docs are the partners. One yes, one
-merged badge, and every reader of those docs after that can find Imago
-without you.
+free API's docs. The people who own those docs are the partners. One yes puts
+Imago in front of every developer who reads them afterwards, without you.
 
-## The ask
+## Who, and why only one
 
-One line in their README or docs: the **Open in Imago** badge pointing at one
-of their own example endpoints. Nothing else. It costs them nothing, it needs
-no account, and it can be removed in one commit.
+Each API in Imago's examples was checked on 2026-09-26 for a place in its
+README where a link to Imago would belong, and for a maintainer who merges
+outside pull requests.
 
-What they get: their readers see the API's data as an interface in one click.
-More people get past "is this API any good?", which is the first question a
-free API has to answer.
+| API | Verdict |
+|---|---|
+| **Open-Meteo** (`open-meteo/open-meteo`, 6k stars) | **Ask.** Its README has a "Who is using Open-Meteo?" list and ends: *"Do you use Open-Meteo? Please open a pull request and add your repository or app to the list!"* A dozen of these were merged in 2026. Imago does use it: the landing page's live demo is an Open-Meteo forecast. |
+| PokeAPI | Skip. Its README lists only wrapper libraries, and Imago isn't one. A badge in the header would be self-promotion in someone else's README. |
+| Frankfurter | Skip. Its README covers only deployment and contributing. |
+| Free Dictionary API | Skip. No commits since November 2023, and the API timed out when checked. |
+| Thirukkural API | Skip. No public repository found. |
 
-## Who to ask first
+One pull request that belongs is worth more than five that don't. The
+"Open in Imago" badge ([open-in-imago.md](open-in-imago.md)) stays available
+for any API owner who asks for it.
 
-Picked because the API is public, keyless, sends CORS headers and already
-renders well in Imago. Each one is in Imago's Try an example list.
+## First: meet Open-Meteo's licence
 
-| API | Why them | Where to ask |
-|---|---|---|
-| **Open-Meteo** | The landing hero, the flyer and the banner all show their forecast. Asking first is the obvious move. | GitHub Discussions on `open-meteo/open-meteo` |
-| **PokeAPI** | Huge student and hobby audience, and the best-looking Imago page. | GitHub issue or discussion on `PokeAPI/pokeapi` |
-| **Frankfurter** | Small team, currency rates change daily, so Watch has something to show. | Its maintainer, linked from its site |
-| **Free Dictionary API** | Heavy hackathon use, deeply nested JSON that Imago makes readable. | Its maintainer, linked from its site |
-| **Thirukkural API** | Small, and close to home. The most likely first yes. | Its maintainer, linked from its site |
+Open-Meteo's data is CC BY 4.0: *"Include an attribution link next to any
+location where Open-Meteo data is displayed."* Their maintainer looks at the
+apps people submit (one 2026 pull request was sent back for making too many
+requests), so Imago has to be in order before asking:
 
-Check each repo's contributing notes before posting. Some want an issue
-before a pull request.
+- The landing demo credits them: "Weather data by Open-Meteo.com", linked
+  (v0.13.4.0).
+- It makes one request per landing page view.
+- It's free and non-commercial, which is what their free API is for.
+- The social posts and the launch post credit them wherever their data
+  appears.
 
-## The message
+## The pull request
 
-Send it as a pull request where the repo takes them: the badge line already
-added to the README, and this as the description. A pull request is a yes or
-no. An issue is a conversation.
+One line in the **Apps** list, in alphabetical order (after Home Assistant),
+in the list's own format:
 
-> **Add an "Open in Imago" link to the README**
+```markdown
+- [Imago](https://imago.onslate.in) Open-source, browser-only tool that turns an API response into an interface. Its landing page draws a live Open-Meteo forecast. ([GitHub](https://github.com/Sibhimanyu/imago))
+```
+
+**Title:** Add Imago to "Who is using Open-Meteo?"
+
+**Description:**
+
+> Adds Imago (https://imago.onslate.in), a free, MIT-licensed tool that runs
+> in the browser and draws an API response as an interface. Its landing page
+> fetches one live Open-Meteo forecast per visit and draws it, credited
+> "Weather data by Open-Meteo.com" next to the demo.
 >
-> Hi. I built Imago (https://imago.onslate.in), a free, open-source,
-> browser-only tool that draws a JSON response as an interface. Your API is
-> one of its examples. Here it is:
->
-> <open link to one of their endpoints>
->
-> This PR adds one badge under the examples so readers can open that response
-> as a page in one click. Nothing is installed and nothing goes through a
-> server: the reader's browser fetches your API directly, with the same CORS
-> access your docs already rely on.
->
-> If it isn't a fit, close it, no hard feelings. If you'd rather point at a
-> different endpoint, tell me which and I'll change it.
-
-## The follow-up
-
-One follow-up, a week later, on the same thread. After that, leave it.
+> Code: https://github.com/Sibhimanyu/imago
 
 ## Tracking it
 
-Five rows is too few for a CRM. Keep this table up to date:
-
-| API | Pull request | Opened | Followed up | Result |
+| Partner | Pull request | Opened | Followed up | Result |
 |---|---|---|---|---|
 | Open-Meteo | | | | |
-| PokeAPI | | | | |
-| Frankfurter | | | | |
-| Free Dictionary API | | | | |
-| Thirukkural API | | | | |
+
+One follow-up after a week, on the same thread, if there's no answer. After
+that, leave it.
 
 ## One more to try: Zoho Catalyst
 
@@ -77,7 +73,6 @@ feature projects built on Slate. It isn't known that they do.
 
 ## How we'll know it worked
 
-- The badge is merged in one repo. That is the one yes, and the reason
+- The Open-Meteo pull request is merged. That's the one yes, and the reason
   Sales isn't a separate job.
-- A Share link or `#open=` link from that API turns up in an issue, which
-  shows someone reached Imago that way.
+- Visitors arrive at imago.onslate.in from github.com/open-meteo.

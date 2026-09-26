@@ -20,6 +20,8 @@ So you paste the URL into a tab and get this:
 "interval":900,"temperature_2m":31.4,"wind_speed_10m":12.9},"hourly_units":…
 ```
 
+*(A forecast from [Open-Meteo](https://open-meteo.com/), CC BY 4.0.)*
+
 It's all there, and you can't read any of it. You scroll, you squint, you work
 out that `31.4` is the temperature and `°C` lives in a different object. Then
 you do what everyone does: write a throwaway page, just to see the data

@@ -1581,7 +1581,7 @@ body.inspector-open .inspector { display: block; }
   .spec-pane { grid-template-columns: 1fr; min-height: 0; }
   .spec-response { grid-column: 1; contain: none; height: 250px; padding-bottom: 48px; }
   .spec-interface { grid-column: 1; grid-row: 2; margin: -32px 12px 0; padding: 18px 16px 22px; }
-  .specimen-foot { justify-content: flex-start; }
+  .specimen-foot { flex-direction: column; align-items: flex-start; gap: 6px; }
   .spec-json { font-size: 11.5px; }
   .si-facts { grid-template-columns: 1fr 1fr; }
   .si-big b { font-size: 52px; }
@@ -1637,6 +1637,8 @@ select.text-input, .chat-form .text-input { font-family: var(--sans); }   /* mon
 /* Landing specimen: the response column was empty below the JSON. The JSON
    sits in the middle of it and a key at the foot says what the highlight means. */
 .spec-key { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.spec-credit { white-space: nowrap; font-size: 12.5px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.spec-credit:hover { color: var(--ink-2); }
 
 /* Headers are set: say so in the command bar, next to the URL they go with */
 .headers-chip {

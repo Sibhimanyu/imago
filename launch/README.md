@@ -45,10 +45,14 @@ repo.
 
 ### 2. Partners: API owners spread it for you
 
-My users are reading a free API's docs at the moment they need Imago. The app
-now has an **Open in Imago** link (`imago.onslate.in/#open=<endpoint>`) and a
-badge. One line in an API's README, and each of its readers can open the
-example as a page. Pull requests go to five API owners, Open-Meteo first.
+My users are reading a free API's docs at the moment they need Imago. I
+checked every API in Imago's examples for a README where a link would belong.
+One qualified: **Open-Meteo**, whose README lists the apps that use it and
+asks for pull requests to add more. Imago's landing demo is an Open-Meteo
+forecast, so it belongs there. First I fixed something the check turned up:
+Imago showed their CC BY 4.0 data without the credit it requires. Then I opened
+the pull request. For any API owner who wants one, there's an **Open in
+Imago** link (`imago.onslate.in/#open=<endpoint>`) and a badge.
 [partners.md](partners.md), [open-in-imago.md](open-in-imago.md)
 
 ### 3. Support: people who get stuck, and people who complain
@@ -62,8 +66,8 @@ public, so each answer helps the next person too.
 
 ## What I dropped, and why
 
-- **Sales.** For a free tool, the "one yes" is an API owner merging the
-  badge, and that's Partners.
+- **Sales.** For a free tool, the "one yes" is Open-Meteo merging the
+  listing, and that's Partners.
 - **Pricing.** Free was decided by how Imago is built. There's no server, so a
   user costs nothing to serve, and the model runs on the user's own free key.
   Charging would need accounts, and accounts would mean a server holding
@@ -71,8 +75,8 @@ public, so each answer helps the next person too.
 - **Marketplace.** Developers don't browse marketplaces for a tool like this.
   Zoho Marketplace is for Zoho add-ons, Product Hunt is a one-day spike, and
   awesome lists want stars first.
-- **Public relations.** No one writes about a tool with no users. Once an API
-  owner merges the badge there's a story. Until then, Show HN reaches the
+- **Public relations.** No one writes about a tool with no users. Once Open-Meteo
+  lists it there's a story. Until then, Show HN reaches the
   press that covers developer tools.
 - **Community.** A launch with no users has nobody to talk to each other.
   GitHub issues are the place to talk to me until there are.

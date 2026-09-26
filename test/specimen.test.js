@@ -62,6 +62,17 @@ describe('the landing demo is live', () => {
     }
   });
 
+  it('credits Open-Meteo, whose CC BY 4.0 data it shows, with a link beside the demo', async () => {
+    const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
+    await settle();
+    const doc = app.window.document;
+    expect(new URL(app.specimenDemo(app.specimen.name).url).hostname).toBe('api.open-meteo.com');
+    const credit = doc.querySelector('.specimen a[href="https://open-meteo.com/"]');
+    expect(credit).not.toBeNull();
+    expect(credit.textContent).toBe('Weather data by Open-Meteo.com');
+    expect(credit.getAttribute('rel')).toContain('noopener');
+  });
+
   it('starts fetching as soon as the landing page shows', async () => {
     const calls = [];
     await boot({ url: LANDING, fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
