@@ -24,59 +24,89 @@ they write a throwaway page they will delete by evening.
 - Anyone who isn't a developer. You need to know what an endpoint is.
 - Teams who want a hosted dashboard for production data.
 
-## The three jobs
+## The four jobs
 
-The brief's problem is "nobody knows it exists". These three jobs take a
-developer from never having heard of Imago, to arriving through an API's
-docs, to getting past their first problem.
+The brief's problem is "nobody knows it exists". Marketing brings developers
+in, Pricing answers the first question they ask of an AI tool, Public
+relations lets other people talk about it, and Community gives the ones who
+stay a place to talk. Each keeps working without me.
 
 ### 1. Marketing: developers hear about it
 
-Free and open source, so no sign-up funnel. The ask is: try it, then star the
-repo.
+**The API gallery**, <https://imago-apis-oavuixyf.onslate.in>. One page per
+popular free API (PokeAPI, Open-Meteo, Open Library, Frankfurter, Wikipedia,
+the ISS), each with plain text on what the API returns, its live response
+drawn by Imago's own renderer, and "Open it in Imago". Developers search for
+an API's name when they first meet it, and these pages answer that search for
+as long as they exist.
 
-- **Zoho Social:** fourteen daily posts on LinkedIn and X, each showing one
-  real API becoming a page, with images from the live site.
-  [social-posts.md](social-posts.md), [social/](social/)
-- **Launch day:** Show HN, the launch post on dev.to, and Reddit.
-  [marketing.md](marketing.md), [launch-post.md](launch-post.md)
-- **Always on:** the landing page's live demo, and a demo GIF at the top of
-  the README.
+- **Zoho Catalyst Slate** hosts it, as its own app on its own address.
+- **Zoho PageSense** (free, up to 5,000 visitors a month) measures it: visits,
+  which APIs people came for, heatmaps, and a goal counting clicks into
+  Imago.
+- The gallery lives apart from the app on purpose: Imago keeps people's model
+  keys in the browser, so no third-party script may ever run on
+  imago.onslate.in.
 
-### 2. Partners: API owners spread it for you
+[marketing.md](marketing.md)
 
-My users are reading a free API's docs at the moment they need Imago. I
-checked every API in Imago's examples for a README where a link would belong.
-One qualified: **Open-Meteo**, whose README lists the apps that use it and
-asks for pull requests to add more. Imago's landing demo is an Open-Meteo
-forecast, so it belongs there. First I fixed something the check turned up:
-Imago showed their CC BY 4.0 data without the credit it requires. Then I opened
-the pull request. For any API owner who wants one, there's an **Open in
-Imago** link (`imago.onslate.in/#open=<endpoint>`) and a badge.
-[partners.md](partners.md), [open-in-imago.md](open-in-imago.md)
+### 2. Pricing: what it costs, and why
 
-### 3. Support: people who get stuck, and people who complain
+**Free forever**, when you bring your own free Gemini or Groq key, or use
+none. There is no server, so a user costs nothing to serve; the model call runs
+on the user's own key, and only once per response shape. Charging would need
+accounts, and accounts would mean a server holding people's keys.
 
-Most first attempts that fail do so because of CORS or a key. The app's
-messages say why, [SUPPORT.md](../SUPPORT.md) gives the fix for each, and
-GitHub issue forms take the rest. The "page came out wrong" form asks for a
-Share link, so every complaint arrives with a way to reproduce it. It's all
-public, so each answer helps the next person too.
-[support.md](support.md)
+**Hosted AI, waitlist only.** For people with no key who want Imago to
+provide the model. That needs a server and costs money on every call, so it
+would be paid: price follows cost. Draft price ₹99 a month for 100 new
+layouts, about ₹40 of model cost. It isn't built, and nobody pays now.
+
+- **Zoho Forms** runs the waitlist and asks which price people would pay
+  (₹49, ₹99, ₹199, or only free). That's demand and price data, collected
+  without me.
+- The landing page says all of this under "Free, and why".
+
+[pricing.md](pricing.md)
+
+### 3. Public relations: other people talk about it
+
+**The press kit**, <https://imago-apis-oavuixyf.onslate.in/press/>. Four
+vertical reels (Amigo introduces Imago; paste a URL, get a page; Watch
+marking what changed; why it's free), ready-made posts with copyable
+captions, the logo, the Amigo mascot and a fact sheet. I don't post them
+myself: anyone who wants to write about or share Imago can take them without
+asking. PageSense counts the visits.
+
+[press/reels/README.md](press/reels/README.md), [social-posts.md](social-posts.md)
+
+### 4. Community: a place to talk
+
+**GitHub Discussions**, <https://github.com/Sibhimanyu/imago/discussions>,
+next to the code, which is where an open-source project's users look. It
+started with threads that are useful before anyone replies: "APIs that work
+with Imago" (a list people add to), a Q&A on the error most people hit first
+(CORS) with its answer marked, Show and tell, Ideas, and one thread per
+gallery API, linked from that API's page.
+
+[community.md](community.md)
 
 ## What I dropped, and why
 
-- **Sales.** For a free tool, the "one yes" is Open-Meteo merging the
-  listing, and that's Partners.
-- **Pricing.** Free was decided by how Imago is built. There's no server, so a
-  user costs nothing to serve, and the model runs on the user's own free key.
-  Charging would need accounts, and accounts would mean a server holding
-  people's keys. That's the whole decision, not a job.
-- **Marketplace.** Developers don't browse marketplaces for a tool like this.
-  Zoho Marketplace is for Zoho add-ons, Product Hunt is a one-day spike, and
-  awesome lists want stars first.
-- **Public relations.** No one writes about a tool with no users. Once Open-Meteo
-  lists it there's a story. Until then, Show HN reaches the
-  press that covers developer tools.
-- **Community.** A launch with no users has nobody to talk to each other.
-  GitHub issues are the place to talk to me until there are.
+- **Partners.** It depends on someone else's yes. One listing request is open
+  at Open-Meteo ([#2155](https://github.com/open-meteo/open-meteo/pull/2155)),
+  but the launch doesn't count on it.
+- **Sales.** Nothing to sell yet. The waitlist tests demand first.
+- **Support.** Not a separate job: the app explains its own errors,
+  [SUPPORT.md](../SUPPORT.md) covers the rest, and Discussions Q&A takes
+  questions. A help desk such as Zoho Desk would hide answers in private
+  tickets, which is the wrong shape for open source.
+- **Marketplace.** Developers don't browse marketplaces for a tool like this,
+  and Zoho Marketplace is for Zoho add-ons.
+
+## Tools
+
+Zoho Catalyst Slate (hosting the app and the gallery), Zoho PageSense
+(measuring the marketing), Zoho Forms (the pricing waitlist), GitHub
+(Discussions, issues), Claude (Claude Code), HyperFrames (the reels), Figma
+(design sync). Brand pieces from earlier tasks: Adobe Illustrator.

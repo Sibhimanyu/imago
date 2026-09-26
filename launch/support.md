@@ -1,5 +1,7 @@
 # Support: people who get stuck, and people who complain
 
+> **Not a separate launch job.** The app explains its own errors, SUPPORT.md covers the rest, and GitHub Discussions Q&A takes questions (see [community.md](community.md)). The runbook below still applies to issues.
+
 Imago is free and open source, so support happens in public on GitHub. A
 question answered in an issue answers the next person who searches for it.
 A complaint in an issue is a bug report, and the fix links back to it. No

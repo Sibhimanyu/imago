@@ -1,91 +1,56 @@
 # Marketing: developers hear about it
 
-Imago is free and open source, so the marketing is too. Show the product
-working, link to the code, and ask for one thing: **try it, then star the
-repo**. Nothing to sign up for, no email list. Developers watch the repo
-for releases.
+Imago is free and open source, so the marketing is too: show the product
+working, link to the code, and ask for one thing, **try it, then star the
+repo**. No sign-up funnel, no email list, no social accounts to run.
 
-| Where | What | When | Runs without you |
-|---|---|---|---|
-| **Landing page** | The live demo: a real forecast turns into an interface before the page asks for anything. | Live now | Always |
-| **README** | The demo GIF at the top (`docs/readme/demo.gif`): paste a URL, get a page, in nine seconds. | Live once the repo is public | Always |
-| **Zoho Social** | Fourteen daily posts on LinkedIn and X, each one showing a real API: [social-posts.md](social-posts.md) | Days 1 to 14 | Scheduled once, posts itself |
-| **Hacker News** | Show HN, below | Day 1 | Found by search after launch |
-| **dev.to** | The launch post, [launch-post.md](launch-post.md), with the blog banner as its cover | Day 1 | Found by search after launch |
-| **Reddit** | One post each in r/opensource and r/SideProject, and r/webdev on its showcase day | Days 1 to 7 | Found by search after launch |
+## The API gallery
 
-**Before Day 1:** the repo is public, and its About box has the site link and
-these topics: `api`, `json`, `api-client`, `json-viewer`, `developer-tools`,
-`generative-ui`, `no-build`, `vanilla-js`. Topics are how GitHub search finds
-it.
+<https://imago-apis-oavuixyf.onslate.in>
 
-**How we'll know it worked:** visits to imago.onslate.in, stars and watchers
-on the repo, and issues opened by people you don't know.
+Developers meeting a new API search for it: "pokeapi example response",
+"open-meteo api". Each gallery page answers that search, then hands them to
+Imago with that endpoint loaded.
 
-## Show HN
+| Page | What it shows |
+|---|---|
+| [PokeAPI](https://imago-apis-oavuixyf.onslate.in/pokeapi/) | One Pokémon: sprite, stat bars, type badge |
+| [Open-Meteo](https://imago-apis-oavuixyf.onslate.in/open-meteo/) | A forecast with units rejoined and hours charted (credited, CC BY 4.0) |
+| [Open Library](https://imago-apis-oavuixyf.onslate.in/open-library/) | A search result as a table of books |
+| [Frankfurter](https://imago-apis-oavuixyf.onslate.in/frankfurter/) | The day's exchange rates |
+| [Wikipedia](https://imago-apis-oavuixyf.onslate.in/wikipedia/) | An article summary |
+| [ISS](https://imago-apis-oavuixyf.onslate.in/iss/) | The space station's position, and how it changes |
 
-**Title:** Show HN: Imago – paste an API URL, get an interface instead of JSON
+Every page has real text about the API (so search engines can read it), the
+live response drawn by Imago's own renderer, a fallback screenshot, "Open it
+in Imago", a link to that API's Discussions thread, the free-pricing line,
+and a reel. There's a sitemap and robots.txt.
 
-**URL:** https://imago.onslate.in
+**Where it lives, and why.** It is a second Zoho Catalyst Slate app on its own
+address, not part of imago.onslate.in. Imago keeps people's model keys in the
+browser, where any script on that site could read them, so the analytics
+script must never run there. A different address is a different site to the
+browser, and cannot see Imago's storage.
 
-**First comment:**
+**Build:** `node gallery/build.mjs` → `gallery/dist/`, deployed with
+`catalyst deploy slate imago-apis`.
 
-> I kept doing the same thing with every new API: open the URL, scroll a
-> screen of raw JSON, then write a throwaway page to see whether the data was
-> any use. Imago skips the throwaway page.
->
-> Paste a GET endpoint (or a curl command). It fetches the JSON, works out the
-> response's shape, and draws a page for it: a Pokémon becomes a profile with
-> stat bars, a forecast becomes metrics and a chart, a search becomes a table.
->
-> A few things that might interest HN:
->
-> - The model never writes HTML. It returns a small JSON plan (which fields
->   matter, which component shows each), and Imago's own renderer draws it with
->   textContent. Nothing from the API or the model is ever treated as markup.
-> - The plan is cached by the response's *shape*, so watching an endpoint every
->   10 seconds for an hour is ~360 fetches and one model call.
-> - It works with no key at all. The fallback is the same renderer driven by
->   heuristics, and a test fails if any sample API's field names leak into
->   those rules.
-> - There is no backend. Keys stay in your browser. It's MIT-licensed, with no
->   build step: native ES modules.
->
-> It only reads public, CORS-enabled GET endpoints, which is the honest limit
-> of anything that runs only in a browser. I'd love reports of endpoints it
-> draws badly. The Share button makes a link that shows me exactly what you saw.
->
-> Code: https://github.com/Sibhimanyu/imago
+## Measuring it: Zoho PageSense
 
-Post on a weekday morning US Eastern time. Stay in the thread for the first
-three hours.
+Free forever up to 5,000 visitors a month: visitor analytics, heatmaps,
+funnels and 5 goals.
 
-## dev.to
+1. Create a PageSense project for the gallery address.
+2. Put the tracking snippet in `gallery/pagesense.html`; the build places it
+   in every page's `<head>`.
+3. Goals: clicks on links starting `https://imago.onslate.in/#open=` (visitors
+   who went on to Imago), and clicks to the waitlist and to Discussions.
 
-Publish [launch-post.md](launch-post.md) as written, with
-`brand/kit/exports/imago-task3-blog-banner.png` as the cover image. Tags:
-`opensource`, `webdev`, `api`, `javascript`. Swap the relative links for full
-GitHub URLs before publishing.
+**How we'll know it worked:** visits from search, which API pages they land
+on, and the share who click through to Imago.
 
-## Reddit
+## Always on
 
-Read each subreddit's self-promotion rules on the day. They change, and some
-allow showcases only on one day of the week. Post as the maker, answer every
-comment, and don't cross-post the same text on the same day.
-
-> **Title:** I built Imago: paste an API URL and get an interface instead of
-> JSON (free, open source, browser-only)
->
-> Every time I tried a new API I'd scroll raw JSON, then write a throwaway
-> page just to see the data. Imago reads the response's shape and draws the
-> page for it: a Pokémon becomes a profile with stat bars, a forecast becomes
-> metrics and a chart, a search becomes a table. Watch re-fetches and marks
-> what changed.
->
-> No account, no server. Keys stay in your browser, and it works with no key
-> at all. MIT-licensed, no build step.
->
-> Live: https://imago.onslate.in · Code: https://github.com/Sibhimanyu/imago
->
-> It only reads public GET endpoints that allow browser apps (CORS). Endpoints
-> it draws badly are the most useful thing you could send me.
+- The landing page's live demo: a real forecast becomes an interface before
+  the page asks for anything.
+- The demo GIF at the top of the GitHub README.

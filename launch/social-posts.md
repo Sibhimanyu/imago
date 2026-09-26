@@ -1,12 +1,13 @@
-# Zoho Social: the two-week launch run
+# Ready-made posts (press kit)
 
-Fourteen posts, one a day, each scheduled in Zoho Social for **LinkedIn**
-(profile) and **X**. Every image is in [`social/`](social/), captured from
+Fourteen posts, each with a **LinkedIn** and an **X** version, for anyone who
+wants to share Imago. They are not posted by me: they ship in the press kit
+(<https://imago-apis-oavuixyf.onslate.in/press/>) with their images and
+copyable captions. They were first written for a scheduled Zoho Social run,
+which was dropped. Every image is in [`social/`](social/), captured from
 the live site. Each post shows one real API becoming a page, or one thing
 Imago does that other tools don't.
 
-- **When:** 9:30 am IST on weekdays. Post Day 1 on the same morning as Show HN
-  and dev.to (see [marketing.md](marketing.md)).
 - **Call to action:** try it, then star the repo. Nothing to sign up for.
 - **Links:** the `#open=` links go straight to that API's page, so every post
   is also a demo.

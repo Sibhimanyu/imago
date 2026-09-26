@@ -1,5 +1,7 @@
 # Partners: API owners spread it for you
 
+> **Dropped as a launch job.** Partners depends on someone else's yes, so the launch doesn't count on it. The Open-Meteo listing request below stays open as extra effort.
+
 Imago's users are already in one place at the moment they need it: reading a
 free API's docs. The people who own those docs are the partners. One yes puts
 Imago in front of every developer who reads them afterwards, without you.
