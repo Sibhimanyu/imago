@@ -896,6 +896,15 @@ input:focus, textarea:focus, select:focus {
   color: var(--yellow-ink); background: var(--yellow-bg);
   border-radius: var(--r-xs); padding: 2px 6px;
 }
+/* A Watch tick swaps in only the values that moved: an amber wash settles
+   and the new value rises into place. Set once per change, never looped. */
+.fact.is-fresh, .comp.is-fresh { animation: fresh-wash .22s ease-out; }
+.is-fresh .val-main { animation: fresh-rise .18s ease-out; }
+@keyframes fresh-wash { from { background-color: var(--yellow-bg); } }
+@keyframes fresh-rise { from { opacity: .35; transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .fact.is-fresh, .comp.is-fresh, .is-fresh .val-main { animation: none; }
+}
 
 .comp-label {
   display: block;

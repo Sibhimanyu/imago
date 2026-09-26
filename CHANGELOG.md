@@ -2,6 +2,25 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.19.1.1] - 2026-09-26
+
+### Fixed
+
+- **A Watch tick no longer flashes the page.** Every tick cleared the page
+  and built it again from nothing: images reloaded (a sprite drew blurred
+  until it was marked pixel art again), focus fell out of the page, an
+  expanded table folded shut, and a Full HTML page's frame was created again
+  and showed blank white until it loaded. Now a tick builds the page
+  off-screen and, when the layout is the same, swaps in only the values that
+  changed; the rest stay exactly as they were. When the layout did move, the
+  page is swapped in one step with scroll and focus kept. A Full HTML page
+  keeps its frame when the tick would write the same one.
+- **Changed values say so, briefly.** A value a tick changed gets a short
+  amber wash and rises into place (under a quarter of a second), then keeps
+  its usual CHANGED flag. Nothing moves with reduced motion on.
+- A request you start (Go, Generate, a new endpoint) still rebuilds the page
+  as before.
+
 ## [0.19.1.0] - 2026-09-26
 
 ### Fixed

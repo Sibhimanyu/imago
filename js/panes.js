@@ -284,7 +284,116 @@ function minimalSpec() {
   };
 }
 
-function applySpec(spec, source) {
+/* ── A calm Watch tick ──────────────────────────────────────────────────────
+   A tick used to clear the pane and build every component again. Every
+   image reloaded (a sprite drew blurred until is-pixel came back), focus
+   fell to the body, an expanded table folded shut and the scroll anchor
+   went with the nodes. Now a tick builds the page off-screen and, when its
+   layout matches the one on screen, swaps only the components whose values
+   changed. The rest never leave the document.
+   ---------------------------------------------------------------------- */
+
+// The page with every component reduced to its key: two pages with the same
+// skeleton differ only inside their components. The source badge is left
+// out; it is one node that moves between pages.
+function skeletonOf(root) {
+  var copy = root.cloneNode(true);
+  var badge = copy.querySelector('#cacheBadge');
+  if (badge) badge.parentNode.removeChild(badge);
+  var parts = copy.querySelectorAll('[data-ck]');
+  for (var i = 0; i < parts.length; i += 1) {
+    var stub = document.createElement('i');
+    stub.setAttribute('data-ck', parts[i].getAttribute('data-ck'));
+    parts[i].parentNode.replaceChild(stub, parts[i]);
+  }
+  return copy.innerHTML;
+}
+
+// Which of root's focusable elements has focus, by position, so focus can
+// be put back on its twin in a rebuilt tree. Position among focusables, not
+// among children: a changed card gains a CHANGED flag that shifts those.
+var FOCUSABLE = 'a[href], button, input, select, textarea, summary, [tabindex]';
+
+function focusIndex(root) {
+  var active = document.activeElement;
+  if (!active || active === root || !root.contains(active)) return -1;
+  return Array.prototype.indexOf.call(root.querySelectorAll(FOCUSABLE), active);
+}
+
+function refocus(root, index) {
+  if (index < 0) return;
+  var node = root.querySelectorAll(FOCUSABLE)[index];
+  if (!node) return;
+  node.focus({ preventScroll: true });
+}
+
+// A replaced component keeps the images it already has: the new node gets
+// the old <img> for the same address, so nothing reloads.
+function keepImages(from, into) {
+  var old = Array.prototype.slice.call(from.querySelectorAll('img'));
+  var fresh = into.querySelectorAll('img');
+  for (var i = 0; i < fresh.length; i += 1) {
+    for (var j = 0; j < old.length; j += 1) {
+      if (old[j].getAttribute('src') === fresh[i].getAttribute('src')) {
+        old[j].alt = fresh[i].alt;
+        fresh[i].parentNode.replaceChild(old[j], fresh[i]);
+        old.splice(j, 1);
+        break;
+      }
+    }
+  }
+}
+
+// Each component's markup as it was built. Once on screen a node drifts
+// from it (an image marks itself is-pixel, a timeline lays itself out), so
+// a tick compares against what was built, not what the node has become.
+var builtHtml = new WeakMap();
+
+function noteBuilt(root) {
+  var parts = root.querySelectorAll('[data-ck]');
+  for (var i = 0; i < parts.length; i += 1) builtHtml.set(parts[i], parts[i].outerHTML);
+}
+
+// Returns false, touching nothing, when the new page's layout differs from
+// the one on screen. A component is kept only when it was built the same
+// and its path is not in the diff (is-changed), so the listeners it carries
+// were bound to the same values.
+function patchInPlace(holder) {
+  var out = dom.interfaceOut;
+  if (skeletonOf(out) !== skeletonOf(holder)) return false;
+  var olds = out.querySelectorAll('[data-ck]');
+  var news = holder.querySelectorAll('[data-ck]');
+  for (var i = 0; i < olds.length; i += 1) {
+    var before = olds[i], after = news[i];
+    var changed = after.classList.contains('is-changed');
+    var was = builtHtml.get(before);
+    if (!changed && was === after.outerHTML) continue;
+    if (changed) after.classList.add('is-fresh');
+    keepImages(before, after);
+    var focused = focusIndex(before);
+    before.parentNode.replaceChild(after, before);
+    refocus(after, focused);
+  }
+  return true;
+}
+
+// The layout moved, so the whole page changes, but in one step: scroll and
+// focus stay put, and the values that changed still get their highlight.
+function swapPage(holder) {
+  var x = window.scrollX || 0, y = window.scrollY || 0;
+  var focused = focusIndex(dom.interfaceOut);
+  var changed = holder.querySelectorAll('[data-ck].is-changed');
+  for (var i = 0; i < changed.length; i += 1) changed[i].classList.add('is-fresh');
+  resetInterfaceOut(false);
+  while (holder.firstChild) dom.interfaceOut.appendChild(holder.firstChild);
+  refocus(dom.interfaceOut, focused);
+  window.scrollTo(x, y);   // where the reader was, however the height moved
+}
+
+// opts.calm: a Watch tick. The reader is looking at this page; it updates
+// in place instead of being built again from nothing.
+function applySpec(spec, source, opts) {
+  var calm = !!(opts && opts.calm) && !state.editing && !!dom.interfaceOut.querySelector('.spec-body');
   if (!spec) spec = normalizeSpec(buildFallbackSpec(state.data, state.url));
   if (!spec) spec = minimalSpec();
   state.spec = spec;
@@ -298,7 +407,8 @@ function applySpec(spec, source) {
   dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
     : source === 'cache' ? 'From schema cache' : source === 'shared' ? 'Shared layout' : 'Basic layout';
 
-  resetInterfaceOut(false);
+  // The page is built off-screen, then put on screen in one step.
+  var holder = document.createElement('div');
 
   // The page header the plan asked for: title, one line of context, and
   // what the reader can do next. Off stage the source badge sits here; on
@@ -306,20 +416,29 @@ function applySpec(spec, source) {
   var head = el('header', 'stage-head');
   var headTop = el('div', 'stage-head-top');
   headTop.appendChild(el('h1', 'stage-title', spec.title));
-  headTop.appendChild(dom.cacheBadge);
   head.appendChild(headTop);
   if (spec.subtitle) head.appendChild(el('p', 'stage-sub', spec.subtitle));
   var actions = renderActions(spec.actions || [], state.data);
   if (actions) head.appendChild(actions);
-  dom.interfaceOut.appendChild(head);
+  holder.appendChild(head);
 
   var shown = applyEdits(spec, editsFor(state.schemaHash));
-  if (state.editing) dom.interfaceOut.appendChild(editPanel());
-  dom.interfaceOut.appendChild(renderSpecBody(shown, state.data, state.diff));
+  if (state.editing) holder.appendChild(editPanel());
+  holder.appendChild(renderSpecBody(shown, state.data, state.diff));
   // A re-render of the same basic-layout page keeps its no-key line; any
   // other source means a key did its job.
   if (source !== 'fallback') state.noKeyLine = false;
-  else if (state.noKeyLine) noKeyAlert();
+  else if (state.noKeyLine) noKeyAlert(holder);
+  noteBuilt(holder);
+
+  if (calm) {
+    if (!patchInPlace(holder)) swapPage(holder);
+  } else {
+    resetInterfaceOut(false);
+    while (holder.firstChild) dom.interfaceOut.appendChild(holder.firstChild);
+  }
+  var liveTop = dom.interfaceOut.querySelector('.stage-head-top');
+  if (liveTop && dom.cacheBadge.parentNode !== liveTop) liveTop.appendChild(dom.cacheBadge);
 
 
   dom.stageSource.textContent = dom.cacheBadge.textContent;

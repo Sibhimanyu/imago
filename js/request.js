@@ -699,9 +699,11 @@ function handleRequestFailure(err, isAuto) {
 // top-bar pill all saying the same thing, and on a phone the banner pushed
 // the data below the fold. One line under the title, with the way out.
 // Called after the fallback renders, since applySpec clears the pane.
-function noKeyAlert() {
+// root: the page being built, when applySpec builds it off-screen.
+function noKeyAlert(root) {
+  root = root || dom.interfaceOut;
   state.noKeyLine = true;   // applySpec redraws it on every re-render (edit, Watch, …)
-  if (dom.interfaceOut.querySelector('.keyline')) return;
+  if (root.querySelector('.keyline')) return;
   var id = getSessionProvider();
   var provider = getProvider(id);
   var rejected = keyRejected(id);
@@ -713,13 +715,13 @@ function noKeyAlert() {
   add.type = 'button';
   add.addEventListener('click', function () { setAppPane('settings'); });
   line.appendChild(add);
-  var head = dom.interfaceOut.querySelector('.stage-head');
+  var head = root.querySelector('.stage-head');
   if (head) {
     var sub = head.querySelector('.stage-sub');
     head.insertBefore(line, sub ? sub.nextSibling : head.children[1] || null);
     dom.cacheBadge.hidden = true;   // the line says it; the badge would repeat it
   } else {
-    dom.interfaceOut.insertBefore(line, dom.interfaceOut.firstChild);
+    root.insertBefore(line, root.firstChild);
   }
 }
 
@@ -763,13 +765,13 @@ function resolveSpec(url, print, userTriggered, isAuto) {
       cached.lastUsedAt = new Date().toISOString();
       cache[print.hash] = cached;
       setSchemaSpecs(cache);
-      applySpec(fitTitle(normalized, state.data, url, cached.sourceUrl), 'cache');
+      applySpec(fitTitle(normalized, state.data, url, cached.sourceUrl), 'cache', { calm: !!isAuto });
       return Promise.resolve();
     }
   }
 
   if (!useKeyedProvider()) {
-    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
+    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback', { calm: !!isAuto });
     noKeyAlert();
     return Promise.resolve();
   }
@@ -840,12 +842,12 @@ function resolveHtml(url, print, userTriggered, isAuto) {
     setSchemaSpecs(cache);
     // The page keeps the baseline it was written from, so the stale bar can
     // say when fresh data no longer matches it.
-    applyHtml(doc, 'cache', { url: cached.htmlUrl, sig: cached.htmlSig || '' });
+    applyHtml(doc, 'cache', { url: cached.htmlUrl, sig: cached.htmlSig || '' }, { calm: !!isAuto });
     return Promise.resolve();
   }
 
   if (!useKeyedProvider()) {
-    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback');
+    applySpec(normalizeSpec(buildFallbackSpec(state.data, url)), 'fallback', { calm: !!isAuto });
     noKeyAlert();
     return Promise.resolve();
   }

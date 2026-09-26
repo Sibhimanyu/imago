@@ -75,6 +75,7 @@ Two other jsdom traps the harness already handles:
 | `test/onescreen.test.js` | The one-screen layout: inspector and Settings sheet, the trail, the history strip, the endpoint rail, first run without a key, and the basic layout (units, series, Details). |
 | `test/design-sync.test.js` | The Figma sync gate: token extraction from `:root`, the UI-surface hash, the Figma manifest against the screenshot list, and `design:check` run end to end in a sandbox copy. |
 | `test/modules.test.js` | The module check (`npm run check`): a name used without an import, an assignment to an import, duplicates, unreachable modules, and the shipped `js/` passing it. |
+| `test/calm.test.js` | A calm Watch tick: only changed components are swapped (same nodes, images and focus otherwise), a new layout swaps in one step with scroll and focus kept, a Full HTML frame survives a tick, and the change highlight's timing and reduced-motion rule. |
 | `test/audit.test.js` | The 2026-09-24 audit: a request's lifetime (replace, abort, time out, ignore late replies), layouts remembered by shape, what may leave the browser (the HTML frame, address keys, share links, framing), and the page and its controls. |
 
 `test/harness.js` also exports `jsonFetch(body)` for a one-shot fetch stub and

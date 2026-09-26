@@ -428,7 +428,10 @@ function sanitizeHtmlDoc(html, data, palette) {
 // baseline: { url, sig } of the response the page was written from. A
 // remembered page carries its own; a fresh one was written from what is on
 // screen now.
-function applyHtml(html, source, baseline) {
+// opts.calm: a Watch tick. The page is a snapshot of one response, so a
+// tick that would write the same frame keeps the one on screen: a new
+// iframe drew blank white until its document loaded, every 10-60s.
+function applyHtml(html, source, baseline, opts) {
   state.html = html;
   state.htmlSource = source;
   state.htmlUrl = baseline ? baseline.url : state.url;
@@ -443,38 +446,51 @@ function applyHtml(html, source, baseline) {
   dom.cacheBadge.textContent = source === 'generated' ? 'Generated'
     : source === 'cache' ? 'From schema cache' : source === 'shared' ? 'Shared layout' : 'Basic layout';
 
-  resetInterfaceOut(false);
+  var title = endpointTitle(state.url) || 'Response';
+  var srcdoc = sanitizeHtmlDoc(html, state.data, htmlPalette());
+  var onScreen = dom.interfaceOut.querySelector('iframe.html-frame');
+  var shownTitle = dom.interfaceOut.querySelector('.stage-title');
+  var keep = !!(opts && opts.calm) && onScreen && onScreen.srcdoc === srcdoc &&
+             shownTitle && shownTitle.textContent === title;
 
-  var head = el('header', 'stage-head');
-  var headTop = el('div', 'stage-head-top');
-  headTop.appendChild(el('h1', 'stage-title', endpointTitle(state.url) || 'Response'));
-  headTop.appendChild(dom.cacheBadge);
-  head.appendChild(headTop);
-  head.appendChild(el('p', 'stage-sub',
-    'A full page written by the model. Sandboxed: scripts disabled, links open in new tabs.'));
+  if (keep) {
+    // Only a stale alert goes; the stale bar follows the data in updateMeta.
+    var alerts = dom.interfaceOut.querySelectorAll('.alert');
+    for (var a = 0; a < alerts.length; a += 1) alerts[a].parentNode.removeChild(alerts[a]);
+  } else {
+    resetInterfaceOut(false);
 
-  // Generated HTML is a snapshot of one response. Fresh data does not
-  // re-render into it, so say so and offer the way out.
-  var stale = el('div', 'html-stale');
-  stale.hidden = true;
-  stale.appendChild(el('span', null, 'The data changed since this page was generated.'));
-  var regen = el('button', 'btn btn-ghost btn-xs', 'Regenerate');
-  regen.type = 'button';
-  regen.addEventListener('click', function () { generateInterfaceNow(); });
-  stale.appendChild(regen);
-  head.appendChild(stale);
-  dom.interfaceOut.appendChild(head);
+    var head = el('header', 'stage-head');
+    var headTop = el('div', 'stage-head-top');
+    headTop.appendChild(el('h1', 'stage-title', title));
+    headTop.appendChild(dom.cacheBadge);
+    head.appendChild(headTop);
+    head.appendChild(el('p', 'stage-sub',
+      'A full page written by the model. Sandboxed: scripts disabled, links open in new tabs.'));
 
-  var frame = document.createElement('iframe');
-  frame.className = 'html-frame';
-  frame.title = 'Generated interface (sandboxed)';
-  // Opaque origin, scripts/forms/navigation stripped. allow-popups so the
-  // model's target=_blank links open; each carries rel=noopener, and a
-  // sandboxed opener is capability-less anyway. Never add allow-scripts
-  // with allow-same-origin — the frame could drop its own sandbox.
-  frame.setAttribute('sandbox', 'allow-popups');
-  frame.srcdoc = sanitizeHtmlDoc(html, state.data, htmlPalette());
-  dom.interfaceOut.appendChild(frame);
+    // Generated HTML is a snapshot of one response. Fresh data does not
+    // re-render into it, so say so and offer the way out.
+    var stale = el('div', 'html-stale');
+    stale.hidden = true;
+    stale.appendChild(el('span', null, 'The data changed since this page was generated.'));
+    var regen = el('button', 'btn btn-ghost btn-xs', 'Regenerate');
+    regen.type = 'button';
+    regen.addEventListener('click', function () { generateInterfaceNow(); });
+    stale.appendChild(regen);
+    head.appendChild(stale);
+    dom.interfaceOut.appendChild(head);
+
+    var frame = document.createElement('iframe');
+    frame.className = 'html-frame';
+    frame.title = 'Generated interface (sandboxed)';
+    // Opaque origin, scripts/forms/navigation stripped. allow-popups so the
+    // model's target=_blank links open; each carries rel=noopener, and a
+    // sandboxed opener is capability-less anyway. Never add allow-scripts
+    // with allow-same-origin — the frame could drop its own sandbox.
+    frame.setAttribute('sandbox', 'allow-popups');
+    frame.srcdoc = srcdoc;
+    dom.interfaceOut.appendChild(frame);
+  }
 
   dom.stageSource.textContent = dom.cacheBadge.textContent;
   dom.stageSource.setAttribute('data-kind', source);

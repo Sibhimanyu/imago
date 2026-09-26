@@ -233,6 +233,9 @@ function renderSpecBody(spec, data, diffMap) {
 
   var anyRendered = false;
   var tucked = [];
+  // Each component's node carries its place in the plan, so a Watch tick
+  // can match it with the one already on screen (patchInPlace in panes.js).
+  var ck = 0;
 
   for (var g = 0; g < groups.length; g += 1) {
     var group = groups[g];
@@ -241,7 +244,9 @@ function renderSpecBody(spec, data, diffMap) {
     var heroes = [], facts = [], blocks = [];
     for (var c = 0; c < group.items.length; c += 1) {
       var result = renderComponent(group.items[c], data, diffMap);
+      ck += 1;
       if (!result) continue;
+      result.node.setAttribute('data-ck', String(ck));
       if (state.editing) result.node.insertBefore(editBar(group.items[c]), result.node.firstChild);
       if (isBookkeeping(group.items[c], data) && result.weight !== 'hero') { tucked.push(result); continue; }
       if (result.weight === 'hero') heroes.push(result);
@@ -352,6 +357,7 @@ function renderSpecBody(spec, data, diffMap) {
     var fallbackGrid = el('div', 'spec-grid');
     var raw = renderComponent({ type: 'jsonBlock', path: '', label: 'Response' }, data, diffMap);
     raw.node.className += ' span-12';
+    raw.node.setAttribute('data-ck', '0');
     fallbackGrid.appendChild(raw.node);
     fallbackSection.appendChild(fallbackGrid);
     body.appendChild(fallbackSection);
