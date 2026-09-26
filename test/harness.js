@@ -78,7 +78,10 @@ export async function boot(opts = {}) {
     clientWidth: { get() { return 800; }, configurable: true }
   });
 
-  window.eval(opts.app || APP);
+  // A patched copy is not the bundle on disk: every offset after the patch
+  // has moved, so coverage recorded under the bundle's URL would be mapped
+  // onto the wrong lines and wreck the merged report. Run it anonymous.
+  window.eval(opts.app ? opts.app.replace(/\n\/\/# sourceURL=[^\n]*$/, '') : APP);
 
   const api = window.__imago;
   if (!api) throw new Error('js/main.js did not expose its test seam');

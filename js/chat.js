@@ -1,10 +1,10 @@
-import { fetchOllamaModels, getProvider, providerNeedsKey } from './config.js';
+import { getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { clearKeyRejected, getProviderKey, getSessionProvider, markKeyRejected, providerUsable } from './storage.js';
 import { clear, el, formatBytes, formatRelative } from './util.js';
 import { fingerprint } from './schema.js';
 import { llmRequest, providerErrorText } from './llm.js';
-import { TEST_TIMEOUT_MS, currentOllamaModel, ollamaFailureText, setKeyStatus, syncOllamaModelOptions } from './ui.js';
+import { TEST_TIMEOUT_MS, setKeyStatus } from './ui.js';
 
 /* ── Try-it console ──────────────────────────────────────────────────────
    A real conversation against the configured provider, through the same
@@ -74,11 +74,8 @@ function pushChatTurn(turn) {
 }
 
 // The thinking trace, whatever the provider calls it.
-function chatThinkingOf(provider, payload) {
+function chatThinkingOf(payload) {
   try {
-    if (typeof provider.thinking === 'function' && provider.thinking(payload)) {
-      return (payload.message && payload.message.thinking) || '';
-    }
     var msg = payload && payload.choices && payload.choices[0] && payload.choices[0].message;
     if (!msg) return '';
     if (typeof msg.reasoning_content === 'string') return msg.reasoning_content;
@@ -90,7 +87,7 @@ function sendChat(text) {
   var message = String(text || '').trim();
   if (!message || chatBusy) return Promise.resolve();
   var t = chatTarget();
-  if (providerNeedsKey(t.id) && !getProviderKey(t.id)) {
+  if (!getProviderKey(t.id)) {
     pushChatTurn({ role: 'assistant', error: true, text: 'Add a ' + t.provider.label + ' key first.' });
     return Promise.resolve();
   }
@@ -121,7 +118,7 @@ function sendChat(text) {
   return llmRequest(t.provider, t.model, getProviderKey(t.id), t.provider.chatBody(t.model, history))
     .then(function (payload) {
       var reply = t.provider.extract(payload);
-      var thinking = chatThinkingOf(t.provider, payload);
+      var thinking = chatThinkingOf(payload);
       if (!reply && !thinking) throw emptyReplyError(payload);
       settle({
         role: 'assistant',
@@ -131,9 +128,7 @@ function sendChat(text) {
       });
     })
     .catch(function (err) {
-      var info = t.id === 'ollama'
-        ? { title: ollamaFailureText(err), message: '' }
-        : providerErrorText(t.provider, err);
+      var info = providerErrorText(t.provider, err);
       settle({
         role: 'assistant', error: true,
         text: info.title + (info.message ? ' — ' + info.message : '')
@@ -152,7 +147,7 @@ function testProvider(id) {
   var btn = dom[id + 'TestBtn'];
   var line = dom[id + 'TestStatus'];
   if (!btn || !line) return Promise.resolve();
-  if (providerNeedsKey(id) && !getProviderKey(id)) {
+  if (!getProviderKey(id)) {
     line.textContent = 'Add a ' + provider.label + ' key first.';
     line.setAttribute('data-state', 'missing');
     return Promise.resolve();
@@ -163,9 +158,9 @@ function testProvider(id) {
   var started = Date.now();
   var done = false;
 
-  // A local 35B model answered a one-word ping in 35 seconds. With only a
-  // static "Testing…" that is indistinguishable from a hang, so count up,
-  // and give up rather than spin forever.
+  // A large reasoning model can take tens of seconds over a one-word ping.
+  // With only a static "Testing…" that is indistinguishable from a hang, so
+  // count up, and give up rather than spin forever.
   var ticker = window.setInterval(function () {
     if (done) return;
     line.textContent = 'Testing… ' + Math.round((Date.now() - started) / 1000) + 's';
@@ -186,36 +181,9 @@ function testProvider(id) {
     line.setAttribute('data-state', ok ? 'ready' : 'missing');
   }
   window.setTimeout(function () {
-    finish(false, 'Timed out after ' + Math.round(TEST_TIMEOUT_MS / 1000) + 's. A large local model can be slower — try a smaller one.');
+    finish(false, 'Timed out after ' + Math.round(TEST_TIMEOUT_MS / 1000) + 's. A large model can be slower — try a smaller one.');
   }, TEST_TIMEOUT_MS);
   function elapsed() { return (Date.now() - started) + ' ms'; }
-
-  if (id === 'ollama') {
-    // Reachability alone is not a useful answer: /api/tags returning 200
-    // while the chosen model is not installed is exactly how a green test
-    // preceded a failed generation. Prove the model can answer.
-    return fetchOllamaModels()
-      .then(function (list) {
-        syncOllamaModelOptions(list);
-        if (!list.length) {
-          finish(false, 'Reachable, but no models installed. Run: ollama pull llama3.1');
-          return null;
-        }
-        var wanted = currentOllamaModel();
-        if (list.indexOf(wanted) === -1) {
-          finish(false, 'Model "' + wanted + '" is not installed. Installed: ' + list.join(', '));
-          return null;
-        }
-        return llmRequest(provider, wanted, '', provider.testBody(wanted))
-          .then(function (payload) {
-            if (!provider.extract(payload) && !providerThinking(payload, provider)) throw emptyReplyError(payload);
-            finish(true, 'OK · ' + wanted + ' · ' + elapsed());
-          });
-      })
-      .catch(function (err) {
-        finish(false, ollamaFailureText(err));
-      });
-  }
 
   // Test the model the user would actually generate with: the box value
   // when this provider is active, otherwise its default.
@@ -229,7 +197,7 @@ function testProvider(id) {
       // Reasoning models sometimes answer with thinking and no final text.
       // For a connectivity ping, thinking still proves the key and the
       // model work — only true silence is a failure.
-      if (!provider.extract(payload) && !providerThinking(payload, provider)) {
+      if (!provider.extract(payload) && !providerThinking(payload)) {
         throw emptyReplyError(payload);
       }
       finish(true, 'OK · ' + model + ' · ' + elapsed());
@@ -241,12 +209,8 @@ function testProvider(id) {
 }
 
 // Any thinking trace on the first choice, whatever the provider names it.
-function providerThinking(payload, provider) {
+function providerThinking(payload) {
   try {
-    // Ollama's native API puts the trace at message.thinking, not under
-    // choices[]. Without this a reasoning model's ping looks like silence,
-    // and the test fails against a server that answered 200.
-    if (provider && typeof provider.thinking === 'function' && provider.thinking(payload)) return 'thinking';
     var msg = payload && payload.choices && payload.choices[0] &&
               payload.choices[0].message;
     if (!msg) return '';

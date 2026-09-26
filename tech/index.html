@@ -212,7 +212,7 @@
           <ul>
             <li>Paste a URL, or a <code>curl</code> command copied from API docs or dev tools.</li>
             <li>The response's <b>shape</b> (values replaced by types) is hashed into a fingerprint.</li>
-            <li>A model (Gemini, Groq, or Ollama on your own machine) designs a page for that shape. With no key, rules design it.</li>
+            <li>A model (Gemini or Groq, with your own key) designs a page for that shape. With no key, rules design it.</li>
             <li>When a request fails, Imago says why in plain words: offline, server down, or an API that does not allow browser apps (CORS), told apart with one extra probe.</li>
           </ul>
           <figure><img src="evidence/get-pikachu.png" alt="The PokeAPI Pikachu response drawn as a profile page with stat bars" loading="lazy"><figcaption>PokeAPI, drawn with no key: picture, headline numbers, stat bars, type badges.</figcaption></figure>
@@ -309,7 +309,7 @@
         <tr><td><b>Browser only, no server</b></td><td>The brief asks for browser storage, and it keeps keys on the user's machine. The cost is accepted: APIs that block browser apps (CORS) cannot be read, and the app says so plainly.</td></tr>
         <tr><td><b>Credentials stay in the session</b></td><td>Request headers such as <code>Authorization</code> live in sessionStorage, and what they fetched is not written to snapshots. Keys in a URL are removed from share links and masked in prompts.</td></tr>
         <tr><td><b>Native ES modules, no build step</b></td><td>No framework, as the brief asks, and no bundler either: the browser loads <code>js/main.js</code> and its 15 sibling modules directly. A static server is the whole deployment.</td></tr>
-        <tr><td><b>A Content Security Policy</b></td><td>No inline scripts; fetches only to https and local Ollama. The app also refuses to run inside another site's frame.</td></tr>
+        <tr><td><b>A Content Security Policy</b></td><td>No inline scripts; fetches only to https, plus plain http on localhost for an API on your own machine. The app also refuses to run inside another site's frame.</td></tr>
       </table>
     </div>
   </section>
@@ -373,7 +373,7 @@
       <div class="grid2">
         <ul class="timeline">
           <li class="done"><b>0.1 · 22 Sep</b><span>Paste a URL, get a page; the shape cache; snapshots and diffs; Watch.</span></li>
-          <li class="done"><b>0.2 – 0.3</b><span>A key per provider, Ollama on your own machine, connection tests and a console to talk to the model.</span></li>
+          <li class="done"><b>0.2 – 0.3</b><span>A key per provider, connection tests and a console to talk to the model.</span></li>
           <li class="done"><b>0.4 – 0.5 · 23 Sep</b><span>One screen: endpoints in a rail, the page in the middle, raw data in a drawer.</span></li>
           <li class="done"><b>0.6 – 0.7</b><span>curl import, a plain CORS diagnosis, and a better page without a key.</span></li>
           <li class="done"><b>0.8 – 0.10</b><span>Share links, Watch alerts in the tab title and notifications, editing a page, the split into 16 modules.</span></li>
@@ -412,7 +412,7 @@
         <div class="card">
           <h3 class="t">Tools used</h3>
           <p><b>Claude (Claude Code)</b> wrote most of the code with me, with the gstack skills for QA, review and shipping. The idea, the three-behaviour loop, the plan-not-HTML rule and the calls in section 04 were decided in conversation, and I rejected plenty of its first answers.</p>
-          <p><b>Figma</b> holds the design, kept in sync with the shipped app. <b>Google Gemini, Groq and Ollama</b> are the model providers users can choose. <b>Zoho Catalyst Slate</b> hosts the app.</p>
+          <p><b>Figma</b> holds the design, kept in sync with the shipped app. <b>Google Gemini and Groq</b> are the model providers users can choose. <b>Zoho Catalyst Slate</b> hosts the app.</p>
         </div>
       </div>
     </div>

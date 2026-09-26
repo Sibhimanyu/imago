@@ -77,15 +77,14 @@ describe('sending a message', () => {
 
 describe('a reasoning model that answers with thought', () => {
   // The trap this whole console exists to expose: content empty, the answer
-  // in message.thinking. Showing nothing would read as a broken provider.
+  // in the reasoning trace. Showing nothing would read as a broken provider.
+  const groqThinks = (content, trace, field = 'reasoning_content') =>
+    reply({ choices: [{ message: { role: 'assistant', content, [field]: trace }, finish_reason: 'stop' }] });
+
   it('shows the thinking and says the text was empty', async () => {
-    const app = await boot({
-      fetch: (url) => String(url).includes('/api/tags')
-        ? reply({ models: [{ name: 'llama3.1' }] })()
-        : reply({ message: { role: 'assistant', content: '', thinking: 'weighing it up' }, done_reason: 'stop' })()
-    });
-    app.setSessionProvider('ollama');
-    app.dom.modelName.value = 'llama3.1';
+    const app = await boot({ fetch: groqThinks('', 'weighing it up') });
+    app.setProviderKey('groq', 'gsk_live');
+    app.setSessionProvider('groq');
     send(app, 'hi');
     await settled();
     const log = app.dom.chatLog.textContent;
@@ -93,12 +92,19 @@ describe('a reasoning model that answers with thought', () => {
     expect(log).toContain('thinking only');
   });
 
+  it('reads the trace under either name a provider uses', async () => {
+    const app = await boot({ fetch: groqThinks('', 'mulling', 'reasoning') });
+    app.setProviderKey('groq', 'gsk_live');
+    app.setSessionProvider('groq');
+    send(app, 'hi');
+    await settled();
+    expect(app.dom.chatLog.textContent).toContain('mulling');
+  });
+
   it('is not reported as a failure', async () => {
-    const app = await boot({
-      fetch: () => reply({ message: { role: 'assistant', content: '', thinking: 'mm' }, done_reason: 'stop' })()
-    });
-    app.setSessionProvider('ollama');
-    app.dom.modelName.value = 'llama3.1';
+    const app = await boot({ fetch: groqThinks('', 'mm') });
+    app.setProviderKey('groq', 'gsk_live');
+    app.setSessionProvider('groq');
     send(app, 'hi');
     await settled();
     expect(app.dom.chatLog.querySelectorAll('[data-role="error"]')).toHaveLength(0);
@@ -181,17 +187,17 @@ describe('the console says where the message goes', () => {
 });
 
 describe('a long reasoning trace does not bury the answer', () => {
-  const nativeReply = (body) => () => Promise.resolve({
+  const groqReply = (body) => () => Promise.resolve({
     ok: true, status: 200, headers: { get: () => 'application/json' },
     text: () => Promise.resolve(JSON.stringify(body)), json: () => Promise.resolve(body)
   });
 
   it('collapses the thinking when there is a real answer', async () => {
     const app = await boot({
-      fetch: nativeReply({ message: { content: 'Short answer.', thinking: 'long '.repeat(200) }, done_reason: 'stop' })
+      fetch: groqReply({ choices: [{ message: { content: 'Short answer.', reasoning_content: 'long '.repeat(200) } }] })
     });
-    app.setSessionProvider('ollama');
-    app.dom.modelName.value = 'llama3.1';
+    app.setProviderKey('groq', 'gsk_live');
+    app.setSessionProvider('groq');
     app.dom.chatInput.value = 'hi';
     app.dom.chatForm.dispatchEvent(new app.window.Event('submit', { bubbles: true, cancelable: true }));
     await settled();
@@ -203,10 +209,10 @@ describe('a long reasoning trace does not bury the answer', () => {
 
   it('opens it when thinking is the only thing there is', async () => {
     const app = await boot({
-      fetch: nativeReply({ message: { content: '', thinking: 'all I have' }, done_reason: 'stop' })
+      fetch: groqReply({ choices: [{ message: { content: '', reasoning_content: 'all I have' } }] })
     });
-    app.setSessionProvider('ollama');
-    app.dom.modelName.value = 'llama3.1';
+    app.setProviderKey('groq', 'gsk_live');
+    app.setSessionProvider('groq');
     app.dom.chatInput.value = 'hi';
     app.dom.chatForm.dispatchEvent(new app.window.Event('submit', { bubbles: true, cancelable: true }));
     await settled();

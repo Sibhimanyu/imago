@@ -1048,8 +1048,6 @@ table.comp-table tr:last-child td { border-bottom: none; }
 /* Breathing room between stacked sections inside a card. */
 .settings-card .field-label { margin-top: 16px; }
 .key-block > .field-label:first-child { margin-top: 0; }
-#ollamaServerGroup { margin-top: 16px; }
-#ollamaServerGroup .field-label { margin-top: 0; }
 .text-input { font-family: var(--mono); }
 
 /* ─── Toast ────────────────────────────────────────────────────── */

@@ -44,43 +44,6 @@ describe('connection tests', () => {
     expect(app.dom.groqTestStatus.textContent).toContain('Add a Groq key first');
   });
 
-  // Reachability alone was the old contract, and it was too weak: /api/tags
-  // answered 200 while the configured model was not installed, so the test
-  // went green and the very next generation failed with
-  // `model 'qwen3' not found`. The test now has to prove the model answers.
-  it('Ollama passes only when the chosen model actually answers', async () => {
-    const app = await boot({
-      fetch: (url) => String(url).includes('/api/tags')
-        ? jsonFetch({ models: [{ name: 'llama3.1' }, { name: 'nomic-embed-text' }] })()
-        : jsonFetch({ message: { content: 'ok' }, done_reason: 'stop' })()
-    });
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    expect(app.dom.ollamaTestStatus.textContent).toContain('OK');
-    expect(app.dom.ollamaTestStatus.textContent).toContain('llama3.1');
-    expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('ready');
-  });
-
-  it('Ollama fails, naming the installed models, when the chosen one is missing', async () => {
-    const app = await boot({ fetch: jsonFetch({ models: [{ name: 'gemma4:latest' }] }) });
-    app.setSessionProvider('ollama');
-    app.dom.modelName.value = 'qwen3';          // the old guessed default
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    const text = app.dom.ollamaTestStatus.textContent;
-    expect(text).toContain('not installed');
-    expect(text, 'must name what IS installed, or the user cannot act').toContain('gemma4:latest');
-    expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('missing');
-  });
-
-  it('Ollama reachable with nothing pulled tells the user how to pull', async () => {
-    const app = await boot({ fetch: jsonFetch({ models: [] }) });
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    expect(app.dom.ollamaTestStatus.textContent).toContain('no models installed');
-    expect(app.dom.ollamaTestStatus.textContent).toContain('ollama pull');
-  });
-
   it('thinking without final text still proves the key works', async () => {
     // gpt-oss-style reasoning models can answer a tiny ping with thinking
     // and no content. For a connectivity check that is a pass, not a failure.
@@ -105,15 +68,6 @@ describe('connection tests', () => {
     expect(app.dom.groqTestStatus.getAttribute('data-state')).toBe('missing');
   });
 
-  it('an unreachable Ollama names the server and the origins fix', async () => {
-    const app = await boot({ fetch: () => Promise.reject(new Error('Failed to fetch')) });
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    expect(app.dom.ollamaTestStatus.textContent).toContain('Unreachable');
-    expect(app.dom.ollamaTestStatus.textContent).toContain('OLLAMA_ORIGINS');
-    expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('missing');
-  });
-
   // Settings listed every provider's key with a "Test / Not tested" pair
   // each. Now only the chosen provider's block shows, and an untested
   // status says nothing rather than "Not tested".
@@ -121,13 +75,13 @@ describe('connection tests', () => {
     const app = await boot();
     const blocks = () => [...app.window.document.querySelectorAll('.provider-block')].filter((b) => !b.hidden).map((b) => b.getAttribute('data-provider'));
     expect(blocks()).toEqual(['gemini']);
-    for (const id of ['gemini', 'groq', 'ollama']) {
+    for (const id of ['gemini', 'groq']) {
       expect(app.dom[id + 'TestBtn']).toBeTruthy();
       expect(app.dom[id + 'TestStatus'].textContent).toBe('');
     }
-    app.dom.providerSelect.value = 'ollama';
+    app.dom.providerSelect.value = 'groq';
     app.dom.providerSelect.dispatchEvent(new app.window.Event('change'));
-    expect(blocks()).toEqual(['ollama']);
+    expect(blocks()).toEqual(['groq']);
   });
 
   it('a key pasted under the wrong provider is filed under its own and shown', async () => {
@@ -144,31 +98,31 @@ describe('connection tests', () => {
 });
 
 describe('a test that takes a long time still reads as progress', () => {
-  // A 35B local model answered a one-word ping in 35s. A static "Testing…"
-  // for that long is indistinguishable from a hang, and a dead endpoint used
-  // to leave the button disabled forever.
+  // A large model answered a one-word ping in 35s. A static "Testing…" for
+  // that long is indistinguishable from a hang, and a dead endpoint used to
+  // leave the button disabled forever.
   // Found by /qa on 2026-09-22.
   it('counts seconds up while waiting', async () => {
     vi.useFakeTimers();
     try {
-      const app = await boot({ fetch: () => new Promise(() => {}) });   // never settles
-      app.dom.ollamaTestBtn.click();
-      expect(app.dom.ollamaTestStatus.textContent).toContain('Testing');
+      const app = await boot({ fetch: () => new Promise(() => {}), local: { 'imago.key.groq': 'gsk_live' } });   // never settles
+      app.dom.groqTestBtn.click();
+      expect(app.dom.groqTestStatus.textContent).toContain('Testing');
       await vi.advanceTimersByTimeAsync(3000);
-      expect(app.dom.ollamaTestStatus.textContent).toMatch(/Testing… \d+s/);
-      expect(app.dom.ollamaTestBtn.disabled).toBe(true);
+      expect(app.dom.groqTestStatus.textContent).toMatch(/Testing… \d+s/);
+      expect(app.dom.groqTestBtn.disabled).toBe(true);
     } finally { vi.useRealTimers(); }
   });
 
   it('gives up instead of hanging, and re-enables the button', async () => {
     vi.useFakeTimers();
     try {
-      const app = await boot({ fetch: () => new Promise(() => {}) });
-      app.dom.ollamaTestBtn.click();
+      const app = await boot({ fetch: () => new Promise(() => {}), local: { 'imago.key.groq': 'gsk_live' } });
+      app.dom.groqTestBtn.click();
       await vi.advanceTimersByTimeAsync(95000);
-      expect(app.dom.ollamaTestStatus.textContent).toContain('Timed out');
-      expect(app.dom.ollamaTestStatus.getAttribute('data-state')).toBe('missing');
-      expect(app.dom.ollamaTestBtn.disabled, 'a timed-out test must be retryable').toBe(false);
+      expect(app.dom.groqTestStatus.textContent).toContain('Timed out');
+      expect(app.dom.groqTestStatus.getAttribute('data-state')).toBe('missing');
+      expect(app.dom.groqTestBtn.disabled, 'a timed-out test must be retryable').toBe(false);
     } finally { vi.useRealTimers(); }
   });
 
@@ -176,14 +130,14 @@ describe('a test that takes a long time still reads as progress', () => {
     vi.useFakeTimers();
     try {
       let settle;
-      const app = await boot({ fetch: () => new Promise((r) => { settle = r; }) });
-      app.dom.ollamaTestBtn.click();
+      const app = await boot({ fetch: () => new Promise((r) => { settle = r; }), local: { 'imago.key.groq': 'gsk_live' } });
+      app.dom.groqTestBtn.click();
       await vi.advanceTimersByTimeAsync(95000);
-      expect(app.dom.ollamaTestStatus.textContent).toContain('Timed out');
+      expect(app.dom.groqTestStatus.textContent).toContain('Timed out');
       settle({ ok: true, status: 200, headers: { get: () => 'application/json' },
-               text: () => Promise.resolve('{"models":[]}'), json: () => Promise.resolve({ models: [] }) });
+               text: () => Promise.resolve('{"choices":[{"message":{"content":"ok"}}]}') });
       await vi.advanceTimersByTimeAsync(100);
-      expect(app.dom.ollamaTestStatus.textContent).toContain('Timed out');
+      expect(app.dom.groqTestStatus.textContent).toContain('Timed out');
     } finally { vi.useRealTimers(); }
   });
 });
@@ -223,30 +177,5 @@ describe('a rejected key says so, whatever status the provider uses', () => {
     app.dom.groqTestBtn.click();
     await settled(app);
     expect(app.dom.groqTestStatus.textContent).not.toContain('rejected the API key');
-  });
-});
-
-describe('an https page says what an http page cannot', () => {
-  // Reaching a local http server from an https page is a browser policy call.
-  // Chrome exempts loopback, Safari does not, so the message has to name the
-  // browser as a possible cause rather than only blaming OLLAMA_ORIGINS —
-  // otherwise the user keeps restarting a server that is already correct.
-  it('names both causes when the page is https', async () => {
-    const app = await boot({ url: 'https://imago.test/', fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    const text = app.dom.ollamaTestStatus.textContent;
-    expect(text).toContain('OLLAMA_ORIGINS=https://imago.test');
-    expect(text).toContain('Safari');
-    expect(text).toContain('http://localhost');
-  });
-
-  it('keeps the simpler message on an http page', async () => {
-    const app = await boot({ url: 'http://localhost:8899/', fetch: () => Promise.reject(new TypeError('Failed to fetch')) });
-    app.dom.ollamaTestBtn.click();
-    await settled(app);
-    const text = app.dom.ollamaTestStatus.textContent;
-    expect(text).toContain('OLLAMA_ORIGINS=http://localhost:8899');
-    expect(text, 'no browser-policy caveat is needed over http').not.toContain('Safari');
   });
 });

@@ -9,7 +9,7 @@
        in this file; app.js sets styles through the CSSOM, which CSP does not
        gate. connect-src allows https: because the whole point is fetching
        user-chosen API endpoints and a provider's completion endpoint, plus
-       plain-http localhost so the Ollama provider can reach a local server. -->
+       plain-http localhost so an API running on your own machine can be read. -->
   <!-- frame-ancestors is deliberately absent: it is ignored when delivered via
        <meta> and only logs an error. Clickjacking protection has to come from a
        real response header (CSP frame-ancestors or X-Frame-Options) at the host. -->
@@ -349,7 +349,6 @@
         <select id="providerSelect" class="text-input">
           <option value="gemini">Google Gemini</option>
           <option value="groq">Groq</option>
-          <option value="ollama">Ollama (runs on your machine)</option>
         </select>
 
         <div class="provider-block" data-provider="gemini">
@@ -378,21 +377,10 @@
           <p class="muted-note">Free at <span class="mono">console.groq.com/keys</span>.</p>
         </div>
 
-        <div class="provider-block" data-provider="ollama" id="ollamaServerGroup" hidden>
-          <label class="field-label" for="ollamaEndpoint">Server</label>
-          <input type="text" id="ollamaEndpoint" class="text-input" spellcheck="false" autocomplete="off" aria-label="Ollama server address" placeholder="http://127.0.0.1:11434">
-          <div class="key-meta">
-            <button type="button" class="btn btn-ghost btn-xs" id="ollamaTestBtn">Test</button>
-            <span class="key-status" id="ollamaTestStatus" data-state="idle"></span>
-          </div>
-          <p class="muted-note">No key needed. Allow this page on your server: <span class="mono">OLLAMA_ORIGINS=<span id="ollamaNoteOrigin">this page</span> ollama serve</span></p>
-        </div>
-
         <p class="muted-note waitlist-note" data-waitlist hidden>No key? <a>Join the hosted-AI waitlist.</a></p>
 
         <label class="field-label" for="modelName">Model</label>
-        <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off" placeholder="Model name" list="modelOptions">
-        <datalist id="modelOptions"></datalist>
+        <input type="text" id="modelName" class="text-input" spellcheck="false" autocomplete="off" placeholder="Model name">
         <p class="muted-note" id="modelNote">If this model is unavailable, try <span class="mono" id="modelHint">gemini-3.5-flash</span>.</p>
 
         <div class="settings-foot">

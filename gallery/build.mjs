@@ -360,7 +360,7 @@ function pressPage(links, reels, images, brand) {
       ['Price', 'Free. No account, no sign-up.'],
       ['Licence', 'MIT, open source.'],
       ['Where it runs', 'Entirely in the browser. There is no Imago server: your browser calls the API, and the model provider you chose, directly.'],
-      ['Models', 'Optional. Bring a free Gemini or Groq key, a local Ollama, or use none.'],
+      ['Models', 'Optional. Bring a free Gemini or Groq key, or use none.'],
       ['Who it is for', 'Developers meeting a public JSON API for the first time.'],
       ['App', '<a href="' + APP + '/">' + esc(APP.replace('https://', '')) + '</a>'],
       ['Source', '<a href="' + REPO + '">' + esc(REPO.replace('https://', '')) + '</a>']]

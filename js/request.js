@@ -1,4 +1,4 @@
-import { LARGE_RESPONSE_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, MAX_SNAPSHOT_ENDPOINTS, PROVIDER_IDS, TIMEOUTS, getProvider, providerNeedsKey } from './config.js';
+import { LARGE_RESPONSE_BYTES, MAX_CACHED_HTML_BYTES, MAX_SNAPSHOTS, MAX_SNAPSHOT_BYTES, MAX_SNAPSHOT_ENDPOINTS, PROVIDER_IDS, TIMEOUTS, getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { clearKeyRejected, getActiveKey, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionProvider, getSnapshots, keyRejected, markKeyRejected, providerUsable, savePrefs, setSchemaSpecs, setSessionProvider, setSnapshots } from './storage.js';
 import { byteLength, el, formatBytes, isPlainObject } from './util.js';
@@ -704,13 +704,9 @@ function noKeyAlert() {
 // than spending a call that can only 401. Returns true when a usable key
 // is now active.
 function useKeyedProvider() {
-  var active = getSessionProvider();
-  // A keyless provider (Ollama) is usable as-is; a keyed one only with its
-  // key. Fallback re-homes to a *keyed* provider that has one — never to
-  // Ollama uninvited, or every keyless user would bounce into localhost.
-  if (providerUsable(active)) return true;
+  if (providerUsable(getSessionProvider())) return true;
   for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
-    if (providerNeedsKey(PROVIDER_IDS[i]) && providerUsable(PROVIDER_IDS[i])) {
+    if (providerUsable(PROVIDER_IDS[i])) {
       setSessionProvider(PROVIDER_IDS[i]);
       syncProviderUi({ force: true });
       setKeyStatus();

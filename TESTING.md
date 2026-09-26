@@ -15,8 +15,14 @@ npm run test:coverage
 Coverage is real, not the harness's: `test/harness.js` writes the bundle it
 evaluates to `.cache/app.js` with an inline source map and runs it under that
 file URL, so V8's coverage maps back onto the modules in `js/`. On
-2026-09-25 it stood at 90.8% of lines and 80.9% of branches; `render.js`
+2026-09-26 it stood at 90.7% of lines and 81.2% of branches; `render.js`
 (66%) is the gap.
+
+A test that boots a *patched* copy of the bundle (`boot({ app: APP.replace(…) })`)
+runs it without the bundle's source URL. Every offset after the patch has
+moved, so its coverage, filed under `.cache/app.js`, would be mapped onto the
+wrong lines. When `config.js` moved near the top of the bundle, that one
+patched constant dragged the whole report from 90% to 36%.
 
 Framework: **Vitest 2.1** with **jsdom 25**. The browser loads `js/main.js` as
 native ES modules with no build step. jsdom cannot run module scripts, so

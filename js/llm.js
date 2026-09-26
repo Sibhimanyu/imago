@@ -1,4 +1,4 @@
-import { COMPONENT_TYPES, IMAGO_UI_SPEC_JSON_SCHEMA, MAX_ACTIONS, MAX_COMPONENTS, MAX_HTML_BYTES, SAMPLE_CHAR_LIMIT, TIMEOUTS, getProvider, ollamaFetch } from './config.js';
+import { COMPONENT_TYPES, IMAGO_UI_SPEC_JSON_SCHEMA, MAX_ACTIONS, MAX_COMPONENTS, MAX_HTML_BYTES, SAMPLE_CHAR_LIMIT, TIMEOUTS, getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { el, isPlainObject, isUrl } from './util.js';
 import { endpointTitle } from './spec.js';
@@ -126,7 +126,6 @@ function parseModelJson(text) {
 // Every model call gives up after TIMEOUTS.model. A provider that never
 // answers used to hold the Generate button disabled until a reload.
 function llmRequest(provider, model, apiKey, body) {
-  var send = provider.id === 'ollama' ? ollamaFetch : fetch;
   var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
   var timer = null;
   var gaveUp = new Promise(function (resolve, reject) {
@@ -138,7 +137,7 @@ function llmRequest(provider, model, apiKey, body) {
       reject(err);
     }, TIMEOUTS.model);
   });
-  var call = send(provider.endpoint(model), {
+  var call = fetch(provider.endpoint(model), {
     method: 'POST',
     headers: provider.headers(apiKey),
     body: JSON.stringify(body),
@@ -148,12 +147,9 @@ function llmRequest(provider, model, apiKey, body) {
       var payload = null;
       try { payload = JSON.parse(text); } catch (e) { /* non-JSON error body */ }
       if (!response.ok) {
-        // Gemini and Groq both nest the human-readable reason under `error`.
-        // Gemini and Groq nest the reason under error.message; Ollama's
-        // native API returns error as a bare string.
+        // Gemini and Groq both nest the human-readable reason under error.message.
         var message = 'HTTP ' + response.status;
         if (payload && payload.error && payload.error.message) message = payload.error.message;
-        else if (payload && typeof payload.error === 'string' && payload.error) message = payload.error;
         var error = new Error(message);
         error.status = response.status;
         throw error;
@@ -197,19 +193,7 @@ function generateSpec(options) {
 
   function ask(bodyFn) {
     return llmRequest(provider, model, apiKey, bodyFn(model, prompt, IMAGO_UI_SPEC_JSON_SCHEMA))
-      .then(function (payload) {
-        // A spec cut off mid-string parses as garbage, and "the model
-        // returned an unusable spec" sends the reader after the wrong
-        // problem. Truncation has its own cure, so name it.
-        if (provider.truncated && provider.truncated(payload)) {
-          var err = new Error('The reply was cut off before the plan was complete. ' +
-                              'This model wrote more than the request allows — try a smaller ' +
-                              'response body, or a model that answers more concisely.');
-          err.truncated = true;
-          throw err;
-        }
-        return parseModelJson(provider.extract(payload));
-      });
+      .then(function (payload) { return parseModelJson(provider.extract(payload)); });
   }
 
   // Primary: ask the provider to pin the response to the UI spec schema.
@@ -217,9 +201,8 @@ function generateSpec(options) {
     // Auth and rate-limit failures will not be fixed by retrying, so surface
     // them rather than burning a second call.
     if (err && (err.status === 401 || err.status === 403 || err.status === 429)) throw err;
-    // A second identical call would be cut off at the same place, and one
-    // that timed out would only double the wait.
-    if (err && (err.truncated || err.timedOut)) throw err;
+    // A second call after one that timed out would only double the wait.
+    if (err && err.timedOut) throw err;
     // Otherwise the model family may reject the schema parameter, or return
     // prose despite it. Retry in plain JSON mode with the contract inlined.
     return ask(provider.plainBody);

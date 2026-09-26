@@ -43,18 +43,6 @@ refused the key: paste it again, or make a new one. If the test is green but
 generating still fails, the model name may have been retired. Clear the Model
 field to go back to the default.
 
-## Ollama says "Unreachable"
-
-Run Imago from a local server on the same machine and let Ollama accept that
-origin:
-
-```bash
-OLLAMA_ORIGINS=http://localhost:5173 ollama serve
-```
-
-The hosted site (`imago.onslate.in`) cannot reach a local Ollama in Chrome.
-That is a browser rule, tracked upstream as `ollama/ollama#7000`.
-
 ## A share link does not load for someone else
 
 A share link never carries your headers or keys. If the endpoint needed them,

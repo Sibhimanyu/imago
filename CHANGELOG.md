@@ -2,6 +2,25 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.16.0.0] - 2026-09-26
+
+A designed page now comes from a hosted provider, with your own key.
+
+### Removed
+
+- **Ollama support.** Imago no longer talks to a model on your own machine.
+  The Ollama choice, its server address field and its model list are gone
+  from Settings, and so is the Ollama section of the README and SUPPORT.md.
+  Google Gemini and Groq remain, each with a free key. With no key, Imago
+  shows the basic layout it builds from the response itself, as before.
+
+### Changed
+
+- **A saved Ollama choice moves to a working provider.** If you had picked
+  Ollama, Imago now opens on the provider that holds a key, or Google Gemini
+  if none does, puts that provider's default model in the Model field instead
+  of the local model name, drops the saved server address, and tells you once.
+
 ## [0.15.0.0] - 2026-09-26
 
 ### Added

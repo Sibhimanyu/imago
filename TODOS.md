@@ -307,27 +307,16 @@ zoom; examples and New request no longer carry the last endpoint's headers.
 
 **Completed:** v0.4.0.0 (2026-09-23)
 
-### Ollama, per-provider keys and connection tests — v0.2.0.0
+### Per-provider keys and connection tests — v0.2.0.0
 
-**What:** Ollama as a third provider, a key per provider, a Test button per
-provider, and a full-HTML render mode. Plus the fixes that made Ollama
-actually usable.
+**What:** A key per provider, a Test button per provider, and a full-HTML
+render mode.
 
-**Why:** Generating with Ollama failed outright — the reply hit the model's
-default 4096-token context and came back truncated mid-JSON, reported as
-"returned an unusable spec". The connection test only pinged /api/tags, so it
-went green while the configured model (`qwen3`, not a real tag on a stock
-install) did not exist.
+**Why:** One shared key slot meant switching providers lost the other key, and
+nothing told you whether a key worked until a generation failed.
 
-**Context:** Ollama moved to its native /api/chat, where num_ctx and
-num_predict can be set and the schema is passed as `format`. The test now runs
-a real completion with the model that would be used. Settings reads the
-installed models and offers them. Verified end to end against a live server:
-gemma4:latest returns a generated plan in ~40s.
-
-Ollama from a hosted origin still needs `OLLAMA_ORIGINS=<origin> ollama serve`
-— Ollama's CORS rejects non-localhost origins by default (403 measured). The
-error message names the exact command with the real origin substituted.
+**Context:** The test runs a real completion with the model that would be used,
+so a green test means generating will work too.
 
 **Effort:** L
 **Priority:** P1

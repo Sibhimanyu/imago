@@ -673,22 +673,17 @@ frame with a `caption` note: *"Rendered sandboxed — scripts disabled."*).
 **1 column on mobile**. Five cards:
 
 **Card 1 — "Model provider"**
-- A full-width select: `Google Gemini` / `Groq` / `Ollama (local)`.
+- A full-width select: `Google Gemini` / `Groq`.
 - Hint `caption`: *"Get a free key at `aistudio.google.com/apikey`. Pasting a key below switches
   this automatically."*
-- **Conditional block, visible only for Ollama:** label "Ollama server", a mono text input
-  (placeholder `http://127.0.0.1:11434`), and a note: *"Same machine only. Allow this page on your
-  server: `OLLAMA_ORIGINS=http://localhost:5173 ollama serve`"*. **Design both the collapsed and
-  expanded variants.**
-- Label "Model" + a text input with a datalist (`gemini-2.5-flash-lite`, `openai/gpt-oss-20b`,
-  `qwen3`), and a note: *"If this model is unavailable, try `gemini-3.5-flash`."*
+- Label "Model" + a text input (`gemini-2.5-flash-lite`, or `openai/gpt-oss-20b` for Groq), and a
+  note: *"If this model is unavailable, try `gemini-3.5-flash`."*
 
-**Card 2 — "API keys"** — three blocks:
+**Card 2 — "API keys"** — two blocks:
 - **Google Gemini `AIza…`** + inline `key-status` (`Not set` / `Set`), a key-icon password field
   (placeholder "Paste your Gemini API key"), then a row with an `xs` **Test** button and a
   `key-status` (`Not tested` / `OK` / `Rejected the API key`).
 - **Groq `gsk_…`** — identical shape, placeholder "Paste your Groq API key".
-- **Ollama** — no field; just *"No key needed."* + **Test** + status (`OK` / `Unreachable`).
 - Footer note: *"Saved in this browser only — anyone with this profile can read them. Typing
   selects that provider."*
 - A `ghost` button **"Clear all keys"**.

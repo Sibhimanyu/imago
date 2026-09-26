@@ -1,7 +1,7 @@
-import { PROVIDERS, PROVIDER_IDS, detectProvider, fetchOllamaModels, getProvider, ollamaBase, ollamaModels, pickOllamaModel, providerNeedsKey } from './config.js';
+import { PROVIDERS, PROVIDER_IDS, detectProvider, getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { getProviderKey, getSessionProvider, hasAnyKey, keyRejected, providerUsable, savePrefs, setProviderKey, setSessionModel, setSessionProvider } from './storage.js';
-import { clear, el, qs } from './util.js';
+import { el } from './util.js';
 import { scheduleTimelineLayout } from './render.js';
 import { syncChatTarget } from './chat.js';
 import { renderSavedList, renderStorageSummary } from './endpoints.js';
@@ -118,29 +118,11 @@ function syncProviderUi(opts) {
   var id = getSessionProvider();
   var provider = getProvider(id);
   if (dom.providerSelect) dom.providerSelect.value = id;
-  // Only the chosen provider's key, test and server are on screen.
+  // Only the chosen provider's key and test are on screen.
   var blocks = document.querySelectorAll('.provider-block');
   for (var b = 0; b < blocks.length; b += 1) blocks[b].hidden = blocks[b].getAttribute('data-provider') !== id;
-  if (dom.ollamaNoteOrigin) {
-    try { dom.ollamaNoteOrigin.textContent = window.location.origin; }
-    catch (e) { /* ignore */ }
-  }
   if (dom.modelHint) dom.modelHint.textContent = provider.modelHint;
   syncChatTarget();
-
-  // Ollama is the one provider whose model list is knowable, so ask.
-  // Failure is silent here: the Test button is where errors belong.
-  if (id === 'ollama') {
-    if (ollamaModels) syncOllamaModelOptions(ollamaModels);
-    else fetchOllamaModels().then(syncOllamaModelOptions, function () { /* Test reports it */ });
-  } else if (dom.modelOptions) {
-    clear(dom.modelOptions);
-    if (dom.modelNote) {
-      dom.modelNote.innerHTML = 'If this model is unavailable, try <span class="mono" id="modelHint">' +
-        provider.modelHint + '</span>.';
-      dom.modelHint = qs('modelHint');
-    }
-  }
 
   // Only rewrite the model box when it is empty or still holds another
   // provider's default, so a hand-typed model is never clobbered.
@@ -211,9 +193,7 @@ function setKeyStatus() {
   if (providerUsable(active)) {
     text = label + ' ready';
     ready = true;
-    title = providerNeedsKey(active)
-      ? label + ' key saved — click for Settings'
-      : label + ' needs no key — click for Settings';
+    title = label + ' key saved — click for Settings';
   } else if (keyRejected(active)) {
     text = label + ' key rejected';
     ready = false;
@@ -236,79 +216,8 @@ function setKeyStatus() {
   syncKeyStatusLines();
 }
 
-// The Settings testing box: one tiny call per provider, reported inline.
-// Keyed providers ping the model (~5 tokens); Ollama lists its tags, which
-// also proves the browser can reach the server at all.
-// The model Ollama would actually be asked to generate with.
-function currentOllamaModel() {
-  var typed = '';
-  if (getSessionProvider() === 'ollama' && dom.modelName) typed = (dom.modelName.value || '').trim();
-  if (typed) return typed;
-  return pickOllamaModel(ollamaModels) || PROVIDERS.ollama.defaultModel;
-}
-
-// Offer the models that exist, and never leave the box naming one that does
-// not. Only touches the box when its value is not installed, so a
-// deliberately typed model is left alone.
-function syncOllamaModelOptions(list) {
-  if (!dom.modelOptions) return;
-  clear(dom.modelOptions);
-  var models = list || [];
-  for (var i = 0; i < models.length; i += 1) {
-    var option = document.createElement('option');
-    option.value = models[i];
-    dom.modelOptions.appendChild(option);
-  }
-  if (dom.modelNote) {
-    dom.modelNote.textContent = models.length
-      ? models.length + (models.length === 1 ? ' model' : ' models') + ' installed: ' + models.join(', ')
-      : 'No models installed. Run: ollama pull llama3.1';
-  }
-  if (getSessionProvider() !== 'ollama' || !dom.modelName) return;
-  var current = (dom.modelName.value || '').trim();
-  if (!models.length || models.indexOf(current) !== -1) return;
-  // Replace only our own guess, never a hand-typed model: if the reader
-  // chose it, a wrong name is worth an error they can act on rather than a
-  // silent substitution they never notice.
-  if (current && current !== PROVIDERS.ollama.defaultModel) return;
-  var pick = pickOllamaModel(models);
-  if (pick) { dom.modelName.value = pick; setSessionModel(pick); }
-}
-
-// A CORS rejection and a dead server both surface as a bare TypeError in the
-// browser, so say what to do about either, naming this page's real origin.
-function ollamaFailureText(err) {
-  var message = err && err.message ? err.message : String(err);
-  if (/not installed|no models/i.test(message)) return message;
-  // A server that answered and then failed on the content is not
-  // unreachable, and saying so sends the user off restarting a process that
-  // was fine the whole time. Only a connection failure earns that word:
-  // fetch rejects with a TypeError, everything else carries a status.
-  var connectionFailed = (err instanceof TypeError) ||
-                         /failed to fetch|networkerror|load failed|connection refused/i.test(message);
-  if (!connectionFailed) return message;
-  var origin = 'this page';
-  var secure = false;
-  try {
-    origin = window.location.origin;
-    secure = window.location.protocol === 'https:';
-  } catch (e) { /* ignore */ }
-
-  // An https page reaching an http server on the same machine is a browser
-  // policy call, not something the page can fix. Chrome exempts loopback;
-  // Safari does not, so there the only cure is to run Imago over http.
-  if (secure) {
-    return 'Unreachable — ' + ollamaBase() + ' did not answer. Two things to check: ' +
-           'Ollama must allow this page (OLLAMA_ORIGINS=' + origin + ' ollama serve), and ' +
-           'some browsers (Safari) refuse an https page talking to a local http server at all. ' +
-           'If it still fails in Safari, run Imago from http://localhost instead.';
-  }
-  return 'Unreachable — ' + ollamaBase() + ' did not answer. Start Ollama, and allow this page with: ' +
-         'OLLAMA_ORIGINS=' + origin + ' ollama serve';
-}
-
-// Long enough for a big local model to answer a one-word ping, short enough
-// that a dead endpoint does not hang the button forever.
+// Long enough for a slow model to answer a one-word ping, short enough that
+// a dead endpoint does not hang the button forever.
 var TEST_TIMEOUT_MS = 90000;
 
-export { toastTimer, toast, showView, sheetOpener, railIsSheet, focusables, setAppPane, trapSheetFocus, syncProviderUi, maskKey, storeKeyFromInput, keyInputFor, keyStatusFor, syncKeyInputs, syncKeyStatusLines, setKeyStatus, currentOllamaModel, syncOllamaModelOptions, ollamaFailureText, TEST_TIMEOUT_MS };
+export { toastTimer, toast, showView, sheetOpener, railIsSheet, focusables, setAppPane, trapSheetFocus, syncProviderUi, maskKey, storeKeyFromInput, keyInputFor, keyStatusFor, syncKeyInputs, syncKeyStatusLines, setKeyStatus, TEST_TIMEOUT_MS };

@@ -282,8 +282,8 @@ a few traps that are documented there.
 
 ### Getting an API key
 
-Imago supports three providers — two keyed, one local. The keyed providers have
-one key box each in **Settings → API keys**. Typing into a box selects that
+Imago supports two hosted providers, each with its own key box in
+**Settings → API keys**. Typing into a box selects that
 provider; the pill in the header shows what is active (`Google Gemini ready`,
 `No Groq key`, `No keys`) and opens Settings on click.
 
@@ -291,31 +291,14 @@ provider; the pill in the header shows what is active (`Google Gemini ready`,
 |---|---|---|---|
 | Google Gemini | <https://aistudio.google.com/apikey> | `gemini-2.5-flash-lite` | `gemini-3.5-flash` |
 | Groq | <https://console.groq.com/keys> | `openai/gpt-oss-20b` | `openai/gpt-oss-120b` |
-| Ollama (local) | none — runs on your machine | `qwen3` (type any pulled model) | any other pulled model |
 
 If the active provider has no key but the other one does, Imago switches over
 rather than spending a call that can only fail.
 
 **Settings → Connection tests** pings each provider with one tiny call and says
-inline what happened — `OK`, `rejected the API key`, or `Unreachable` for
-Ollama with the origins fix. A red test there means generating would fail too,
+inline what happened — `OK`, `rejected the API key`, or the provider's own
+error. A red test there means generating would fail too,
 so check it before blaming an endpoint for a failure.
-
-### Ollama
-
-Pick **Ollama (local)**, pull a model (`ollama pull qwen3`), type its name into
-the Model field, and generate — no key involved. The server address is editable
-in Settings (default `http://localhost:11434`).
-
-Two honest limits, both on the browser's side, not Imago's:
-
-- Imago must run on the **same machine** as Ollama, and the server must allow
-  the page's origin: `OLLAMA_ORIGINS=http://localhost:5173 ollama serve`
-  (add the hosted origin too if you use both).
-- From the **hosted site** (`*.onslate.in`) Chrome additionally demands a
-  Private-Network-Access header Ollama does not send (upstream issue
-  `ollama/ollama#7000`), so hosted-to-local calls fail there. Local
-  development server → local Ollama is the supported shape.
 
 Both providers are asked to pin their reply to the UI spec schema — Gemini
 through `responseMimeType` + `responseSchema`, Groq through
@@ -441,7 +424,7 @@ would mean a server holding your keys.
 
 ## Help
 
-[SUPPORT.md](SUPPORT.md) covers the common problems (CORS, keys, Ollama, share
+[SUPPORT.md](SUPPORT.md) covers the common problems (CORS, keys, share
 links) using the messages Imago actually shows. If a page came out wrong, press
 **Share** and paste the link into a
 [new issue](https://github.com/Sibhimanyu/imago/issues/new/choose).

@@ -5,7 +5,7 @@
    rest of js/ is imported from here. See the module table in README.md.
    ========================================================================== */
 
-import { WAITLIST_URL, DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, fetchOllamaModels, getProvider, ollamaAltBase, ollamaBase } from './config.js';
+import { WAITLIST_URL, DEFAULT_PROVIDER, DEMOS, EMPTY_EXAMPLES, PROVIDER_IDS, SESSION, STORE, TIMEOUTS, detectProvider, getProvider } from './config.js';
 import { dom, state } from './state.js';
 import { getActiveKey, getPrefs, getProviderKey, getSavedRequests, getSchemaSpecs, getSessionHeaders, getSessionModel, getSessionProvider, getSnapshots, hasAnyKey, invalidateSnapshotCache, readJSON, savePrefs, setPrefs, setProviderKey, setSessionHeaders, setSessionModel, setSessionProvider, setSnapshots, writeJSON } from './storage.js';
 import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
@@ -215,13 +215,6 @@ function wireEvents() {
     setKeyStatus();
     toast('Provider set to ' + getProvider(dom.providerSelect.value).label + '.');
   });
-  if (dom.ollamaEndpoint) {
-    dom.ollamaEndpoint.addEventListener('input', function () {
-      var prefs = getPrefs();
-      prefs.ollamaEndpoint = dom.ollamaEndpoint.value.trim();
-      setPrefs(prefs);
-    });
-  }
 
   for (var wi = 0; wi < PROVIDER_IDS.length; wi += 1) {
     (function (id) {
@@ -377,10 +370,9 @@ function cacheDom() {
               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderSelect',
               'builderPlanBtn', 'builderHtmlBtn',
               'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
-              'ollamaTestBtn', 'ollamaTestStatus', 'modelOptions', 'modelNote',
+              'modelNote',
              'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',
-              'providerSelect', 'modelHint', 'ollamaEndpoint',
-              'ollamaServerGroup', 'ollamaNoteOrigin',
+              'providerSelect', 'modelHint',
              'stageBar', 'stageBack', 'stageCrumb', 'stageLive', 'stageLiveCount', 'stageSource',
              'inspectBtn', 'inspector', 'historyStrip', 'railExamples', 'railClose',
              'settingsClose', 'sheetScrim'];
@@ -465,15 +457,38 @@ function migrateLegacyKeys() {
   return moved;
 }
 
+// The Ollama provider was removed. A saved choice of it would otherwise
+// stick: the provider falls back on its own (an unknown id is ignored), but
+// the model box would keep naming a local model the hosted provider does not
+// have. Drop the choice, its model and its server address, so the reader
+// lands on the provider that holds a key, or the default. Returns true when
+// Ollama was the chosen provider.
+function migrateRemovedOllama() {
+  var wasActive = false;
+  try {
+    if (window.sessionStorage.getItem(SESSION.provider) === 'ollama') {
+      window.sessionStorage.removeItem(SESSION.provider);
+      wasActive = true;
+    }
+  } catch (e) { /* ignore */ }
+  var prefs = getPrefs();
+  if (prefs.provider === 'ollama') { delete prefs.provider; wasActive = true; }
+  if (wasActive || 'ollamaEndpoint' in prefs) {
+    delete prefs.ollamaEndpoint;
+    setPrefs(prefs);
+  }
+  if (wasActive) setSessionModel('');
+  return wasActive;
+}
+
 function restoreSession() {
   if (migrateLegacyKeys()) toast('Your saved key was moved to the new per-provider store.', 'ok');
   // The OpenCode provider was removed; drop its slot if one was ever stored.
   try { window.localStorage.removeItem('imago.key.opencode'); } catch (e) { /* ignore */ }
-  syncKeyInputs();
-  if (dom.ollamaEndpoint) {
-    try { dom.ollamaEndpoint.value = String(getPrefs().ollamaEndpoint || ''); }
-    catch (e) { /* ignore */ }
+  if (migrateRemovedOllama()) {
+    toast('Ollama is no longer supported. Imago now uses ' + getProvider(getSessionProvider()).label + '.');
   }
+  syncKeyInputs();
   dom.modelName.value = getSessionModel() || getProvider(getSessionProvider()).defaultModel;
   setSessionModel(dom.modelName.value);
   syncProviderUi();
@@ -852,7 +867,7 @@ window.__imago = {
   getPrefs: getPrefs, setPrefs: setPrefs, savePrefs: savePrefs,
   getSnapshots: getSnapshots, setSnapshots: setSnapshots,
   invalidateSnapshotCache: invalidateSnapshotCache,
-  fetchOllamaModels: fetchOllamaModels, ollamaBase: ollamaBase, ollamaAltBase: ollamaAltBase,
+  migrateRemovedOllama: migrateRemovedOllama,
   sendChat: sendChat, clearChat: clearChat, chatTarget: chatTarget,
   chatTurns: function () { return chatTurns; },
   getSessionHeaders: getSessionHeaders, setSessionHeaders: setSessionHeaders,
@@ -902,4 +917,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, applyWaitlist, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, migrateRemovedOllama, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, applyWaitlist, init };

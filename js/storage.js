@@ -1,4 +1,4 @@
-import { DEFAULT_PROVIDER, KEYS, PROVIDERS, PROVIDER_IDS, SESSION, STORE, providerNeedsKey } from './config.js';
+import { DEFAULT_PROVIDER, KEYS, PROVIDERS, PROVIDER_IDS, SESSION, STORE } from './config.js';
 import { state } from './state.js';
 import { toast } from './ui.js';
 import { latestSnapshotWithData, pushSnapshot, tick } from './request.js';
@@ -159,15 +159,15 @@ function getActiveKey() {
 
 function hasAnyKey() {
   for (var i = 0; i < PROVIDER_IDS.length; i += 1) {
-    if (providerNeedsKey(PROVIDER_IDS[i]) && getProviderKey(PROVIDER_IDS[i])) return true;
+    if (getProviderKey(PROVIDER_IDS[i])) return true;
   }
   return false;
 }
 
-// A provider is usable when it holds a key it has not refused, or when it
-// never needed one.
+// A provider is usable when it holds a key it has not refused. Every
+// provider needs one: with none, the page shows the basic layout.
 function providerUsable(id) {
-  return !providerNeedsKey(id) || (!!getProviderKey(id) && !keyRejected(id));
+  return !!getProviderKey(id) && !keyRejected(id);
 }
 
 function getSessionProvider() {
