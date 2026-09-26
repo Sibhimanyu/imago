@@ -179,14 +179,14 @@ describe('explaining a failed fetch', () => {
     expect(probed).toBe(false);
   });
 
-  // http://3.1.62.165:8080/... was reported as "Could not reach": the probe
+  // http://<a public IP>:8080/... was reported as "Could not reach": the probe
   // is blocked exactly like the request, so it blamed a server that was up.
   it('a plain http:// address off this machine is named as the cause, without probing', async () => {
     let probed = false;
     const app = await boot({ fetch: () => { probed = true; return Promise.reject(network()); } });
-    const why = await app.explainFailure(network(), 'http://3.1.62.165:8080/api/v1/x?', {});
+    const why = await app.explainFailure(network(), 'http://203.0.113.10:8080/api/v1/x?', {});
     expect(why.title).toBe('Browsers block plain http:// addresses here');
-    expect(why.detail).toContain('3.1.62.165:8080 is an http:// address, and an https page');
+    expect(why.detail).toContain('203.0.113.10:8080 is an http:// address, and an https page');
     expect(why.detail).toContain('https:// address');
     expect(probed).toBe(false);
   });
