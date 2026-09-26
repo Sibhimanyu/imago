@@ -2,6 +2,21 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.13.3.1] - 2026-09-26
+
+### Fixed
+
+- **A share or open link pasted into an open Imago tab opens.** Only the
+  hash changed, so the page did not reload, and the link was read only on
+  load: the tab showed the landing page instead. It now opens the link as a
+  fresh load would.
+
+### Changed
+
+- **The launch kit is three jobs:** marketing (the Zoho Social run with its
+  images, Show HN, dev.to, Reddit), partners and support. The README opens
+  with a demo GIF.
+
 ## [0.13.3.0] - 2026-09-26
 
 The launch: a link an API's docs can write by hand, and somewhere to get help.

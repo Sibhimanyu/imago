@@ -198,3 +198,20 @@ describe('an open link', () => {
     expect(app.state.refreshIntervalMs).toBe(0);
   });
 });
+
+describe('a link pasted into an open tab', () => {
+  it('opens it: only the hash changes, so there is no reload to read it', async () => {
+    const seen = [];
+    const app = await boot({
+      url: 'https://imago.test/#app',
+      fetch: (url) => { seen.push(String(url)); return jsonFetch({ name: 'pikachu', height: 4 })(url); }
+    });
+    await flush();
+    app.window.history.pushState(null, '', '#open=https://pokeapi.co/api/v2/pokemon/pikachu');
+    app.window.dispatchEvent(new app.window.PopStateEvent('popstate', { state: null }));
+    await flush(); await flush();
+    expect(seen).toContain('https://pokeapi.co/api/v2/pokemon/pikachu');
+    expect(app.state.view).toBe('app');
+    expect(app.window.location.hash).toBe('#app');
+  });
+});

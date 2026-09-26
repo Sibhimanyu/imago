@@ -18,7 +18,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1b1b19" alt="MIT license"></a>
 </p>
 
-![Imago's landing page: a live API response on the left, the interface Imago drew for it on the right](docs/readme/landing.png)
+![Pasting a PokeAPI URL into Imago: the response becomes a page with the sprite, headline numbers and stat bars](docs/readme/demo.gif)
 
 Imago is a browser-only API playground. You give it a GET endpoint; it fetches the
 JSON, works out what *shape* the response is, asks a model to design an interface for

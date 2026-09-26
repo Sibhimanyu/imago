@@ -1,8 +1,9 @@
-# Partners, and the one yes
+# Partners: API owners spread it for you
 
 Imago's users are already in one place at the moment they need it: reading a
-free API's docs. The people who own those docs are the partners. Sales here
-means one of them saying yes and adding the badge.
+free API's docs. The people who own those docs are the partners. One yes, one
+merged badge, and every reader of those docs after that can find Imago
+without you.
 
 ## The ask
 
@@ -56,8 +57,27 @@ no. An issue is a conversation.
 
 One follow-up, a week later, on the same thread. After that, leave it.
 
+## Tracking it
+
+Five rows is too few for a CRM. Keep this table up to date:
+
+| API | Pull request | Opened | Followed up | Result |
+|---|---|---|---|---|
+| Open-Meteo | | | | |
+| PokeAPI | | | | |
+| Frankfurter | | | | |
+| Free Dictionary API | | | | |
+| Thirukkural API | | | | |
+
+## One more to try: Zoho Catalyst
+
+Imago is hosted on Catalyst Slate. A showcase or blog post from the Catalyst
+team would put it in front of their developer audience. Ask whether they
+feature projects built on Slate. It isn't known that they do.
+
 ## How we'll know it worked
 
-- The badge is merged in one repo. That is the one yes.
+- The badge is merged in one repo. That is the one yes, and the reason
+  Sales isn't a separate job.
 - A Share link or `#open=` link from that API turns up in an issue, which
   shows someone reached Imago that way.

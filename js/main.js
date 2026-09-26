@@ -90,6 +90,9 @@ function wireEvents() {
 
   dom.stageBack.addEventListener('click', goBack);
   window.addEventListener('popstate', function (event) {
+    // A share or open link pasted into this tab's address bar changes only
+    // the hash, so the page does not reload: open it here, as a load would.
+    if (openShareLink()) { state.historyDepth = 0; return; }
     // Back and Forward between the landing page and the app move views, not pages.
     var view = viewFromUrl();
     if (view !== state.view) { setView(view); return; }
