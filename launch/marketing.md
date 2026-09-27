@@ -30,7 +30,8 @@ line. The reels stay in the press kit. There's a sitemap and robots.txt.
 
 | Path | What |
 |---|---|
-| `/` | The app |
+| `/` | The landing page |
+| `/app/` | The app (the same page, marked noindex; old `/#app` and `/#open=` links move here) |
 | `/apis/`, `/apis/<api>/` | The gallery |
 | `/press/` | The press kit, with the reels |
 | `/waitlist/` | The hosted-AI waitlist |
@@ -52,14 +53,18 @@ funnels and 5 goals. Set up on 2026-09-26:
   PageSense's two hosts, `cdn-in.pagesense.io` and `static.zohocdn.com`.
   The trade-off: PageSense runs on the same site as people's model keys, so
   it could read them.
-- **Goals** (link clicks, tracked on every page):
-  - *Opened Imago from the gallery*: links starting `https://imago.onslate.in/#open=`
-  - *Went to a Discussions thread*: links containing `github.com/Sibhimanyu/imago/discussions`
-  - *Downloaded a press-kit reel*: links containing `/press/reels/`
-  - *Went to the waitlist*: links containing `onslate.in/waitlist/`
-- **Heatmap:** "Gallery heatmap" on every page, 5,000 visitors. It is
-  created and configured; PageSense will let it launch once it registers the
-  snippet (the snippet loads and sends data; the dashboard lags).
+- **Goals** (link clicks):
+  - *Opened Imago from the gallery*: on `/apis/` pages, links containing `imago.onslate.in/app/#open=`
+  - *Went to a Discussions thread*: on `/apis/` pages, links containing `github.com/Sibhimanyu/imago/discussions`
+  - *Downloaded a press-kit reel*: on `/press/`, links containing `/press/reels/`
+  - *Went to the waitlist*: anywhere on the site, links containing `onslate.in/waitlist/`
+- **Heatmaps** (5,000 visitors each). A heatmap is one page's layout, so each
+  covers one kind of page, and the landing page and the app have separate
+  addresses so their clicks never mix:
+  - *Landing page heatmap*: `https://imago.onslate.in/`
+  - *API gallery heatmap*: `https://imago.onslate.in/apis/`
+  The PageSense MCP creates heatmaps but cannot launch them (its publish call
+  fails with `zo.mcp.missing.project`), so they are launched in the dashboard.
 - **Cookie banner:** on, "notify visitors and allow to opt out".
 
 **How we'll know it worked:** visits from search, which API pages they land

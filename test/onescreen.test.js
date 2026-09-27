@@ -797,7 +797,7 @@ describe('focus survives a re-render', () => {
 });
 
 describe('sheets behave as dialogs', () => {
-  const ONBOARDED = { url: 'https://imago.test/#app', local: { 'imago.preferences': { onboarded: true } } };
+  const ONBOARDED = { url: 'https://imago.test/app/', local: { 'imago.preferences': { onboarded: true } } };
   const tab = (app, shift) => app.window.document.dispatchEvent(new app.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: !!shift, bubbles: true, cancelable: true }));
 
   it('Settings is a modal dialog that takes focus and gives it back', async () => {

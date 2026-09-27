@@ -62,14 +62,14 @@ Imago does that other tools don't.
 > a named array of numbers or an image URL, and picks a component for each.
 >
 > Open it yourself:
-> https://imago.onslate.in/#open=https://pokeapi.co/api/v2/pokemon/pikachu
+> https://imago.onslate.in/app/#open=https://pokeapi.co/api/v2/pokemon/pikachu
 
 **X**
 > PokeAPI's Pikachu, drawn by Imago: sprite, stat bars, type badge, links as buttons.
 >
 > Nobody told it what a Pokémon is. It read the shape of the JSON.
 >
-> https://imago.onslate.in/#open=https://pokeapi.co/api/v2/pokemon/pikachu
+> https://imago.onslate.in/app/#open=https://pokeapi.co/api/v2/pokemon/pikachu
 
 ---
 
@@ -84,7 +84,7 @@ Imago does that other tools don't.
 >
 > Weather data by Open-Meteo.com (CC BY 4.0).
 >
-> https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
+> https://imago.onslate.in/app/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
 
 **X**
 > Open-Meteo puts 31.2 in one object and "°C" in another.
@@ -92,7 +92,7 @@ Imago does that other tools don't.
 > Imago puts them back together: the temperature as the headline, humidity as a meter, the hourly forecast as a chart.
 >
 > Data: Open-Meteo.com
-> https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
+> https://imago.onslate.in/app/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1
 
 ---
 
@@ -107,7 +107,7 @@ Imago does that other tools don't.
 > This is the International Space Station's position, watched every 10
 > seconds. Every value that changed has a CHANGED tag.
 >
-> https://imago.onslate.in/#open=https://api.wheretheiss.at/v1/satellites/25544
+> https://imago.onslate.in/app/#open=https://api.wheretheiss.at/v1/satellites/25544
 > (Turn on Watch once it opens.)
 
 **X**
@@ -115,7 +115,7 @@ Imago does that other tools don't.
 >
 > Here's the ISS, watched every 10 seconds.
 >
-> https://imago.onslate.in/#open=https://api.wheretheiss.at/v1/satellites/25544
+> https://imago.onslate.in/app/#open=https://api.wheretheiss.at/v1/satellites/25544
 
 ---
 
@@ -150,13 +150,13 @@ Imago does that other tools don't.
 > with columns chosen by what tells one row from another: title, author,
 > edition count, first published.
 >
-> https://imago.onslate.in/#open=https://openlibrary.org/search.json?title=the+hobbit&limit=5
+> https://imago.onslate.in/app/#open=https://openlibrary.org/search.json?title=the+hobbit&limit=5
 
 **X**
 > An array of objects becomes a table. Columns are picked by what tells one row from another.
 >
 > Open Library, "the hobbit":
-> https://imago.onslate.in/#open=https://openlibrary.org/search.json?title=the+hobbit&limit=5
+> https://imago.onslate.in/app/#open=https://openlibrary.org/search.json?title=the+hobbit&limit=5
 
 ---
 
@@ -224,12 +224,12 @@ Imago does that other tools don't.
 > meaning and its section, laid out from the response alone. Imago doesn't
 > know what a kural is. It reads what the JSON holds.
 >
-> https://imago.onslate.in/#open=https://tamil-kural-api.vercel.app/api/kural/1
+> https://imago.onslate.in/app/#open=https://tamil-kural-api.vercel.app/api/kural/1
 
 **X**
 > Kural 1, straight from a Thirukkural API: the Tamil verse, its transliteration and meaning, laid out from the JSON alone.
 >
-> https://imago.onslate.in/#open=https://tamil-kural-api.vercel.app/api/kural/1
+> https://imago.onslate.in/app/#open=https://tamil-kural-api.vercel.app/api/kural/1
 
 ---
 
@@ -276,14 +276,14 @@ Imago does that other tools don't.
 > "Open in Imago" button that opens your example response as a page. No
 > sign-up, no script on your site, and nothing passes through a server.
 >
-> The link is imago.onslate.in/#open= followed by your endpoint. The badge and
+> The link is imago.onslate.in/app/#open= followed by your endpoint. The badge and
 > snippet are here:
 > https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md
 
 **X**
 > Run a public API? One line in your README gives readers an "Open in Imago" button.
 >
-> imago.onslate.in/#open= plus your endpoint. No sign-up, no script, no server in between.
+> imago.onslate.in/app/#open= plus your endpoint. No sign-up, no script, no server in between.
 >
 > https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md
 

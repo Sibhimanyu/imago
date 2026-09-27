@@ -4,15 +4,18 @@ If you publish a public JSON API, one line of Markdown lets every reader of
 your docs see a response as an interface, not a wall of JSON. No sign-up, no
 key, no script on your site.
 
-[![Open in Imago](https://imago.onslate.in/assets/open-in-imago.svg)](https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1)
+[![Open in Imago](https://imago.onslate.in/assets/open-in-imago.svg)](https://imago.onslate.in/app/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1)
 
 *(That one opens a live Open-Meteo forecast.)*
 
 ## The link
 
 ```
-https://imago.onslate.in/#open=<your endpoint>
+https://imago.onslate.in/app/#open=<your endpoint>
 ```
+
+The app lives at `/app/`; links written before, as
+`https://imago.onslate.in/#open=<endpoint>`, keep working.
 
 Put the endpoint after `#open=` exactly as you would type it. Query strings
 are fine. If the endpoint itself contains a `#`, encode it first
@@ -23,13 +26,13 @@ are fine. If the endpoint itself contains a `#`, encode it first
 Markdown:
 
 ```markdown
-[![Open in Imago](https://imago.onslate.in/assets/open-in-imago.svg)](https://imago.onslate.in/#open=https://api.example.com/v1/items/1)
+[![Open in Imago](https://imago.onslate.in/assets/open-in-imago.svg)](https://imago.onslate.in/app/#open=https://api.example.com/v1/items/1)
 ```
 
 HTML:
 
 ```html
-<a href="https://imago.onslate.in/#open=https://api.example.com/v1/items/1">
+<a href="https://imago.onslate.in/app/#open=https://api.example.com/v1/items/1">
   <img src="https://imago.onslate.in/assets/open-in-imago.svg" alt="Open in Imago" width="128" height="28">
 </a>
 ```

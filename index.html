@@ -24,27 +24,27 @@
 <meta name="theme-color" content="#f6f5f1">
 <!-- Requested before theme-boot.js, which blocks the parser: otherwise the
      stylesheet and the modules wait a whole round trip for it. -->
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="/styles.css">
 <!-- Every module main.js pulls in, fetched in parallel with it instead of
      one round trip after it. A test keeps this list equal to js/. -->
-<link rel="modulepreload" href="js/main.js">
-<link rel="modulepreload" href="js/chat.js">
-<link rel="modulepreload" href="js/config.js">
-<link rel="modulepreload" href="js/edits.js">
-<link rel="modulepreload" href="js/endpoints.js">
-<link rel="modulepreload" href="js/llm.js">
-<link rel="modulepreload" href="js/panes.js">
-<link rel="modulepreload" href="js/render.js">
-<link rel="modulepreload" href="js/request.js">
-<link rel="modulepreload" href="js/schema.js">
-<link rel="modulepreload" href="js/spec.js">
-<link rel="modulepreload" href="js/state.js">
-<link rel="modulepreload" href="js/storage.js">
-<link rel="modulepreload" href="js/theme.js">
-<link rel="modulepreload" href="js/ui.js">
-<link rel="modulepreload" href="js/util.js">
-<link rel="modulepreload" href="js/values.js">
-<script src="js/theme-boot.js"></script>
+<link rel="modulepreload" href="/js/main.js">
+<link rel="modulepreload" href="/js/chat.js">
+<link rel="modulepreload" href="/js/config.js">
+<link rel="modulepreload" href="/js/edits.js">
+<link rel="modulepreload" href="/js/endpoints.js">
+<link rel="modulepreload" href="/js/llm.js">
+<link rel="modulepreload" href="/js/panes.js">
+<link rel="modulepreload" href="/js/render.js">
+<link rel="modulepreload" href="/js/request.js">
+<link rel="modulepreload" href="/js/schema.js">
+<link rel="modulepreload" href="/js/spec.js">
+<link rel="modulepreload" href="/js/state.js">
+<link rel="modulepreload" href="/js/storage.js">
+<link rel="modulepreload" href="/js/theme.js">
+<link rel="modulepreload" href="/js/ui.js">
+<link rel="modulepreload" href="/js/util.js">
+<link rel="modulepreload" href="/js/values.js">
+<script src="/js/theme-boot.js"></script>
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Imago">
@@ -58,8 +58,8 @@
 <meta name="twitter:title" content="Imago — APIs become interfaces">
 <meta name="twitter:description" content="Paste an endpoint. Get a readable interface, not raw JSON.">
 <meta name="twitter:image" content="https://imago.onslate.in/og.png">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/imago-icon.svg">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/imago-icon.svg">
 <script async src="https://cdn-in.pagesense.io/js/sibhimanyugt0/3a1387bceb844d639ea0ec07a50e9847.js"></script>
 </head>
 <body>
@@ -456,6 +456,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script type="module" src="js/main.js"></script>
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>

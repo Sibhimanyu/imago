@@ -405,14 +405,24 @@ function enterApp() {
   }
 }
 
-// The address decides the view: the landing page lives at the bare URL and
-// the app at #app. A reload keeps you where you were, and the browser's Back
-// leaves the app for the landing page. Before, a returning visitor could not
-// reach the landing page at all: a stored flag sent every visit to the app.
+// The address decides the view: the landing page lives at / and the app at
+// /app/, its own path, so analytics and heatmaps can tell a visitor on the
+// landing page from someone using the app. A reload keeps you where you were,
+// and the browser's Back leaves the app for the landing page. The app used to
+// live at /#app; that address, like /#open= and /#share= links, still opens
+// the app (see adoptLegacyAppUrl).
+var APP_PATH = '/app/';
 var APP_HASH = '#app';
 
 function viewFromUrl() {
-  return window.location.hash === APP_HASH ? 'app' : 'landing';
+  var path = window.location.pathname;
+  return path === APP_PATH || path === '/app' || window.location.hash === APP_HASH ? 'app' : 'landing';
+}
+
+// /#app becomes /app/ in place, without a reload, so the old address keeps working.
+function adoptLegacyAppUrl() {
+  if (window.location.hash !== APP_HASH) return;
+  try { window.history.replaceState(null, '', APP_PATH + window.location.search); } catch (err) { /* ignore */ }
 }
 
 function setView(name) {
@@ -422,7 +432,7 @@ function setView(name) {
 
 function goToView(name) {
   if (viewFromUrl() !== name) {
-    var target = window.location.pathname + window.location.search + (name === 'app' ? APP_HASH : '');
+    var target = (name === 'app' ? APP_PATH : '/') + window.location.search;
     try { window.history.pushState(null, '', target); } catch (err) { /* history unavailable: the view still changes */ }
   }
   setView(name);
@@ -755,12 +765,12 @@ function shareCurrentPage() {
 }
 
 // Opening a share link: straight into the app, fetch with no headers, show
-// the shared layout once. The link becomes #app in the address bar so a
-// reload is an ordinary visit to the app and the link is not kept in history.
+// the shared layout once. The address becomes /app/ so a reload is an
+// ordinary visit to the app and the link is not kept in history.
 function openShareLink() {
   var shared = readShareLink(window.location.hash);
   if (!shared) return false;
-  try { window.history.replaceState(null, '', window.location.pathname + window.location.search + APP_HASH); } catch (err) { /* ignore */ }
+  try { window.history.replaceState(null, '', APP_PATH + window.location.search); } catch (err) { /* ignore */ }
   var prefs = getPrefs();
   prefs.onboarded = true;
   setPrefs(prefs);
@@ -850,6 +860,7 @@ function init() {
   catch (err) { showInterfaceEmpty(); }
   if (openShareLink()) return;
 
+  adoptLegacyAppUrl();
   setView(viewFromUrl());
 }
 
@@ -936,4 +947,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_HASH, viewFromUrl, goToView, migrateLegacyKeys, migrateRemovedOllama, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, applyWaitlist, init };
+export { isPrivateHost, isFramed, showFramedNotice, wireEvents, wireSpecimen, startSpecimen, showSpecimen, drawSpecimen, specimenDemo, SPECIMEN_LINES, SPECIMEN_EXAMPLE, setView, cacheDom, enterApp, APP_PATH, APP_HASH, viewFromUrl, adoptLegacyAppUrl, goToView, migrateLegacyKeys, migrateRemovedOllama, restoreSession, restoreLastView, restoreFromSnapshot, baseTitle, describeChange, noteWatchedChange, clearUnseen, offerNotifications, SHARE_PREFIX, OPEN_PREFIX, MAX_SHARE_CHARS, toBase64Url, fromBase64Url, buildShareLink, readShareLink, shareCurrentPage, openShareLink, applyWaitlist, init };

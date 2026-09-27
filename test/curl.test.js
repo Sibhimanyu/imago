@@ -192,7 +192,7 @@ describe('explaining a failed fetch', () => {
   });
 
   it('on a page served over http, the reason given is the localhost rule', async () => {
-    const app = await boot({ url: 'http://imago.test/#app', fetch: () => Promise.reject(network()) });
+    const app = await boot({ url: 'http://imago.test/app/', fetch: () => Promise.reject(network()) });
     const why = await app.explainFailure(network(), 'http://192.168.1.20/api', {});
     expect(why.detail).toContain('192.168.1.20 is an http:// address, and Imago only calls http:// on this computer');
   });

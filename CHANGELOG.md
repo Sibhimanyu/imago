@@ -25,6 +25,23 @@ All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
   kept, not thrown away. When both tries fail, the error says why: an empty
   reply, or a reply that ran out of room.
 
+## [0.21.0.0] - 2026-09-27
+
+### Changed
+
+- **The app has its own address: `/app/`.** The landing page stays at `/`.
+  They used to share one URL, with the app at `/#app`, and analytics and
+  heatmaps ignore everything after `#`, so a heatmap of `/` mixed landing-page
+  clicks with clicks inside the app. `./publish.sh` serves the same page at
+  `/app/` (marked noindex), and it picks its view from the path. Old
+  addresses keep working: `/#app`, `/#open=` and `/#share=` open the app and
+  the address becomes `/app/`, without a reload. Share links and the
+  gallery's "Open it in Imago" now use `/app/#open=`; the docs show the new
+  form. Every local file in `index.html` is named from the site root, so the
+  page works at either address.
+- PageSense: a *Landing page heatmap* for `/` beside the gallery's, and the
+  "Opened Imago from the gallery" goal counts `/app/#open=` links.
+
 ## [0.20.0.1] - 2026-09-27
 
 ### Fixed

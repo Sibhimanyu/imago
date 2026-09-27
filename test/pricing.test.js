@@ -153,18 +153,24 @@ describe('third-party code on this origin', () => {
 
 describe('first paint', () => {
   it('preloads exactly the modules in js/ that main.js pulls in', () => {
-    const preloaded = [...HTML.matchAll(/<link rel="modulepreload" href="js\/([\w-]+\.js)">/g)].map((m) => m[1]).sort();
+    const preloaded = [...HTML.matchAll(/<link rel="modulepreload" href="\/js\/([\w-]+\.js)">/g)].map((m) => m[1]).sort();
     const modules = fs.readdirSync(path.join(ROOT, 'js')).filter((f) => f.endsWith('.js') && f !== 'theme-boot.js').sort();
     expect(preloaded).toEqual(modules);
   });
 
   it('asks for the stylesheet and every module before the one parser-blocking script', () => {
     const head = HTML.slice(0, HTML.indexOf('</head>'));
-    const boot = head.indexOf('<script src="js/theme-boot.js"></script>');
+    const boot = head.indexOf('<script src="/js/theme-boot.js"></script>');
     expect(boot).toBeGreaterThan(0);
-    expect(head.indexOf('<link rel="stylesheet" href="styles.css">')).toBeGreaterThan(0);
-    expect(head.indexOf('<link rel="stylesheet" href="styles.css">')).toBeLessThan(boot);
+    expect(head.indexOf('<link rel="stylesheet" href="/styles.css">')).toBeGreaterThan(0);
+    expect(head.indexOf('<link rel="stylesheet" href="/styles.css">')).toBeLessThan(boot);
     expect(head.lastIndexOf('<link rel="modulepreload"')).toBeLessThan(boot);
+  });
+
+  it('names every local file from the site root, so the same page works at /app/', () => {
+    const refs = [...HTML.matchAll(/\b(?:src|href)="([^"#][^"]*)"/g)].map((m) => m[1]).filter((u) => !/^(https?:|mailto:|data:)/.test(u));
+    expect(refs.length).toBeGreaterThan(15);
+    for (const u of refs) expect(u, u).toMatch(/^\//);
   });
 
   it('no outside script blocks the parser', () => {

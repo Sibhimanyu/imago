@@ -77,7 +77,7 @@ describe('opening a link', () => {
     expect(app.state.view).toBe('app');
     expect(seen[0].url).toBe('https://pokeapi.co/api/v2/pokemon/pikachu');
     expect(seen[0].headers).toEqual({});                       // the recipient's own headers stay home
-    expect(app.window.location.hash).toBe('#app');                 // the link itself is gone; a reload opens the app
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/app/');   // the link itself is gone; a reload opens the app
     expect(app.dom.interfaceOut.querySelector('.stage-title').textContent).toBe('Pikachu');
     expect(app.dom.cacheBadge.textContent).toBe('Shared layout');
     // Used for this view only, never written to the recipient's cache.
@@ -194,7 +194,7 @@ describe('an open link', () => {
     await flush(); await flush();
     expect(app.state.view).toBe('app');
     expect(seen).toEqual(['https://pokeapi.co/api/v2/pokemon/pikachu']);
-    expect(app.window.location.hash).toBe('#app');
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/app/');
     expect(app.state.refreshIntervalMs).toBe(0);
   });
 });
@@ -203,7 +203,7 @@ describe('a link pasted into an open tab', () => {
   it('opens it: only the hash changes, so there is no reload to read it', async () => {
     const seen = [];
     const app = await boot({
-      url: 'https://imago.test/#app',
+      url: 'https://imago.test/app/',
       fetch: (url) => { seen.push(String(url)); return jsonFetch({ name: 'pikachu', height: 4 })(url); }
     });
     await flush();
@@ -212,6 +212,6 @@ describe('a link pasted into an open tab', () => {
     await flush(); await flush();
     expect(seen).toContain('https://pokeapi.co/api/v2/pokemon/pikachu');
     expect(app.state.view).toBe('app');
-    expect(app.window.location.hash).toBe('#app');
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/app/');
   });
 });

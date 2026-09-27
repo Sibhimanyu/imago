@@ -68,7 +68,7 @@ for the first ten minutes with an API, before any of that matters.
 ## Try it
 
 - **Open the app:** [imago.onslate.in](https://imago.onslate.in)
-- **A live example:** [a forecast for Chennai](https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1)
+- **A live example:** [a forecast for Chennai](https://imago.onslate.in/app/#open=https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1)
 - **Run an API?** Give your readers an [Open in Imago](open-in-imago.md) badge.
 - **Code:** [github.com/Sibhimanyu/imago](https://github.com/Sibhimanyu/imago), MIT.
 

@@ -143,9 +143,10 @@ a LAN address), and it does not start Watch.
 ### Open in Imago
 
 For links written by hand, such as a button in an API's docs, there is a
-readable form: `https://imago.onslate.in/#open=<endpoint>`, with the endpoint
+readable form: `https://imago.onslate.in/app/#open=<endpoint>`, with the endpoint
 as you would type it. It opens the app and fetches that endpoint once, with no
 layout and Watch off, under the same rule as a share link: public https only.
+Links in the older `https://imago.onslate.in/#open=<endpoint>` form still work.
 The badge is `assets/open-in-imago.svg`. API owners can find the snippet in
 [launch/open-in-imago.md](launch/open-in-imago.md).
 

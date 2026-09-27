@@ -110,7 +110,8 @@ export const APIS = [
   }
 ];
 
-export const openLink = (endpoint) => APP + '/#open=' + endpoint;
+export const APP_URL = APP + '/app/';   // the app itself; APP alone is its landing page
+export const openLink = (endpoint) => APP_URL + '#open=' + endpoint;
 
 const FREE_NOTE = 'Imago is free and open source. Bring your own free Gemini or Groq key, or use none.';
 
@@ -233,16 +234,16 @@ function top(current) {
   const nav = [['/apis/', 'API gallery', 'home'], ['/press/', 'Press kit', 'press']]
     .map(([href, text, key]) => '<a href="' + href + '"' + (key === current ? ' aria-current="page"' : '') + '>' + text + '</a>').join('');
   return '<header class="g-top"><div class="g-wrap g-top-in">' +
-    '<a class="g-brand" href="' + APP + '/" aria-label="Imago, open the app">' + mark(24) + '<span>Imago</span></a>' +
+    '<a class="g-brand" href="' + APP + '/" aria-label="Imago home">' + mark(24) + '<span>Imago</span></a>' +
     '<nav class="g-nav" aria-label="Site">' + nav +
-    '<a class="btn btn-dark btn-sm g-nav-app" href="' + APP + '/">Open Imago</a></nav>' +
+    '<a class="btn btn-dark btn-sm g-nav-app" href="' + APP_URL + '">Open Imago</a></nav>' +
     '</div></header>\n';
 }
 
 function foot(links) {
   return '<footer class="g-foot"><div class="g-wrap g-foot-in">' +
     '<p class="g-foot-line">' + mark(18) + '<span><strong>Imago</strong>. APIs become interfaces.</span></p>' +
-    '<p class="g-foot-links"><a href="' + APP + '/">The app</a><a href="' + REPO + '">Source on GitHub</a>' +
+    '<p class="g-foot-links"><a href="' + APP_URL + '">The app</a><a href="' + REPO + '">Source on GitHub</a>' +
     '<a href="/press/">Press kit</a>' + optionalLink(links.discussionsHome, 'Discussions', 'g-foot-opt') + '</p>' +
     '<p class="g-foot-note">' + esc(FREE_NOTE) + ' MIT licensed. API responses belong to their providers and are fetched by your browser, not stored here.</p>' +
     '</div></footer>\n';
@@ -313,12 +314,12 @@ function homePage(links) {
     '<div class="g-wrap">\n<header class="g-hero g-hero-home">\n<h1>Public APIs, drawn as interfaces</h1>\n' +
     '<p class="g-lede">Meeting a new API usually means reading a wall of JSON. Each page here fetches one public API live, in your browser, and draws the response the way Imago does: the values that matter up top, a fact sheet under them, tables and charts for the rest.</p>\n' +
     '<p class="g-lede">Every page links straight into Imago with that endpoint loaded, so you can keep going with your own.</p>\n' +
-    '<div class="g-actions"><a class="btn btn-dark btn-lg" href="' + APP + '/">Open Imago</a>' +
+    '<div class="g-actions"><a class="btn btn-dark btn-lg" href="' + APP_URL + '">Open Imago</a>' +
     optionalLink(links.waitlist, 'No key? Join the hosted-AI waitlist', 'g-link') + '</div>\n' +
     '</header>\n' +
     '<section class="g-section g-first" aria-labelledby="apis"><h2 id="apis">The gallery</h2><ul class="g-cards">\n' + cards + '\n</ul></section>\n' +
     '<section class="g-section g-split">\n<div><h2>How the drawing works</h2><p>Imago reads the shape of a response, not its field names. Numbers are paired with their units, three or more timestamps become a timeline, arrays of records become tables, and bookkeeping sinks into Details. Every value is written as text, so nothing from an API is ever treated as markup.</p></div>\n' +
-    '<div><h2>Run an API?</h2><p>Put an “Open in Imago” button in your docs: link to <code>' + esc(APP) + '/#open=</code> followed by your endpoint. No sign-up and no script on your site. The badge is in the <a href="/press/">press kit</a>.</p></div>\n' +
+    '<div><h2>Run an API?</h2><p>Put an “Open in Imago” button in your docs: link to <code>' + esc(APP_URL) + '#open=</code> followed by your endpoint. No sign-up and no script on your site. The badge is in the <a href="/press/">press kit</a>.</p></div>\n' +
     '</section>\n' +
     '<section class="g-section g-free"><h2>Free</h2><p>' + esc(FREE_NOTE) + '</p></section>\n</div>\n';
   return page({
@@ -348,7 +349,7 @@ function pressPage(links, reels, images, brand) {
   const body =
     '<div class="g-wrap">\n<header class="g-hero">\n<h1>Press and share kit</h1>\n' +
     '<p class="g-lede">Imago turns an API response into an interface. Paste a public API URL and it fetches the JSON in your browser and draws it as a page: the values that matter up top, a fact sheet under them, and tables and charts for the rest. It is free and open source, runs entirely in the browser with no account and no server, and works with no key; add a free Gemini or Groq key for a designed layout. Everything here is free to use when you write about or share Imago.</p>\n' +
-    '<div class="g-actions"><a class="btn btn-dark btn-lg" href="' + APP + '/">Open Imago</a><a class="btn btn-ghost btn-lg" href="' + REPO + '">Source on GitHub</a></div>\n' +
+    '<div class="g-actions"><a class="btn btn-dark btn-lg" href="' + APP_URL + '">Open Imago</a><a class="btn btn-ghost btn-lg" href="' + REPO + '">Source on GitHub</a></div>\n' +
     '</header>\n' +
     '<section class="g-section g-first"><h2>Fact sheet</h2><dl class="g-facts">' +
     [['What', 'A browser tool that draws an API’s JSON response as an interface.'],

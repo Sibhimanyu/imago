@@ -1,5 +1,5 @@
 /* The landing page and the app are separate addresses: the bare URL is the
-   landing page, #app is the app. A reload keeps you where you were, and a
+   landing page, /app/ is the app. A reload keeps you where you were, and a
    returning visitor lands on the landing page instead of being sent to the app. */
 import { describe, it, expect } from 'vitest';
 import { boot, jsonFetch, flush, LANDING } from './harness.js';
@@ -13,18 +13,33 @@ describe('landing and app are separate addresses', () => {
     expect(app.dom.landingView.hidden).toBe(false);
   });
 
-  it('#app opens the app, so a reload inside it stays there', async () => {
-    const app = await boot({ url: 'https://imago.test/#app', local: RETURNING });
-    expect(app.state.view).toBe('app');
+  it('/app/ opens the app, so a reload inside it stays there', async () => {
+    for (const url of ['https://imago.test/app/', 'https://imago.test/app']) {
+      const app = await boot({ url, local: RETURNING });
+      expect(app.state.view).toBe('app');
+    }
   });
 
-  it('Open app moves the address to #app; the mark moves it back', async () => {
+  it('the old /#app address still opens the app, and becomes /app/', async () => {
+    const app = await boot({ url: 'https://imago.test/?x=1#app', local: RETURNING });
+    expect(app.state.view).toBe('app');
+    expect(app.window.location.pathname + app.window.location.search + app.window.location.hash).toBe('/app/?x=1');
+  });
+
+  it('an old /#open= link lands in the app at /app/', async () => {
+    const app = await boot({ url: 'https://imago.test/#open=https://a.test/x', fetch: jsonFetch({ a: 1 }) });
+    await flush();
+    expect(app.state.view).toBe('app');
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/app/');
+  });
+
+  it('Open app moves the address to /app/; the mark moves it back to /', async () => {
     const app = await boot({ url: LANDING, fetch: jsonFetch({ a: 1 }) });
     app.dom.landingSkip.click();
-    expect(app.window.location.hash).toBe('#app');
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/app/');
     expect(app.state.view).toBe('app');
     app.dom.brandHome.click();
-    expect(app.window.location.hash).toBe('');
+    expect(app.window.location.pathname + app.window.location.hash).toBe('/');
     expect(app.state.view).toBe('landing');
   });
 
@@ -41,13 +56,13 @@ describe('landing and app are separate addresses', () => {
   });
 
   it('in-app Back still walks followed pages rather than leaving the app', async () => {
-    const app = await boot({ url: 'https://imago.test/#app', fetch: jsonFetch({ next: 'https://a.test/2' }) });
+    const app = await boot({ url: 'https://imago.test/app/', fetch: jsonFetch({ next: 'https://a.test/2' }) });
     app.setUrlInput('https://a.test/1');
     app.performRequest(false);
     await flush(); await flush();
     app.followUrl('https://a.test/2');
     await flush(); await flush();
-    expect(app.window.location.hash).toBe('#app');
+    expect(app.window.location.pathname).toBe('/app/');
     app.window.history.back();
     await new Promise((r) => app.window.addEventListener('popstate', r, { once: true }));
     expect(app.state.view).toBe('app');

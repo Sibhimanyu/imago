@@ -82,7 +82,7 @@ describe('the landing demo is live', () => {
 
   it('does not fetch anything while the app is showing', async () => {
     const calls = [];
-    await boot({ url: 'https://imago.test/#app', fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
+    await boot({ url: 'https://imago.test/app/', fetch: (url) => { calls.push(String(url)); return jsonFetch({ a: 1 })(url); } });
     await settle();
     expect(calls.length).toBe(0);
   });

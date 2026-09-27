@@ -32,7 +32,7 @@ export const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
  * @param {object}   opts
  * @param {Function} opts.fetch     stub for window.fetch
  * @param {boolean}  opts.confirm   what window.confirm returns
- * @param {string}   opts.url       document URL (default: the app, #app; pass LANDING for the landing page)
+ * @param {string}   opts.url       document URL (default: the app, /app/; pass LANDING for the landing page)
  * @param {object}   opts.session   seed sessionStorage
  * @param {object}   opts.local     seed localStorage (values are JSON-encoded)
  * @param {string}   opts.app       a patched copy of APP to evaluate instead (e.g. a constant changed)
@@ -42,7 +42,7 @@ export const APP = BUILT + '\n//# sourceURL=' + pathToFileURL(BUNDLE).href;
  */
 // The bare URL is the landing page, which fetches its live demo; most tests
 // are about the app, so that is where boot() lands unless told otherwise.
-export const APP_URL = 'https://imago.test/#app';
+export const APP_URL = 'https://imago.test/app/';
 export const LANDING = 'https://imago.test/';
 
 export async function boot(opts = {}) {

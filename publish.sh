@@ -12,6 +12,12 @@ cp index.html styles.css og.png favicon.svg dist/
 cp -R js dist/js
 cp -R assets dist/assets
 
+# The app lives at /app/: the same page, which picks its view from the path.
+# It is not a page for search results, so this copy says noindex.
+mkdir -p dist/app
+perl -pe 's#^<meta charset="utf-8">$#<meta charset="utf-8">\n<meta name="robots" content="noindex">#' index.html > dist/app/index.html
+grep -q 'name="robots" content="noindex"' dist/app/index.html || { echo "dist/app/index.html: noindex missing" >&2; exit 1; }
+
 # The gallery's pages sit beside the app's files and never replace one.
 node gallery/build.mjs
 clash=$(cd gallery/dist && find . -type f -exec test -e ../../dist/{} \; -print)

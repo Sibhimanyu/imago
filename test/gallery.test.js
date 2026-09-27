@@ -71,10 +71,10 @@ describe('gallery pages', () => {
     for (const api of APIS) {
       const open = [...doc(PLAIN, apiFile(api.slug)).querySelectorAll('a')].filter((a) => a.textContent === 'Open it in Imago');
       expect(open).toHaveLength(1);
-      expect(open[0].getAttribute('href')).toBe(APP + '/#open=' + api.endpoint);
+      expect(open[0].getAttribute('href')).toBe(APP + '/app/#open=' + api.endpoint);
     }
     expect(doc(PLAIN, apiFile('open-meteo')).querySelector('.g-open').getAttribute('href'))
-      .toBe('https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1');
+      .toBe('https://imago.onslate.in/app/#open=https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1');
   });
 
   it('credits Open-Meteo beside the rendered data, and only there', () => {
@@ -260,7 +260,7 @@ describe('press kit and site files', () => {
     expect(read(PLAIN, 'robots.txt')).toBe('User-agent: *\nAllow: /\n\nSitemap: https://imago.onslate.in/sitemap.xml\n');
     const home = doc(PLAIN, 'apis/index.html');
     expect([...home.querySelectorAll('.g-card a')].map((a) => a.getAttribute('href'))).toEqual(APIS.map((a) => '/apis/' + a.slug + '/'));
-    expect([...home.querySelectorAll('.g-nav a')].map((a) => a.getAttribute('href'))).toEqual(['/apis/', '/press/', APP + '/']);
+    expect([...home.querySelectorAll('.g-nav a')].map((a) => a.getAttribute('href'))).toEqual(['/apis/', '/press/', APP + '/app/']);
   });
 });
 
