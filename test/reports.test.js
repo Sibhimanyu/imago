@@ -24,3 +24,41 @@ describe('assignment report switcher', () => {
     });
   }
 });
+
+describe('what the reports point at', () => {
+  const local = (slug, ref) => new URL(`../${slug}/${decodeURI(ref.split(/[?#]/)[0])}`, import.meta.url);
+
+  for (const slug of Object.keys(REPORTS)) {
+    it(`${slug}/: every local link, image and 2x source exists`, () => {
+      const d = doc(slug), refs = [];
+      d.querySelectorAll('a[href], img[src], video[src], source[src], video[poster]').forEach((el) => {
+        for (const attr of ['href', 'src', 'poster']) { const v = el.getAttribute(attr); if (v) refs.push(v); }
+      });
+      d.querySelectorAll('img[srcset]').forEach((img) => img.getAttribute('srcset').split(',').forEach((c) => refs.push(c.trim().split(/\s+/)[0])));
+      const missing = refs.filter((r) => !/^(https?:|mailto:|file:|#)/.test(r) && r.split(/[?#]/)[0] !== '').filter((r) => !fs.existsSync(local(slug, r)));
+      expect(missing).toEqual([]);
+    });
+  }
+
+  it('brand/: each editable file card downloads a real .ai and gives its path on the Mac', () => {
+    const cards = [...doc('brand').querySelectorAll('.files .file')];
+    expect(cards.map((c) => c.querySelector('h3').textContent)).toEqual(['imago-task1-logo.ai', 'imago-task2-flyer-a4.ai', 'imago-task3-blog-banner.ai']);
+    for (const c of cards) {
+      const name = c.querySelector('h3').textContent;
+      expect(fs.existsSync(new URL(`../brand/kit/${name}`, import.meta.url))).toBe(true);
+      expect(c.querySelector('a[download]').getAttribute('href')).toBe(`https://github.com/Sibhimanyu/imago/raw/master/brand/kit/${name}`);
+      const path = c.querySelector('button.copy').dataset.copy;
+      expect(path.endsWith(`/brand/kit/${name}`)).toBe(true);
+      expect(c.querySelector('.local-open').getAttribute('href')).toBe(`file://${path}`);
+      expect(c.querySelector('.local-open').hidden).toBe(true);   // a web page cannot open file:// links
+    }
+  });
+
+  it('brand/: the brand book pages and the banner offer a 2x source', () => {
+    const d = doc('brand');
+    const pages = [...d.querySelectorAll('img[src*="guidelines/"]')];
+    expect(pages.length).toBeGreaterThanOrEqual(13);
+    for (const img of pages) expect(img.getAttribute('srcset')).toMatch(/@2x\.png 2x/);
+    for (const img of d.querySelectorAll('img[src$="blog-banner.png"]')) expect(img.getAttribute('srcset')).toMatch(/banner@2x\.png 2x/);
+  });
+});

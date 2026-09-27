@@ -214,10 +214,10 @@
       <a class="chip dark" href="https://imago.onslate.in">App: imago.onslate.in</a>
       <a class="chip" href="https://github.com/Sibhimanyu/imago">Source on GitHub</a>
       <span class="chip">HTML + CSS + JavaScript, no framework</span>
-      <span class="chip">507 tests</span>
+      <span class="chip">512 tests</span>
     </div>
     <div class="stats" style="margin:40px 0 0">
-      <div><b>507</b><span>tests, all passing</span></div>
+      <div><b>512</b><span>tests, all passing</span></div>
       <div><b>0</b><span>runtime dependencies</span></div>
       <div><b>15</b><span>components, drawn by the app</span></div>
       <div><b>5</b><span>stores, all in the browser</span></div>
@@ -269,10 +269,10 @@
           <ul>
             <li>Paste a URL or a <code>curl</code> command.</li>
             <li>Its <b>shape</b> (values replaced by types) is hashed into a fingerprint.</li>
-            <li>A model (Gemini or Groq, your own key) designs a page for that shape; with no key, rules do.</li>
+            <li>A model (<a href="https://aistudio.google.com/apikey">Gemini</a> or <a href="https://console.groq.com/keys">Groq</a>, your own key) designs a page for that shape; with no key, rules do.</li>
             <li>Failures are named plainly: offline, server down, or CORS.</li>
           </ul>
-          <figure><img src="evidence/get-pikachu.png" alt="The PokeAPI Pikachu response drawn as a profile page with stat bars" loading="lazy"><figcaption>PokeAPI, drawn with no key.</figcaption></figure>
+          <figure><img src="evidence/get-pikachu.png" alt="The PokeAPI Pikachu response drawn as a profile page with stat bars" loading="lazy"><figcaption><a href="https://imago.onslate.in/apis/pokeapi/">PokeAPI</a>, drawn with no key.</figcaption></figure>
         </div>
         <div class="card">
           <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg></span>
@@ -297,7 +297,7 @@
             <li>A history strip ticks each fetch, yellow where something moved.</li>
             <li>In another tab, the title counts changes ("(3) Forecast") and a notification can fire.</li>
           </ul>
-          <figure><img src="evidence/time-watch-full.png" alt="The ISS position endpoint watched every 10 seconds, with nine values marked changed" loading="lazy"><figcaption>The ISS every 10 seconds: 9 values changed.</figcaption></figure>
+          <figure><img src="evidence/time-watch-full.png" alt="The ISS position endpoint watched every 10 seconds, with nine values marked changed" loading="lazy"><figcaption>The <a href="https://imago.onslate.in/apis/iss/">ISS</a> every 10 seconds: 9 values changed.</figcaption></figure>
         </div>
       </div>
       <div class="shots2">
@@ -323,7 +323,7 @@
         <div class="card"><h3 class="t">Diff</h3><p>Compare path by path, mark what changed.</p></div>
       </div>
       <div class="grid2" style="margin-top:20px">
-        <figure class="shot"><div class="crop"><img src="evidence/get-schema.png" alt="The ISS page with the Schema inspector open, showing each field replaced by its type and the fingerprint sch_1ouax1u" loading="lazy"></div><figcaption>Inspect → Schema: the ISS response as types, and its fingerprint <code>sch_1ouax1u</code>.</figcaption></figure>
+        <figure class="shot"><div class="crop"><img src="evidence/get-schema.png" alt="The ISS page with the Schema inspector open, showing each field replaced by its type and the fingerprint sch_1ouax1u" loading="lazy"></div><figcaption>Inspect → Schema: the <a href="https://imago.onslate.in/apis/iss/">ISS</a> response as types, and its fingerprint <code>sch_1ouax1u</code>.</figcaption></figure>
         <div>
           <h3 class="t">A plan, as the model returns it</h3>
 <pre>{
@@ -398,7 +398,7 @@
           <tr><td><code>llm.js</code></td><td>Model calls, the prompt, the HTML sandbox</td></tr>
           <tr><td><code>spec.js</code></td><td>Validating plans, and the no-key rules</td></tr>
           <tr><td><code>render.js</code> · <code>values.js</code></td><td>The 15 components, and how each value is formatted (dates, durations, bytes, percentages)</td></tr>
-          <tr><td><code>storage.js</code></td><td>localStorage and sessionStorage, with recovery when storage is full</td></tr>
+          <tr><td><code>storage.js</code></td><td><a href="https://developer.mozilla.org/docs/Web/API/Window/localStorage">localStorage</a> and sessionStorage, with recovery when storage is full</td></tr>
           <tr><td><code>endpoints.js</code> · <code>panes.js</code> · <code>ui.js</code> · <code>chat.js</code></td><td>Saved endpoints, history strip, inspector, Settings, the provider console</td></tr>
           <tr><td><code>main.js</code></td><td>Start-up, share links, Watch alerts</td></tr>
         </table>
@@ -410,9 +410,9 @@
     <div class="wrap">
       <span class="num">06</span>
       <h2>How I know it works</h2>
-      <p class="sub">Vitest with jsdom boots the real app in a fresh page for every test.</p>
+      <p class="sub"><a href="https://vitest.dev/">Vitest</a> with <a href="https://github.com/jsdom/jsdom">jsdom</a> boots the real app in a fresh page for every test.</p>
       <div class="stats">
-        <div><b>507</b><span>tests in 30 files, all passing</span></div>
+        <div><b>512</b><span>tests in 30 files, all passing</span></div>
         <div><b>92%</b><span>of lines covered; <code>render.js</code> (67%) is the gap</span></div>
         <div><b>30</b><span>audit findings, each fixed with a test</span></div>
         <div><b>41 / 41</b><span>deliberate breaks of those fixes caught</span></div>
@@ -430,7 +430,7 @@
         <tr><th>Check, on every change</th><th>Catches</th></tr>
         <tr><td><code>npm test</code></td><td>behaviour</td></tr>
         <tr><td><code>npm run check</code></td><td>a missing import, which without a build step is a blank page</td></tr>
-        <tr><td><code>npm run design:check</code></td><td>UI changed without updating Figma</td></tr>
+        <tr><td><code>npm run design:check</code></td><td>UI changed without updating <a href="https://www.figma.com/design/g6e4FgSFY7xnAXdZnsMZop">Figma</a></td></tr>
       </table>
     </div>
   </section>
@@ -449,7 +449,7 @@
           <li class="done"><b>0.8 – 0.10</b><span>Share links, alerts, page editing, 16 modules.</span></li>
           <li class="done"><b>0.11 – 0.12 · 24 Sep</b><span>Live at imago.onslate.in, with a landing page.</span></li>
           <li class="done"><b>0.13 · 25 Sep</b><span>The audit: 30 fixes, each with a test.</span></li>
-          <li class="done"><b>0.14 – 0.15 · 26 Sep</b><span>Launch work: Open in Imago links, pricing, a waitlist.</span></li>
+          <li class="done"><b>0.14 – 0.15 · 26 Sep</b><span>Launch work: Open in Imago links, pricing, a <a href="https://imago.onslate.in/waitlist/">waitlist</a>.</span></li>
         </ul>
         <div class="card">
           <h3 class="t">What I left out, on purpose</h3>
@@ -475,7 +475,7 @@
           <h3 class="t">Known and left open</h3>
           <ul>
             <li>APIs that block browser apps cannot be read, by design.</li>
-            <li>Rules cannot know units the API does not state: the ISS altitude above shows in degrees, not kilometres.</li>
+            <li>Rules cannot know units the API does not state: the <a href="https://imago.onslate.in/apis/iss/">ISS</a> altitude above shows in degrees, not kilometres.</li>
             <li>The remembered designs have no size limit yet.</li>
             <li>Some touch targets are under 44px on phones.</li>
           </ul>
@@ -485,10 +485,10 @@
           <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.5-.5-.5-2.5z"/></svg></span>
           <h3 class="t">Tools used</h3>
           <ul>
-            <li><b>Claude (Claude Code)</b> wrote most of the code with me, with gstack skills for QA, review and shipping. The idea and the calls in 04 were decided in conversation; I rejected plenty of its first answers.</li>
-            <li><b>Figma</b> holds the design, kept in sync with the shipped app.</li>
-            <li><b>Google Gemini and Groq</b> are the model providers users can choose.</li>
-            <li><b>Zoho Catalyst Slate</b> hosts the app.</li>
+            <li><b>Claude (<a href="https://claude.com/claude-code">Claude Code</a>)</b> wrote most of the code with me, with gstack skills for QA, review and shipping. The idea and the calls in 04 were decided in conversation; I rejected plenty of its first answers.</li>
+            <li><b><a href="https://www.figma.com/design/g6e4FgSFY7xnAXdZnsMZop">Figma</a></b> holds the design, kept in sync with the shipped app.</li>
+            <li><b>Google <a href="https://aistudio.google.com/apikey">Gemini</a> and <a href="https://console.groq.com/keys">Groq</a></b> are the model providers users can choose.</li>
+            <li><b><a href="https://console.catalyst.zoho.in/baas/index">Zoho Catalyst Slate</a></b> hosts the app.</li>
           </ul>
         </div>
       </div>

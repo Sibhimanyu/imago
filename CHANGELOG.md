@@ -2,6 +2,31 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.3.0] - 2026-09-27
+
+### Added
+
+- **The brand report hands over the Illustrator files.** "The files" gives
+  each task's .ai a card: a preview, a Download button (it opens in
+  Illustrator), a "Copy Mac path" button for Finder's Go to Folder, the
+  exports, and, when the page is opened from that Mac, a link straight to
+  the local file. Web pages cannot open file:// links, so that one only
+  shows there.
+- **Everything the reports name is a link.** The first mention of each tool,
+  service, page and file in a section now goes to it: PageSense and the
+  Catalyst console, the API gallery pages, the press kit, the waitlist,
+  Discussions, Figma, Gemini and Groq keys, SUPPORT.md, the brand book, flyer
+  and banner exports, the fonts, Vitest, Claude Code and Illustrator.
+
+### Changed
+
+- **The brand exports are sharp on high-density screens.** The 13 brand book
+  pages are re-rendered from the PDF at 2560 px (`guidelines/NN@2x.png`)
+  and served as 2x sources, as is the banner's @2x export; every export opens
+  full size, and Amigo never shows wider than its pixels allow.
+- A test now fails if any report links to a local file or image that does
+  not exist.
+
 ## [0.22.2.0] - 2026-09-27
 
 ### Changed
