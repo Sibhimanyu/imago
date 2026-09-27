@@ -143,6 +143,15 @@
         ],
         "createdAt": "2026-09-26T14:47:41.430Z",
         "reason": "Claude: video composition; the paste-curl reel stages a dev-tools panel with a context menu over it inside a framed shot, on purpose"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "tech/index.html"
+        ],
+        "createdAt": "2026-09-27T14:15:43.241Z",
+        "reason": "agent decision: only sub-1.3 line-heights in tech/index.html are display type (h1 64px/1.02, h2 36px/1.1, stat numbers 34px/1.1); body text is 1.5-1.6"
       }
     ]
   }
