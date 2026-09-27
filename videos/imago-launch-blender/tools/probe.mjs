@@ -150,16 +150,16 @@ const result = await page.evaluate(async ({ rel, FPS }) => {
       push(texts, id, on ? e.textContent : "");
       if (renderables.includes(e)) push(paints, id, on ? paintOf(e) : "");
       if (!on) continue;
-      if (isShape(e)) { for (const a of ["d", "x", "y", "width", "height", "rx", "cx", "cy", "r", "x1", "x2", "y1", "y2"]) if (e.hasAttribute(a)) push(attrs, id + "|" + a, e.getAttribute(a)); continue; }
+      if (isShape(e)) { for (const a of ["d", "x", "y", "width", "height", "rx", "cx", "cy", "r", "x1", "x2", "y1", "y2", "stdDeviation"]) if (e.hasAttribute(a)) push(attrs, id + "|" + a, e.getAttribute(a)); continue; }
       if (!gsapHas.has(id + "|x") && !gsapHas.has(id + "|y") && !gsapHas.has(id + "|rotation") && !gsapHas.has(id + "|scaleX")) push(direct, id + "|transform", cs.transform);
       if (!gsapHas.has(id + "|opacity")) push(direct, id + "|opacity", cs.opacity);
       for (const k of ["width", "height"]) if (!gsapHas.has(id + "|" + k)) push(direct, id + "|" + k, cs[k]);
       // layout position (reflow, or top/left written by code): offset within the offset parent
-      if (e instanceof HTMLElement) { push(direct, id + "|left", e.offsetLeft + "px"); push(direct, id + "|top", e.offsetTop + "px"); }
+      if (e instanceof HTMLElement) { const r = e.offsetParent !== null; push(direct, id + "|left", r ? e.offsetLeft + "px" : null); push(direct, id + "|top", r ? e.offsetTop + "px" : null); }
       push(direct, id + "|filter", cs.filter);
     }
   }
-  const constant = (a) => a.every((x) => x === a[0]);
+  const constant = (a) => { const v = a.filter((x) => x !== null); return !v.length || v.every((x) => x === v[0]); };
   for (const o of [paints, vis, texts, direct, attrs]) for (const k of Object.keys(o)) if (o[k].length !== N + 1 || constant(o[k])) delete o[k];
   // Text: keep the lowest elements whose text changes (a container's text changes with its children's).
   for (const id of Object.keys(texts)) {

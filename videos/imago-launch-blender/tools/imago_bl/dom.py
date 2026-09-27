@@ -357,9 +357,53 @@ class SceneBuilder:
         self.root_empty = C.empty(self.name + " Stage", self.coll)
         self.root_empty.location = (0, 0, 0)
         self._build(root["id"], self.root_empty, (0.0, 0.0), None)
+        self.svg_filter_blurs()
         if self.perspective:
             self.depth_layers()
         return self.sc
+
+    def svg_filter_blurs(self):
+        """filter: url(#f) with a vertical feGaussianBlur (the scroll rush): smear every
+        live-text object below that element by the filter's per-frame sigma."""
+        for (nid, prop), vals in list(self.direct.items()):
+            if prop != "filter" or not any("url(" in str(v) for v in vals):
+                continue
+            fid = next((re.search(r"url\(\"?#([^)\"]+)", v).group(1) for v in vals if "url(" in str(v)), None)
+            fnode = next((n for n in self.P["nodes"] if n["tag"] == "filter" and n.get("svg", {}).get("id") == fid), None)
+            if not fnode:
+                continue
+            g = next((c for c in self.kids.get(fnode["id"], []) if self.nodes[c]["tag"].lower() == "fegaussianblur"), None)
+            sd = self.samples.get((g, "attr:stdDeviation")) if g else None
+            if not sd:
+                continue
+            sig = []
+            for f in range(self.nframes):
+                on = "url(" in str(vals[f])
+                parts = str(sd[f]).split()
+                sy = float(parts[-1]) if parts else 0.0
+                sig.append(sy * S if on else 0.0)
+            root = self.emp[nid]
+            targets = [o for o in root.children_recursive if o.type == "MESH" and "Text" in o.modifiers]
+            for o in targets:
+                mod = o.modifiers.new("Smear", "NODES"); mod.node_group = C.gn_smear()
+                path = C.input_path(o, "Smear", "Sigma")
+                write_keys(ANIM.fc(o, path, 0), bake_keys(sig, self.off, 0.2 * S))
+                m = o.modifiers["Text"]
+                old_mat = C.set_input  # noqa
+                cur = getattr(m.properties.inputs, next(s.identifier for s in m.node_group.interface.items_tree if getattr(s, "in_out", "") == "INPUT" and s.name == "Material")).value
+                new_mat = C.material(clip=self.clip_tuple(self.clip_of(self.node_of(o))), dither=bool(self.perspective), smear=True)
+                C.set_input(o, "Text", "Material", new_mat)
+                o.data.materials[0] = new_mat
+            if targets:
+                self.sc.eevee.taa_render_samples = 128  # the smear is many faint dithered copies
+            log(f"{short(nid)}: vertical blur url(#{fid}) -> smear on {len(targets)} text objects")
+
+    def node_of(self, o):
+        rev = {e.name: nid for nid, e in self.emp.items()}
+        p = o.parent
+        while p is not None and p.name not in rev:
+            p = p.parent
+        return rev[p.name] if p is not None else None
 
     def is3d_root(self, nid):
         n = self.nodes[nid]
@@ -440,6 +484,7 @@ class SceneBuilder:
         self.pivot[nid] = piv
         e["css_unit"] = "svg" if svg is not None else "px"
         self.transform(nid, e, svg is not None)
+        e = self.skew_chain(nid, e)
         self.visibility(nid, e)
 
         if tag == "svg":
@@ -491,6 +536,9 @@ class SceneBuilder:
             "scaleY": ("scale", 1, lambda v: v, 0.005),
             "opacity": ('["opacity"]', -1, lambda v: v, 0.01),
         }
+        if self.has_skew(nid):
+            maps.pop("scaleX"); maps.pop("scaleY")  # scale goes into the skew chain
+            e.scale = (1, 1, 1)
         for prop, (path, idx, conv, tol) in maps.items():
             smp = self.samples.get((nid, prop))
             if smp is None or not numeric(smp):
@@ -505,6 +553,45 @@ class SceneBuilder:
             if (nid, prop) in self.samples and len(set(map(str, self.samples[(nid, prop)]))) > 1:
                 log(f"{short(nid)}: animated {prop} not converted")
 
+    def has_skew(self, nid):
+        t0 = self.nodes[nid]["t0"]
+        smp = self.samples.get((nid, "skewX"))
+        return abs(t0.get("skewX", 0)) > 1e-6 or bool(smp and numeric(smp) and max(abs(v) for v in smp) > 1e-6)
+
+    def skew_chain(self, nid, e):
+        """CSS skewX has no single Blender transform, but shear x scale = R(a) D R(b)
+        (SVD): two helper empties carry it, keyed per frame from the samples."""
+        if not self.has_skew(nid):
+            return e
+        import numpy as np
+        n = self.nodes[nid]; t0 = n["t0"]; N = self.nframes
+        def track(p, d):
+            v = self.samples.get((nid, p))
+            return v if v and numeric(v) else [d] * N
+        sk = track("skewX", t0.get("skewX", 0)); sx = track("scaleX", t0.get("scaleX", 1)); sy = track("scaleY", t0.get("scaleY", 1))
+        a1 = C.empty(short(nid) + ".skew", self.coll, parent=e)
+        a2 = C.empty(short(nid) + ".skew.post", self.coll, parent=a1)
+        ra, d1, d2, rb = [], [], [], []
+        prev = None
+        for f in range(N):
+            t = math.tan(math.radians(sk[f]))
+            M = np.array([[sx[f], -t * sy[f]], [0.0, sy[f]]])
+            U, Sv, Vt = np.linalg.svd(M)
+            if np.linalg.det(U) < 0:
+                U[:, 1] *= -1; Sv[1] *= -1
+            if np.linalg.det(Vt) < 0:
+                Vt[1, :] *= -1; Sv[1] *= -1
+            a = math.atan2(U[1, 0], U[0, 0]); b = math.atan2(Vt[1, 0], Vt[0, 0])
+            if prev is not None:  # keep the angles continuous
+                while a - prev[0] > math.pi / 2: a -= math.pi; Sv = -Sv; b += 0
+                while a - prev[0] < -math.pi / 2: a += math.pi; Sv = -Sv
+            ra.append(a); rb.append(b); d1.append(float(Sv[0])); d2.append(float(Sv[1])); prev = (a, b)
+        a1.rotation_euler.z = ra[0]; a1.scale = (d1[0], d2[0], 1); a2.rotation_euler.z = rb[0]
+        for obj, path, idx, vals, tol in ((a1, "rotation_euler", 2, ra, 0.003), (a1, "scale", 0, d1, 0.002), (a1, "scale", 1, d2, 0.002), (a2, "rotation_euler", 2, rb, 0.003)):
+            if max(vals) - min(vals) > 1e-6:
+                write_keys(ANIM.fc(obj, path, idx), bake_keys(vals, self.off, tol))
+        return a2
+
     def direct_tracks(self, nid, e, base, k):
         """Styles the scene's own code writes every frame (not GSAP): transform, top/left,
         opacity. Baked from the samples, then simplified."""
@@ -515,7 +602,9 @@ class SceneBuilder:
             N = self.nframes
             dec = [decompose(tf[f]) if tf else None for f in range(N)] if tf else [None] * N
             t0 = n["t0"]
-            x0 = px(left[0]) if left else 0; y0 = px(top[0]) if top else 0
+            ref = self.P.get("textLayout", {}).get(nid, {}).get("frame", 0)
+            left = fill_nulls(left) if left else None; top = fill_nulls(top) if top else None
+            x0 = px(left[ref]) if left else 0; y0 = px(top[ref]) if top else 0
             xs, ys, rs, sxs, sys_ = [], [], [], [], []
             for f in range(N):
                 d = dec[f] or (t0["x"], t0["y"], t0.get("rotation", 0), t0.get("scaleX", 1), t0.get("scaleY", 1))
@@ -998,6 +1087,17 @@ class SceneBuilder:
         bpy.data.curves.remove(tmp)
         # restore t=0 shape
         C.fill_path(tmp := bpy.data.curves.new("_tmp2", "CURVE"), dsmp[0]); bpy.data.curves.remove(tmp)
+
+
+def fill_nulls(a):
+    """Frames where the element wasn't rendered carry the nearest rendered value."""
+    out = list(a); last = next((v for v in out if v is not None), "0px")
+    for i, v in enumerate(out):
+        if v is None:
+            out[i] = last
+        else:
+            last = v
+    return out
 
 
 def decompose(m):

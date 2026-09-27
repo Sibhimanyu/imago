@@ -302,6 +302,60 @@ def gn_stroke():
     return ng
 
 
+def gn_smear():
+    """IM Smear: a vertical Gaussian blur for thin shapes (text): Copies weighted
+    duplicates spread over +-2 sigma; weight in the "smear_w" attribute."""
+    if "IM Smear" in bpy.data.node_groups:
+        return bpy.data.node_groups["IM Smear"]
+    ng = bpy.data.node_groups.new("IM Smear", "GeometryNodeTree")
+    _sock(ng, "Geometry", "NodeSocketGeometry", "OUTPUT")
+    _sock(ng, "Geometry", "NodeSocketGeometry")
+    _sock(ng, "Sigma", "NodeSocketFloat", default=0.0)
+    _sock(ng, "Copies", "NodeSocketInt", default=81)
+    N, L = ng.nodes, ng.links
+    gi = N.new("NodeGroupInput"); go = N.new("NodeGroupOutput")
+    on = N.new("FunctionNodeCompare"); on.data_type = "FLOAT"; on.operation = "GREATER_THAN"
+    L.new(gi.outputs["Sigma"], on.inputs[0]); on.inputs[1].default_value = 0.002
+    # adaptive: about one copy per 1.2 px of spread (4 sigma), capped at Copies
+    per = N.new("ShaderNodeMath"); per.operation = "MULTIPLY"; per.inputs[1].default_value = 4.0 / 0.012
+    L.new(gi.outputs["Sigma"], per.inputs[0])
+    cap = N.new("ShaderNodeMath"); cap.operation = "MINIMUM"; L.new(per.outputs[0], cap.inputs[0]); L.new(gi.outputs["Copies"], cap.inputs[1])
+    odd = N.new("ShaderNodeMath"); odd.operation = "MAXIMUM"; odd.inputs[1].default_value = 3.0; L.new(cap.outputs[0], odd.inputs[0])
+    toi = N.new("FunctionNodeFloatToInt"); toi.rounding_mode = "CEILING"; L.new(odd.outputs[0], toi.inputs[0])
+    cnt = N.new("GeometryNodeSwitch"); cnt.input_type = "INT"
+    cnt.inputs["False"].default_value = 1; L.new(toi.outputs[0], cnt.inputs["True"]); L.new(on.outputs[0], cnt.inputs["Switch"])
+    ml = N.new("GeometryNodeMeshLine"); ml.mode = "END_POINTS"
+    L.new(cnt.outputs[0], ml.inputs["Count"])
+    two = N.new("ShaderNodeMath"); two.operation = "MULTIPLY"; two.inputs[1].default_value = 2.0; L.new(gi.outputs["Sigma"], two.inputs[0])
+    ntwo = N.new("ShaderNodeMath"); ntwo.operation = "MULTIPLY"; ntwo.inputs[1].default_value = -1.0; L.new(two.outputs[0], ntwo.inputs[0])
+    sp = N.new("ShaderNodeCombineXYZ"); L.new(ntwo.outputs[0], sp.inputs[1])
+    ep = N.new("ShaderNodeCombineXYZ"); L.new(two.outputs[0], ep.inputs[1])
+    L.new(sp.outputs[0], ml.inputs["Start Location"]); L.new(ep.outputs[0], ml.inputs["Offset"])
+    # weight: gaussian in units of sigma, normalised by the sum over copies (approx. via count)
+    pos = N.new("GeometryNodeInputPosition"); sep = N.new("ShaderNodeSeparateXYZ"); L.new(pos.outputs[0], sep.inputs[0])
+    sg = N.new("ShaderNodeMath"); sg.operation = "MAXIMUM"; sg.inputs[1].default_value = 1e-6; L.new(gi.outputs["Sigma"], sg.inputs[0])
+    u = N.new("ShaderNodeMath"); u.operation = "DIVIDE"; L.new(sep.outputs[1], u.inputs[0]); L.new(sg.outputs[0], u.inputs[1])
+    u2 = N.new("ShaderNodeMath"); u2.operation = "MULTIPLY"; L.new(u.outputs[0], u2.inputs[0]); L.new(u.outputs[0], u2.inputs[1])
+    ex = N.new("ShaderNodeMath"); ex.operation = "MULTIPLY"; ex.inputs[1].default_value = -0.5; L.new(u2.outputs[0], ex.inputs[0])
+    g = N.new("ShaderNodeMath"); g.operation = "EXPONENT"; L.new(ex.outputs[0], g.inputs[0])
+    # sum of exp(-x^2/2) over the copies ~ (count-1)/4 * sqrt(2pi) + small; exact enough for 11
+    fc = N.new("ShaderNodeMath"); fc.operation = "SUBTRACT"; fc.inputs[1].default_value = 1.0; L.new(cnt.outputs[0], fc.inputs[0])
+    nrm = N.new("ShaderNodeMath"); nrm.operation = "MULTIPLY"; nrm.inputs[1].default_value = 0.6267; L.new(fc.outputs[0], nrm.inputs[0])
+    nrm2 = N.new("ShaderNodeMath"); nrm2.operation = "MAXIMUM"; nrm2.inputs[1].default_value = 1.0; L.new(nrm.outputs[0], nrm2.inputs[0])
+    w = N.new("ShaderNodeMath"); w.operation = "DIVIDE"; L.new(g.outputs[0], w.inputs[0]); L.new(nrm2.outputs[0], w.inputs[1])
+    one = N.new("GeometryNodeSwitch"); one.input_type = "FLOAT"; one.inputs["False"].default_value = 1.0
+    L.new(on.outputs[0], one.inputs["Switch"]); L.new(w.outputs[0], one.inputs["True"])
+    stw = N.new("GeometryNodeStoreNamedAttribute"); stw.data_type = "FLOAT"; stw.domain = "POINT"; stw.inputs["Name"].default_value = "smear_w_i"
+    L.new(ml.outputs[0], stw.inputs["Geometry"]); L.new(one.outputs[0], stw.inputs["Value"])
+    ip = N.new("GeometryNodeInstanceOnPoints"); L.new(stw.outputs[0], ip.inputs["Points"]); L.new(gi.outputs["Geometry"], ip.inputs["Instance"])
+    ri = N.new("GeometryNodeRealizeInstances"); L.new(ip.outputs[0], ri.inputs[0])
+    na = N.new("GeometryNodeInputNamedAttribute"); na.data_type = "FLOAT"; na.inputs["Name"].default_value = "smear_w_i"
+    st2 = N.new("GeometryNodeStoreNamedAttribute"); st2.data_type = "FLOAT"; st2.domain = "POINT"; st2.inputs["Name"].default_value = "smear_w"
+    L.new(ri.outputs[0], st2.inputs["Geometry"]); L.new(na.outputs["Attribute"], st2.inputs["Value"])
+    L.new(st2.outputs[0], go.inputs[0])
+    return ng
+
+
 def gn_text():
     """IM Text: live text. Shows String[Position : Position+Length], so one object can
     type on (animate Length) or switch between states packed into the string
@@ -359,7 +413,7 @@ def input_path(obj, mod_name, name):
 
 
 # ---------------------------------------------------------------- materials
-def _flat_tree(m, image=None, clip=None, shadow=False, dither=False, multiply=False):
+def _flat_tree(m, image=None, clip=None, shadow=False, dither=False, multiply=False, smear=False):
     nt = m.node_tree; nt.nodes.clear(); N, L = nt.nodes, nt.links
     out = N.new("ShaderNodeOutputMaterial")
     oi = N.new("ShaderNodeObjectInfo")
@@ -402,6 +456,9 @@ def _flat_tree(m, image=None, clip=None, shadow=False, dither=False, multiply=Fa
         L.new(m2("MULTIPLY", sig, -1.8), mr.inputs["From Min"]); L.new(m2("MULTIPLY", sig, 1.8), mr.inputs["From Max"])
         mr.inputs["To Min"].default_value = 1.0; mr.inputs["To Max"].default_value = 0.0
         alpha = m2("MULTIPLY", alpha, mr.outputs[0])
+    if smear:
+        sa = N.new("ShaderNodeAttribute"); sa.attribute_type = "GEOMETRY"; sa.attribute_name = "smear_w"
+        mm = N.new("ShaderNodeMath"); mm.operation = "MULTIPLY"; L.new(alpha, mm.inputs[0]); L.new(sa.outputs["Fac"], mm.inputs[1]); alpha = mm.outputs[0]
     if clip is not None:
         # keep only what is inside the clip empty's box: (0..w, 0..-h) in its local space, rounded
         cobj, w, h, rad = clip
@@ -444,8 +501,8 @@ def _flat_tree(m, image=None, clip=None, shadow=False, dither=False, multiply=Fa
 _mats = {}
 
 
-def material(image=None, clip=None, shadow=False, dither=False, multiply=False):
-    key = (image.name if image else "", clip[0].name if clip else "", shadow, dither, multiply)
+def material(image=None, clip=None, shadow=False, dither=False, multiply=False, smear=False):
+    key = (image.name if image else "", clip[0].name if clip else "", shadow, dither, multiply, smear)
     if key in _mats and _mats[key].name in bpy.data.materials:
         return _mats[key]
     name = "IM " + ("Shadow" if shadow else ("Image " + image.name if image else "Flat"))
@@ -455,8 +512,10 @@ def material(image=None, clip=None, shadow=False, dither=False, multiply=False):
         name += " | 3D"
     if multiply:
         name += " | multiply"
+    if smear:
+        name += " | smear"
     m = bpy.data.materials.new(name)
-    _flat_tree(m, image, clip, shadow, dither, multiply)
+    _flat_tree(m, image, clip, shadow, dither, multiply, smear)
     _mats[key] = m
     return m
 

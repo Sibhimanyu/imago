@@ -7,6 +7,7 @@ f01-w2.x: eased keys off by 0.0313 at frames [72, 74, 75, 76, 77, 78] -> baked; 
 f01-w2: animated skewX not converted
 == 02-avalanche (offset 0.50 frames)
 f02-code: code-driven filter not converted
+f02-code: vertical blur url(#f02-vblur) -> smear on 169 text objects
 02 Avalanche: 3 depth layers
 == 03-paste (offset 0.00 frames)
 f03-bar#9 skewX ignored -14
