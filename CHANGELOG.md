@@ -2,6 +2,24 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.0.0] - 2026-09-27
+
+### Added
+
+- **The launch film is on the landing page.** "Imago in 30 seconds" sits
+  under the hero: the 30-second launch video, re-encoded for the web (2.8 MB,
+  down from 9.9 MB) with its end card as the poster. It has sound, so it never
+  plays or downloads until you press play, and a text description goes with
+  it for anyone who cannot watch it.
+- **More of what Imago does, on the landing page.** "What else it does" lists
+  six features the three headline ones leave out: curl import, following
+  links, editing a page, sharing it, alerts while you are in another tab, and
+  the basic layout with no key. "How it works" gives the four steps (fetch,
+  fingerprint, plan once, render) and the limits: GET only, and the API has
+  to allow web pages.
+- **Footer links** to the API gallery, the press kit, the source on GitHub
+  and help. Figma re-synced.
+
 ## [0.20.0.3] - 2026-09-27
 
 ### Changed

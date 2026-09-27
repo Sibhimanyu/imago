@@ -1643,6 +1643,64 @@ body.inspector-open .inspector { display: block; }
   .price-link, .waitlist-note a { display: inline-block; padding: 12px 0; margin: -12px 0; }
 }
 
+/* The landing's section headings, and the sections added under the hero:
+   the launch film, the rest of the features, and how it works. They share
+   the proofs' rule and rhythm. */
+.section-title { font-size: 21px; letter-spacing: -0.02em; }
+
+.film { margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--line); }
+.film-head { display: flex; align-items: baseline; justify-content: space-between; gap: 32px; }
+.film-note { max-width: 520px; font-size: 15px; line-height: 1.55; color: var(--muted); }
+.film-video {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; margin-top: 24px;
+  border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); box-shadow: var(--sh-lg);
+}
+
+.features {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px 32px;
+  margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--line);
+}
+.features .section-title { grid-column: 1 / -1; }
+.feature h3, .how-steps h3 { font-size: 16px; letter-spacing: -0.01em; }
+.feature p, .how-steps p { margin-top: 10px; font-size: 16px; line-height: 1.55; color: var(--ink-2); max-width: 340px; }
+.feature code { font-family: var(--mono); font-size: 13px; color: var(--ink); }
+
+.how { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--line); }
+.how-steps {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+  margin: 28px 0 0; padding: 0; list-style: none; counter-reset: how;
+}
+.how-steps li { counter-increment: how; }
+.how-steps li::before {
+  content: counter(how, decimal-leading-zero); display: block; margin-bottom: 12px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+}
+.how-limits { margin-top: 32px; max-width: 760px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.how-limits b { color: var(--ink-2); font-weight: 600; }
+
+.foot-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.foot-links a { white-space: nowrap; }
+.landing-foot .name-note { max-width: 460px; }
+.foot-links a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.foot-links a:hover { color: var(--ink); text-decoration-color: currentColor; }
+@media (pointer: coarse) {
+  .foot-links a { display: inline-block; padding: 12px 0; margin: -12px 0; }
+}
+
+@media (max-width: 1000px) {
+  .how-steps { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 860px) {
+  .film { margin-top: 56px; }
+  .film-head { flex-direction: column; gap: 10px; }
+  .features { grid-template-columns: 1fr; gap: 28px; margin-top: 48px; }
+  .how { margin-top: 48px; }
+}
+@media (max-width: 560px) {
+  .how-steps { grid-template-columns: 1fr; gap: 28px; }
+  .film-video { border-radius: var(--r); }
+}
+
 .landing-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   max-width: 1180px; width: 100%; margin: 48px auto 0; padding: 28px 24px 48px;

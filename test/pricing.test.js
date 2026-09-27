@@ -21,12 +21,13 @@ function waitlistLinks(app) {
 }
 
 describe('pricing block on the landing page', () => {
-  it('sits after the proofs and before the footer, with both plans', async () => {
+  it('sits after how it works and before the footer, with both plans', async () => {
     const app = await boot({ url: LANDING });
     const doc = app.window.document;
     const pricing = doc.querySelector('#landingView .pricing');
     expect(pricing).not.toBe(null);
-    expect(doc.querySelector('#landingView .proofs').nextElementSibling).toBe(pricing);
+    expect(doc.querySelector('#landingView .how').nextElementSibling).toBe(pricing);
+    expect(pricing.nextElementSibling).toBe(null);
     expect(pricing.querySelector('h2').textContent).toBe('Free, and why');
     const heads = [...pricing.querySelectorAll('h3')].map((h) => h.textContent);
     expect(heads).toEqual(['Free forever', 'Hosted AI · waitlist']);

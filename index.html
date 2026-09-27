@@ -129,6 +129,20 @@
       </section>
     </div>
 
+    <!-- The launch film: 30 seconds, with music, so it never plays on its own.
+         preload="none" keeps its 2.8 MB off the page until someone presses
+         play; the poster is its end card. -->
+    <section class="film" aria-labelledby="filmTitle">
+      <div class="film-head">
+        <h2 class="section-title" id="filmTitle">Imago in 30 seconds</h2>
+        <p class="film-note">A PokeAPI response becomes a profile, a forecast gets watched, and the model sends a plan instead of HTML. It has sound.</p>
+      </div>
+      <video class="film-video" controls playsinline preload="none" width="1920" height="1080" poster="/assets/video/imago-launch-poster.jpg" aria-describedby="filmDesc">
+        <source src="/assets/video/imago-launch.mp4" type="video/mp4">
+      </video>
+      <p class="visually-hidden" id="filmDesc">Amigo, the mascot, is buried under 15,411 lines of JSON. A GET URL is pasted into Imago, the response is read as a shape, and pages appear for a Pokémon, a forecast and exchange rates. A watched value changes and is marked. It ends on the Imago logo and imago.onslate.in.</p>
+    </section>
+
     <section class="proofs" aria-label="What Imago does">
       <div class="proof">
         <h2>Reads the shape</h2>
@@ -145,6 +159,47 @@
         <p>Auto-refresh every 10, 30 or 60 seconds. The values that moved are marked, not buried.</p>
         <div class="proof-ev"><span class="live-pill"><span class="live-dot"></span>Live<span class="live-count">· 24s</span></span><span class="meta-chip is-hot">Changed <b>3</b></span></div>
       </div>
+    </section>
+
+    <!-- The rest of what the app does, one line each, in the order a first
+         visit meets it. Every claim here is in the README. -->
+    <section class="features" aria-labelledby="featuresTitle">
+      <h2 class="section-title" id="featuresTitle">What else it does</h2>
+      <div class="feature">
+        <h3>Takes a curl command</h3>
+        <p>Paste what "Copy as cURL" gives you. The URL goes in the bar and the headers go in Inspect. <code>-u</code> becomes Basic auth.</p>
+      </div>
+      <div class="feature">
+        <h3>Follows links</h3>
+        <p>A URL in the response opens as the next page. Back walks the trail you took, one page at a time.</p>
+      </div>
+      <div class="feature">
+        <h3>Lets you edit the page</h3>
+        <p>Rename a field, move it to the headline or hide it. The edit applies to every endpoint that returns the same shape.</p>
+      </div>
+      <div class="feature">
+        <h3>Shares what you see</h3>
+        <p>A link opens the same page for someone else, even without a key. It never carries your headers, keys or the response.</p>
+      </div>
+      <div class="feature">
+        <h3>Tells you when you are away</h3>
+        <p>A watched page that changes puts a count in the tab title, and sends a notification if you allowed one.</p>
+      </div>
+      <div class="feature">
+        <h3>Works with no key</h3>
+        <p>The basic layout is built from the response alone: units rejoined, time series charted, bookkeeping folded into Details.</p>
+      </div>
+    </section>
+
+    <section class="how" aria-labelledby="howTitle">
+      <h2 class="section-title" id="howTitle">How it works</h2>
+      <ol class="how-steps">
+        <li><h3>Fetch</h3><p>Your browser calls the endpoint. There is no Imago server in between.</p></li>
+        <li><h3>Fingerprint</h3><p>Values are replaced by their types and the result is hashed.</p></li>
+        <li><h3>Plan, once</h3><p>A new shape asks the model for a small JSON plan: which fields matter and how to show each. You press the button first.</p></li>
+        <li><h3>Render</h3><p>Imago's own components draw the plan. The model never returns HTML, and every value is written as text.</p></li>
+      </ol>
+      <p class="how-limits"><b>Limits.</b> GET only. The API has to allow web pages (CORS); when one does not, Imago says so instead of failing quietly. Keys stay in this browser, and request headers are gone when the tab closes.</p>
     </section>
 
     <!-- Pricing. The waitlist link is a plain link to the form, never an
@@ -166,6 +221,12 @@
 
   <footer class="landing-foot">
     <span class="brand"><span class="brand-mark" aria-hidden="true"><svg width="20" height="20"><use href="#imagoIcon"/></svg></span><span class="brand-word">Imago</span></span>
+    <nav class="foot-links" aria-label="More about Imago">
+      <a href="/apis/">API gallery</a>
+      <a href="/press/">Press kit</a>
+      <a href="https://github.com/Sibhimanyu/imago" target="_blank" rel="noopener">Source on GitHub</a>
+      <a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md" target="_blank" rel="noopener">Help</a>
+    </nav>
     <span class="name-note"><i>imago</i> (n.): the final, fully formed stage after metamorphosis. Swap two letters and <i class="anagram"><b>i</b>m<b>a</b>go</i> becomes <i class="anagram"><b>a</b>m<b>i</b>go</i>, Spanish for friend.</span>
   </footer>
 </div>

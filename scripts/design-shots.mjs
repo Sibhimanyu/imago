@@ -44,7 +44,7 @@ export const SHOTS = [
   { id: 'page-mobile-dark', title: 'Page · weather · dark', view: MOBILE, onboarded: true, setup: `__imago.navigateTo(${WEATHER}, '')`, waitData: true, dark: true }
 ];
 
-const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.woff2': 'font/woff2' };
+const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.json': 'application/json', '.woff2': 'font/woff2' };
 
 function serve() {
   const server = createServer(async (req, res) => {
