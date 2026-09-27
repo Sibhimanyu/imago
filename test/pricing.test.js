@@ -40,10 +40,11 @@ describe('pricing block on the landing page', () => {
 });
 
 describe('waitlist links', () => {
-  it('ships pointing at the gallery waitlist page, which is https and off this origin', async () => {
+  it('ships pointing at the waitlist page on this site, which gallery/build.mjs writes', async () => {
     const app = await boot();
-    expect(app.WAITLIST_URL).toBe('https://imago-apis-oavuixyf.onslate.in/waitlist/');
-    expect(new URL(app.WAITLIST_URL).hostname).not.toBe('imago.onslate.in');
+    expect(app.WAITLIST_URL).toBe('https://imago.onslate.in/waitlist/');
+    const { SITE } = await import('../gallery/build.mjs');
+    expect(app.WAITLIST_URL).toBe(SITE + '/waitlist/');
   });
 
   it('are all hidden at boot while WAITLIST_URL is empty, and carry no href', async () => {
@@ -107,17 +108,26 @@ describe('waitlist links', () => {
   });
 });
 
-describe('no third-party embed on this origin', () => {
-  it('index.html loads no Zoho or PageSense script, and no iframe', () => {
+describe('third-party code on this origin', () => {
+  const SNIPPET = fs.readFileSync(path.join(ROOT, 'pagesense.html'), 'utf8').trim();
+  const PAGESENSE_SRC = SNIPPET.match(/src="([^"]+)"/)[1];
+
+  it('index.html loads PageSense once, from pagesense.html, and no other outside script or iframe', () => {
+    expect(SNIPPET).toMatch(/^<script src="https:\/\/cdn-in\.pagesense\.io\/js\/[\w/]+\.js"><\/script>$/);
+    const head = HTML.slice(0, HTML.indexOf('</head>'));
+    expect(head.split(SNIPPET).length - 1).toBe(1);
     const lower = HTML.toLowerCase();
     expect(lower).not.toMatch(/<iframe\b/);
-    const scripts = lower.match(/<script\b[^>]*>/g) || [];
-    expect(scripts.length).toBeGreaterThan(0);
-    for (const tag of scripts) {
-      expect(tag).not.toMatch(/zoho|pagesense/);
-      expect(tag).not.toMatch(/src="https?:/);
-    }
-    expect(lower).not.toMatch(/pagesense/);
+    const outside = (HTML.match(/<script\b[^>]*src="https?:[^"]*"/g) || []).map((t) => t.match(/src="([^"]+)"/)[1]);
+    expect(outside).toEqual([PAGESENSE_SRC]);
     expect(lower).not.toMatch(/zohopublic|forms\.zoho/);
+  });
+
+  it('the CSP lets PageSense in by host, and nothing broader', () => {
+    const csp = HTML.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
+    const script = csp.split(';').map((d) => d.trim()).find((d) => d.startsWith('script-src'));
+    expect(script).toBe("script-src 'self' https://cdn-in.pagesense.io https://static.zohocdn.com");
+    expect(PAGESENSE_SRC.startsWith('https://cdn-in.pagesense.io/')).toBe(true);
+    expect(csp).not.toMatch(/unsafe-eval/);
   });
 });

@@ -5,6 +5,10 @@
   <!-- The app renders model-authored specs over third-party JSON and holds
        model API keys in localStorage, so the renderer runs behind a policy
        rather than on trust alone. No inline script is allowed, and there is none.
+       The one script from elsewhere is Zoho PageSense (analytics, the same
+       snippet as every page on this site, see pagesense.html); script-src names
+       its two hosts and nothing broader. It runs on this origin, so it could
+       read localStorage: that trust is the price of measuring the app.
        `unsafe-inline` is granted to styles only, for the one style="" attribute
        in this file; app.js sets styles through the CSSOM, which CSP does not
        gate. connect-src allows https: because the whole point is fetching
@@ -13,7 +17,7 @@
   <!-- frame-ancestors is deliberately absent: it is ignored when delivered via
        <meta> and only logs an error. Clickjacking protection has to come from a
        real response header (CSP frame-ancestors or X-Frame-Options) at the host. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn-in.pagesense.io https://static.zohocdn.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Imago — APIs become interfaces</title>
 <meta name="description" content="Imago turns any API response into a visual interface. Explore, understand, save, watch it change.">
@@ -35,6 +39,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/imago-icon.svg">
+<script src="https://cdn-in.pagesense.io/js/sibhimanyugt0/3a1387bceb844d639ea0ec07a50e9847.js"></script>
 </head>
 <body>
 

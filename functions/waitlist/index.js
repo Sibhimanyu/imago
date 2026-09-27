@@ -1,6 +1,6 @@
 'use strict';
 /* Advanced I/O entry for the waitlist. CORS is left to Catalyst's
-   Authorized Domains (the gallery's origin), so no CORS headers here. */
+   Authorized Domains (https://imago.onslate.in), so no CORS headers here. */
 const catalyst = require('zcatalyst-sdk-node');
 const { handle, MAX_BODY } = require('./waitlist');
 

@@ -1,24 +1,27 @@
 #!/usr/bin/env node
 /* The Imago API gallery: one static page per public API, each showing that
-   API's live response drawn by Imago's own renderer, plus a home page and a
-   press kit. Writes a deployable site to gallery/dist/.
+   API's live response drawn by Imago's own renderer, plus the press kit and
+   the hosted-AI waitlist. Writes them to gallery/dist/, laid out as they are
+   served on imago.onslate.in beside the app:
+
+     /apis/            the gallery          /press/      the press kit
+     /apis/<slug>/     one page per API     /waitlist/   the waitlist
+     /assets/gallery/  their scripts and stylesheet
 
      node gallery/build.mjs
 
-   This site is deployed as its OWN Catalyst Slate app, on a different origin
-   from imago.onslate.in, because it carries a third-party analytics script
-   (PageSense). Imago keeps model keys in localStorage on its own origin, so
-   nothing here may load a script from imago.onslate.in or run on it; the
-   gallery only links there. test/gallery.test.js holds that line. */
+   ./publish.sh runs this and merges gallery/dist/ into dist/, so there is one
+   site. The app's own files (styles.css, favicon.svg, og.png, assets/) are
+   linked, not copied. */
 import * as esbuild from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-export const SITE = 'https://imago-apis-oavuixyf.onslate.in';   // where the gallery is served; change at will
-export const APP = 'https://imago.onslate.in';
+export const SITE = 'https://imago.onslate.in';
+export const APP = SITE;
 export const REPO = 'https://github.com/Sibhimanyu/imago';
-// The waitlist function (Catalyst Advanced I/O). It accepts this site's origin only.
+// The waitlist function (Catalyst Advanced I/O). It accepts imago.onslate.in's origin only.
 export const WAITLIST_FN = 'https://imago-60083782173.development.catalystserverless.in/server/waitlist/';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -37,7 +40,6 @@ export const APIS = [
     label: 'Pokémon',
     endpoint: 'https://pokeapi.co/api/v2/pokemon/pikachu',
     shot: 'launch/social/pokemon.png',
-    reel: 'stop-reading-json',
     summary: 'One Pokémon as a page: sprite, stat bars, type badge.',
     about: [
       'PokeAPI’s /pokemon endpoint returns one Pokémon as a single large record: its id, height and weight, base experience, six base stats, its type and abilities, the items it can hold, and more than a hundred moves.',
@@ -50,7 +52,6 @@ export const APIS = [
     label: 'Weather',
     endpoint: 'https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1',
     shot: 'launch/social/weather.png',
-    reel: 'stop-reading-json',
     credit: { text: 'Weather data by Open-Meteo.com', href: 'https://open-meteo.com/', licence: 'CC BY 4.0' },
     summary: 'A forecast read for a human: units rejoined, hours charted.',
     about: [
@@ -64,7 +65,6 @@ export const APIS = [
     label: 'Books',
     endpoint: 'https://openlibrary.org/search.json?title=the+hobbit&limit=5',
     shot: 'launch/social/library.png',
-    reel: 'stop-reading-json',
     summary: 'A search result becomes a table of books.',
     about: [
       'Open Library’s search endpoint returns how many books match “the hobbit” and the first five as an array of records, each with a title, authors, first publish year, edition count, languages and ebook access.',
@@ -77,7 +77,6 @@ export const APIS = [
     label: 'Exchange rates',
     endpoint: 'https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,INR',
     shot: 'gallery/shots/frankfurter.png',
-    reel: 'stop-reading-json',
     summary: 'The day’s exchange rates, as a headline and a short list.',
     about: [
       'Frankfurter returns the latest reference exchange rates published by the European Central Bank: the amount, the base currency, the date the rates were set, and a rates object keyed by currency code.',
@@ -90,7 +89,6 @@ export const APIS = [
     label: 'Encyclopedia',
     endpoint: 'https://en.wikipedia.org/api/rest_v1/page/summary/Chennai',
     shot: 'gallery/shots/wikipedia.png',
-    reel: 'stop-reading-json',
     summary: 'An article summary: thumbnail, description, opening paragraph.',
     about: [
       'Wikipedia’s REST summary endpoint returns the lead of an article in a compact form: the title, a one-line description, the opening paragraph as plain text, a thumbnail, coordinates, the last-edited time and links to the full page.',
@@ -104,7 +102,6 @@ export const APIS = [
     label: 'Space station',
     endpoint: 'https://api.wheretheiss.at/v1/satellites/25544',
     shot: 'launch/social/watch.png',
-    reel: 'watch-live',
     summary: 'The space station’s position right now, and how it changes.',
     about: [
       'Where the ISS at? returns the International Space Station’s position at this moment: latitude and longitude, altitude and velocity in kilometres, the footprint it can see, whether it is in daylight, and a Unix timestamp.',
@@ -219,21 +216,21 @@ function head(page) {
     '<meta name="referrer" content="strict-origin-when-cross-origin">\n' +
     '<meta name="theme-color" content="#f6f5f1">\n' +
     '<meta property="og:type" content="website">\n' +
-    '<meta property="og:site_name" content="Imago API gallery">\n' +
+    '<meta property="og:site_name" content="Imago">\n' +
     '<meta property="og:title" content="' + esc(page.ogTitle || page.title) + '">\n' +
     '<meta property="og:description" content="' + esc(page.description) + '">\n' +
     '<meta property="og:url" content="' + esc(url) + '">\n' +
     '<meta property="og:image" content="' + esc(SITE + page.image) + '">\n' +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n' +
-    '<link rel="stylesheet" href="/assets/imago.css">\n' +
-    '<link rel="stylesheet" href="/assets/gallery.css">\n' +
+    '<link rel="stylesheet" href="/styles.css">\n' +
+    '<link rel="stylesheet" href="/assets/gallery/gallery.css">\n' +
     '<!-- PAGESENSE -->\n' +
     '</head>\n';
 }
 
 function top(current) {
-  const nav = [['/', 'API gallery', 'home'], ['/press/', 'Press kit', 'press']]
+  const nav = [['/apis/', 'API gallery', 'home'], ['/press/', 'Press kit', 'press']]
     .map(([href, text, key]) => '<a href="' + href + '"' + (key === current ? ' aria-current="page"' : '') + '>' + text + '</a>').join('');
   return '<header class="g-top"><div class="g-wrap g-top-in">' +
     '<a class="g-brand" href="' + APP + '/" aria-label="Imago, open the app">' + mark(24) + '<span>Imago</span></a>' +
@@ -268,7 +265,7 @@ function reelBlock(reel, cls) {
 
 function apiTitle(api) { return (api.title || api.name) + ', drawn as an interface'; }
 
-function apiPage(api, links, reel) {
+function apiPage(api, links) {
   const others = APIS.filter((a) => a.slug !== api.slug);
   const credit = api.credit
     ? '<p class="g-credit"><a href="' + esc(api.credit.href) + '">' + esc(api.credit.text) + '</a> <span>(' + esc(api.credit.licence) + ')</span></p>'
@@ -279,7 +276,7 @@ function apiPage(api, links, reel) {
   ].filter(Boolean).join('');
   const body =
     '<article class="g-wrap g-api">\n' +
-    '<nav class="g-crumbs" aria-label="Breadcrumb"><a href="/">API gallery</a><span aria-hidden="true">/</span><span>' + esc(api.name) + '</span></nav>\n' +
+    '<nav class="g-crumbs" aria-label="Breadcrumb"><a href="/apis/">API gallery</a><span aria-hidden="true">/</span><span>' + esc(api.name) + '</span></nav>\n' +
     '<header class="g-hero">\n<h1>' + esc(apiTitle(api)) + '</h1>\n' +
     api.about.map((p) => '<p class="g-lede">' + esc(p) + '</p>').join('\n') + '\n' +
     '<p class="g-endpoint"><span class="method-chip">GET</span><code>' + esc(api.endpoint) + '</code></p>\n' +
@@ -288,27 +285,26 @@ function apiPage(api, links, reel) {
     '<section class="g-live" data-live data-endpoint="' + esc(api.endpoint) + '" aria-label="The live response, drawn by Imago" aria-busy="false">\n' +
     '<div class="g-live-head"><p class="g-live-status" data-live-status role="status">A saved screenshot. The live response is drawn here when scripts run.</p>' + credit + '</div>\n' +
     '<div class="canvas g-canvas" data-live-out>' +
-    '<img class="g-shot" src="/' + api.slug + '/shot.png" width="1200" height="675" alt="' + esc(api.name + ' response drawn by Imago: ' + api.summary) + '">' +
+    '<img class="g-shot" src="/apis/' + api.slug + '/shot.png" width="1200" height="675" alt="' + esc(api.name + ' response drawn by Imago: ' + api.summary) + '">' +
     '</div>\n</section>\n' +
-    (reel ? '<section class="g-section"><h2>See it happen</h2>' + reelBlock(reel) + '</section>\n' : '') +
     '<section class="g-section g-free"><h2>Free, with or without a key</h2><p>' + esc(FREE_NOTE) +
     ' With no key you get the page above, drawn by rules that know no particular API. A key gets you a designed layout. It stays in your browser and goes only to the provider you chose.</p></section>\n' +
     '<section class="g-section"><h2>More APIs, drawn</h2><ul class="g-mini">' +
-    others.map((a) => '<li><a href="/' + a.slug + '/"><span class="g-mini-name">' + esc(a.name) + '</span><span class="g-mini-host">' + esc(hostOf(a.endpoint)) + '</span></a></li>').join('') +
+    others.map((a) => '<li><a href="/apis/' + a.slug + '/"><span class="g-mini-name">' + esc(a.name) + '</span><span class="g-mini-host">' + esc(hostOf(a.endpoint)) + '</span></a></li>').join('') +
     '</ul></section>\n</article>\n';
   return page({
-    path: '/' + api.slug + '/',
+    path: '/apis/' + api.slug + '/',
     title: api.name + ' example response, drawn as an interface · Imago',
     ogTitle: apiTitle(api),
     description: api.name + ' example response from ' + hostOf(api.endpoint) + ', fetched live and drawn as a readable interface by Imago. ' + api.summary,
-    image: '/' + api.slug + '/shot.png'
-  }, null, body, links, ['/assets/render.js']);
+    image: '/apis/' + api.slug + '/shot.png'
+  }, null, body, links, ['/assets/gallery/render.js']);
 }
 
-function homePage(links, reel) {
+function homePage(links) {
   const cards = APIS.map((a) =>
-    '<li class="g-card"><a href="/' + a.slug + '/">' +
-    '<span class="g-card-shot"><img src="/' + a.slug + '/shot.png" width="1200" height="675" loading="lazy" alt=""></span>' +
+    '<li class="g-card"><a href="/apis/' + a.slug + '/">' +
+    '<span class="g-card-shot"><img src="/apis/' + a.slug + '/shot.png" width="1200" height="675" loading="lazy" alt=""></span>' +
     '<span class="g-card-body"><span class="g-card-label">' + esc(a.label) + '</span>' +
     '<span class="g-card-name">' + esc(a.name) + '</span>' +
     '<span class="g-card-text">' + esc(a.summary) + '</span>' +
@@ -321,17 +317,16 @@ function homePage(links, reel) {
     optionalLink(links.waitlist, 'No key? Join the hosted-AI waitlist', 'g-link') + '</div>\n' +
     '</header>\n' +
     '<section class="g-section g-first" aria-labelledby="apis"><h2 id="apis">The gallery</h2><ul class="g-cards">\n' + cards + '\n</ul></section>\n' +
-    (reel ? '<section class="g-section"><h2>Meet Amigo</h2>' + reelBlock(reel) + '</section>\n' : '') +
     '<section class="g-section g-split">\n<div><h2>How the drawing works</h2><p>Imago reads the shape of a response, not its field names. Numbers are paired with their units, three or more timestamps become a timeline, arrays of records become tables, and bookkeeping sinks into Details. Every value is written as text, so nothing from an API is ever treated as markup.</p></div>\n' +
     '<div><h2>Run an API?</h2><p>Put an “Open in Imago” button in your docs: link to <code>' + esc(APP) + '/#open=</code> followed by your endpoint. No sign-up and no script on your site. The badge is in the <a href="/press/">press kit</a>.</p></div>\n' +
     '</section>\n' +
     '<section class="g-section g-free"><h2>Free</h2><p>' + esc(FREE_NOTE) + '</p></section>\n</div>\n';
   return page({
-    path: '/',
+    path: '/apis/',
     title: 'Public API example responses, drawn as interfaces · Imago',
     ogTitle: 'Public APIs, drawn as interfaces',
     description: 'Live example responses from PokeAPI, Open-Meteo, Open Library, Frankfurter, Wikipedia and the ISS position API, each drawn as a readable interface by Imago, a free, browser-only tool.',
-    image: '/assets/og.png'
+    image: '/og.png'
   }, 'home', body, links);
 }
 
@@ -373,8 +368,8 @@ function pressPage(links, reels, images, brand) {
     path: '/press/',
     title: 'Press and share kit · Imago',
     description: 'Imago press kit: a description, fact sheet, reels, post images with captions, and logo and mascot files for anyone writing about or sharing Imago.',
-    image: '/assets/og.png'
-  }, 'press', body, links, ['/assets/copy.js']);
+    image: '/og.png'
+  }, 'press', body, links, ['/assets/gallery/copy.js']);
 }
 
 function waitlistPage(links) {
@@ -400,8 +395,8 @@ function waitlistPage(links) {
     path: '/waitlist/',
     title: 'Hosted AI waitlist · Imago',
     description: 'Imago is free with your own key. Hosted AI would be paid and is not built yet: join the waitlist and say what it is worth to you.',
-    image: '/assets/og.png'
-  }, 'waitlist', body, links, ['/assets/waitlist.js']);
+    image: '/og.png'
+  }, 'waitlist', body, links, ['/assets/gallery/waitlist.js']);
 }
 
 /* ── Build ──────────────────────────────────────────────────────────── */
@@ -413,7 +408,7 @@ export function applyPagesense(html, snippet) {
 export async function build(opts = {}) {
   const out = opts.out || path.join(HERE, 'dist');
   const links = readLinks(opts.links || path.join(HERE, 'links.json'));
-  const pagesenseFile = opts.pagesense || path.join(HERE, 'pagesense.html');
+  const pagesenseFile = opts.pagesense || path.join(ROOT, 'pagesense.html');
   const pagesense = exists(pagesenseFile) ? fs.readFileSync(pagesenseFile, 'utf8') : '';
   const reelsDir = opts.reels || path.join(ROOT, 'launch/press/reels');
 
@@ -422,34 +417,30 @@ export async function build(opts = {}) {
   const files = [];
   const emit = (rel, html) => { write(path.join(out, rel), applyPagesense(html, pagesense)); files.push(rel); };
 
-  // Shared assets. imago.css is the app's stylesheet whole, so the renderer's
-  // output looks exactly as it does in the app; gallery.css only adds g-*.
-  await bundleRenderer(path.join(out, 'assets/render.js'));
-  copy(path.join(ROOT, 'styles.css'), path.join(out, 'assets/imago.css'));
-  copy(path.join(HERE, 'gallery.css'), path.join(out, 'assets/gallery.css'));
-  copy(path.join(HERE, 'copy.js'), path.join(out, 'assets/copy.js'));
-  copy(path.join(HERE, 'waitlist.js'), path.join(out, 'assets/waitlist.js'));
-  copy(path.join(ROOT, 'favicon.svg'), path.join(out, 'favicon.svg'));
-  copy(path.join(ROOT, 'og.png'), path.join(out, 'assets/og.png'));
-  copy(path.join(ROOT, 'assets/imago-mark.svg'), path.join(out, 'assets/imago-mark.svg'));
+  // The pages use the app's own /styles.css, so the renderer's output looks
+  // exactly as it does in the app; gallery.css only adds g-*.
+  await bundleRenderer(path.join(out, 'assets/gallery/render.js'));
+  copy(path.join(HERE, 'gallery.css'), path.join(out, 'assets/gallery/gallery.css'));
+  copy(path.join(HERE, 'copy.js'), path.join(out, 'assets/gallery/copy.js'));
+  copy(path.join(HERE, 'waitlist.js'), path.join(out, 'assets/gallery/waitlist.js'));
 
-  // Reels exist only once they have been produced; each one is optional.
+  // Reels live in the press kit only. Each exists once it has been produced.
   const reels = {};
   for (const r of REELS) {
     const mp4 = path.join(reelsDir, r.name + '.mp4');
     if (!exists(mp4)) continue;
-    copy(mp4, path.join(out, 'reels', r.name + '.mp4'));
+    copy(mp4, path.join(out, 'press/reels', r.name + '.mp4'));
     const png = path.join(reelsDir, r.name + '.png');
-    const poster = exists(png) ? '/reels/' + r.name + '.png' : '';
-    if (poster) copy(png, path.join(out, 'reels', r.name + '.png'));
-    reels[r.name] = { ...r, src: '/reels/' + r.name + '.mp4', poster, size: sizeOf(mp4) };
+    const poster = exists(png) ? '/press/reels/' + r.name + '.png' : '';
+    if (poster) copy(png, path.join(out, 'press/reels', r.name + '.png'));
+    reels[r.name] = { ...r, src: '/press/reels/' + r.name + '.mp4', poster, size: sizeOf(mp4) };
   }
 
   for (const api of APIS) {
-    copy(path.join(ROOT, api.shot), path.join(out, api.slug, 'shot.png'));
-    emit(api.slug + '/index.html', apiPage(api, links, reels[api.reel]));
+    copy(path.join(ROOT, api.shot), path.join(out, 'apis', api.slug, 'shot.png'));
+    emit('apis/' + api.slug + '/index.html', apiPage(api, links));
   }
-  emit('index.html', homePage(links, reels['stop-reading-json']));
+  emit('apis/index.html', homePage(links));
 
   // Press kit
   const captions = readCaptions(read('launch/social-posts.md'));
@@ -472,12 +463,11 @@ export async function build(opts = {}) {
   emit('waitlist/index.html', waitlistPage(links));
   emit('press/index.html', pressPage(links, REELS.map((r) => reels[r.name]).filter(Boolean), images, brand));
 
-  // Crawlers and hosting
-  const urls = ['/', ...APIS.map((a) => '/' + a.slug + '/'), '/press/', '/waitlist/'];
+  // Crawlers, for the whole site: the app and everything above.
+  const urls = ['/', '/apis/', ...APIS.map((a) => '/apis/' + a.slug + '/'), '/press/', '/waitlist/'];
   write(path.join(out, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map((u) => '  <url><loc>' + esc(SITE + u) + '</loc></url>').join('\n') + '\n</urlset>\n');
   write(path.join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n\nSitemap: ' + SITE + '/sitemap.xml\n');
-  write(path.join(out, '.catalyst/slate-config.toml'), 'framework = "static"\ndeployment_name = "default"\n');
 
   return { out, pages: files, reels: Object.keys(reels), pagesense: Boolean(pagesense) };
 }

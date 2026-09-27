@@ -33,20 +33,21 @@ stay a place to talk. Each keeps working without me.
 
 ### 1. Marketing: developers hear about it
 
-**The API gallery**, <https://imago-apis-oavuixyf.onslate.in>. One page per
+**The API gallery**, <https://imago.onslate.in/apis/>. One page per
 popular free API (PokeAPI, Open-Meteo, Open Library, Frankfurter, Wikipedia,
 the ISS), each with plain text on what the API returns, its live response
 drawn by Imago's own renderer, and "Open it in Imago". Developers search for
 an API's name when they first meet it, and these pages answer that search for
 as long as they exist.
 
-- **Zoho Catalyst Slate** hosts it, as its own app on its own address.
+- **Zoho Catalyst Slate** hosts it on the app's own site, beside the app, the
+  press kit and the waitlist: one address for everything.
 - **Zoho PageSense** (free, up to 5,000 visitors a month) measures it: visits,
   which APIs people came for, heatmaps, and a goal counting clicks into
-  Imago.
-- The gallery lives apart from the app on purpose: Imago keeps people's model
-  keys in the browser, so no third-party script may ever run on
-  imago.onslate.in.
+  Imago. It runs on every page of the site, the app included. The trade-off:
+  Imago keeps people's model keys in the browser, and a script on the same
+  site could read them; the app's CSP lets in PageSense's two hosts by name
+  and no other outside script.
 
 [marketing.md](marketing.md)
 
@@ -62,17 +63,17 @@ provide the model. That needs a server and costs money on every call, so it
 would be paid: price follows cost. Draft price ₹99 a month for 100 new
 layouts, about ₹40 of model cost. It isn't built, and nobody pays now.
 
-- **Zoho Catalyst** runs the waitlist: a page on the gallery that posts to a
+- **Zoho Catalyst** runs the waitlist: a page on the site that posts to a
   Catalyst function storing each sign-up in the Data Store. It asks which
   price people would pay (₹49, ₹99, ₹199, or only free): demand and price
-  data, collected without me. <https://imago-apis-oavuixyf.onslate.in/waitlist/>
+  data, collected without me. <https://imago.onslate.in/waitlist/>
 - The landing page says all of this under "Free, and why".
 
 [pricing.md](pricing.md)
 
 ### 3. Public relations: other people talk about it
 
-**The press kit**, <https://imago-apis-oavuixyf.onslate.in/press/>. Four
+**The press kit**, <https://imago.onslate.in/press/>. Four
 vertical reels (Amigo introduces Imago; paste a URL, get a page; Watch
 marking what changed; why it's free), ready-made posts with copyable
 captions, the logo, the Amigo mascot and a fact sheet. I don't post them
@@ -107,7 +108,7 @@ gallery API, linked from that API's page.
 
 ## Tools
 
-Zoho Catalyst (Slate hosting the app and the gallery; Functions and Data
+Zoho Catalyst (Slate hosting the site; Functions and Data
 Store for the pricing waitlist), Zoho PageSense (measuring the marketing), GitHub
 (Discussions, issues), Claude (Claude Code), HyperFrames (the reels), Figma
 (design sync). Brand pieces from earlier tasks: Adobe Illustrator.

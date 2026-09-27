@@ -104,16 +104,16 @@ answer to whether to build it.
 ## The waitlist, as built (2026-09-26)
 
 Zoho Forms' MCP could not create forms, so the waitlist runs on **Zoho
-Catalyst**, which already hosts both sites:
+Catalyst**, which already hosts the site:
 
-- **Page:** <https://imago-apis-oavuixyf.onslate.in/waitlist/>, on the
-  gallery's origin, in Imago's design. Same questions: email, use case, has a
+- **Page:** <https://imago.onslate.in/waitlist/>, on the app's own site,
+  built by `gallery/build.mjs`, in Imago's design. Same questions: email, use case, has a
   key, the price they would pay (₹49 / ₹99 / ₹199 / only free), consent.
 - **Function:** `functions/waitlist` (Advanced I/O). It validates, drops bots
   that fill a hidden field, lower-cases the email, trims the use case to 255
   characters and stores only those four answers. A repeat email answers
-  "already on the list". Only the gallery's origin may call it (Catalyst
-  Authorized Domains).
+  "already on the list". Only `https://imago.onslate.in` may call it
+  (Catalyst Authorized Domains).
 - **Data:** the `Waitlist` table in the Catalyst Data Store (email unique).
   Count and price split with ZCQL, for example
   `SELECT price, COUNT(ROWID) FROM Waitlist GROUP BY price`.

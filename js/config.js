@@ -3,11 +3,10 @@ import { init } from './main.js';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
 
-// The hosted-AI waitlist, the one place its address lives: a page on the
-// gallery's own origin that posts to a Catalyst function. Empty hides every
-// waitlist link. It is only ever a plain link: no form script, iframe or
-// embed is loaded on this origin. See launch/pricing.md.
-var WAITLIST_URL = 'https://imago-apis-oavuixyf.onslate.in/waitlist/';
+// The hosted-AI waitlist, the one place its address lives: /waitlist/ on this
+// site (built by gallery/build.mjs), a page that posts to a Catalyst function.
+// Empty hides every waitlist link. See launch/pricing.md.
+var WAITLIST_URL = 'https://imago.onslate.in/waitlist/';
 
 var STORE = {
   requests: 'imago.savedRequests',

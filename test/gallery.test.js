@@ -1,6 +1,6 @@
-/* The API gallery (gallery/): a static marketing site, deployed on its own
-   origin because it carries a third-party analytics script. These tests run
-   the real build into temp directories and read what it wrote. */
+/* The API gallery, press kit and waitlist (gallery/): static pages served on
+   imago.onslate.in beside the app. These tests run the real build into temp
+   directories and read what it wrote. */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import fs from 'node:fs';
@@ -15,7 +15,8 @@ const SNIPPET = '<script src="https://cdn.pagesense.example/abc.js"></script>';
 
 const read = (out, rel) => fs.readFileSync(path.join(out, rel), 'utf8');
 const doc = (out, rel) => new JSDOM(read(out, rel)).window.document;
-const htmlFiles = (out) => ['index.html', 'press/index.html', ...APIS.map((a) => a.slug + '/index.html')];
+const apiFile = (slug) => 'apis/' + slug + '/index.html';
+const htmlFiles = () => ['apis/index.html', 'press/index.html', 'waitlist/index.html', ...APIS.map((a) => apiFile(a.slug))];
 
 beforeAll(async () => {
   const emptyLinks = path.join(tmp, 'links-empty.json');
@@ -44,48 +45,48 @@ describe('gallery pages', () => {
   it('writes a page for every API with its h1', () => {
     expect(APIS.map((a) => a.slug)).toEqual(['pokeapi', 'open-meteo', 'open-library', 'frankfurter', 'wikipedia', 'iss']);
     for (const api of APIS) {
-      const d = doc(PLAIN, api.slug + '/index.html');
+      const d = doc(PLAIN, apiFile(api.slug));
       expect(d.querySelector('h1').textContent).toBe((api.title || api.name) + ', drawn as an interface');
     }
-    expect(doc(PLAIN, 'pokeapi/index.html').querySelector('h1').textContent).toBe('PokeAPI, drawn as an interface');
+    expect(doc(PLAIN, apiFile('pokeapi')).querySelector('h1').textContent).toBe('PokeAPI, drawn as an interface');
   });
 
   it('carries its copy, endpoint, title, description, canonical and Open Graph in the static HTML', () => {
     for (const api of APIS) {
-      const d = doc(PLAIN, api.slug + '/index.html');
+      const d = doc(PLAIN, apiFile(api.slug));
       expect(d.querySelectorAll('.g-lede').length).toBeGreaterThanOrEqual(2);
       expect(d.querySelector('.g-endpoint code').textContent).toBe(api.endpoint);
       expect(d.title).toContain(api.name);
       expect(d.querySelector('meta[name="description"]').content).toContain('example response');
-      expect(d.querySelector('link[rel="canonical"]').href).toBe(SITE + '/' + api.slug + '/');
-      expect(d.querySelector('meta[property="og:url"]').content).toBe(SITE + '/' + api.slug + '/');
-      expect(d.querySelector('meta[property="og:image"]').content).toBe(SITE + '/' + api.slug + '/shot.png');
-      expect(fs.existsSync(path.join(PLAIN, api.slug, 'shot.png'))).toBe(true);
-      expect(d.querySelector('.g-shot').getAttribute('src')).toBe('/' + api.slug + '/shot.png');
+      expect(d.querySelector('link[rel="canonical"]').href).toBe('https://imago.onslate.in/apis/' + api.slug + '/');
+      expect(d.querySelector('meta[property="og:url"]').content).toBe(SITE + '/apis/' + api.slug + '/');
+      expect(d.querySelector('meta[property="og:image"]').content).toBe(SITE + '/apis/' + api.slug + '/shot.png');
+      expect(fs.existsSync(path.join(PLAIN, 'apis', api.slug, 'shot.png'))).toBe(true);
+      expect(d.querySelector('.g-shot').getAttribute('src')).toBe('/apis/' + api.slug + '/shot.png');
       expect(d.querySelector('[data-live]').getAttribute('data-endpoint')).toBe(api.endpoint);
     }
   });
 
   it('links "Open it in Imago" to the exact #open= link', () => {
     for (const api of APIS) {
-      const open = [...doc(PLAIN, api.slug + '/index.html').querySelectorAll('a')].filter((a) => a.textContent === 'Open it in Imago');
+      const open = [...doc(PLAIN, apiFile(api.slug)).querySelectorAll('a')].filter((a) => a.textContent === 'Open it in Imago');
       expect(open).toHaveLength(1);
       expect(open[0].getAttribute('href')).toBe(APP + '/#open=' + api.endpoint);
     }
-    expect(doc(PLAIN, 'open-meteo/index.html').querySelector('.g-open').getAttribute('href'))
+    expect(doc(PLAIN, apiFile('open-meteo')).querySelector('.g-open').getAttribute('href'))
       .toBe('https://imago.onslate.in/#open=https://api.open-meteo.com/v1/forecast?latitude=13.0827&longitude=80.2707&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m&forecast_days=1');
   });
 
   it('credits Open-Meteo beside the rendered data, and only there', () => {
-    const credit = doc(PLAIN, 'open-meteo/index.html').querySelector('.g-live .g-credit a');
+    const credit = doc(PLAIN, apiFile('open-meteo')).querySelector('.g-live .g-credit a');
     expect(credit.textContent).toBe('Weather data by Open-Meteo.com');
     expect(credit.getAttribute('href')).toBe('https://open-meteo.com/');
-    expect(doc(PLAIN, 'pokeapi/index.html').querySelector('.g-credit')).toBeNull();
+    expect(doc(PLAIN, apiFile('pokeapi')).querySelector('.g-credit')).toBeNull();
   });
 
   it('carries the Free note on every API page', () => {
     for (const api of APIS) {
-      expect(doc(PLAIN, api.slug + '/index.html').querySelector('.g-free').textContent)
+      expect(doc(PLAIN, apiFile(api.slug)).querySelector('.g-free').textContent)
         .toContain('Imago is free and open source. Bring your own free Gemini or Groq key, or use none.');
     }
   });
@@ -95,7 +96,7 @@ describe('links.json', () => {
   const linkTexts = (d) => [...d.querySelectorAll('a')].map((a) => a.textContent);
 
   it('an empty value produces no link at all', () => {
-    for (const rel of htmlFiles(PLAIN)) {
+    for (const rel of htmlFiles().filter((f) => !f.startsWith('waitlist/'))) {
       const html = read(PLAIN, rel);
       expect(html).not.toContain('Discuss this API');
       expect(html).not.toContain('waitlist');
@@ -105,7 +106,7 @@ describe('links.json', () => {
   });
 
   it('a filled value produces the link, and only where it is filled', () => {
-    const poke = doc(FILLED, 'pokeapi/index.html');
+    const poke = doc(FILLED, apiFile('pokeapi'));
     const discuss = [...poke.querySelectorAll('a')].find((a) => a.textContent === 'Discuss this API');
     expect(discuss.getAttribute('href')).toBe('https://github.com/Sibhimanyu/imago/discussions/7');
     const waitlist = [...poke.querySelectorAll('a')].find((a) => a.textContent === 'No key? Join the hosted-AI waitlist');
@@ -113,7 +114,7 @@ describe('links.json', () => {
     expect([...poke.querySelectorAll('a')].find((a) => a.textContent === 'Discussions').getAttribute('href'))
       .toBe('https://github.com/Sibhimanyu/imago/discussions');
     // iss's discussion URL is still empty: no Discuss link there, the waitlist still shows.
-    const iss = linkTexts(doc(FILLED, 'iss/index.html'));
+    const iss = linkTexts(doc(FILLED, apiFile('iss')));
     expect(iss).not.toContain('Discuss this API');
     expect(iss).toContain('No key? Join the hosted-AI waitlist');
   });
@@ -126,8 +127,8 @@ describe('links.json', () => {
 });
 
 describe('the PageSense slot', () => {
-  it('is replaced by gallery/pagesense.html inside <head> when it exists', () => {
-    for (const rel of htmlFiles(FILLED)) {
+  it('is replaced by pagesense.html inside <head> when it exists', () => {
+    for (const rel of htmlFiles()) {
       const html = read(FILLED, rel);
       expect(html).not.toContain('<!-- PAGESENSE -->');
       const head = html.slice(0, html.indexOf('</head>'));
@@ -137,7 +138,7 @@ describe('the PageSense slot', () => {
   });
 
   it('leaves nothing behind when there is no snippet', () => {
-    for (const rel of htmlFiles(PLAIN)) {
+    for (const rel of htmlFiles()) {
       const html = read(PLAIN, rel);
       expect(html).not.toContain('PAGESENSE');
       expect(html).not.toContain('pagesense');
@@ -146,41 +147,40 @@ describe('the PageSense slot', () => {
   });
 });
 
-describe('the Imago origin stays clean', () => {
-  // Imago keeps model keys in localStorage on imago.onslate.in. The gallery
-  // runs a third-party script, so it may only ever LINK there: no script,
-  // stylesheet, image, frame or media is loaded from the app's origin.
-  it('references imago.onslate.in only from <a href>', () => {
+describe('one site with the app', () => {
+  // The pages are served from imago.onslate.in beside the app, so they use the
+  // app's own stylesheet and icons and load nothing else from anywhere but
+  // /assets/gallery/ and PageSense.
+  it('loads only its own scripts, the app stylesheet and gallery.css', () => {
     for (const out of [PLAIN, FILLED]) {
-      for (const rel of htmlFiles(out)) {
+      for (const rel of htmlFiles()) {
         const d = doc(out, rel);
-        for (const node of d.querySelectorAll('*')) {
-          for (const attr of node.attributes) {
-            if (!attr.value.includes('imago.onslate.in')) continue;
-            expect(node.tagName + '[' + attr.name + ']', rel).toBe('A[href]');
-          }
-        }
         for (const s of d.querySelectorAll('script')) {
-          expect(s.textContent).not.toContain('imago.onslate.in');
           const src = s.getAttribute('src');
-          if (src !== 'https://cdn.pagesense.example/abc.js') expect(src).toMatch(/^\/assets\/[\w-]+\.js$/);
+          if (src !== 'https://cdn.pagesense.example/abc.js') expect(src, rel).toMatch(/^\/assets\/gallery\/[\w-]+\.js$/);
+          expect(s.textContent).toBe('');
         }
-        for (const l of d.querySelectorAll('link[rel="stylesheet"]')) expect(l.getAttribute('href')).toMatch(/^\/assets\//);
-      }
-      for (const asset of ['assets/render.js', 'assets/copy.js', 'assets/gallery.css']) {
-        expect(read(out, asset)).not.toContain('imago.onslate.in');
+        expect([...d.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute('href'))).toEqual(['/styles.css', '/assets/gallery/gallery.css']);
+        expect(d.querySelector('link[rel="icon"]').getAttribute('href')).toBe('/favicon.svg');
       }
     }
+  });
+
+  it('writes nothing the app already serves', () => {
+    const appFiles = ['index.html', 'styles.css', 'og.png', 'favicon.svg', ...fs.readdirSync(new URL('../assets/', import.meta.url)).map((f) => 'assets/' + f)];
+    for (const f of appFiles) expect(fs.existsSync(path.join(FILLED, f)), f).toBe(false);
+    expect(fs.existsSync(path.join(FILLED, '.catalyst'))).toBe(false);
+    expect(fs.readdirSync(FILLED).sort()).toEqual(['apis', 'assets', 'press', 'robots.txt', 'sitemap.xml', 'waitlist']);
   });
 });
 
 describe('the live panel', () => {
-  const page = () => read(PLAIN, 'pokeapi/index.html');
-  const bundle = () => read(PLAIN, 'assets/render.js');
+  const page = () => read(PLAIN, apiFile('pokeapi'));
+  const bundle = () => read(PLAIN, 'assets/gallery/render.js');
   const settle = () => new Promise((r) => setTimeout(r, 20));
 
   function run(fetch) {
-    const dom = new JSDOM(page(), { url: SITE + '/pokeapi/', runScripts: 'outside-only', pretendToBeVisual: true });
+    const dom = new JSDOM(page(), { url: SITE + '/apis/pokeapi/', runScripts: 'outside-only', pretendToBeVisual: true });
     dom.window.fetch = fetch;
     dom.window.eval(bundle());
     return dom.window;
@@ -218,20 +218,17 @@ describe('the live panel', () => {
 });
 
 describe('reels', () => {
-  it('embeds a reel only when its MP4 exists at build time', () => {
-    expect(read(PLAIN, 'pokeapi/index.html')).not.toContain('<video');
+  it('are in the press kit only, each once its MP4 exists at build time', () => {
     expect(read(PLAIN, 'press/index.html')).not.toContain('<video');
-    const video = doc(FILLED, 'pokeapi/index.html').querySelector('video');
-    expect(video.getAttribute('src')).toBe('/reels/stop-reading-json.mp4');
-    expect(video.getAttribute('poster')).toBe('/reels/stop-reading-json.png');
-    for (const attr of ['muted', 'controls', 'playsinline']) expect(video.hasAttribute(attr)).toBe(true);
-    expect(fs.existsSync(path.join(FILLED, 'reels/stop-reading-json.mp4'))).toBe(true);
-    const iss = doc(FILLED, 'iss/index.html').querySelector('video');
-    expect(iss.getAttribute('src')).toBe('/reels/watch-live.mp4');
-    expect(iss.hasAttribute('poster')).toBe(false);
+    for (const rel of htmlFiles().filter((f) => f !== 'press/index.html')) expect(read(FILLED, rel), rel).not.toContain('<video');
     const press = doc(FILLED, 'press/index.html');
-    expect([...press.querySelectorAll('video')].map((v) => v.getAttribute('src'))).toEqual(['/reels/stop-reading-json.mp4', '/reels/watch-live.mp4']);
-    expect(press.querySelector('a[download][href="/reels/watch-live.mp4"]')).not.toBeNull();
+    const videos = [...press.querySelectorAll('video')];
+    expect(videos.map((v) => v.getAttribute('src'))).toEqual(['/press/reels/stop-reading-json.mp4', '/press/reels/watch-live.mp4']);
+    expect(videos[0].getAttribute('poster')).toBe('/press/reels/stop-reading-json.png');
+    expect(videos[1].hasAttribute('poster')).toBe(false);
+    for (const attr of ['muted', 'controls', 'playsinline']) expect(videos[0].hasAttribute(attr)).toBe(true);
+    expect(fs.existsSync(path.join(FILLED, 'press/reels/stop-reading-json.mp4'))).toBe(true);
+    expect(press.querySelector('a[download][href="/press/reels/watch-live.mp4"]')).not.toBeNull();
   });
 });
 
@@ -256,13 +253,14 @@ describe('press kit and site files', () => {
     expect(readCaptions(md)).toEqual({ 'a.png': 'short one\n\nline two' });
   });
 
-  it('writes the sitemap, robots.txt and the Slate config', () => {
+  it('writes one sitemap and robots.txt for the whole site, the app included', () => {
     const sitemap = read(PLAIN, 'sitemap.xml');
-    for (const u of ['/', '/press/', ...APIS.map((a) => '/' + a.slug + '/')]) expect(sitemap).toContain('<loc>' + SITE + u + '</loc>');
-    expect(read(PLAIN, 'robots.txt')).toContain('Sitemap: ' + SITE + '/sitemap.xml');
-    expect(read(PLAIN, '.catalyst/slate-config.toml')).toBe('framework = "static"\ndeployment_name = "default"\n');
-    const home = doc(PLAIN, 'index.html');
-    expect([...home.querySelectorAll('.g-card a')].map((a) => a.getAttribute('href'))).toEqual(APIS.map((a) => '/' + a.slug + '/'));
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs).toEqual(['/', '/apis/', ...APIS.map((a) => '/apis/' + a.slug + '/'), '/press/', '/waitlist/'].map((u) => 'https://imago.onslate.in' + u));
+    expect(read(PLAIN, 'robots.txt')).toBe('User-agent: *\nAllow: /\n\nSitemap: https://imago.onslate.in/sitemap.xml\n');
+    const home = doc(PLAIN, 'apis/index.html');
+    expect([...home.querySelectorAll('.g-card a')].map((a) => a.getAttribute('href'))).toEqual(APIS.map((a) => '/apis/' + a.slug + '/'));
+    expect([...home.querySelectorAll('.g-nav a')].map((a) => a.getAttribute('href'))).toEqual(['/apis/', '/press/', APP + '/']);
   });
 });
 
@@ -277,8 +275,8 @@ describe('the hosted-AI waitlist page', () => {
     expect([...form.querySelectorAll('input[name="price"]')].map((i) => i.value)).toEqual(['49', '99', '199', 'free']);
     expect(d.body.textContent).toMatch(/not built yet, and nobody pays anything now/);
     const scripts = [...d.querySelectorAll('script[src]')].map((s) => s.getAttribute('src'));
-    expect(scripts).toEqual(['/assets/waitlist.js']);
-    expect(fs.existsSync(path.join(PLAIN, 'assets/waitlist.js'))).toBe(true);
+    expect(scripts).toEqual(['/assets/gallery/waitlist.js']);
+    expect(fs.existsSync(path.join(PLAIN, 'assets/gallery/waitlist.js'))).toBe(true);
     expect(read(PLAIN, 'sitemap.xml')).toContain(SITE + '/waitlist/');
   });
 });

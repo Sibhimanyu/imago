@@ -2,6 +2,29 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.20.0.0] - 2026-09-27
+
+### Changed
+
+- **One site.** The API gallery, the press kit and the hosted-AI waitlist
+  moved from their own Slate app (imago-apis-oavuixyf.onslate.in) onto
+  imago.onslate.in, beside the app: `/apis/` and `/apis/<api>/` for the
+  gallery, `/press/` and `/waitlist/`. `./publish.sh` builds them into the
+  same `dist/` and stops if a gallery file would replace an app file. The
+  pages use the app's own stylesheet and icons, and the site has one sitemap
+  and robots.txt. The `imago-apis` Slate app is gone from `catalyst.json`.
+- **PageSense measures the whole site, the app included.** The same
+  `pagesense.html` tag is in every page's `<head>`. The app's CSP lets in
+  PageSense's two hosts by name (`cdn-in.pagesense.io`,
+  `static.zohocdn.com`) and no other outside script, and still no
+  `unsafe-eval`. This is a trade-off: PageSense now runs on the same site as
+  the model keys in localStorage, so it could read them.
+- **The reels are in the press kit only.** They no longer play on the
+  gallery's home page or on each API page.
+- The waitlist links in the app and the gallery point at
+  `https://imago.onslate.in/waitlist/`, and the waitlist function accepts
+  calls from that origin.
+
 ## [0.19.1.1] - 2026-09-26
 
 ### Fixed
