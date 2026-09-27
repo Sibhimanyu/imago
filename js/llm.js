@@ -293,16 +293,49 @@ function buildHtmlPrompt(options) {
   ].join('\n');
 }
 
+// Did the provider stop because it ran out of room, not because it finished?
+function replyCutOff(payload) {
+  var groq = payload && payload.choices && payload.choices[0];
+  if (groq && groq.finish_reason === 'length') return true;
+  var gemini = payload && payload.candidates && payload.candidates[0];
+  return !!(gemini && gemini.finishReason === 'MAX_TOKENS');
+}
+
+// Why a reply was not a page, in words the reader can act on.
+function unusableHtmlError(text, payload) {
+  var message = 'The model did not return a usable HTML document.';
+  if (replyCutOff(payload)) {
+    message = 'The model ran out of room before the page was finished. Try again, or switch Full HTML off for this response.';
+  } else if (!String(text || '').trim()) {
+    message = 'The model sent back an empty reply. Try again.';
+  }
+  return new Error(message);
+}
+
+// A reply that is not a page is asked for once more, like the plan path's
+// retry: a reasoning model sometimes spends one reply thinking. Failures a
+// retry cannot fix (auth, rate limit, timeout) surface at once.
 function generateHtml(options) {
   var prompt = buildHtmlPrompt(options);
   var provider = getProvider(options.provider);
-  return llmRequest(provider, options.model, options.apiKey,
-      provider.htmlBody(options.model, prompt))
-    .then(function (payload) { return normalizeHtmlDoc(provider.extract(payload)); })
-    .then(function (doc) {
-      if (!doc) throw new Error('The model did not return a usable HTML document.');
-      return doc;
-    });
+  function ask() {
+    return llmRequest(provider, options.model, options.apiKey,
+        provider.htmlBody(options.model, prompt))
+      .then(function (payload) {
+        var text = provider.extract(payload);
+        var doc = normalizeHtmlDoc(text);
+        if (!doc) {
+          var err = unusableHtmlError(text, payload);
+          err.unusable = true;
+          throw err;
+        }
+        return doc;
+      });
+  }
+  return ask().catch(function (err) {
+    if (!err || !err.unusable) throw err;
+    return ask();
+  });
 }
 
 // Fences off, then a shape check: it must read as markup and fit the frame.
@@ -310,7 +343,17 @@ function generateHtml(options) {
 // trust boundary — but strict about emptiness and size.
 function normalizeHtmlDoc(text) {
   if (!text) return null;
-  var doc = String(text).trim()
+  var doc = String(text).trim();
+  // A chatty model puts a line of prose before the page ("Here is the
+  // page:"), often with the page fenced. Keep the fenced block, or else
+  // start at the document itself.
+  var fenced = /```(?:html)?\s*\n([\s\S]*?)(?:\n\s*```|$)/i.exec(doc);
+  if (fenced && fenced.index > 0) doc = fenced[1];
+  else {
+    var start = doc.search(/<!doctype\s+html|<html[\s>]/i);
+    if (start > 0) doc = doc.slice(start);
+  }
+  doc = doc.trim()
     .replace(/^```(?:html)?\s*/i, '')
     .replace(/\s*```$/, '')
     .trim();

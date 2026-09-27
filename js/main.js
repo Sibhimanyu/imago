@@ -12,7 +12,7 @@ import { applyEdits, editsFor, hasEdits, setEditing } from './edits.js';
 import { byteLength, canonPath, el, formatBytes, formatValue, getByPath, isImageUrl, isPlainObject, isUrl, parsePath, qs } from './util.js';
 import { lastSegment } from './values.js';
 import { dataSignature, deriveSchema, diffData, fingerprint, flatten, hashString, mergeSchemas, stableStringify } from './schema.js';
-import { applyHtml, buildHtmlPrompt, buildImagoPrompt, normalizeHtmlDoc, providerErrorText, sanitizeHtmlDoc } from './llm.js';
+import { applyHtml, buildHtmlPrompt, buildImagoPrompt, generateHtml, normalizeHtmlDoc, providerErrorText, sanitizeHtmlDoc } from './llm.js';
 import { buildFallbackSpec, deriveActions, endpointTitle, fitTitle, humanize, normalizeActions, normalizeSpec } from './spec.js';
 import { isBookkeeping, renderComponent, renderSpecBody, scheduleTimelineLayout } from './render.js';
 import { keyInputFor, setAppPane, setKeyStatus, showView, storeKeyFromInput, syncKeyInputs, syncProviderUi, toast, trapSheetFocus } from './ui.js';
@@ -901,7 +901,7 @@ window.__imago = {
   DEMOS: DEMOS, EMPTY_EXAMPLES: EMPTY_EXAMPLES, loadExample: loadExample, renderComponent: renderComponent,
   parseCurl: parseCurl, shellWords: shellWords, startTimer: startTimer, stopTimer: stopTimer, applyEdits: applyEdits, editsFor: editsFor, setEditing: setEditing, describeChange: describeChange, buildShareLink: buildShareLink, readShareLink: readShareLink, shareCurrentPage: shareCurrentPage, headerProblem: headerProblem, explainFailure: explainFailure, looksLikeCurl: looksLikeCurl, importCurl: importCurl,
   // full-html builder
-  normalizeHtmlDoc: normalizeHtmlDoc, buildHtmlPrompt: buildHtmlPrompt, buildImagoPrompt: buildImagoPrompt,
+  normalizeHtmlDoc: normalizeHtmlDoc, generateHtml: generateHtml, buildHtmlPrompt: buildHtmlPrompt, buildImagoPrompt: buildImagoPrompt,
   applyHtml: applyHtml, setBuilder: setBuilder,
   testProvider: testProvider, providerErrorText: providerErrorText,
   // behaviour

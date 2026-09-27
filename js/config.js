@@ -150,12 +150,18 @@ var PROVIDERS = {
     // Free-text mode for the full-HTML builder: no response_format, so the
     // model writes markup instead of JSON. Warmer than the spec path — a
     // plan wants determinism, a page wants some design sense.
+    // gpt-oss reasons before it answers, and on a big response the default
+    // effort could spend the whole reply thinking and send back no page.
+    // Low effort leaves the room for markup. Only gpt-oss takes the
+    // parameter; another model id typed into Settings would 400 on it.
     htmlBody: function (model, prompt) {
-      return {
+      var body = {
         model: model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7
       };
+      if (/^openai\/gpt-oss/.test(model)) body.reasoning_effort = 'low';
+      return body;
     },
     chatBody: function (model, turns) {
       return {

@@ -33,6 +33,97 @@ describe('normalizeHtmlDoc', () => {
   });
 });
 
+describe('normalizeHtmlDoc with a chatty preamble', () => {
+  // gpt-oss on Groq often opens with a line of prose. The page after it was
+  // thrown away as "not a usable HTML document".
+  it('keeps the fenced page after a line of prose', async () => {
+    const app = await boot();
+    expect(app.normalizeHtmlDoc('Here is the page:\n\n```html\n' + DOC + '\n```\nEnjoy!')).toBe(DOC);
+  });
+
+  it('starts at the document when prose precedes an unfenced page', async () => {
+    const app = await boot();
+    expect(app.normalizeHtmlDoc('Sure! Below is the page.\n' + DOC)).toBe(DOC);
+  });
+});
+
+describe('generateHtml', () => {
+  const groq = (...replies) => {
+    const bodies = [];
+    let i = 0;
+    const fetch = (url, init) => {
+      bodies.push(JSON.parse(init.body));
+      const body = replies[Math.min(i++, replies.length - 1)];
+      return Promise.resolve({
+        ok: true, status: 200, headers: { get: () => 'application/json' },
+        text: () => Promise.resolve(JSON.stringify(body)),
+        json: () => Promise.resolve(body)
+      });
+    };
+    return { fetch, bodies };
+  };
+  const says = (content, finish = 'stop') => ({ choices: [{ message: { content }, finish_reason: finish }] });
+  const opts = { url: 'https://x.test/api', schema: {}, sample: '{}', provider: 'groq', model: 'openai/gpt-oss-20b', apiKey: 'gsk_x' };
+
+  it('asks gpt-oss for low reasoning effort so the reply has room for the page', async () => {
+    const stub = groq(says(DOC));
+    const app = await boot({ fetch: stub.fetch });
+    await app.generateHtml(opts);
+    expect(stub.bodies[0].reasoning_effort).toBe('low');
+  });
+
+  it('sends no reasoning effort to a model that would reject it', async () => {
+    const stub = groq(says(DOC));
+    const app = await boot({ fetch: stub.fetch });
+    await app.generateHtml({ ...opts, model: 'llama-4-scout' });
+    expect('reasoning_effort' in stub.bodies[0]).toBe(false);
+  });
+
+  it('asks once more when the first reply is not a page', async () => {
+    const stub = groq(says(''), says(DOC));
+    const app = await boot({ fetch: stub.fetch });
+    await expect(app.generateHtml(opts)).resolves.toBe(DOC);
+    expect(stub.bodies.length).toBe(2);
+  });
+
+  it('says the reply was empty when both tries come back empty', async () => {
+    const stub = groq(says(''));
+    const app = await boot({ fetch: stub.fetch });
+    await expect(app.generateHtml(opts)).rejects.toThrow('empty reply');
+    expect(stub.bodies.length).toBe(2);
+  });
+
+  it('says the model ran out of room when the reply was cut off', async () => {
+    const stub = groq(says('', 'length'));
+    const app = await boot({ fetch: stub.fetch });
+    await expect(app.generateHtml(opts)).rejects.toThrow('ran out of room');
+  });
+
+  it('reads Gemini running out of room too', async () => {
+    const stub = groq({ candidates: [{ content: { parts: [{ text: 'thinking' }] }, finishReason: 'MAX_TOKENS' }] });
+    const app = await boot({ fetch: stub.fetch });
+    await expect(app.generateHtml({ ...opts, provider: 'gemini' })).rejects.toThrow('ran out of room');
+  });
+
+  it('keeps the generic reason for prose that is not a page', async () => {
+    const stub = groq(says('I cannot help with that.'));
+    const app = await boot({ fetch: stub.fetch });
+    await expect(app.generateHtml(opts)).rejects.toThrow('did not return a usable HTML document');
+  });
+
+  it('does not retry a failure a second call cannot fix', async () => {
+    let calls = 0;
+    const fetch = () => {
+      calls += 1;
+      return Promise.resolve({ ok: false, status: 429, headers: { get: () => 'application/json' },
+        text: () => Promise.resolve('{"error":{"message":"slow down"}}') });
+    };
+    const app = await boot({ fetch });
+    await expect(app.generateHtml(opts)).rejects.toThrow('slow down');
+    expect(calls).toBe(1);
+  });
+});
+
 describe('buildHtmlPrompt', () => {
   it('forbids scripts and external assets, mandates safe links', async () => {
     const app = await boot();

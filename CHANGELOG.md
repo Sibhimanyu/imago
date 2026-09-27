@@ -2,6 +2,19 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.20.0.2] - 2026-09-27
+
+### Fixed
+
+- **Full HTML works with Groq again.** gpt-oss reasons before it answers,
+  and on a big response (a Pokémon, 361 KB) it could come back with no page,
+  which Imago reported as "The model did not return a usable HTML document."
+  Imago now asks gpt-oss for low reasoning effort on the page call, so the
+  reply has room for markup. A reply that still isn't a page gets one more
+  try. A page with a line of prose in front of it ("Here is the page:") is
+  kept, not thrown away. When both tries fail, the error says why: an empty
+  reply, or a reply that ran out of room.
+
 ## [0.20.0.1] - 2026-09-27
 
 ### Fixed
