@@ -797,12 +797,10 @@ function askToGenerate(url, isAuto) {
   return Promise.resolve();
 }
 
-// The Full HTML switch, and the quota warning that stays up while it is on:
-// a page costs a call per endpoint, not per shape, and a longer reply.
+// The Full HTML switch. What it costs is said once, in the toast when it
+// is switched on: a banner that stayed up while it was on read as an alarm.
 function syncBuilderUi() {
-  var on = state.builder === 'html';
-  dom.builderToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-  dom.builderWarn.hidden = !on;
+  dom.builderToggle.setAttribute('aria-checked', state.builder === 'html' ? 'true' : 'false');
 }
 
 function setBuilder(mode, silent) {
@@ -810,9 +808,12 @@ function setBuilder(mode, silent) {
   savePrefs();
   syncBuilderUi();
   if (!silent) {
-    toast(state.builder === 'html'
-      ? 'Full HTML on. Each new endpoint is a larger model call.'
-      : 'Full HTML off. Back to structured plans.');
+    if (state.builder === 'html') {
+      toast('Full HTML on. It spends more of your API quota: a call for every endpoint, ' +
+            'a longer reply, and another call when the data changes.', 'warn');
+    } else {
+      toast('Full HTML off. Back to structured plans.');
+    }
   }
   // Re-resolve what is on screen so the switch is visible immediately:
   // a remembered artefact applies, otherwise the generate prompt.

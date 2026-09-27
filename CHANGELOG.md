@@ -2,6 +2,16 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.20.0.3] - 2026-09-27
+
+### Changed
+
+- **The Full HTML quota note passes instead of staying up.** Switching Full
+  HTML on used to open a yellow banner above the page that stayed as long as
+  the switch was on. What it costs is now said once, in the toast when you
+  switch it on, and warning toasts stay up six seconds so there is time to
+  read them.
+
 ## [0.20.0.2] - 2026-09-27
 
 ### Fixed

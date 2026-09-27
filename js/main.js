@@ -359,7 +359,7 @@ function cacheDom() {
               'headersInput', 'savedList', 'savedEmpty', 'newRequestBtn', 'geminiKey', 'groqKey',
               'geminiKeyStatus', 'groqKeyStatus', 'modelName',
               'clearKeyBtn', 'clearStorageBtn', 'storageSummary', 'toast', 'builderToggle',
-              'builderWarn', 'themeSelect',
+              'themeSelect',
               'geminiTestBtn', 'geminiTestStatus', 'groqTestBtn', 'groqTestStatus',
               'modelNote',
              'chatLog', 'chatForm', 'chatInput', 'chatSendBtn', 'chatTarget', 'chatClearBtn',

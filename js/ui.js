@@ -36,7 +36,7 @@ function toast(message, kind, action) {
   toastTimer = window.setTimeout(function () {
     dom.toast.className = 'toast';
     window.setTimeout(function () { dom.toast.hidden = true; }, 240);
-  }, kind === 'error' || action ? 6000 : 3400);
+  }, kind === 'error' || kind === 'warn' || action ? 6000 : 3400);
 }
 
 /* ── View routing ──────────────────────────────────────────────────────── */

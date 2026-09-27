@@ -1,7 +1,7 @@
 /* Full-HTML builder: the model writes the whole page, Imago shows it
    sandboxed. These tests pin the trust boundary (opaque frame, no scripts),
    the validator, and the snapshot semantics of a generated page. */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { boot, jsonFetch, flush } from './harness.js';
 
 const DOC = '<!DOCTYPE html><html><head><style>body{font-family:sans-serif}</style>' +
@@ -254,11 +254,10 @@ describe('html request flow', () => {
 });
 
 describe('builder setting', () => {
-  it('defaults to the structured plan, switch off and no warning', async () => {
+  it('defaults to the structured plan, switch off', async () => {
     const app = await boot();
     expect(app.state.builder).toBe('spec');
     expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('false');
-    expect(app.dom.builderWarn.hidden).toBe(true);
   });
   it('persists across reloads', async () => {
     const app = await boot();
@@ -268,24 +267,37 @@ describe('builder setting', () => {
     const again = await boot({ local: { 'imago.preferences': { builder: 'html' } } });
     expect(again.state.builder).toBe('html');
     expect(again.dom.builderToggle.getAttribute('aria-checked')).toBe('true');
-    expect(again.dom.builderWarn.hidden).toBe(false);
   });
 
-  // The switch lives on the page, not in Settings, and says what it costs
-  // for as long as it is on.
-  it('the page switch turns Full HTML on with a quota warning, and off again', async () => {
+  // The switch lives on the page, not in Settings. What it costs is said
+  // once, in a toast, not in a banner that stays up while it is on.
+  it('the page switch turns Full HTML on with a passing quota warning, and off again', async () => {
     const app = await boot();
     expect(app.window.document.getElementById('builderSelect')).toBeNull();
+    expect(app.window.document.getElementById('builderWarn')).toBeNull();
     app.dom.builderToggle.click();
     expect(app.state.builder).toBe('html');
     expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('true');
-    expect(app.dom.builderWarn.hidden).toBe(false);
-    expect(app.dom.builderWarn.textContent).toContain('more of your API quota');
-    expect(app.dom.builderToggle.getAttribute('aria-describedby')).toBe('builderWarn');
+    expect(app.dom.toast.textContent).toContain('more of your API quota');
+    expect(app.dom.toast.getAttribute('data-kind')).toBe('warn');
     app.dom.builderToggle.click();
     expect(app.state.builder).toBe('spec');
     expect(app.dom.builderToggle.getAttribute('aria-checked')).toBe('false');
-    expect(app.dom.builderWarn.hidden).toBe(true);
+    expect(app.dom.toast.textContent).toContain('Full HTML off');
+  });
+
+  it('a warning toast stays up long enough to read, then goes', async () => {
+    const app = await boot();
+    vi.useFakeTimers();
+    try {
+      app.dom.builderToggle.click();
+      vi.advanceTimersByTime(5000);
+      expect(app.dom.toast.className).toContain('is-up');
+      vi.advanceTimersByTime(1500);
+      expect(app.dom.toast.className).not.toContain('is-up');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('switching with data on screen re-resolves instead of going blank', async () => {

@@ -527,16 +527,6 @@ input:focus, textarea:focus, select:focus {
 .empty-body { margin: 9px auto 0; font-size: 13.5px; color: var(--muted); max-width: 400px; line-height: 1.6; }
 
 
-/* ─── Full HTML switch: its quota warning takes a row of its own ── */
-
-.builder-warn {
-  flex-basis: 100%; margin: 0; padding: 8px 12px;
-  font-size: 12.5px; line-height: 1.5;
-  color: var(--yellow-ink); background: var(--yellow-bg);
-  border: 1px solid var(--yellow-line); border-radius: var(--r-sm);
-}
-.builder-warn[hidden] { display: none; }
-
 /* ─── Full-HTML builder ──────────────────────────────────────── */
 
 .html-frame {
