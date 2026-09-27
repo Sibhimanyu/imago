@@ -2,6 +2,20 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.2.0] - 2026-09-27
+
+### Changed
+
+- **The three assignment reports are shorter and easier to scan.** About a
+  quarter of the prose is gone from the tech, launch and brand reports (the
+  launch report's LinkedIn post copy now lives in `launch/social-posts.md`),
+  and secondary detail folds away under "More detail". Each section opens
+  with one takeaway line and reads as cards, stat tiles, checklists and
+  framed screenshots. New visuals: the plan's schema view (tech), the
+  Open-Meteo PR, SUPPORT.md and the data credit (launch), and the logo's
+  construction and four versions (brand). The tech report's numbers are
+  current: 507 tests in 30 files, 92% line coverage, 17 modules.
+
 ## [0.22.1.0] - 2026-09-27
 
 ### Added

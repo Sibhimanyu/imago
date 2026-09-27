@@ -112,6 +112,37 @@
     nav.jump { display: none; }
     .wrap { padding: 0 20px; }
   }
+  /* Report modules, the same in tech/, launch/ and brand/ */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow: hidden; margin: 0 0 28px; }
+  .stats > div { padding: 20px 22px; border-right: 1px solid var(--line); min-width: 0; }
+  .stats > div:last-child { border-right: 0; }
+  .stats b { display: block; font: 600 34px/1.1 var(--display); letter-spacing: -0.025em; margin-bottom: 4px; }
+  .stats span { display: block; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .key { font: 600 22px/1.35 var(--display); letter-spacing: -0.015em; color: var(--ink); max-width: 760px; margin: 0 0 28px; }
+  h2 + .key { margin-top: 14px; }
+  .ico { display: block; line-height: 0; margin-bottom: 12px; color: var(--ink); }
+  .ico svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .ticks { list-style: none; margin: 0; padding: 0; }
+  .ticks li { position: relative; padding-left: 24px; margin: 6px 0; color: var(--ink-2); }
+  .ticks li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 10px; height: 6px; border-left: 2px solid var(--green); border-bottom: 2px solid var(--green); transform: rotate(-45deg); }
+  details.more { margin-top: 16px; }
+  details.more > summary { display: inline-flex; align-items: center; gap: 6px; list-style: none; font-size: 13px; color: var(--ink-2); border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 12px; }
+  details.more > summary::-webkit-details-marker { display: none; }
+  details.more > summary::after { content: "+"; font: 500 14px/1 var(--mono); }
+  details.more[open] > summary::after { content: "−"; }
+  details.more[open] > summary { margin-bottom: 14px; }
+  .shot { background: var(--sink); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .shot img { border-radius: 10px; }
+  .shot figcaption { margin: 10px 2px 0; }
+  @media (max-width: 860px) { .stats { grid-template-columns: 1fr 1fr; } .stats > div { border-bottom: 1px solid var(--line); } .stats > div:nth-child(2n) { border-right: 0; } }
+</style>
+<style>
+  /* brand/ only */
+  .versions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 20px; }
+  .versions img { width: 100%; aspect-ratio: 8 / 3; object-fit: contain; background: var(--bg); }
+  .versions img.sq { padding: 14px 0; }
+  .card p.tick { display: flex; margin-bottom: 6px; }
+  @media (max-width: 860px) { .versions { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -132,7 +163,13 @@
   <div class="wrap hero">
     <p class="eyebrow">Design assignment · Web App – Branding &amp; Promotional Design · Faculty: Aaron A</p>
     <h1>Branding Imago</h1>
-    <p class="lede">Imago turns an API response into an interface: paste a URL and it draws the page the data deserves. This is its visual identity: a logo with the brand book behind it, an A4 print flyer and a blog banner. All three are made in Adobe Illustrator with Claude, and one idea connects them: raw data becoming something a person can read.</p>
+    <p class="lede">Imago turns an API response into an interface. Its identity is a logo with a brand book, an A4 print flyer and a blog banner, joined by one idea: raw data becoming something a person can read.</p>
+    <div class="stats">
+      <div><b>3</b><span>editable Illustrator files, one per task</span></div>
+      <div><b>13</b><span>pages in the Task 1 brand book</span></div>
+      <div><b>3</b><span>rounds before the flyer was right</span></div>
+      <div><b>2</b><span>tools: Adobe Illustrator and Claude</span></div>
+    </div>
     <div class="meta">
       <a class="chip dark" href="https://github.com/Sibhimanyu/imago/tree/master/brand/kit">The three editable .ai files</a>
       <a class="chip" href="kit/exports/imago-brand-guidelines.pdf">Brand book (PDF)</a>
@@ -146,12 +183,12 @@
     <div class="wrap">
       <span class="num">01</span>
       <h2>The brief, and the three files</h2>
-      <p class="sub">One editable Illustrator file per task. Every requirement below was checked in the exported files themselves, not taken on trust.</p>
+      <p class="key">One editable Illustrator file per task, each checked against the brief in its exports.</p>
       <table>
         <tr><th style="width:18%">Task</th><th style="width:26%">Editable file</th><th>What the brief asks for, and what the file has</th></tr>
-        <tr><td><b>1 · App logo</b></td><td><code>imago-task1-logo.ai</code></td><td class="ok">Original, simple, scalable; suitable colours and type; editable vector. The file is a 13-page brand book: the logo, what it means, how to use it, the mascot, colour and type.</td></tr>
-        <tr><td><b>2 · A4 flyer</b></td><td><code>imago-task2-flyer-a4.ai</code></td><td class="ok">A4, CMYK, for print: PDF/X-4 with bleed; the PDF's trim box is exactly A4 and it holds no RGB. Logo and name, headline, key benefits, a visual, and a call to action with a working QR code.</td></tr>
-        <tr><td><b>3 · Blog banner</b></td><td><code>imago-task3-blog-banner.ai</code></td><td class="ok">1200 × 700 px, RGB. App identity, a headline, a relevant visual, and the same style as the logo and flyer.</td></tr>
+        <tr><td><b>1 · App logo</b></td><td><code>imago-task1-logo.ai</code></td><td class="ok">Original, simple, scalable, editable vector; suitable colours and type. The file is a 13-page brand book.</td></tr>
+        <tr><td><b>2 · A4 flyer</b></td><td><code>imago-task2-flyer-a4.ai</code></td><td class="ok">A4, CMYK, PDF/X-4 with bleed, no RGB. Logo, headline, benefits, a visual, a call to action with a working QR code.</td></tr>
+        <tr><td><b>3 · Blog banner</b></td><td><code>imago-task3-blog-banner.ai</code></td><td class="ok">1200 × 700 px, RGB. Identity, headline, a relevant visual, the shared style.</td></tr>
       </table>
     </div>
   </section>
@@ -160,11 +197,11 @@
     <div class="wrap">
       <span class="num">02</span>
       <h2>One idea across all three</h2>
-      <p class="sub">Imago's promise is a change of form: a response goes in, an interface comes out. Every piece shows that, in the same two colours, with one colour kept for one meaning.</p>
+      <p class="key">A response goes in, an interface comes out. Every piece shows that change of form.</p>
       <div class="grid3">
-        <div class="card"><h3 class="t">The idea</h3><p class="big">Data in. Interface out.</p><p>The mark tells it, the flyer and banner show it with a real weather response, and the name means it: <i>imago</i> is the finished adult form an insect reaches after metamorphosis.</p></div>
-        <div class="card"><h3 class="t">Two colours, one meaning</h3><p>Ink and paper carry everything. <b>Amber means "this changed since the last fetch"</b>, as it does in the app, so it appears once per piece and only there. Green is the live dot, red is an error.</p></div>
-        <div class="card"><h3 class="t">Type</h3><p><b>Inter Display</b> for headlines, <b>Inter</b> for text, <b>JetBrains Mono</b> for anything that is data: URLs, JSON, labels. The wordmark is Inter Display, outlined so it never depends on the font.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7M3 13h5"/><rect x="12" y="5" width="9" height="14" rx="3"/><path d="M16 10v4"/></svg></span><h3 class="t">The idea</h3><p class="big">Data in. Interface out.</p><p>The mark tells it, the flyer and banner show it, and the name means it: <i>imago</i> is an insect's finished adult form.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></svg></span><h3 class="t">Two colours, one meaning</h3><p>Ink and paper carry everything. <b>Amber means "this changed since the last fetch"</b>, as in the app, so it appears once per piece.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg></span><h3 class="t">Type</h3><p><b>Inter Display</b> for headlines, <b>Inter</b> for text, <b>JetBrains Mono</b> for data. The wordmark is outlined, so it never depends on the font.</p></div>
       </div>
       <div class="swatches" style="margin-top:20px">
         <div class="sw"><i style="background:#1b1b19"></i><span><b>Ink</b>#1B1B19</span></div>
@@ -181,14 +218,24 @@
     <div class="wrap">
       <span class="num">03 · Task 1</span>
       <h2>The logo, and the brand book behind it</h2>
-      <p class="sub">The Reveal mark: two rounded bars (the keys and values an API sends back) join one body, and a window opens in it (the interface Imago finds in the data). One flat shape on a 32-unit grid, so it holds from a 16 px favicon to a poster.</p>
+      <p class="key">The Reveal mark: two bars, the keys and values an API sends back, join one body, and a window opens in it: the interface Imago finds.</p>
       <div class="grid2">
-        <figure><img src="kit/exports/logo-primary.png" alt="The Imago logo: the Reveal mark and the Imago wordmark in ink on paper"><figcaption>Primary lockup</figcaption></figure>
-        <figure><img src="kit/exports/guidelines/04.png" alt="Brand book page: Data in. Interface out., the mark's story in three steps"><figcaption>What the mark means: fields arrive, they become one body, a window opens</figcaption></figure>
+        <figure class="shot"><img src="kit/exports/guidelines/04.png" alt="Brand book page: Data in. Interface out., the mark's story in three steps"><figcaption>What the mark means: fields arrive, become one body, a window opens</figcaption></figure>
+        <figure class="shot"><img src="kit/exports/logo-construction.png" alt="The mark on a 32-unit grid, with a dashed clear-space box one aperture width from its edges" loading="lazy"><figcaption>One flat shape on a 32-unit grid; clear space is one aperture width</figcaption></figure>
       </div>
+      <div class="versions">
+        <figure><img src="kit/exports/imago-task1-logo_logo-primary.svg" alt="Primary logo: ink on paper" loading="lazy"><figcaption>Primary</figcaption></figure>
+        <figure><img src="kit/exports/imago-task1-logo_logo-reversed.svg" alt="Reversed logo: white on ink" loading="lazy"><figcaption>Reversed</figcaption></figure>
+        <figure><img src="kit/exports/imago-task1-logo_logo-tile.svg" alt="Logo with the mark in an ink tile, beside the wordmark" loading="lazy"><figcaption>Tile</figcaption></figure>
+        <figure><img class="sq" src="kit/exports/imago-task1-logo_app-icon.svg" alt="App icon: the white mark on an ink rounded square" loading="lazy"><figcaption>App icon</figcaption></figure>
+      </div>
+      <ul class="ticks" style="margin-top:20px">
+        <li>Holds from a 16 px favicon to a poster; the book sets minimum sizes.</li>
+        <li>Editable vectors, with SVG and PDF exports.</li>
+      </ul>
 
       <h3>13 pages, three chapters</h3>
-      <p class="sub" style="margin-bottom:0">The Task 1 file is the brand book itself. The logo and the mascot are drawn on its pages as editable vectors, not pasted in as pictures.</p>
+      <p class="sub" style="margin-bottom:0">The Task 1 file is the brand book, with the logo and mascot drawn on its pages as vectors.</p>
       <p class="chapter">Logo</p>
       <div class="book">
         <figure><img src="kit/exports/guidelines/01.png" alt="Cover" loading="lazy"><figcaption>01 Cover</figcaption></figure>
@@ -216,12 +263,16 @@
       <div class="split">
         <div class="grid2">
           <figure><img src="kit/exports/amigo.png" alt="Amigo standing"><figcaption>Standing: helping, onboarding, success</figcaption></figure>
-          <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down with two Zs"><figcaption>Resting: empty states and paused watches</figcaption></figure>
+          <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down with two Zs"><figcaption>Resting: empty states, paused watches</figcaption></figure>
         </div>
         <div class="card">
           <p class="big">Swap two letters and <i>imago</i> becomes <i>amigo</i>, Spanish for friend.</p>
-          <p>Amigo is the mark stood up: the same body and window, the two incoming fields becoming two legs. It has no face, arms or clothes; its personality comes from the words beside it.</p>
-          <p>It appears in loading and empty states, onboarding and success messages, never in the favicon, the app icon or dense data views. The Zs belong only to Amigo lying down.</p>
+          <ul class="ticks">
+            <li>The mark stood up: the two fields become legs.</li>
+            <li>No face, arms or clothes; the words beside it carry the personality.</li>
+            <li>Loading, empty and success states; never the favicon, app icon or dense data.</li>
+            <li>Zs only when Amigo lies down.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -231,26 +282,27 @@
     <div class="wrap">
       <span class="num">04 · Task 2</span>
       <h2>The A4 flyer: a handout that makes the case</h2>
-      <p class="sub">An A4 promotional flyer is held and read, not glanced at across a room, so it carries a short argument, not just a slogan. It is written for two readers: a skimmer who gets about 15 words, and a reader who gets about 130.</p>
+      <p class="key">A flyer is held and read, so it makes a short case: 15 words for a skimmer, 130 for a reader.</p>
       <div class="split">
-        <figure><a href="kit/exports/imago-task2-flyer-a4-print.pdf"><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The A4 flyer"></a><figcaption>Print PDF: PDF/X-4, CMYK, A4 trim with an 8 pt (about 2.8 mm) bleed</figcaption></figure>
+        <figure class="shot"><a href="kit/exports/imago-task2-flyer-a4-print.pdf"><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The A4 flyer"></a><figcaption>Print PDF: PDF/X-4, CMYK, A4 trim with an 8 pt (about 2.8 mm) bleed</figcaption></figure>
         <div>
           <table>
             <tr><th>The brief asks for</th><th>On the flyer</th></tr>
-            <tr><td>App logo and name</td><td class="ok">Top left, with who it is for: "For anyone who works with APIs"</td></tr>
+            <tr><td>App logo and name</td><td class="ok">Top left, with "For anyone who works with APIs"</td></tr>
             <tr><td>Headline or tagline</td><td class="ok">"APIs become interfaces."</td></tr>
-            <tr><td>Key features or benefits</td><td class="ok"><i>Reads the shape</i>, <i>Remembers it</i>, <i>Watches it change</i>, each with one line; four plain facts in place of testimonials</td></tr>
-            <tr><td>Visuals</td><td class="ok">A real Open-Meteo response becoming its interface, and a three-step "how it works"</td></tr>
-            <tr><td>Call to action</td><td class="ok">"Paste your first endpoint." with the address and a vector QR code, 3.4 cm with its quiet zone, which decodes to the live site</td></tr>
+            <tr><td>Key features or benefits</td><td class="ok"><i>Reads the shape</i>, <i>Remembers it</i>, <i>Watches it change</i>, plus four plain facts</td></tr>
+            <tr><td>Visuals</td><td class="ok">A real Open-Meteo response becoming its interface; a three-step "how it works"</td></tr>
+            <tr><td>Call to action</td><td class="ok">"Paste your first endpoint.", the address and a vector QR code that decodes to the live site</td></tr>
           </table>
           <div class="card" style="margin-top:20px">
-            <h3 class="t">Built from research, in reading order (AIDA)</h3>
+            <h3 class="t">Reading order (AIDA)</h3>
             <ul>
-              <li><b>Attention:</b> the headline and the picture</li>
-              <li><b>Interest:</b> the problem ("Raw JSON is hard to read") and what Imago does about it</li>
-              <li><b>Desire:</b> three benefits, then the facts that build trust</li>
-              <li><b>Action:</b> free, no account, nothing to install; the link and the QR code</li>
+              <li><b>Attention:</b> headline and picture</li>
+              <li><b>Interest:</b> "Raw JSON is hard to read", and the fix</li>
+              <li><b>Desire:</b> three benefits, then facts that build trust</li>
+              <li><b>Action:</b> free, no account; the link and QR code</li>
             </ul>
+            <details class="more"><summary>More detail</summary><p>The four facts: runs in your browser, keys stay on your device, works without a key, share any page as a link. They stand in for testimonials. The QR code is 3.4 cm with its quiet zone.</p></details>
           </div>
         </div>
       </div>
@@ -261,8 +313,8 @@
     <div class="wrap">
       <span class="num">05 · Task 3</span>
       <h2>The blog banner: the picture that earns the click</h2>
-      <p class="sub">A blog banner is the header image of a post, its card on the blog index, and the preview when the link is shared, where it is often shown 300 to 500 px wide. So it names the post, says the promise in a few big words, and shows one idea large enough to read small.</p>
-      <figure><img src="kit/exports/imago-task3-blog-banner.png" alt="The blog banner: Introducing Imago, APIs become interfaces, and a weather response becoming 28.4°C"><figcaption>1200 × 700, RGB: the header and share image of the launch post, "Introducing Imago"</figcaption></figure>
+      <p class="key">Often seen 300 to 500 px wide, so: a few big words and one idea large enough to read small.</p>
+      <figure class="shot"><img src="kit/exports/imago-task3-blog-banner.png" alt="The blog banner: Introducing Imago, APIs become interfaces, and a weather response becoming 28.4°C"><figcaption>1200 × 700, RGB: the header and share image of the launch post, "Introducing Imago"</figcaption></figure>
       <div class="grid2" style="margin-top:20px">
         <table>
           <tr><th></th><th>Website hero</th><th>Blog banner</th></tr>
@@ -271,7 +323,7 @@
           <tr><td><b>Job</b></td><td>Turn a visitor into a user</td><td>Get a stranger to click</td></tr>
           <tr><td><b>Words</b></td><td>As many as it needs</td><td>A few, in large type</td></tr>
         </table>
-        <figure><img src="../docs/readme/landing.png" alt="Imago's landing page hero, with the live demo and the paste bar"><figcaption>The website's hero keeps the interactive version: a live demo and a working paste bar</figcaption></figure>
+        <figure><img src="../docs/readme/landing.png" alt="Imago's landing page hero, with the live demo and the paste bar"><figcaption>The website's hero keeps the interactive version</figcaption></figure>
       </div>
     </div>
   </section>
@@ -280,12 +332,13 @@
     <div class="wrap">
       <span class="num">06</span>
       <h2>Three pieces, one identity</h2>
-      <p class="sub">The same palette, type, mark and idea, at three sizes and for three jobs. All three are drawn by the same Illustrator scripts from one shared library, so a colour or a change to the mark reaches every piece.</p>
+      <p class="key">The same palette, type, mark and idea, at three sizes for three jobs.</p>
       <div class="grid3" style="align-items:start">
         <figure><img src="kit/exports/guidelines/02.png" alt="The logo"><figcaption>Logo: the mark and wordmark</figcaption></figure>
         <figure><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The flyer"><figcaption>Flyer: the full case, for print</figcaption></figure>
         <figure><img src="kit/exports/imago-task3-blog-banner.png" alt="The banner"><figcaption>Banner: one idea, for a feed</figcaption></figure>
       </div>
+      <p class="sub" style="margin:20px 0 0">One shared script library draws all three, so a change reaches every piece.</p>
     </div>
   </section>
 
@@ -293,30 +346,31 @@
     <div class="wrap">
       <span class="num">07</span>
       <h2>Not the first answer</h2>
-      <p class="sub">The brief asks not to accept the first AI-generated solution. These are the calls that changed the work, with the versions they replaced.</p>
+      <p class="key">The brief asks not to accept the first AI answer. These calls changed the work.</p>
 
       <h3 style="margin-top:0">The flyer took three rounds</h3>
       <div class="rounds">
-        <div class="round"><span class="step">Round 1 <span class="stamp">replaced</span></span><h3 class="t">About 160 words</h3><img src="evidence/flyer-v1-160-words.png" alt="The first flyer, with long paragraphs" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Four feature paragraphs and a long standfirst: a brochure, not a flyer. I asked what a promotional flyer is for.</p></div>
-        <div class="round"><span class="step">Round 2 <span class="stamp">replaced</span></span><h3 class="t">29 words</h3><img src="evidence/flyer-v2-29-words.png" alt="The second flyer, cut to 29 words" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Cut to a poster's glance. It undersold the product, so I asked for research on how much a promotional handout should carry.</p></div>
-        <div class="round"><span class="step">Round 3 <span class="stamp final">final</span></span><h3 class="t">About 130 words</h3><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The final flyer" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Handouts carry 50 to 150 words, in AIDA order, with a skim layer and a read layer. The link and QR code became real once the live address was found.</p></div>
+        <div class="round card"><span class="step">Round 1 <span class="stamp">replaced</span></span><h3 class="t">About 160 words</h3><img src="evidence/flyer-v1-160-words.png" alt="The first flyer, with long paragraphs" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Four feature paragraphs: a brochure, not a flyer.</p></div>
+        <div class="round card"><span class="step">Round 2 <span class="stamp">replaced</span></span><h3 class="t">29 words</h3><img src="evidence/flyer-v2-29-words.png" alt="The second flyer, cut to 29 words" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>A poster's glance. It undersold the product, so I asked for research.</p></div>
+        <div class="round card"><span class="step">Round 3 <span class="stamp final">final</span></span><h3 class="t">About 130 words</h3><img src="kit/exports/imago-task2-flyer-a4-preview.png" alt="The final flyer" loading="lazy" style="border:1px solid var(--line);border-radius:12px"><p>Handouts carry 50 to 150 words, in AIDA order, with a skim layer and a read layer.</p></div>
       </div>
+      <details class="more"><summary>More detail</summary><p class="sub" style="margin:0">After round 1 I asked what a promotional flyer is for; after round 2, how much a handout should carry. The link and QR code became real once the live address was found.</p></details>
 
       <h3>The banner stopped copying the hero</h3>
       <div class="grid2">
-        <figure><img src="evidence/banner-v1-at-400.png" alt="The first banner at 400 px: small JSON and captions blur" loading="lazy"><figcaption><span class="stamp">replaced</span> The first banner, at feed size: a copy of the hero. The JSON, the captions and a drawn URL bar nobody can click turn to noise.</figcaption></figure>
-        <figure><img src="evidence/banner-v2-at-400.png" alt="The final banner at 400 px: everything still reads" loading="lazy"><figcaption><span class="stamp final">final</span> After researching what a blog banner is for: at the same size, every element still reads.</figcaption></figure>
+        <figure><img src="evidence/banner-v1-at-400.png" alt="The first banner at 400 px: small JSON and captions blur" loading="lazy"><figcaption><span class="stamp">replaced</span> A copy of the hero: at feed size, it turns to noise.</figcaption></figure>
+        <figure><img src="evidence/banner-v2-at-400.png" alt="The final banner at 400 px: everything still reads" loading="lazy"><figcaption><span class="stamp final">final</span> At the same size, every element still reads.</figcaption></figure>
       </div>
 
       <h3>Amigo's Zs moved</h3>
       <div class="grid2">
-        <figure><img src="evidence/amigo-v1-standing-zs.png" alt="Amigo standing, with Zs" loading="lazy" style="max-width:260px"><figcaption><span class="stamp">replaced</span> The first resting pose put the Zs on the standing Amigo.</figcaption></figure>
-        <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down, with Zs" loading="lazy" style="max-width:320px"><figcaption><span class="stamp final">final</span> Zs only when Amigo lies down. It is now a rule in the brand book.</figcaption></figure>
+        <figure><img src="evidence/amigo-v1-standing-zs.png" alt="Amigo standing, with Zs" loading="lazy" style="max-width:260px"><figcaption><span class="stamp">replaced</span> The first resting pose put Zs on the standing Amigo.</figcaption></figure>
+        <figure><img src="kit/exports/amigo-resting.png" alt="Amigo lying down, with Zs" loading="lazy" style="max-width:320px"><figcaption><span class="stamp final">final</span> Zs only when lying down, now a brand book rule.</figcaption></figure>
       </div>
 
       <div class="grid2" style="margin-top:20px">
-        <div class="card"><h3 class="t">Kept on purpose: the mark</h3><p>The logo is the app's existing Reveal mark, drawn exactly from its recorded geometry rather than redrawn. An exploration of alternative marks ran alongside and did not replace it.</p></div>
-        <div class="card"><h3 class="t">Five files became three</h3><p>The logo, the mascot and the guidelines began as separate files. They became one Task 1 brand book, with the logo and mascot woven into its pages, so the submission is one file per task.</p></div>
+        <div class="card"><h3 class="t">Kept on purpose: the mark</h3><p>The app's existing Reveal mark, drawn from its recorded geometry. Explored alternatives did not replace it.</p></div>
+        <div class="card"><h3 class="t">Five files became three</h3><p>Logo, mascot and guidelines merged into one Task 1 brand book: one file per task.</p></div>
       </div>
     </div>
   </section>
@@ -325,15 +379,15 @@
     <div class="wrap">
       <span class="num">08</span>
       <h2>Tools, and how it was made</h2>
-      <p class="sub">Every piece is a real, layered Illustrator document. Illustrator drew them from scripts, so any piece can be rebuilt in seconds after a change.</p>
+      <p class="key">Every piece is a layered Illustrator document drawn from scripts, so it rebuilds in seconds.</p>
       <div class="tools">
-        <div class="card"><h3 class="t">Adobe Illustrator</h3><p>All three files, all vector. Claude wrote Illustrator scripts (ExtendScript) that draw every shape and line of text, with named layers, swatches and artboards; Illustrator ran them and wrote the .ai files and exports.</p></div>
-        <div class="card"><h3 class="t">Claude (Claude Code)</h3><p>Research (what a flyer and a banner are for), copy, the scripts, and checking: every export viewed, the banner tested at 400 px, the print PDF checked for PDF/X, CMYK and trim, and the QR code decoded.</p></div>
-        <div class="card"><h3 class="t">For the tool usage form</h3><p class="tick">Adobe Illustrator</p><p class="tick">Claude</p><p style="margin-top:10px">Not used: Photoshop. Nothing here needed pixel editing; the few raster images are exports of the vector files.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="M13 7l4 4"/></svg></span><h3 class="t">Adobe Illustrator</h3><p>All three files, all vector. It ran Claude's ExtendScript scripts, with named layers, swatches and artboards, and wrote the .ai files and exports.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M6 18l3-3M15 9l3-3"/></svg></span><h3 class="t">Claude (Claude Code)</h3><p>Research, copy, the scripts, and checking:</p><ul class="ticks"><li>every export viewed</li><li>banner tested at 400 px</li><li>print PDF: PDF/X, CMYK, trim</li><li>QR code decoded</li></ul></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span><h3 class="t">For the tool usage form</h3><p class="tick">Adobe Illustrator</p><p class="tick">Claude</p><p style="margin-top:10px">Not used: Photoshop. The few raster images are exports of the vector files.</p></div>
       </div>
       <div class="fix" style="margin-top:20px">
         <span class="tag">KNOWN AND LEFT OPEN</span>
-        <p>The flyer and the banner show Open-Meteo weather data and should carry its credit line, "Weather data by Open-Meteo.com".</p>
+        <p>The flyer and banner show Open-Meteo data and should carry its credit, "Weather data by Open-Meteo.com".</p>
       </div>
     </div>
   </section>
