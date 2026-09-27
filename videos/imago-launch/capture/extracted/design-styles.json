@@ -1,0 +1,284 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "Inter",
+      "fontSize": "64px",
+      "fontWeight": "600",
+      "lineHeight": "65.28px",
+      "letterSpacing": "-2.56px",
+      "color": "#1B1B19",
+      "sampleText": "APIs become interfaces."
+    },
+    {
+      "role": "heading",
+      "fontFamily": "Inter Display",
+      "fontSize": "44px",
+      "fontWeight": "600",
+      "lineHeight": "46.2px",
+      "letterSpacing": "-1.54px",
+      "color": "#1B1B19",
+      "sampleText": "Pikachu"
+    },
+    {
+      "role": "body",
+      "fontFamily": "Inter",
+      "fontSize": "17px",
+      "fontWeight": "400",
+      "lineHeight": "26.35px",
+      "letterSpacing": "normal",
+      "color": "#66655F",
+      "sampleText": "Paste a GET endpoint. Imago reads the response, designs a vi"
+    },
+    {
+      "role": "heading-2",
+      "fontFamily": "Inter",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24.8px",
+      "letterSpacing": "-0.16px",
+      "color": "#1B1B19",
+      "sampleText": "Reads the shape"
+    },
+    {
+      "role": "label",
+      "fontFamily": "Inter",
+      "fontSize": "13.5px",
+      "fontWeight": "400",
+      "lineHeight": "20.925px",
+      "letterSpacing": "normal",
+      "color": "#66655F",
+      "sampleText": "Is default"
+    },
+    {
+      "role": "link",
+      "fontFamily": "Inter",
+      "fontSize": "13px",
+      "fontWeight": "500",
+      "lineHeight": "20.15px",
+      "letterSpacing": "normal",
+      "color": "#3F6FB5",
+      "sampleText": "https://pokeapi.co/api/v2/pokemon-species/25/"
+    },
+    {
+      "role": "code",
+      "fontFamily": "JetBrains Mono",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "lineHeight": "21.6px",
+      "letterSpacing": "normal",
+      "color": "#FFFFFF",
+      "sampleText": "{ \"id\": 25, \"name\": \"pikachu\", \"base_experience\": 112, \"heig"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22
+    ],
+    "baseUnit": 4
+  },
+  "radius": [
+    "6px",
+    "9px",
+    "999px"
+  ],
+  "shadows": [
+    {
+      "value": "rgba(27, 27, 25, 0.05) 0px 1px 2px 0px",
+      "count": 3
+    },
+    {
+      "value": "rgba(27, 27, 25, 0.04) 0px 2px 6px 0px, rgba(27, 27, 25, 0.2) 0px 18px 46px -16px",
+      "count": 1
+    }
+  ],
+  "buttons": [
+    {
+      "label": "Open app",
+      "background": "#FFFFFF",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#45443F",
+      "padding": "0px 11px",
+      "borderRadius": "9px",
+      "border": "1px solid rgb(231, 229, 223)",
+      "boxShadow": "rgba(27, 27, 25, 0.05) 0px 1px 2px 0px",
+      "fontSize": "13px",
+      "fontWeight": "500",
+      "height": "32px"
+    },
+    {
+      "label": "Get started \n          Try an example",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#1B1B19",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(27, 27, 25)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "height": "44px"
+    },
+    {
+      "label": "Get started",
+      "background": "#1B1B19",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FFFFFF",
+      "padding": "0px 20px",
+      "borderRadius": "9px",
+      "border": "1px solid rgba(0, 0, 0, 0)",
+      "boxShadow": "rgba(27, 27, 25, 0.05) 0px 1px 2px 0px",
+      "fontSize": "14.5px",
+      "fontWeight": "500",
+      "height": "44px"
+    },
+    {
+      "label": "Pokémon",
+      "background": "#1B1B19",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FFFFFF",
+      "padding": "5px 12px",
+      "borderRadius": "6px",
+      "border": "0px none rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "fontSize": "12.5px",
+      "fontWeight": "500",
+      "height": "29.375px"
+    },
+    {
+      "label": "Weather",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#66655F",
+      "padding": "5px 12px",
+      "borderRadius": "6px",
+      "border": "0px none rgb(102, 101, 95)",
+      "boxShadow": "none",
+      "fontSize": "12.5px",
+      "fontWeight": "500",
+      "height": "29.375px"
+    }
+  ],
+  "cards": [],
+  "nav": {
+    "label": "navigation",
+    "background": "transparent",
+    "backgroundImage": "",
+    "backdropFilter": "",
+    "color": "#1B1B19",
+    "padding": "18px 24px",
+    "borderRadius": "0px",
+    "border": "0px none rgb(27, 27, 25)",
+    "boxShadow": "none",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "height": "68px"
+  },
+  "chips": [
+    {
+      "label": "GET",
+      "background": "#FFFFFF",
+      "color": "#FFFFFF",
+      "padding": "4px 8px",
+      "borderRadius": "7px",
+      "border": "1px solid rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "fontSize": "11px",
+      "fontWeight": "600",
+      "height": "27.0469px"
+    },
+    {
+      "label": "Pikachu",
+      "background": "transparent",
+      "color": "#1B1B19",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(27, 27, 25)",
+      "boxShadow": "none",
+      "fontSize": "44px",
+      "fontWeight": "600",
+      "height": "46.1946px"
+    },
+    {
+      "label": "electric",
+      "background": "#F1EFE9",
+      "color": "#45443F",
+      "padding": "4px 11px",
+      "borderRadius": "999px",
+      "border": "1.6129px solid rgb(231, 229, 223)",
+      "boxShadow": "none",
+      "fontSize": "12px",
+      "fontWeight": "500",
+      "height": "29.7631px"
+    },
+    {
+      "label": "a3f9c1e0",
+      "background": "transparent",
+      "color": "#66655F",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(102, 101, 95)",
+      "boxShadow": "none",
+      "fontSize": "11.5px",
+      "fontWeight": "400",
+      "height": "17.8125px"
+    }
+  ],
+  "statCells": [],
+  "tabs": [
+    {
+      "label": "Pokémon",
+      "background": "#1B1B19",
+      "color": "#FFFFFF",
+      "padding": "5px 12px",
+      "borderRadius": "6px",
+      "border": "0px none rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "fontSize": "12.5px",
+      "fontWeight": "500",
+      "height": "29.375px"
+    },
+    {
+      "label": "Weather",
+      "background": "transparent",
+      "color": "#66655F",
+      "padding": "5px 12px",
+      "borderRadius": "6px",
+      "border": "0px none rgb(102, 101, 95)",
+      "boxShadow": "none",
+      "fontSize": "12.5px",
+      "fontWeight": "500",
+      "height": "29.375px"
+    }
+  ],
+  "backgrounds": [
+    {
+      "value": "linear-gradient(rgba(255, 255, 255, 0), rgb(255, 255, 255))",
+      "area": 182772
+    },
+    {
+      "value": "linear-gradient(rgba(27, 27, 25, 0), rgb(27, 27, 25))",
+      "area": 171969
+    }
+  ],
+  "glass": []
+}

@@ -1,0 +1,185 @@
+<template>
+  <div data-hf-id="hf-okyk" id="root" data-composition-id="08-facts" data-start="0" data-duration="1.875" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f08-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f08-ink { position: absolute; inset: 0; background: #1B1B19; }
+      .f08-stage { position: absolute; inset: 0; overflow: hidden; }
+      .f08-phrase {
+        position: absolute; left: 0; right: 0; margin: 0; text-align: center; white-space: nowrap;
+        font-family: "Inter Display", sans-serif; font-weight: 600; line-height: 1;
+        letter-spacing: -0.035em; color: #1B1B19; will-change: transform;
+      }
+      .f08-inv { color: #F6F5F1; }
+      /* line-height 1 with Inter metrics: baseline = top + 0.864F, x-height top = baseline - 0.546F, cap top = baseline - 0.727F */
+      #f08-p1 { top: 390px; height: 160px; font-size: 160px; transform-origin: 50% 50%; }
+      #f08-p2 { top: 330px; height: 240px; font-size: 240px; transform-origin: 50% 50%; }
+      #f08-p3 { top: 360px; height: 220px; font-size: 220px; transform-origin: 50% 86%; }
+      /* origin = top of the F crossbar, where Amigo lands, so the slam punches out from under his feet */
+      #f08-p4 { top: 250px; height: 400px; font-size: 400px; transform-origin: 662px 55px; }
+      .f08-amigo { position: absolute; left: 0; top: 0; width: 150px; height: 150px; color: #1B1B19; }
+      .f08-lean { position: absolute; inset: 0; transform-origin: 50% 94%; }
+      .f08-squash { position: absolute; inset: 0; transform-origin: 50% 94%; }
+      .f08-squash svg { display: block; width: 150px; height: 150px; overflow: visible; }
+    </style>
+
+    <div data-hf-id="hf-n57z" class="clip f08-ground" data-start="0" data-duration="1.875" data-track-index="0"></div>
+    <div data-hf-id="hf-0s1g" class="clip f08-ink" id="f08-ink" data-start="0" data-duration="1.875" data-track-index="1"></div>
+
+    <div data-hf-id="hf-vvg4" class="clip f08-stage" data-start="0" data-duration="1.875" data-track-index="2">
+      <div data-hf-id="hf-2yzw" class="f08-phrase" id="f08-p1" data-layout-allow-overlap="">Runs in your browser.</div>
+      <div data-hf-id="hf-gcgx" class="f08-phrase f08-inv" id="f08-p2" data-layout-allow-overlap="">No account.</div>
+      <div data-hf-id="hf-ntzl" class="f08-phrase" id="f08-p3" data-layout-allow-overlap="">Open source.</div>
+      <div data-hf-id="hf-5jlr" class="f08-phrase f08-inv" id="f08-p4" data-layout-allow-overlap="">Free.</div>
+
+      <div data-hf-id="hf-cjck" class="f08-amigo" id="f08-amigo" data-layout-allow-overlap="">
+        <div data-hf-id="hf-w19q" class="f08-lean" id="f08-lean">
+          <div data-hf-id="hf-kivm" class="f08-squash" id="f08-squash">
+            <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+              <defs data-hf-id="hf-f08d">
+                <mask data-hf-id="hf-f08m" id="f08-ap-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                  <rect data-hf-id="hf-f08w" x="0" y="0" width="32" height="32" fill="#fff" />
+                  <rect data-hf-id="hf-f08a" id="f08-ap" x="10.9" y="9" width="10.2" height="5.3" rx="2.3" fill="#000" />
+                </mask>
+              </defs>
+              <g data-hf-id="hf-g1zz" fill="currentColor">
+                <g data-hf-id="hf-jk9v" class="f08-legL" id="f08-leg-l"><rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" /></g>
+                <g data-hf-id="hf-kc1p" class="f08-legR" id="f08-leg-r"><rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" /></g>
+                <path data-hf-id="hf-q41y" id="f08-body" mask="url(#f08-ap-mask)" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Z" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "08-facts";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f08-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid: frame-local beat n = n * 0.469. Four facts, one per beat.
+        var BEAT = 0.469;
+        var B = [0, BEAT, 2 * BEAT, 3 * BEAT];
+        var PAPER = "#F6F5F1", INK = "#1B1B19";
+
+        var ink = $("ink"), am = $("amigo"), lean = $("lean"), sq = $("squash"), ap = $("ap");
+        var legs = [$("leg-l"), $("leg-r")];
+        var p = [$("p1"), $("p2"), $("p3"), $("p4")];
+
+        // Amigo is placed by his feet: box 150px, soles at 140.6px (legs end at y=30 of 32).
+        var foot = function (fx, fy) { return { x: fx - 75, y: fy - 140.6 }; };
+        var A = [
+          foot(1380, 441),  // standing on the x-height of "browser"
+          foot(960, 800),   // under "No account."
+          foot(1210, 430),  // on the x-height of "source"
+          foot(662, 305)    // on top of the F crossbar of "Free."
+        ];
+
+        // ---- Ground + phrase swaps: hard cuts on the beat. Ink ground (and a paper Amigo) on beats 2 and 4.
+        tl.set(ink, { opacity: 0 }, 0);
+        tl.set([p[1], p[2], p[3]], { opacity: 0 }, 0);
+        tl.set(p[0], { opacity: 1 }, 0);
+        tl.set(am, { x: A[0].x, y: A[0].y, color: INK }, 0);
+        for (var k = 1; k < 4; k++) {
+          tl.set(p[k - 1], { opacity: 0 }, B[k]);
+          tl.set(p[k], { opacity: 1 }, B[k]);
+          tl.set(ink, { opacity: k % 2 ? 1 : 0 }, B[k]);
+          tl.set(am, { color: k % 2 ? PAPER : INK }, B[k]);
+        }
+
+        // Distinct arrivals, each done inside ~0.12s so the phrase is read for its whole beat.
+        tl.fromTo(p[0], { scale: 1.1 }, { scale: 1, duration: 0.1, ease: "power4.out" }, B[0]);
+        tl.fromTo(p[1], { x: -90 }, { x: 0, duration: 0.1, ease: "expo.out" }, B[1]);
+        tl.fromTo(p[2], { y: 22, scaleY: 0.93 }, { y: 0, scaleY: 1, duration: 0.24, ease: "power3.out" }, B[2]);
+        tl.fromTo(p[3], { scale: 1.5 }, { scale: 1, duration: 0.12, ease: "power4.out" }, B[3]);
+
+        // ---- Amigo rig helpers. Every tween is an explicit fromTo from the tracked previous state.
+        // Eye (aperture) state by size + gaze offset from the rest centre (16, 11.65).
+        var E = function (w, h, rx, gx, gy) {
+          return { x: 16 - w / 2 + (gx || 0), y: 11.65 - h / 2 + (gy || 0), width: w, height: h, rx: rx };
+        };
+        var REST = E(10.2, 5.3, 2.3);
+        var eyeNow = REST;
+        var eye = function (t, to, dur, ease) {
+          tl.fromTo(ap, { attr: eyeNow }, { attr: to, duration: dur, ease: ease || "power2.inOut", immediateRender: false }, t);
+          eyeNow = to;
+        };
+        var sqNow = { scaleX: 1, scaleY: 1 };
+        var body = function (t, sx, sy, dur, ease) {
+          var to = { scaleX: sx, scaleY: sy };
+          tl.fromTo(sq, sqNow, { scaleX: sx, scaleY: sy, duration: dur, ease: ease || "power2.out", immediateRender: false }, t);
+          sqNow = to;
+        };
+        var leanNow = 0;
+        var tilt = function (t, r, dur, ease) {
+          tl.fromTo(lean, { rotation: leanNow }, { rotation: r, duration: dur, ease: ease || "power2.inOut", immediateRender: false }, t);
+          leanNow = r;
+        };
+        // A quick, clean move: small crouch, low arc, legs tuck (both equally, never spread), soft land.
+        var move = function (i, t0, t1, lift) {
+          var a = A[i], b = A[i + 1], d = t1 - t0, peak = Math.min(a.y, b.y) - lift;
+          body(t0 - 0.04, 1.06, 0.94, 0.04, "power2.in");
+          body(t0, 0.95, 1.05, 0.05, "power2.out");
+          body(t0 + 0.05, 1, 1, d - 0.05, "sine.inOut");
+          tl.fromTo(am, { x: a.x }, { x: b.x, duration: d, ease: "power2.inOut", immediateRender: false }, t0);
+          tl.fromTo(am, { y: a.y }, { y: peak, duration: d * 0.45, ease: "power2.out", immediateRender: false }, t0);
+          tl.fromTo(am, { y: peak }, { y: b.y, duration: d * 0.55, ease: "power2.in", immediateRender: false }, t0 + d * 0.45);
+          tl.fromTo(legs, { y: 0 }, { y: -1.6, duration: d * 0.45, ease: "power2.out", immediateRender: false }, t0);
+          tl.fromTo(legs, { y: -1.6 }, { y: 0, duration: d * 0.55, ease: "power2.in", immediateRender: false }, t0 + d * 0.45);
+          // land on the beat: a small squash that settles to true proportions
+          body(t1, 1.1, 0.91, 0.04, "power2.out");
+          body(t1 + 0.04, 1, 1, 0.12, "back.out(2)");
+        };
+
+        tl.set(ap, { attr: REST }, 0);
+        tl.set(sq, { scaleX: 1, scaleY: 1 }, 0);
+        tl.set(lean, { rotation: 0 }, 0);
+        tl.set(legs, { y: 0 }, 0);
+
+        // ---- Beat 1 "Runs in your browser.": content. One blink that opens into a soft content squint, a little sway.
+        var SQUINT = E(10.2, 2.0, 1.0);
+        eye(0.06, E(10.2, 0.6, 0.3), 0.07, "power2.in");     // blink shut
+        eye(0.13, SQUINT, 0.12, "power2.out");               // open into the content squint
+        tilt(0.06, 4, 0.12, "sine.inOut");                   // contented sway
+        tilt(0.18, -2, 0.1, "sine.inOut");
+        tilt(0.28, 0, 0.05, "sine.out");
+        move(0, 0.33, B[1], 36);
+
+        // ---- Beat 2 "No account.": relieved. Eye pops wide, then a sigh: soft eye, slump, recover.
+        var WIDE = E(11.6, 7.6, 3.2);
+        var SOFT = E(10.2, 3.0, 1.4, 0, 0.35);
+        eye(B[1], WIDE, 0.08, "power2.out");
+        eye(0.6, SOFT, 0.14, "power2.inOut");
+        body(0.63, 1, 0.92, 0.09, "power2.out");            // slump
+        tilt(0.63, 5, 0.09, "power2.out");
+        body(0.72, 1, 1, 0.06, "power2.inOut");              // recover to true proportions
+        tilt(0.72, 0, 0.06, "power2.inOut");
+        eye(0.78, REST, 0.08, "power2.inOut");
+        move(1, 0.82, B[2], 30);
+
+        // ---- Beat 3 "Open source.": curious. Head tilts, gaze drops to the word and scans along it.
+        eye(0.99, E(10.2, 5.3, 2.3, -1.8, 1.4), 0.12, "power2.out");   // look down-left at "source"
+        tilt(0.99, -9, 0.12, "power2.out");
+        eye(1.12, E(10.2, 5.3, 2.3, 2.0, 1.4), 0.1, "power2.inOut");   // scan right along the word
+        tilt(1.12, -6, 0.1, "power2.inOut");
+        eye(1.23, REST, 0.06, "power2.out");
+        tilt(1.23, 0, 0.06, "power2.out");
+        move(2, 1.29, B[3], 44);
+
+        // ---- Beat 4 "Free.": delighted. Happy squint and a proud puff (uniform 1.05 -> 1); ends in true proportions.
+        eye(B[3] + 0.03, SQUINT, 0.09, "power2.out");
+        body(1.57, 1.05, 1.05, 0.1, "power2.out");
+        body(1.67, 1, 1, 0.14, "power2.inOut");
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

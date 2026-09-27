@@ -1,0 +1,376 @@
+<template>
+  <div data-hf-id="hf-a89k" id="root" data-composition-id="02-avalanche" data-start="0" data-duration="4.25" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f02-ink { position: absolute; inset: 0; background: #1B1B19; }
+      .f02-stage { position: absolute; inset: 0; overflow: hidden; }
+      .f02-cam { position: absolute; inset: 0; }
+      .f02-pile { position: absolute; inset: 0; z-index: 2; }
+      .f02-ln {
+        position: absolute; left: 0; top: 0; white-space: nowrap;
+        font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 18px; line-height: 23px;
+        color: #A8A79F; transform-origin: 0% 50%;
+      }
+      .f02-deep { opacity: 0.42; }
+      .f02-k { color: #A8A79F; }
+      .f02-s { color: #E7E5DF; }
+      .f02-n { color: #8FB4E3; }
+      .f02-p { color: #66655F; }
+
+      .f02-amigo { position: absolute; left: 0; top: 0; width: 130px; height: 130px; color: #F6F5F1; z-index: 1; }
+      .f02-lean { position: absolute; inset: 0; transform-origin: 50% 94%; }
+      .f02-spin { position: absolute; inset: 0; transform-origin: 50% 55%; }
+      .f02-squash { position: absolute; inset: 0; transform-origin: 50% 94%; }
+      .f02-squash svg { display: block; width: 130px; height: 130px; }
+      .f02-debris { z-index: 6; }
+
+      .f02-count-wrap { position: absolute; left: 96px; top: 64px; width: 820px; display: flex; align-items: baseline; z-index: 4; }
+      .f02-count {
+        display: inline-block; font-family: "Inter Display", "Inter", sans-serif; font-weight: 600;
+        font-size: 196px; line-height: 1; letter-spacing: -0.035em; color: #F6F5F1;
+        font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; transform-origin: 0% 80%;
+      }
+      .f02-count-label {
+        position: absolute; left: 104px; top: 276px; z-index: 4;
+        font-family: "Inter", sans-serif; font-weight: 500; font-size: 40px; line-height: 1.2;
+        letter-spacing: -0.01em; color: #A8A79F; white-space: nowrap;
+      }
+      .f02-say {
+        position: absolute; right: 96px; z-index: 4; white-space: nowrap; text-align: right;
+        font-family: "Inter Display", "Inter", sans-serif; font-weight: 600; font-size: 150px;
+        line-height: 1.04; letter-spacing: -0.035em; transform-origin: 100% 60%;
+      }
+      .f02-say-1 { top: 112px; color: #F6F5F1; }
+      .f02-say-2 { top: 272px; color: #A8A79F; }
+    </style>
+
+    <div data-hf-id="hf-gfca" class="clip f02-ink" data-start="0" data-duration="4.25" data-track-index="0"></div>
+
+    <div data-hf-id="hf-3yt9" class="clip f02-stage" data-start="0" data-duration="4.25" data-track-index="1">
+      <div data-hf-id="hf-0pyq" class="f02-cam" id="f02-cam">
+        <div data-hf-id="hf-z814" class="f02-amigo" id="f02-amigo" data-layout-allow-overlap="">
+          <div data-hf-id="hf-2gyi" class="f02-lean" id="f02-lean">
+            <div data-hf-id="hf-yb3q" class="f02-spin" id="f02-spin">
+              <div data-hf-id="hf-w6bu" class="f02-squash" id="f02-squash">
+                <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                  <g data-hf-id="hf-g1zz" fill="currentColor">
+                    <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+                    <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+                    <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-tvqq" class="f02-pile" id="f02-pile" data-layout-allow-overlap=""></div>
+
+        <div data-hf-id="hf-uoug" class="f02-ln f02-debris" id="f02-deb-0" data-layout-allow-overlap=""><span data-hf-id="hf-4qk3" class="f02-k">"weight"</span><span data-hf-id="hf-0ec2" class="f02-p">:</span> <span data-hf-id="hf-yd58" class="f02-n">60</span><span data-hf-id="hf-wf9s" class="f02-p">,</span></div>
+        <div data-hf-id="hf-vgi9" class="f02-ln f02-debris" id="f02-deb-1" data-layout-allow-overlap=""><span data-hf-id="hf-tq8d" class="f02-p">},</span></div>
+        <div data-hf-id="hf-1m82" class="f02-ln f02-debris" id="f02-deb-2" data-layout-allow-overlap=""><span data-hf-id="hf-64oo" class="f02-k">"id"</span><span data-hf-id="hf-xp7a" class="f02-p">:</span> <span data-hf-id="hf-vgdj" class="f02-n">25</span><span data-hf-id="hf-l4q0" class="f02-p">,</span></div>
+
+        <div data-hf-id="hf-a07n" class="f02-count-wrap" data-layout-allow-overlap=""><span data-hf-id="hf-r15x" class="f02-count" id="f02-count">0</span></div>
+        <div data-hf-id="hf-h7wi" class="f02-count-label" id="f02-count-label">lines of JSON</div>
+
+        <div data-hf-id="hf-0ba5" class="f02-say f02-say-1" id="f02-say-1">Readable?</div>
+        <div data-hf-id="hf-a691" class="f02-say f02-say-2" id="f02-say-2">Barely.</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "02-avalanche";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f02-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid, frame-local: beat n (1-indexed) = (n - 1) * 0.469.
+        var BEAT = 0.469, HALF = 0.2345;
+        var beat = function (n) { return (n - 1) * BEAT; };
+        var END = 3.75;
+
+        var frac = function (v) { return v - Math.floor(v); };
+        var prand = function (i, k) { return frac(Math.sin(i * 12.9898 + k * 78.233) * 43758.5453); };
+
+        // ---- Real pikachu JSON (only real fields and values).
+        var POOL = [
+          "{",
+          '"abilities": [',
+          "{",
+          '"ability": {',
+          '"name": "static",',
+          '"url": "https://pokeapi.co/api/v2/ability/9/"',
+          "},",
+          '"ability": {',
+          '"name": "lightning-rod",',
+          '"url": "https://pokeapi.co/api/v2/ability/31/"',
+          "}",
+          "],",
+          '"base_experience": 112,',
+          '"forms": [',
+          '"name": "pikachu",',
+          '"url": "https://pokeapi.co/api/v2/pokemon-form/25/"',
+          "],",
+          '"game_indices": [',
+          '"game_index": 84,',
+          '"version": {',
+          '"name": "red",',
+          '"url": "https://pokeapi.co/api/v2/version/1/"',
+          "}",
+          '"height": 4,',
+          '"held_items": [',
+          '"item": {',
+          '"name": "oran-berry",',
+          '"url": "https://pokeapi.co/api/v2/item/132/"',
+          "},",
+          '"item": {',
+          '"name": "light-ball",',
+          '"url": "https://pokeapi.co/api/v2/item/213/"',
+          "}",
+          '"id": 25,',
+          '"is_default": true,',
+          '"moves": [',
+          '"move": {',
+          '"name": "mega-punch",',
+          '"url": "https://pokeapi.co/api/v2/move/5/"',
+          "},",
+          '"move_learn_method": {',
+          '"name": "machine",',
+          "}",
+          '"name": "pikachu",',
+          '"order": 35,',
+          '"weight": 60',
+          "}"
+        ];
+        var colorize = function (s) {
+          var out = "", re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+|true|false|null)|([{}\[\],:])|(\s+)/g, m;
+          while ((m = re.exec(s))) {
+            if (m[1]) out += m[2] ? '<span data-layout-allow-overlap class="f02-k">' + m[1] + '</span><span data-layout-allow-overlap class="f02-p">:</span>' : '<span data-layout-allow-overlap class="f02-s">' + m[1] + "</span>";
+            else if (m[3]) out += '<span data-layout-allow-overlap class="f02-n">' + m[3] + "</span>";
+            else if (m[4]) out += '<span data-layout-allow-overlap class="f02-p">' + m[4] + "</span>";
+            else out += " ";
+          }
+          return out;
+        };
+
+        // ---- Pile layout: 12 front columns + 11 deep columns, rows stacking up from the floor (y 900).
+        var FLOOR = 900, ROW = 23, CW = 10.8;
+        var ROWS = [15, 16, 17, 17, 18, 19, 19, 17, 15, 13, 12, 12];
+        var lines = [];
+        var addCol = function (x0, rows, deep, c) {
+          for (var r = 0; r < rows; r++) {
+            var idx = lines.length;
+            var txt = POOL[(c * 5 + (rows - 1 - r) + (deep ? 17 : 0)) % POOL.length];
+            var jx = (prand(idx, 1) - 0.5) * 36 + (prand(idx, 7) < 0.5 ? 0 : 22);
+            var rot = (prand(idx, 2) - 0.5) * 7;
+            var tLand = 0.05 + r * 0.056 + prand(idx, 3) * 0.09 + (c % 3) * 0.012 - (deep ? 0.03 : 0);
+            lines.push({
+              txt: txt, deep: deep, x: x0 + jx, y: FLOOR - (r + 1) * ROW + (prand(idx, 4) - 0.5) * 6,
+              r: rot, w: txt.length * CW, t: Math.max(0.03, tLand), fall: 620 + prand(idx, 5) * 420,
+              r0: rot + (prand(idx, 6) - 0.5) * 22
+            });
+          }
+        };
+        for (var c = 0; c < 11; c++) addCol(99 + c * 158, ROWS[c] - 2, true, c);
+        for (var c2 = 0; c2 < 12; c2++) addCol(20 + c2 * 158, ROWS[c2], false, c2);
+
+        var html = "";
+        for (var i = 0; i < lines.length; i++) {
+          html += '<div class="f02-ln' + (lines[i].deep ? " f02-deep" : "") + '" data-layout-allow-overlap id="f02-ln-' + i + '">' + colorize(lines[i].txt) + "</div>";
+        }
+        $("pile").innerHTML = html;
+        var el = [];
+        for (var e = 0; e < lines.length; e++) el.push($("ln-" + e));
+
+        // ---- Scene 1 (0.0-1.4s): the avalanche. Each line falls (power2.in) onto its pile slot.
+        var FALL = 0.34;
+        for (var n = 0; n < lines.length; n++) {
+          var L = lines[n];
+          var fromY = L.y - L.fall, start = L.t - FALL, dur = FALL, y0 = fromY, r0 = L.r0;
+          if (start < 0) {
+            var p = -start / FALL;
+            y0 = fromY + (L.y - fromY) * p * p;
+            r0 = L.r0 + (L.r - L.r0) * p;
+            dur = L.t; start = 0;
+          }
+          gsap.set(el[n], { x: L.x, y: y0, rotation: r0 });
+          tl.fromTo(el[n], { x: L.x, y: y0, rotation: r0 },
+            { x: L.x, y: L.y, rotation: L.r, duration: dur, ease: "power2.in", immediateRender: false }, start);
+        }
+
+        // Pile thud (whole pile container), used on each slam / impact.
+        var pileThud = function (t, amt) {
+          tl.fromTo($("pile"), { y: amt }, { y: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, t);
+        };
+
+        // Counter slams in on beat 2 and rolls 0 -> 15,411 (counting-dynamic-scale: value + scale share timing/ease).
+        var counter = $("count"), state = { v: 0 };
+        var fmt = function (v) { return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
+        var C_AT = beat(2), C_DUR = 1.407, C_EASE = "power3.out";
+        gsap.set(counter, { opacity: 0, scale: 0.5, y: -40 });
+        tl.fromTo(counter, { opacity: 0 }, { opacity: 1, duration: 0.05, ease: "none", immediateRender: false }, C_AT - 0.04);
+        tl.fromTo(counter, { y: -40 }, { y: 0, duration: 0.2, ease: "power3.out", immediateRender: false }, C_AT - 0.04);
+        tl.fromTo(state, { v: 0 }, {
+          v: 15411, duration: C_DUR, ease: C_EASE, immediateRender: false,
+          onUpdate: function () { counter.textContent = fmt(state.v); }
+        }, C_AT);
+        tl.fromTo(counter, { scale: 0.5 }, { scale: 1, duration: C_DUR, ease: C_EASE, immediateRender: false }, C_AT);
+        tl.fromTo($("count-label"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, C_AT + 0.2);
+        pileThud(C_AT, 8);
+
+        // ---- Amigo rig: pos (x,y) > lean > spin > squash (feet-anchored). Feet sit ~94% down the 130px box.
+        var amigo = $("amigo"), lean = $("lean"), spin = $("spin"), sq = $("squash");
+        var FOOT = 122;
+        var HOME = { x: 200, y: FLOOR };   // pancaked at bottom-left (frame 01 handoff)
+        var TOP = { x: 930, y: 471 };      // summit of the pile
+        gsap.set(amigo, { x: HOME.x - 65, y: HOME.y - FOOT, zIndex: 1 });
+        gsap.set(sq, { scaleX: 1.3, scaleY: 0.25 });
+
+        // Tries to pop up on the off-beat, gets flattened again by the counter slam.
+        tl.fromTo(sq, { scaleX: 1.3, scaleY: 0.25 }, { scaleX: 1.05, scaleY: 0.62, duration: 0.14, ease: "power2.out" }, HALF);
+        tl.to(sq, { scaleX: 1.42, scaleY: 0.22, duration: 0.05, ease: "power3.in" }, C_AT - 0.04);
+        // Struggles under the pile on beat 3 and its off-beat.
+        var struggle = function (t) {
+          tl.to(sq, { scaleX: 1.28, scaleY: 0.36, duration: 0.08, ease: "power2.out" }, t);
+          tl.to(sq, { scaleX: 1.42, scaleY: 0.23, duration: 0.1, ease: "power2.in" }, t + 0.09);
+        };
+        struggle(beat(3));
+        struggle(beat(3) + HALF);
+
+        // Pile bulges above Amigo while it struggles.
+        var near = function (L, cx, cy) {
+          var dx = L.x + Math.min(L.w, 260) / 2 - cx, dy = L.y + 11 - cy;
+          return { d: Math.sqrt(dx * dx + dy * dy), a: Math.atan2(dy, dx) };
+        };
+        var bulge = function (t) {
+          for (var b = 0; b < lines.length; b++) {
+            var q = near(lines[b], HOME.x, HOME.y - 20);
+            if (q.d < 240) {
+              var k = 16 * (1 - q.d / 240);
+              tl.to(el[b], { y: lines[b].y - k, duration: 0.08, ease: "power2.out" }, t);
+              tl.to(el[b], { y: lines[b].y, duration: 0.12, ease: "power2.in" }, t + 0.09);
+            }
+          }
+        };
+        bulge(beat(3));
+        bulge(beat(3) + HALF);
+
+        // ---- Scene 2 (1.4-2.81s): beat 4, Amigo bursts out; lines scatter at index-derived angles.
+        var BURST = beat(4);
+        tl.set(amigo, { zIndex: 5 }, BURST - 0.02);
+        for (var s = 0; s < lines.length; s++) {
+          var Ls = lines[s], qs = near(Ls, HOME.x, HOME.y - 20);
+          if (qs.d < 300) {
+            var ang = -Math.PI / 2 + (Math.cos(qs.a) >= 0 ? 1 : -1) * (0.25 + prand(s, 8) * 1.1);
+            var dist = 520 + prand(s, 9) * 600;
+            tl.to(el[s], {
+              x: Ls.x + Math.cos(ang) * dist, y: Ls.y + Math.sin(ang) * dist,
+              rotation: Ls.r + (prand(s, 10) - 0.5) * 320, opacity: 0,
+              duration: 0.62, ease: "power3.out"
+            }, BURST + prand(s, 11) * 0.04);
+          } else if (qs.d < 580) {
+            var push = 34 * (1 - (qs.d - 300) / 280);
+            tl.to(el[s], { x: Ls.x + Math.cos(qs.a) * push, y: Ls.y + Math.sin(qs.a) * push, duration: 0.09, ease: "power2.out" }, BURST + 0.02);
+            tl.to(el[s], { x: Ls.x, y: Ls.y, duration: 0.3, ease: "power3.out" }, BURST + 0.11);
+          }
+        }
+        // Camera kick on the burst.
+        tl.fromTo($("cam"), { x: 0, y: 0 }, { x: 9, y: -5, duration: 0.03, ease: "none", immediateRender: false }, BURST);
+        tl.to($("cam"), { x: -7, y: 4, duration: 0.03, ease: "none" }, BURST + 0.03);
+        tl.to($("cam"), { x: 4, y: -2, duration: 0.03, ease: "none" }, BURST + 0.06);
+        tl.to($("cam"), { x: 0, y: 0, duration: 0.06, ease: "power2.out" }, BURST + 0.09);
+
+        // Big stretch, spinning arc to the summit, lands on beat 5.
+        var LAND = beat(5), AIR = LAND - BURST;
+        var A = { x: HOME.x - 65, y: HOME.y - FOOT }, B = { x: TOP.x - 65, y: TOP.y - FOOT };
+        tl.to(sq, { scaleX: 0.68, scaleY: 1.5, duration: 0.08, ease: "power2.out" }, BURST - 0.03);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.22, ease: "power1.inOut" }, BURST + 0.07);
+        tl.fromTo(amigo, { x: A.x }, { x: B.x, duration: AIR, ease: "none", immediateRender: false }, BURST);
+        tl.fromTo(amigo, { y: A.y }, { y: 300 - FOOT, duration: AIR / 2, ease: "power2.out", immediateRender: false }, BURST);
+        tl.to(amigo, { y: B.y, duration: AIR / 2, ease: "power2.in" }, BURST + AIR / 2);
+        tl.fromTo(spin, { rotation: 0 }, { rotation: 360, duration: AIR * 0.86, ease: "power2.inOut", immediateRender: false }, BURST + 0.04);
+        // Landing squash + settle.
+        tl.to(sq, { scaleX: 1.36, scaleY: 0.66, duration: 0.05, ease: "power2.out" }, LAND);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.16, ease: "back.out(2)" }, LAND + 0.05);
+        // The summit dips under it.
+        for (var d = 0; d < lines.length; d++) {
+          var qd = near(lines[d], TOP.x, TOP.y + 20);
+          if (qd.d < 280 && lines[d].x > 520) {
+            var dk = 12 * (1 - qd.d / 280);
+            tl.to(el[d], { y: lines[d].y + dk, duration: 0.05, ease: "power2.out" }, LAND);
+            tl.to(el[d], { y: lines[d].y, duration: 0.28, ease: "power3.out" }, LAND + 0.05);
+          }
+        }
+        pileThud(LAND, 6);
+
+        // Leftover debris rains onto its head, then the shiver flings it off.
+        var HEAD = TOP.y - FOOT + 12;
+        var DEB = [
+          { x: TOP.x - 58, y: HEAD - 23, r: -5, t: LAND + 0.07, fx: -300, fy: -170, fr: -110 },
+          { x: TOP.x - 4, y: HEAD - 44, r: 7, t: LAND + 0.12, fx: 330, fy: -120, fr: 140 },
+          { x: TOP.x - 30, y: HEAD - 66, r: -3, t: LAND + 0.17, fx: 60, fy: -330, fr: 220 }
+        ];
+        for (var g = 0; g < DEB.length; g++) {
+          var D = DEB[g], de = $("deb-" + g);
+          gsap.set(de, { x: D.x, y: -120, rotation: D.r * 4, opacity: 1 });
+          tl.fromTo(de, { x: D.x, y: -120, rotation: D.r * 4 },
+            { x: D.x, y: D.y, rotation: D.r, duration: 0.2, ease: "power2.in", immediateRender: false }, D.t - 0.2);
+          tl.to(de, { x: D.x + D.fx, y: D.y + D.fy, rotation: D.r + D.fr, opacity: 0, duration: 0.42, ease: "power2.out" },
+            LAND + 0.24 + g * 0.05);
+        }
+        // Shiver: deterministic x-jitter for one beat.
+        var SH = LAND + 0.2;
+        for (var j = 0; j < 10; j++) {
+          tl.to(lean, { x: (j % 2 ? -1 : 1) * (9 - j * 0.7), duration: 0.026, ease: "none" }, SH + j * 0.026);
+        }
+        tl.to(lean, { x: 0, duration: 0.05, ease: "power2.out" }, SH + 0.26);
+
+        // ---- Groove + Scene 3 (2.81-3.75s): slams on beats 7 and 8; Amigo leans back skeptically.
+        var bob = function (t, big) {
+          tl.to(sq, { scaleX: big ? 1.16 : 1.1, scaleY: big ? 0.84 : 0.9, duration: 0.06, ease: "power2.out" }, t);
+          tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.2, ease: "power2.out" }, t + 0.06);
+        };
+        var step = function (t, dx) {
+          tl.to(amigo, { x: B.x + dx, duration: 0.18, ease: "power2.inOut" }, t);
+          tl.to(amigo, { y: B.y - 12, duration: 0.09, ease: "power2.out" }, t);
+          tl.to(amigo, { y: B.y, duration: 0.09, ease: "power2.in" }, t + 0.09);
+        };
+        bob(beat(6), false);
+        step(beat(6) + HALF, 16);
+
+        // Beat 7: "Readable?" slams in big and scales down onto the right.
+        var R7 = beat(7), R8 = beat(8);
+        gsap.set($("say-1"), { opacity: 0 });
+        tl.fromTo($("say-1"), { opacity: 0, scale: 1.7, y: -30 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: "expo.out", immediateRender: false }, R7 - 0.06);
+        pileThud(R7, 10);
+        bob(R7, true);
+        tl.to(lean, { rotation: -13, duration: 0.24, ease: "power3.out" }, R7);
+
+        // Off-beat: double-take snap back toward the words.
+        step(R7 + HALF, 4);
+        tl.to(lean, { rotation: -2, duration: 0.1, ease: "power3.out" }, R7 + HALF);
+
+        // Beat 8: "Barely." streaks in from the right; Amigo leans away further.
+        gsap.set($("say-2"), { opacity: 0 });
+        tl.fromTo($("say-2"), { opacity: 0, x: 280, filter: "blur(14px)" },
+          { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.26, ease: "expo.out", immediateRender: false }, R8 - 0.07);
+        pileThud(R8, 7);
+        bob(R8, true);
+        tl.to(lean, { rotation: -23, duration: 0.22, ease: "power3.out" }, R8);
+        // Off-beat side-step, and a slow skeptical lean to the end (never dead still).
+        step(R8 + HALF, 10);
+        tl.to(lean, { rotation: -26, duration: END - (R8 + 0.24), ease: "sine.inOut" }, R8 + 0.24);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

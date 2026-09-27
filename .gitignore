@@ -18,3 +18,6 @@ brand/kit/build/
 # The API gallery build output (node gallery/build.mjs).
 gallery/dist/
 functions/*/node_modules/
+
+# Impeccable writes a hook cache beside its config.
+.impeccable/hook.cache.json

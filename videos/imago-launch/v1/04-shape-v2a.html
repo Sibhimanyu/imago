@@ -1,0 +1,309 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); }
+    @font-face { font-family: "Inter Display"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #1b1b19;
+    }
+
+    /* ---------- Scene 1: paper ground + Amigo + camera ---------- */
+    #f04-paper { position: absolute; inset: 0; background: #f6f5f1; }
+    #f04-world { position: absolute; inset: 0; overflow: hidden; }
+    #f04-cam { position: absolute; inset: 0; }
+    /* 32-unit viewBox at 32px/unit: figure spans y 36..900 (80% of height, above the keep-out) */
+    #f04-amigo {
+      position: absolute;
+      left: 448px;
+      top: -60px;
+      width: 1024px;
+      height: 1024px;
+      color: #1b1b19;
+    }
+    #f04-amigo svg { display: block; width: 100%; height: 100%; }
+
+    /* ---------- Inside the aperture: ink engine ---------- */
+    #f04-ink { position: absolute; inset: 0; background: #1b1b19; }
+    #f04-inside {
+      position: absolute;
+      inset: 0;
+      perspective: 1500px;
+      color: #f6f5f1;
+    }
+    #f04-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 118px;
+      text-align: center;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 60px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: #f6f5f1;
+      white-space: pre;
+    }
+    #f04-blockrow {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 230px;
+      height: 480px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #f04-block {
+      margin: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 40px;
+      line-height: 60px;
+      color: #a8a79f;
+      white-space: pre;
+      transform-origin: 50% 50%;
+    }
+    .f04-tok { display: inline-block; white-space: pre; perspective: 700px; }
+    .f04-ch { display: inline-block; white-space: pre; transform-origin: 50% 55%; backface-visibility: hidden; }
+    .f04-str { color: #f6f5f1; }
+    .f04-num { color: #8fb4e3; }
+
+    /* schema chip + fingerprint rings (centre y = 470) */
+    #f04-chipwrap {
+      position: absolute;
+      left: 660px;
+      top: 340px;
+      width: 600px;
+      height: 260px;
+    }
+    #f04-rings { position: absolute; left: -34px; top: 0; width: 668px; height: 260px; overflow: visible; }
+    #f04-chip {
+      position: absolute;
+      left: 40px;
+      top: 74px;
+      width: 520px;
+      height: 112px;
+      border-radius: 100px;
+      background: #ffffff;
+      color: #1b1b19;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 60px;
+      line-height: 112px;
+      text-align: center;
+      letter-spacing: 0;
+    }
+    #f04-question {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 672px;
+      text-align: center;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 64px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: #f6f5f1;
+      white-space: nowrap;
+    }
+    .f04-word { display: inline-block; margin: 0 0.12em; }
+
+    #f04-black { position: absolute; inset: 0; background: #1b1b19; }
+  </style>
+
+  <div data-hf-id="hf-uxo0" id="root" data-composition-id="04-shape" data-start="0" data-duration="3.75" data-width="1920" data-height="1080">
+    <!-- Scene 1 ground + world (until the camera is through the aperture) -->
+    <div data-hf-id="hf-1h3k" id="f04-paper" class="clip" data-start="0" data-duration="0.94" data-track-index="0"></div>
+    <div data-hf-id="hf-e859" id="f04-world" class="clip" data-start="0" data-duration="0.94" data-track-index="1">
+      <div data-hf-id="hf-5fyv" id="f04-cam">
+        <div data-hf-id="hf-b16j" id="f04-amigo">
+          <svg data-hf-id="hf-fun6" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- the window behind the aperture: darkens as the camera goes through (under the body, so the body keeps the rim) -->
+            <rect data-hf-id="hf-p987" id="f04-window" x="10.6" y="8.7" width="10.8" height="5.9" rx="2.5" fill="#1B1B19" opacity="0" />
+            <g data-hf-id="hf-g1zz" fill="currentColor">
+              <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+              <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+              <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inside the aperture -->
+    <div data-hf-id="hf-ckfr" id="f04-ink" class="clip" data-start="0.94" data-duration="2.81" data-track-index="2"></div>
+    <div data-hf-id="hf-55wy" id="f04-inside" class="clip" data-start="0.94" data-duration="2.61" data-track-index="3">
+      <div data-hf-id="hf-db0b" id="f04-label">Reads the shape.</div>
+
+      <div data-hf-id="hf-660r" id="f04-blockrow">
+<pre data-hf-id="hf-24hy" id="f04-block">{
+  "name": <span data-hf-id="hf-1853" class="f04-tok f04-str" data-src="&quot;pikachu&quot;" data-tgt="string" data-at="1.17"></span>,
+  "base_experience": <span data-hf-id="hf-6wt6" class="f04-tok f04-num" data-src="112" data-tgt="number" data-at="1.41"></span>,
+  "height": <span data-hf-id="hf-6rtc" class="f04-tok f04-num" data-src="4" data-tgt="number" data-at="1.47"></span>,
+  "is_default": <span data-hf-id="hf-uevn" class="f04-tok f04-str" data-src="true" data-tgt="boolean" data-at="1.64"></span>,
+  "abilities": <span data-hf-id="hf-xa9p" class="f04-tok f04-str" data-src="[ … ]" data-tgt="array" data-at="1.876"></span>,
+  "types": <span data-hf-id="hf-ypxq" class="f04-tok f04-str" data-src="[ &quot;electric&quot; ]" data-tgt="array" data-at="1.94"></span>
+}</pre>
+      </div>
+
+      <div data-hf-id="hf-tyow" id="f04-chipwrap">
+        <svg data-hf-id="hf-68b4" id="f04-rings" viewBox="0 0 668 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect data-hf-id="hf-zmvr" id="f04-ring1" x="48" y="48" width="572" height="164" rx="82" fill="none" stroke="#F6F5F1" stroke-width="3" pathLength="1" opacity="0.85" />
+          <rect data-hf-id="hf-ypj1" id="f04-ring2" x="24" y="24" width="620" height="212" rx="106" fill="none" stroke="#F6F5F1" stroke-width="3" pathLength="1" opacity="0.5" transform="rotate(180 334 130)" />
+          <rect data-hf-id="hf-bw72" id="f04-ring3" x="1.5" y="1.5" width="665" height="257" rx="128.5" fill="none" stroke="#F6F5F1" stroke-width="3" pathLength="1" opacity="0.28" />
+        </svg>
+        <div data-hf-id="hf-gic2" id="f04-chip">sch_1t1u1v1</div>
+      </div>
+
+      <div data-hf-id="hf-smg2" id="f04-question"><span data-hf-id="hf-1yj1" class="f04-word">Seen</span><span data-hf-id="hf-jdmm" class="f04-word">this</span><span data-hf-id="hf-lo9f" class="f04-word">shape</span><span data-hf-id="hf-ee4a" class="f04-word">before?</span></div>
+    </div>
+
+    <!-- The silence dip: pure ink into the drop -->
+    <div data-hf-id="hf-4mtt" id="f04-black" class="clip" data-start="3.55" data-duration="0.2" data-track-index="4"></div>
+  </div>
+
+  <script>
+    (function () {
+      const ID = "04-shape";
+      const $ = (id) => document.getElementById("f04-" + id);
+      const tl = gsap.timeline({ paused: true });
+      const B = 0.469; // beat
+      const H = 0.2345; // half beat
+      const frac = (v) => v - Math.floor(v);
+      const hash = (i) => frac(Math.sin(i * 12.9898) * 43758.5453);
+
+      // ============ Scene 1 (0.0–0.94): Amigo drops in huge, camera pushes through its aperture ============
+      const amigo = $("amigo");
+      // fall from above, stretched
+      tl.fromTo(amigo,
+        { y: -1000, scaleX: 0.93, scaleY: 1.1, transformOrigin: "50% 93.75%" },
+        { y: 0, duration: H, ease: "power2.in" }, 0);
+      // land: squash on the kick at the half beat, overshoot, settle on beat 1
+      tl.to(amigo, { scaleX: 1.18, scaleY: 0.8, duration: 0.06, ease: "power1.out" }, H);
+      tl.to(amigo, { scaleX: 0.96, scaleY: 1.05, duration: 0.1, ease: "power2.out" }, H + 0.06);
+      tl.to(amigo, { scaleX: 1, scaleY: 1, duration: B - H - 0.16, ease: "power2.inOut" }, H + 0.16);
+
+      // Camera: one push centred on the aperture (world point 960, 312.8).
+      // transform-origin sits on the aperture, so scaling keeps it pinned while the y term
+      // carries it to frame centre; at scale 9 the aperture interior covers the whole frame.
+      const AP_X = 960, AP_Y = 312.8;
+      tl.fromTo($("cam"),
+        { scale: 1, y: 0, transformOrigin: AP_X + "px " + AP_Y + "px" },
+        { scale: 9, y: 540 - AP_Y, duration: 0.94 - B, ease: "power3.in" }, B);
+      // the window goes dark as we go through it: inside is ink
+      tl.fromTo($("window"), { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power1.in" }, 0.78);
+
+      // ============ Scene 2 (0.94–2.34): inside, real pikachu values flip to their types ============
+      const T2 = 0.94;
+      // the JSON plane rushes up out of the dark (continuation of the push)
+      tl.fromTo($("block"),
+        { scale: 0.55, opacity: 0, filter: "blur(14px)" },
+        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.42, ease: "expo.out" }, T2);
+
+      // "Reads the shape." types in above
+      const label = $("label");
+      const labelText = label.textContent;
+      label.textContent = "";
+      const labelChars = [...labelText].map((c) => {
+        const s = document.createElement("span");
+        s.textContent = c;
+        label.appendChild(s);
+        return s;
+      });
+      tl.fromTo(labelChars, { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: 0.024, ease: "none" }, T2 + 0.04);
+
+      // hacker-flip-3d per value token: fold the value away, flicker seeded glyphs, land on the type
+      const GLYPHS = "abcdefghijklmnopqrstuvwxyz{}[]<>#$%&*0123456789";
+      const glyph = (seed) => GLYPHS[Math.floor(hash(seed + 1) * GLYPHS.length)];
+      const FLIP = 0.3, STAG = 0.02, SPLIT = 0.4, REVEAL = 0.6;
+      const SRC_NUM = "#8FB4E3", PAPER = "#F6F5F1";
+      document.querySelectorAll("#f04-block .f04-tok").forEach((tok, ti) => {
+        const src = tok.dataset.src, tgt = tok.dataset.tgt, at = parseFloat(tok.dataset.at);
+        const srcColor = tok.classList.contains("f04-num") ? SRC_NUM : PAPER;
+        const n = Math.max(src.length, tgt.length);
+        for (let i = 0; i < n; i++) {
+          const el = document.createElement("span");
+          el.className = "f04-ch";
+          el.textContent = src[i] || "";
+          el.style.color = srcColor;
+          tok.appendChild(el);
+          const sc = src[i] || "", tc = tgt[i] || "";
+          const st = { p: 0 };
+          tl.fromTo(st, { p: 0 }, {
+            p: 1,
+            duration: FLIP,
+            ease: "power2.out",
+            immediateRender: false,
+            onUpdate: () => {
+              const p = st.p;
+              if (p < SPLIT) {
+                el.textContent = sc;
+                el.style.color = srcColor;
+                el.style.transform = "rotateX(" + (-90 * (p / SPLIT)) + "deg)";
+              } else {
+                const q = (p - SPLIT) / (1 - SPLIT);
+                el.style.color = PAPER;
+                el.textContent = q < REVEAL ? (tc ? glyph(ti * 997 + i * 31 + Math.floor(q * 3)) : "") : tc;
+                el.style.transform = "rotateX(" + (90 * (1 - q)) + "deg)";
+              }
+            },
+          }, at + i * STAG);
+        }
+      });
+
+      // ============ Scene 3 (2.34–3.28): collapse into the schema id; fingerprint rings; the question ============
+      const T3 = 2.345; // beat 6 (1-based)
+      tl.to($("block"), { scale: 0.22, opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, T3);
+      tl.fromTo($("chip"),
+        { scale: 0.5, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.36, ease: "expo.out" }, T3 + 0.17);
+      ["ring1", "ring2", "ring3"].forEach((r, i) => {
+        const len = [1, 0.86, 0.7][i];
+        tl.fromTo($(r),
+          { strokeDasharray: "1 1", strokeDashoffset: 1 },
+          { strokeDashoffset: 1 - len, duration: 0.42, ease: "power2.inOut" }, T3 + 0.24 + i * 0.07);
+      });
+      // beat 7: the question builds word by word (eighth-note stagger)
+      const T7 = 2.814;
+      tl.fromTo("#f04-question .f04-word",
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: "power3.out", stagger: B / 4 }, T7);
+
+      // ============ Scene 4 (3.28–3.55): tension, the chip trembles; 3.55 cut to ink ============
+      const T4 = 3.283;
+      const shake = { p: 0 };
+      const chipwrap = $("chipwrap");
+      tl.fromTo(shake, { p: 0 }, {
+        p: 1,
+        duration: 3.55 - T4,
+        ease: "none",
+        immediateRender: false,
+        onUpdate: () => {
+          const p = shake.p;
+          const k = Math.floor(p * 18);
+          const amp = 2 + 9 * p;
+          gsap.set(chipwrap, {
+            x: (hash(k * 2 + 3) * 2 - 1) * amp,
+            y: (hash(k * 2 + 7) * 2 - 1) * amp * 0.5,
+          });
+        },
+      }, T4);
+      tl.fromTo($("rings"), { scale: 1 }, { scale: 1.06, duration: 3.55 - T4, ease: "power2.in", transformOrigin: "50% 50%" }, T4);
+      // #f04-black clip owns 3.55–3.75 (pure ink into the drop)
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</template>

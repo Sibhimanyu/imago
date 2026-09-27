@@ -1,0 +1,285 @@
+<template>
+  <div data-hf-id="hf-pz9b" id="root" data-composition-id="07-watch" data-start="0" data-duration="3.75" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f07-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f07-stage { position: absolute; inset: 0; overflow: hidden; }
+
+      /* headline + interval chips (outside the camera: the camera pushes the window only) */
+      .f07-head { position: absolute; left: 96px; top: 262px; width: 560px; }
+      .f07-line {
+        display: block; font-family: "Inter Display", "Inter", sans-serif; font-weight: 600;
+        font-size: 104px; line-height: 1.02; letter-spacing: -0.035em; color: #1B1B19;
+        transform-origin: 0% 60%; white-space: nowrap; will-change: transform;
+      }
+      .f07-chips { position: absolute; left: 100px; top: 510px; display: flex; gap: 12px; }
+      .f07-chip {
+        font-family: "Inter", sans-serif; font-weight: 500; font-size: 24px; line-height: 1;
+        padding: 12px 22px; border-radius: 100px; background: #F1EFE9; color: #66655F;
+        border: 1px solid #F1EFE9; white-space: nowrap; will-change: transform;
+      }
+      .f07-chip-on { background: #FFFFFF; color: #1B1B19; border-color: #E7E5DF; }
+
+      /* camera: outer scales about the canvas centre, inner counter-translates */
+      .f07-camo { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+      .f07-cami { position: absolute; inset: 0; will-change: transform; }
+
+      /* the floating window: crop of the 1600x1000 viewport, x 280-1460, y 56-736 (sidebar + top bar skipped) */
+      .f07-win { position: absolute; left: 660px; top: 170px; width: 1180px; height: 680px; will-change: transform; }
+      .f07-card {
+        position: absolute; inset: 0; background: #FFFFFF; border: 1px solid #E7E5DF;
+        border-radius: 14px; overflow: hidden;
+        box-shadow: 0 2px 6px rgba(27,27,25,.04), 0 18px 46px -16px rgba(27,27,25,.20);
+      }
+      .f07-shot { position: absolute; left: -280px; top: -56px; width: 1600px; height: 1000px; display: block; }
+
+      /* change overlays, window-local px (= viewport px - (280, 56)) */
+      .f07-tint {
+        position: absolute; background: #FDF3CD; border: 1.5px solid #F5CE47; border-radius: 12px;
+        mix-blend-mode: multiply; opacity: 0;
+      }
+      #f07-tint-t { left: 16px; top: 198px; width: 240px; height: 126px; }
+      #f07-tint-h { left: 296px; top: 198px; width: 158px; height: 126px; }
+      .f07-patch { position: absolute; overflow: hidden; background: #FFFFFF; opacity: 0; }
+      #f07-patch-t { left: 157px; top: 232px; width: 54px; height: 82px; }
+      #f07-patch-h { left: 362px; top: 232px; width: 54px; height: 82px; }
+      .f07-col { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
+      .f07-dig {
+        display: block; height: 82px; position: relative;
+        font-family: "Inter Display", "Inter", sans-serif; font-weight: 600; font-size: 88px;
+        letter-spacing: -0.045em; line-height: 82px; color: #1B1B19; font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .f07-dig span { position: absolute; left: var(--dx, 0px); top: var(--dy, 0px); }
+      .f07-tag {
+        position: absolute; left: 160px; top: 205px; height: 22px; padding: 0 8px; border-radius: 100px;
+        background: #F5CE47; color: #6F570B; font-family: "Inter", sans-serif; font-weight: 600;
+        font-size: 11px; letter-spacing: 0.08em; line-height: 22px; text-transform: uppercase;
+        transform-origin: 50% 50%; opacity: 0; will-change: transform;
+      }
+      /* Live pill countdown digits ("27s" sits at viewport x 1042-1064) */
+      #f07-patch-l { left: 761px; top: 25px; width: 26px; height: 18px; background: #E4F4E8; }
+      .f07-cnt {
+        display: block; height: 18px; position: relative; font-family: "Inter", sans-serif; font-weight: 500;
+        font-size: 12px; line-height: 18px; color: #4C8F63; font-variant-numeric: tabular-nums; white-space: nowrap;
+      }
+      .f07-cnt span { position: absolute; left: var(--dx, 0px); top: var(--dy, 0px); }
+      /* "Changed 3" pill, tucked under the Live pill (the Save button sits flush to its right) */
+      .f07-chg {
+        position: absolute; left: 702px; top: 55px; height: 26px; padding: 0 11px; border-radius: 100px;
+        background: #FDF3CD; border: 1px solid #F5CE47; color: #6F570B; display: flex; align-items: center; gap: 4px;
+        font-family: "Inter", sans-serif; font-weight: 500; font-size: 12px; white-space: nowrap;
+        transform-origin: 0% 50%; opacity: 0; will-change: transform;
+      }
+      .f07-chgn { position: relative; display: inline-block; width: 8px; height: 16px; overflow: hidden; font-weight: 600; }
+      .f07-chgcol { position: absolute; left: 0; top: 0; will-change: transform; }
+      .f07-chgcol b { display: block; height: 16px; line-height: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* Amigo: pos (x,y) > step (x side-steps, shiver) > spin > squash (feet-anchored) */
+      .f07-amigo { position: absolute; left: 721px; top: -33px; width: 56px; height: 56px; color: #1B1B19; opacity: 0; }
+      .f07-step { position: absolute; inset: 0; }
+      .f07-spin { position: absolute; inset: 0; transform-origin: 50% 55%; }
+      .f07-squash { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f07-squash svg { display: block; width: 56px; height: 56px; }
+    </style>
+
+    <div data-hf-id="hf-3cgo" class="clip f07-ground" data-start="0" data-duration="3.75" data-track-index="0"></div>
+
+    <div data-hf-id="hf-6ig4" class="clip f07-stage" data-start="0" data-duration="3.75" data-track-index="1">
+      <div data-hf-id="hf-ljqy" class="f07-head" data-layout-allow-overlap="">
+        <span data-hf-id="hf-b5rz" class="f07-line" id="f07-l1">Watches</span>
+        <span data-hf-id="hf-dykk" class="f07-line" id="f07-l2">it change.</span>
+      </div>
+      <div data-hf-id="hf-2zpn" class="f07-chips">
+        <span data-hf-id="hf-f51m" class="f07-chip" id="f07-chip-0">10s</span>
+        <span data-hf-id="hf-b6ip" class="f07-chip f07-chip-on" id="f07-chip-1">30s</span>
+        <span data-hf-id="hf-vu69" class="f07-chip" id="f07-chip-2">60s</span>
+      </div>
+
+      <div data-hf-id="hf-3yxf" class="f07-camo" id="f07-camo" data-layout-allow-overflow="">
+        <div data-hf-id="hf-cd4v" class="f07-cami" id="f07-cami" data-layout-allow-overflow="">
+          <div data-hf-id="hf-we8x" class="f07-win" id="f07-win" data-layout-allow-overflow="">
+            <div data-hf-id="hf-ucj4" class="f07-card">
+              <img data-hf-id="hf-p035" class="f07-shot" src="assets/app-weather.png" alt="Forecast before Watch">
+              <img data-hf-id="hf-t478" class="f07-shot" id="f07-shot-on" src="assets/app-watch.png" alt="Forecast with Watch on">
+
+              <div data-hf-id="hf-vd2x" class="f07-tint" id="f07-tint-t"></div>
+              <div data-hf-id="hf-t1vp" class="f07-tint" id="f07-tint-h"></div>
+              <div data-hf-id="hf-mefd" class="f07-patch" id="f07-patch-t">
+                <div data-hf-id="hf-3o0d" class="f07-col" id="f07-col-t">
+                  <span data-hf-id="hf-07h5" class="f07-dig" data-layout-allow-overlap style="--dx:-3px;--dy:0px"><span data-hf-id="hf-ikog" data-layout-allow-overlap>1</span></span>
+                  <span data-hf-id="hf-avfx" class="f07-dig" data-layout-allow-overlap style="--dx:-3px;--dy:0px"><span data-hf-id="hf-gl5b" data-layout-allow-overlap>4</span></span>
+                </div>
+              </div>
+              <div data-hf-id="hf-g585" class="f07-patch" id="f07-patch-h">
+                <div data-hf-id="hf-r20h" class="f07-col" id="f07-col-h">
+                  <span data-hf-id="hf-c2d0" class="f07-dig" data-layout-allow-overlap style="--dx:-3px;--dy:0px"><span data-hf-id="hf-g6ua" data-layout-allow-overlap>7</span></span>
+                  <span data-hf-id="hf-bo1z" class="f07-dig" data-layout-allow-overlap style="--dx:-3px;--dy:0px"><span data-hf-id="hf-fsj9" data-layout-allow-overlap>6</span></span>
+                </div>
+              </div>
+              <div data-hf-id="hf-ab6u" class="f07-tag" id="f07-tag">Changed</div>
+
+              <div data-hf-id="hf-sr81" class="f07-patch" id="f07-patch-l">
+                <div data-hf-id="hf-c8et" class="f07-col" id="f07-col-l">
+                  <span data-hf-id="hf-tpw1" class="f07-cnt" style="--dx:1px;--dy:0px"><span data-hf-id="hf-0iej">27s</span></span>
+                  <span data-hf-id="hf-ysw5" class="f07-cnt" style="--dx:1px;--dy:0px"><span data-hf-id="hf-2p22">26s</span></span>
+                  <span data-hf-id="hf-zzt8" class="f07-cnt" style="--dx:1px;--dy:0px"><span data-hf-id="hf-xdut">25s</span></span>
+                </div>
+              </div>
+
+              <div data-hf-id="hf-wgqi" class="f07-chg" id="f07-chg">
+                <span data-hf-id="hf-fgxr">Changed</span>
+                <span data-hf-id="hf-nyg5" class="f07-chgn"><span data-hf-id="hf-mfmv" class="f07-chgcol" id="f07-chgcol"><b data-hf-id="hf-t4n0">1</b><b data-hf-id="hf-rxpx">2</b><b data-hf-id="hf-sc0y">3</b></span></span>
+              </div>
+            </div>
+
+            <div data-hf-id="hf-v11w" class="f07-amigo" id="f07-amigo" data-layout-allow-overlap="">
+              <div data-hf-id="hf-tcga" class="f07-step" id="f07-step">
+                <div data-hf-id="hf-ki02" class="f07-spin" id="f07-spin">
+                  <div data-hf-id="hf-8bc2" class="f07-squash" id="f07-squash">
+                    <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                      <g data-hf-id="hf-g1zz" fill="currentColor">
+                        <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+                        <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+                        <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "07-watch";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f07-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid, frame-local: beat n (1-indexed) = (n - 1) * 0.469.
+        var BEAT = 0.469, HALF = 0.2345;
+        var beat = function (n) { return (n - 1) * BEAT; };
+
+        // ---- Scene 1 (0.0-0.94s): the Forecast window slides in tilted and settles flat.
+        tl.fromTo($("win"),
+          { x: 760, y: 40, rotationY: -26, rotationX: 8, rotation: 3, transformPerspective: 1800 },
+          { x: 0, y: 0, rotationY: 0, rotationX: 0, rotation: 0, transformPerspective: 1800, duration: 0.62, ease: "expo.out" }, 0);
+        tl.fromTo($("l1"), { x: -140, scale: 1.2, opacity: 0 },
+          { x: 0, scale: 1, opacity: 1, duration: 0.36, ease: "expo.out" }, 0.06);
+        tl.fromTo($("l2"), { y: 60, scale: 1.15, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.34, ease: "expo.out" }, beat(2));
+
+        // ---- Scene 2 (0.94-1.875s): coordinate-target-zoom onto the Watch switch + Live pill.
+        // Target = window-local (690, 30) -> canvas (1350, 200); offset from centre (390, -340); T = -offset.
+        var ZS = 1.65, ZX = -390, ZY = 340;
+        tl.fromTo($("camo"), { scale: 1 }, { scale: ZS, duration: 0.55, ease: "power3.inOut" }, 0.62);
+        tl.fromTo($("cami"), { x: 0, y: 0 }, { x: ZX, y: ZY, duration: 0.55, ease: "power3.inOut" }, 0.62);
+        // beat 3: the switch flips on -> the Watch capture (switch ON, 30s, Live . 27s)
+        tl.fromTo($("shot-on"), { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out" }, beat(3));
+        // camera punctuates the flip (tiny push, re-locks)
+        tl.to($("camo"), { scale: ZS * 1.025, duration: 0.08, ease: "power2.out" }, beat(3));
+        tl.to($("camo"), { scale: ZS, duration: 0.2, ease: "power3.out" }, beat(3) + 0.08);
+
+        // ---- Scene 3 (1.875-3.28s): pull back to the whole window, values change.
+        tl.to($("camo"), { scale: 1, duration: 0.44, ease: "power3.inOut" }, beat(5) - 0.44);
+        tl.to($("cami"), { x: 0, y: 0, duration: 0.44, ease: "power3.inOut" }, beat(5) - 0.44);
+
+        // Live countdown ticks (one per ~second, on off-beats)
+        tl.set($("patch-l"), { opacity: 1 }, beat(3) + 0.1);
+        tl.to($("col-l"), { y: -18, duration: 0.18, ease: "power3.out" }, beat(5) + HALF);
+        tl.to($("col-l"), { y: -36, duration: 0.18, ease: "power3.out" }, beat(7) + HALF);
+
+        // a value flips: tint + patch colour in lockstep (multiply over white == the tint colour), digit rolls up
+        var flip = function (key, t) {
+          tl.fromTo($("tint-" + key), { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power2.out" }, t);
+          tl.set($("patch-" + key), { opacity: 1 }, t);
+          tl.fromTo($("patch-" + key), { backgroundColor: "#FFFFFF" },
+            { backgroundColor: "#FDF3CD", duration: 0.16, ease: "power2.out", immediateRender: false }, t);
+          tl.fromTo($("col-" + key), { y: 0 }, { y: -82, duration: 0.26, ease: "power3.out", immediateRender: false }, t);
+        };
+        flip("t", beat(5));
+        tl.fromTo($("tag"), { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.24, ease: "power3.out" }, beat(5) + 0.04);
+        flip("h", beat(6));
+
+        // interval chips pop under the headline on beat 6
+        for (var c = 0; c < 3; c++) {
+          tl.fromTo($("chip-" + c), { y: 26, scale: 0.8, opacity: 0 },
+            { y: 0, scale: 1, opacity: 1, duration: 0.3, ease: "power3.out" }, beat(6) + c * 0.06);
+        }
+
+        // beat 7: "Changed" pill pops beside the Live pill, count rolls 1 -> 3 on sixteenths
+        tl.fromTo($("chg"), { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.26, ease: "power3.out" }, beat(7));
+        tl.fromTo($("chgcol"), { y: 0 }, { y: -16, duration: 0.1, ease: "power3.out", immediateRender: false }, beat(7) + 0.117);
+        tl.to($("chgcol"), { y: -32, duration: 0.1, ease: "power3.out" }, beat(7) + HALF);
+
+        // ---- Amigo
+        var amigo = $("amigo"), step = $("step"), spin = $("spin"), sq = $("squash");
+        var landSquash = function (t, sx, sy) {
+          tl.to(sq, { scaleX: sx || 1.28, scaleY: sy || 0.72, duration: 0.05, ease: "power2.out" }, t);
+          tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.16, ease: "back.out(2.2)" }, t + 0.05);
+        };
+        var bob = function (t) {
+          tl.to(sq, { scaleX: 1.1, scaleY: 0.9, duration: 0.06, ease: "power2.out" }, t);
+          tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.16, ease: "power2.out" }, t + 0.06);
+        };
+        var sidestep = function (t, dx) {
+          tl.to(step, { x: dx, duration: 0.14, ease: "power2.inOut" }, t);
+        };
+        // jolt: mini hop, then a deterministic shiver
+        var jolt = function (t) {
+          tl.to(sq, { scaleX: 0.88, scaleY: 1.14, duration: 0.05, ease: "power2.out" }, t);
+          tl.to(amigo, { y: -24, duration: 0.09, ease: "power2.out" }, t);
+          tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.08, ease: "power1.inOut" }, t + 0.05);
+          tl.to(amigo, { y: 0, duration: 0.09, ease: "power2.in" }, t + 0.09);
+          landSquash(t + 0.18, 1.2, 0.8);
+          var jit = [5, -5, 4, -3, 2, 0];
+          for (var i = 0; i < jit.length; i++) {
+            tl.to(step, { x: jit[i], duration: 0.025, ease: "none" }, t + 0.2 + i * 0.025);
+          }
+        };
+
+        // drop (stamp) onto the Live pill; the window dips on impact
+        var LAND = beat(3) + HALF;
+        tl.set(amigo, { opacity: 1 }, LAND - 0.26);
+        tl.fromTo(amigo, { y: -420 }, { y: 0, duration: 0.26, ease: "power3.in" }, LAND - 0.26);
+        tl.fromTo(sq, { scaleX: 0.84, scaleY: 1.2 }, { scaleX: 0.9, scaleY: 1.12, duration: 0.22, ease: "none" }, LAND - 0.26);
+        tl.to(sq, { scaleX: 1.34, scaleY: 0.66, duration: 0.05, ease: "power2.out" }, LAND);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.2, ease: "back.out(2.4)" }, LAND + 0.05);
+        tl.fromTo($("win"), { y: 5 }, { y: 0, duration: 0.24, ease: "power3.out", immediateRender: false }, LAND);
+
+        // groove: bob on the kick, side-step on the off-beat
+        bob(beat(4));
+        sidestep(beat(4) + HALF - 0.07, 5);
+        jolt(beat(5));
+        sidestep(beat(5) + HALF + 0.1, -4);
+        jolt(beat(6));
+        sidestep(beat(6) + HALF + 0.1, 4);
+        jolt(beat(7));
+        sidestep(beat(7) + HALF + 0.1, 0);
+
+        // ---- Scene 4 (3.28-3.75s): beat 8, a proud spin-hop on the pill, lands and holds.
+        var T0 = beat(8), AIR = 0.34;
+        tl.to(sq, { scaleX: 1.16, scaleY: 0.82, duration: 0.05, ease: "power2.out" }, T0 - 0.05);
+        tl.to(sq, { scaleX: 0.84, scaleY: 1.2, duration: 0.07, ease: "power2.out" }, T0);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.14, ease: "power1.inOut" }, T0 + 0.07);
+        tl.to(amigo, { y: -80, duration: AIR / 2, ease: "power2.out" }, T0);
+        tl.to(amigo, { y: 0, duration: AIR / 2, ease: "power2.in" }, T0 + AIR / 2);
+        tl.fromTo(spin, { rotation: 0 }, { rotation: 360, duration: AIR * 0.9, ease: "power2.inOut", immediateRender: false }, T0 + AIR * 0.05);
+        tl.to(sq, { scaleX: 1.3, scaleY: 0.7, duration: 0.05, ease: "power2.out" }, T0 + AIR);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 3.75 - (T0 + AIR + 0.05), ease: "back.out(2)" }, T0 + AIR + 0.05);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

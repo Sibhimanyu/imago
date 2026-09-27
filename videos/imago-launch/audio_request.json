@@ -1,0 +1,80 @@
+{
+  "lines": [
+    {
+      "id": "01",
+      "sfx": [
+        "kick-synced soft pops on each bob",
+        "a cartoon whoosh on the fall",
+        "a heavy thud + squish on the pancake"
+      ]
+    },
+    {
+      "id": "02",
+      "sfx": [
+        "a rushing paper/data cascade",
+        "a counter tick-roll",
+        "a pop as Amigo bursts out",
+        "a quick shake rattle"
+      ]
+    },
+    {
+      "id": "03",
+      "sfx": [
+        "key ticks",
+        "a slide whoosh",
+        "rising charge ticks on each eighth",
+        "a big launch boing + click"
+      ]
+    },
+    {
+      "id": "04",
+      "sfx": [
+        "a whoosh-through",
+        "soft digital blips per type swap",
+        "a rising riser into a hard silence at 3.55s"
+      ]
+    },
+    {
+      "id": "05",
+      "sfx": [
+        "a big drop impact at 0.0",
+        "a card slap on each beat (8)",
+        "a whoosh on each Amigo hop"
+      ]
+    },
+    {
+      "id": "06",
+      "sfx": [
+        "typing ticks",
+        "a heavy stamp thunk per component",
+        "pops for the chips"
+      ]
+    },
+    {
+      "id": "07",
+      "sfx": [
+        "a switch click",
+        "a soft tick per second of the counter",
+        "a bright chime on each change"
+      ]
+    },
+    {
+      "id": "08",
+      "sfx": [
+        "a slam per beat (4)",
+        "the last one bigger"
+      ]
+    },
+    {
+      "id": "09",
+      "sfx": [
+        "two clicks as the field bars merge",
+        "a warm hit on the tagline",
+        "then silence"
+      ]
+    }
+  ],
+  "bgm": {
+    "mode": "none"
+  }
+}

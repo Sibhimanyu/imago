@@ -1,0 +1,501 @@
+<template>
+  <div data-hf-id="hf-nio6" id="root" data-composition-id="06-plan" data-start="0" data-duration="4.25" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f06-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f06-stage { position: absolute; inset: 0; overflow: hidden; }
+
+      /* headline */
+      .f06-head { position: absolute; left: 72px; top: 62px; width: 1776px; height: 104px; }
+      .f06-hline { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      .f06-w {
+        display: inline-block; margin-right: 0.24em;
+        font-family: "Inter Display", "Inter", sans-serif; font-weight: 600; font-size: 84px;
+        line-height: 1.1; letter-spacing: -0.035em; color: #1B1B19; will-change: transform, opacity;
+      }
+
+      /* plan panel (left) */
+      .f06-panel {
+        position: absolute; left: 72px; top: 188px; width: 930px; height: 532px;
+        background: #1B1B19; border-radius: 14px; overflow: hidden;
+        box-shadow: 0 2px 6px rgba(27,27,25,.04), 0 18px 46px -16px rgba(27,27,25,.20);
+      }
+      .f06-tag {
+        position: absolute; left: 44px; top: 36px; font-family: "JetBrains Mono", monospace;
+        font-size: 22px; line-height: 1; color: #A8A79F; letter-spacing: 0.02em;
+      }
+      .f06-code { position: absolute; left: 44px; top: 100px; width: 860px; }
+      .f06-ln {
+        position: relative; height: 56px; font-family: "JetBrains Mono", monospace; font-size: 30px;
+        line-height: 56px; color: #A8A79F; white-space: pre;
+      }
+      .f06-ln .f06-s { color: #F6F5F1; }
+      .f06-txt { position: relative; }
+      .f06-band { position: absolute; left: -18px; right: -20px; top: 3px; bottom: 3px; border-radius: 6px; background: rgba(246,245,241,.10); opacity: 0; }
+      .f06-dot { position: absolute; left: -30px; top: 23px; width: 10px; height: 10px; border-radius: 50%; background: #4FA96A; }
+      .f06-caret { display: inline-block; width: 16px; height: 34px; margin-left: 2px; vertical-align: -6px; background: #F6F5F1; }
+
+      /* rendered card (right) */
+      .f06-card {
+        position: absolute; left: 1026px; top: 188px; width: 822px; height: 532px;
+        background: #FFFFFF; border: 1px solid #E7E5DF; border-radius: 14px;
+        box-shadow: 0 2px 6px rgba(27,27,25,.04), 0 18px 46px -16px rgba(27,27,25,.20);
+      }
+      .f06-title {
+        position: absolute; left: 40px; top: 26px; font-family: "Inter Display", "Inter", sans-serif;
+        font-weight: 600; font-size: 60px; line-height: 1.1; letter-spacing: -0.035em; color: #1B1B19;
+      }
+      .f06-muted {
+        position: absolute; left: 40px; top: 108px; width: 742px; height: 38px; white-space: nowrap;
+        font-family: "Inter", sans-serif; font-weight: 400; font-size: 30px; line-height: 38px; color: #66655F;
+      }
+      .f06-slot { position: absolute; }
+      .f06-well { position: absolute; inset: 0; border-radius: 10px; background: #F1EFE9; }
+      .f06-comp { position: absolute; inset: 0; transform-origin: 50% 50%; }
+      .f06-label { font-family: "Inter", sans-serif; font-weight: 400; font-size: 28px; line-height: 36px; color: #66655F; }
+      .f06-num {
+        font-family: "Inter Display", "Inter", sans-serif; font-weight: 600; font-size: 124px;
+        line-height: 1; letter-spacing: -0.035em; color: #1B1B19; margin-top: 8px;
+      }
+      .f06-h { font-family: "Inter", sans-serif; font-weight: 600; font-size: 30px; line-height: 36px; color: #1B1B19; }
+      .f06-row { position: relative; height: 50px; display: flex; align-items: center; }
+      .f06-rl { width: 222px; font-family: "Inter", sans-serif; font-weight: 400; font-size: 28px; color: #1B1B19; white-space: nowrap; }
+      .f06-track { position: relative; width: 158px; height: 12px; margin-left: 12px; border-radius: 6px; background: #F1EFE9; }
+      .f06-fill { position: absolute; left: 0; top: 0; height: 12px; border-radius: 6px; background: #1B1B19; transform-origin: 0% 50%; }
+      .f06-rv { width: 60px; margin-left: 14px; text-align: right; font-family: "Inter", sans-serif; font-weight: 500; font-size: 28px; color: #1B1B19; }
+      .f06-chips { display: flex; gap: 12px; margin-top: 14px; }
+      .f06-chip {
+        display: inline-block; padding: 10px 24px; border-radius: 100px; background: #F1EFE9;
+        font-family: "Inter", sans-serif; font-weight: 500; font-size: 26px; line-height: 32px; color: #1B1B19;
+      }
+
+      /* provider pills */
+      .f06-pill { position: absolute; top: 824px; height: 78px; transform-origin: 50% 100%; }
+      .f06-pin {
+        position: absolute; inset: 0; border-radius: 100px; background: #FFFFFF; border: 1px solid #E7E5DF;
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Inter", sans-serif; font-weight: 500; font-size: 34px; color: #1B1B19;
+        box-shadow: 0 2px 6px rgba(27,27,25,.04), 0 10px 26px -14px rgba(27,27,25,.20);
+      }
+      .f06-pin.f06-solid { background: #1B1B19; border-color: #1B1B19; color: #F6F5F1; font-weight: 600; }
+
+      /* Amigo rig: pos > lean > spin > squash (feet-anchored) */
+      .f06-amigo { position: absolute; left: 0; top: 0; width: 96px; height: 96px; color: #1B1B19; }
+      .f06-lean { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f06-spin { position: absolute; inset: 0; transform-origin: 50% 55%; }
+      .f06-squash { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f06-squash svg { display: block; width: 96px; height: 96px; overflow: visible; }
+    </style>
+
+    <div data-hf-id="hf-0sub" class="clip f06-ground" data-start="0" data-duration="4.25" data-track-index="0"></div>
+
+    <div data-hf-id="hf-gipt" class="clip f06-stage" data-start="0" data-duration="4.25" data-track-index="1">
+      <div data-hf-id="hf-98e3" class="f06-head" data-layout-allow-overlap="">
+        <div data-hf-id="hf-cg6z" class="f06-hline" id="f06-hla">
+          <span data-hf-id="hf-92ay" class="f06-w" id="f06-a0">The</span><span data-hf-id="hf-junf" class="f06-w" id="f06-a1">model</span><span data-hf-id="hf-odr0" class="f06-w" id="f06-a2">sends</span><span data-hf-id="hf-nkkf" class="f06-w" id="f06-a3">a</span><span data-hf-id="hf-4ye6" class="f06-w" id="f06-a4">plan.</span><span data-hf-id="hf-mg4s" class="f06-w" id="f06-a5">Never</span><span data-hf-id="hf-2446" class="f06-w" id="f06-a6">HTML.</span>
+        </div>
+        <div data-hf-id="hf-1kpc" class="f06-hline" id="f06-hlb">
+          <span data-hf-id="hf-nndl" class="f06-w" id="f06-b0">No</span><span data-hf-id="hf-tsuf" class="f06-w" id="f06-b1">AI?</span><span data-hf-id="hf-orct" class="f06-w" id="f06-b2">It</span><span data-hf-id="hf-fd11" class="f06-w" id="f06-b3">still</span><span data-hf-id="hf-cbe5" class="f06-w" id="f06-b4">works.</span>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-jmis" class="f06-panel" id="f06-panel">
+        <div data-hf-id="hf-tkeg" class="f06-tag">plan</div>
+        <div data-hf-id="hf-keu2" class="f06-code">
+          <div data-hf-id="hf-ua7m" class="f06-ln" id="f06-ln0"><span data-hf-id="hf-pui7" class="f06-txt" id="f06-t0"></span></div>
+          <div data-hf-id="hf-y8bn" class="f06-ln" id="f06-ln1"><span data-hf-id="hf-jose" class="f06-txt" id="f06-t1"></span></div>
+          <div data-hf-id="hf-pkfs" class="f06-ln" id="f06-ln2"><span data-hf-id="hf-fqod" class="f06-txt" id="f06-t2"></span></div>
+          <div data-hf-id="hf-fgly" class="f06-ln" id="f06-ln3"><div data-hf-id="hf-yum6" class="f06-band" id="f06-band3"></div><div data-hf-id="hf-f2zu" class="f06-dot" id="f06-dot3"></div><span data-hf-id="hf-2gi3" class="f06-txt" id="f06-t3"></span></div>
+          <div data-hf-id="hf-lmbr" class="f06-ln" id="f06-ln4"><div data-hf-id="hf-2sq7" class="f06-band" id="f06-band4"></div><div data-hf-id="hf-j13v" class="f06-dot" id="f06-dot4"></div><span data-hf-id="hf-yie2" class="f06-txt" id="f06-t4"></span></div>
+          <div data-hf-id="hf-aqu4" class="f06-ln" id="f06-ln5"><div data-hf-id="hf-u4uc" class="f06-band" id="f06-band5"></div><div data-hf-id="hf-ad80" class="f06-dot" id="f06-dot5"></div><span data-hf-id="hf-uka1" class="f06-txt" id="f06-t5"></span></div>
+          <div data-hf-id="hf-bihx" class="f06-ln" id="f06-ln6"><span data-hf-id="hf-tsm8" class="f06-txt" id="f06-t6"></span></div>
+        </div>
+        <span data-hf-id="hf-1pjn" class="f06-caret" id="f06-caret"></span>
+      </div>
+
+      <div data-hf-id="hf-3sbe" class="f06-card" id="f06-card">
+        <div data-hf-id="hf-0fkv" class="f06-title">Charizard</div>
+        <div data-hf-id="hf-fz6y" class="f06-muted"><span data-hf-id="hf-ope1" id="f06-mtext"></span></div>
+
+        <div data-hf-id="hf-6gxr" class="f06-slot" style="left: 40px; top: 176px; width: 248px; height: 176px;">
+          <div data-hf-id="hf-h2lv" class="f06-well" id="f06-well1"></div>
+          <div data-hf-id="hf-nx7f" class="f06-comp" id="f06-comp1">
+            <div data-hf-id="hf-55sc" class="f06-label">Base experience</div>
+            <div data-hf-id="hf-eeum" class="f06-num" id="f06-num">240</div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-rbjk" class="f06-slot" style="left: 312px; top: 176px; width: 470px; height: 364px;">
+          <div data-hf-id="hf-8eq0" class="f06-well" id="f06-well2"></div>
+          <div data-hf-id="hf-f9bk" class="f06-comp" id="f06-comp2">
+            <div data-hf-id="hf-vzpy" class="f06-h" style="margin-bottom: 16px;">Stats</div>
+            <div data-hf-id="hf-4qg7" class="f06-row"><div data-hf-id="hf-vjwb" class="f06-rl">Hp</div><div data-hf-id="hf-ogcy" class="f06-track"><div data-hf-id="hf-kg17" class="f06-fill" id="f06-fill0" style="width: 71.56%;"></div></div><div data-hf-id="hf-efv2" class="f06-rv">78</div></div>
+            <div data-hf-id="hf-6u13" class="f06-row"><div data-hf-id="hf-skhv" class="f06-rl">Attack</div><div data-hf-id="hf-sn4m" class="f06-track"><div data-hf-id="hf-ov85" class="f06-fill" id="f06-fill1" style="width: 77.06%;"></div></div><div data-hf-id="hf-ic2l" class="f06-rv">84</div></div>
+            <div data-hf-id="hf-6fq2" class="f06-row"><div data-hf-id="hf-i30h" class="f06-rl">Defense</div><div data-hf-id="hf-t1fn" class="f06-track"><div data-hf-id="hf-1gvt" class="f06-fill" id="f06-fill2" style="width: 71.56%;"></div></div><div data-hf-id="hf-xec2" class="f06-rv">78</div></div>
+            <div data-hf-id="hf-61f1" class="f06-row"><div data-hf-id="hf-szn6" class="f06-rl">Special attack</div><div data-hf-id="hf-tfqo" class="f06-track"><div data-hf-id="hf-q2s0" class="f06-fill" id="f06-fill3" style="width: 100%;"></div></div><div data-hf-id="hf-onbv" class="f06-rv">109</div></div>
+            <div data-hf-id="hf-8tk8" class="f06-row"><div data-hf-id="hf-spgy" class="f06-rl">Special defense</div><div data-hf-id="hf-qnlh" class="f06-track"><div data-hf-id="hf-7ooj" class="f06-fill" id="f06-fill4" style="width: 77.98%;"></div></div><div data-hf-id="hf-iqdm" class="f06-rv">85</div></div>
+            <div data-hf-id="hf-8f97" class="f06-row"><div data-hf-id="hf-kkcm" class="f06-rl">Speed</div><div data-hf-id="hf-r1wi" class="f06-track"><div data-hf-id="hf-kl8u" class="f06-fill" id="f06-fill5" style="width: 91.74%;"></div></div><div data-hf-id="hf-s834" class="f06-rv">100</div></div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-qgqy" class="f06-slot" style="left: 40px; top: 376px; width: 248px; height: 164px;">
+          <div data-hf-id="hf-96dt" class="f06-well" id="f06-well3"></div>
+          <div data-hf-id="hf-g0zd" class="f06-comp" id="f06-comp3">
+            <div data-hf-id="hf-kf70" class="f06-h">Types</div>
+            <div data-hf-id="hf-8v3y" class="f06-chips"><span data-hf-id="hf-uadx" class="f06-chip" id="f06-chip0">fire</span><span data-hf-id="hf-ihrj" class="f06-chip" id="f06-chip1">flying</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-v461" class="f06-pill" id="f06-pill0" style="left: 1066px; width: 186px;"><div data-hf-id="hf-v1jx" class="f06-pin" id="f06-pin0">Gemini</div></div>
+      <div data-hf-id="hf-hoii" class="f06-pill" id="f06-pill1" style="left: 1268px; width: 152px;"><div data-hf-id="hf-4vge" class="f06-pin" id="f06-pin1">Groq</div></div>
+      <div data-hf-id="hf-gkub" class="f06-pill" id="f06-pill2" style="left: 1436px; width: 184px;"><div data-hf-id="hf-b1e2" class="f06-pin" id="f06-pin2">Ollama</div></div>
+      <div data-hf-id="hf-ufjg" class="f06-pill" id="f06-pill3" style="left: 1636px; width: 162px;"><div data-hf-id="hf-5fa7" class="f06-pin f06-solid" id="f06-pin3">No AI</div></div>
+
+      <div data-hf-id="hf-xd14" class="f06-amigo" id="f06-amigo" data-layout-allow-overlap="">
+        <div data-hf-id="hf-vy5e" class="f06-lean" id="f06-lean">
+          <div data-hf-id="hf-vg32" class="f06-spin" id="f06-spin">
+            <div data-hf-id="hf-zbsy" class="f06-squash" id="f06-squash">
+              <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                <defs data-hf-id="hf-f06d">
+                  <mask data-hf-id="hf-f06m" id="f06-ap-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                    <rect data-hf-id="hf-f06w" x="0" y="0" width="32" height="32" fill="#fff" />
+                    <rect data-hf-id="hf-f06a" id="f06-ap" x="10.9" y="9" width="10.2" height="5.3" rx="2.3" fill="#000" />
+                  </mask>
+                </defs>
+                <g data-hf-id="hf-g1zz" fill="currentColor">
+                  <g data-hf-id="hf-f06l" id="f06-legL"><rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" /></g>
+                  <g data-hf-id="hf-f06r" id="f06-legR"><rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" /></g>
+                  <path data-hf-id="hf-q41y" mask="url(#f06-ap-mask)" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Z" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "06-plan";
+        var DUR = 3.75;
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f06-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid, packet beats are 1-indexed: beat n = (n - 1) * 0.469.
+        var BEAT = 0.469, HALF = 0.2345;
+        var b = function (n) { return (n - 1) * BEAT; };
+
+        // ================= the plan panel: discrete typing =================
+        var LINES = [
+          '{"layout": "profile",',
+          ' "title": "name",',
+          ' "components": [',
+          '  {"type": "stat", "field": "base_experience"},',
+          '  {"type": "bars", "field": "stats"},',
+          '  {"type": "badges", "field": "types"}',
+          " ]}"
+        ];
+        // [start, duration] of each line's typing; header lines are already on screen.
+        var TYPE = [
+          [-1, 0], [-1, 0], [-1, 0],
+          [b(1) + 0.02, 0.34],
+          [b(2) + 0.01, 0.28],
+          [b(3) + 0.01, 0.30],
+          [1.30, 0.04]
+        ];
+        var hl = function (s) { return s.replace(/"[^"]*"/g, function (m) { return '<span class="f06-s">' + m + "</span>"; }); };
+        var txtEls = [], cache = [];
+        for (var i = 0; i < LINES.length; i++) { txtEls.push($("t" + i)); cache.push(null); }
+        var caret = $("caret");
+        var caretLine = -1;
+        var renderPanel = function (t) {
+          var active = 0;
+          for (var i = 0; i < LINES.length; i++) {
+            var st = TYPE[i][0], du = TYPE[i][1], n;
+            if (st < 0 || t >= st + du) n = LINES[i].length;
+            else if (t < st) n = 0;
+            else n = Math.floor(((t - st) / du) * LINES[i].length);
+            if (n > 0) active = i;
+            if (cache[i] !== n) { cache[i] = n; txtEls[i].innerHTML = hl(LINES[i].substring(0, n)); }
+          }
+          if (caretLine !== active) { caretLine = active; $("ln" + active).appendChild(caret); }
+        };
+        var driver = { t: 0 };
+        tl.fromTo(driver, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: function () { renderPanel(driver.t); } }, 0);
+        renderPanel(0);
+        // caret blink: deterministic square wave, ~0.6s period
+        var blink = { p: 0 };
+        tl.fromTo(blink, { p: 0 }, {
+          p: Math.PI * 2 * (DUR / 0.6), duration: DUR, ease: "none",
+          onUpdate: function () {
+            var typing = driver.t < 1.36;
+            caret.style.opacity = typing || Math.sin(blink.p) > 0 ? "1" : "0";
+          }
+        }, 0);
+
+        // ================= headline (discrete word lands, waterfall cut) =================
+        var A = [], B = [];
+        for (var a = 0; a < 7; a++) A.push($("a" + a));
+        for (var c = 0; c < 5; c++) B.push($("b" + c));
+        for (var w = 0; w < 5; w++) {
+          tl.fromTo(A[w], { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: "expo.out" }, b(1) + w * 0.035);
+        }
+        for (var w2 = 5; w2 < 7; w2++) {
+          tl.fromTo(A[w2], { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: "expo.out" }, b(2) + (w2 - 5) * 0.05);
+        }
+        // Beat 5: waterfall. Exits rip left in reading order; the last word's fade ends on the cut.
+        var CUT = b(5);
+        for (var e = 0; e < 7; e++) {
+          var st = CUT - 0.18 - (6 - e) * 0.022;
+          tl.fromTo(A[e], { x: 0 }, { x: -230, duration: 0.34, ease: "power4.in", immediateRender: false }, st);
+          tl.to(A[e], { opacity: 0, duration: 0.18, ease: "power1.in" }, st);
+        }
+        for (var n2 = 0; n2 < 5; n2++) {
+          tl.set(B[n2], { opacity: 0 }, 0);
+          tl.fromTo(B[n2], { x: 230, opacity: 0.35 }, { x: 0, opacity: 1, duration: 0.3, ease: "power4.out", immediateRender: false }, CUT + n2 * 0.022);
+        }
+
+        // ================= card: the stamps leave live components =================
+        var card = $("card");
+        tl.set([$("comp1"), $("comp2"), $("comp3")], { opacity: 0 }, 0);
+        for (var f = 0; f < 6; f++) tl.set($("fill" + f), { scaleX: 0 }, 0);
+        for (var d = 3; d <= 5; d++) tl.set($("dot" + d), { scale: 0 }, 0);
+
+        var cardDip = function (t) {
+          tl.fromTo(card, { y: 10 }, { y: 0, duration: 0.26, ease: "power3.out", immediateRender: false }, t);
+        };
+        // the coupled plan line lights up and gets a live dot in the same beat
+        var couple = function (t, line) {
+          tl.fromTo($("band" + line), { opacity: 1 }, { opacity: 0.25, duration: 0.4, ease: "power3.out", immediateRender: false }, t);
+          tl.fromTo($("dot" + line), { scale: 0 }, { scale: 1, duration: 0.3, ease: "expo.out", immediateRender: false }, t);
+        };
+        var reveal = function (t, k) {
+          tl.to($("well" + k), { opacity: 0, duration: 0.14, ease: "power2.out" }, t);
+          tl.fromTo($("comp" + k), { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.36, ease: "expo.out", immediateRender: false }, t);
+          cardDip(t);
+          couple(t, k + 2);
+        };
+
+        // Beat 2: Base experience 240 (counts up in discrete steps)
+        reveal(b(2), 1);
+        var numEl = $("num"), cnt = { v: 0 };
+        tl.fromTo(cnt, { v: 0 }, {
+          v: 240, duration: 0.3, ease: "power3.out", immediateRender: false,
+          onUpdate: function () { numEl.textContent = String(Math.round(cnt.v)); }
+        }, b(2));
+        // Beat 3: the stat bars (value / 109)
+        reveal(b(3), 2);
+        for (var f2 = 0; f2 < 6; f2++) {
+          tl.fromTo($("fill" + f2), { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power3.out", immediateRender: false }, b(3) + 0.02 + f2 * 0.03);
+        }
+        // Beat 4: fire / flying chips
+        reveal(b(4), 3);
+        for (var ch = 0; ch < 2; ch++) {
+          tl.fromTo($("chip" + ch), { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "expo.out", immediateRender: false }, b(4) + ch * 0.05);
+        }
+
+        // Beat 7: the app's real muted line types under the title
+        var MUTED = "Drawn without a model.";
+        var mEl = $("mtext"), mlen = { v: 0 }, mLast = -1;
+        tl.fromTo(mlen, { v: 0 }, {
+          v: MUTED.length, duration: 0.38, ease: "none", immediateRender: false,
+          onUpdate: function () { var n = Math.floor(mlen.v); if (n !== mLast) { mLast = n; mEl.textContent = MUTED.substring(0, n); } }
+        }, b(7));
+
+        // ================= provider pills (beat 6) =================
+        var PILLS = [
+          { el: $("pill0"), pin: $("pin0"), cx: 1159 },
+          { el: $("pill1"), pin: $("pin1"), cx: 1344 },
+          { el: $("pill2"), pin: $("pin2"), cx: 1528 },
+          { el: $("pill3"), pin: $("pin3"), cx: 1717 }
+        ];
+        var PILL_TOP = 824; // lowered so Amigo standing on a pill (96px) clears the card bottom (720)
+        for (var p = 0; p < 4; p++) {
+          tl.set(PILLS[p].el, { opacity: 0 }, 0);
+          tl.fromTo(PILLS[p].el, { opacity: 0, scale: 0.4, y: 24 }, { opacity: 1, scale: 1, y: 0, duration: 0.34, ease: "expo.out", immediateRender: false }, b(6) + p * 0.06);
+        }
+        var pillDip = function (t, k) {
+          tl.fromTo(PILLS[k].pin, { y: 7 }, { y: 0, duration: 0.22, ease: "power3.out", immediateRender: false }, t);
+        };
+
+        // ================= Amigo (rig v2: masked aperture eye + separate legs) =================
+        // Channels: pos (x/y) > lean (rotation at the feet) > spin (tremble x) > squash (scale at the feet).
+        var amigo = $("amigo"), lean = $("lean"), spin = $("spin"), sq = $("squash");
+        var ap = $("ap"), legL = $("legL"), legR = $("legR");
+        var S = 96;
+        var pos = function (x, feetY) { return { x: x - S / 2, y: feetY - S }; };
+
+        // Every tween is an explicit fromTo whose "from" is the channel's tracked value,
+        // authored in time order per channel, so any seek lands on the same pose.
+        var CH = {};
+        var chan = function (key, el, init) { CH[key] = { el: el, v: init }; tl.set(el, init, 0); };
+        var tw = function (key, t, dur, to, ease) {
+          var c = CH[key], from = {}, dst = { duration: dur, ease: ease || "power2.out", immediateRender: false };
+          for (var k in to) { from[k] = c.v[k]; dst[k] = to[k]; c.v[k] = to[k]; }
+          tl.fromTo(c.el, from, dst, t);
+        };
+
+        // ---- the eye: one rounded-rect aperture, always centred on (16 + gx, 11.65 + gy) ----
+        var REST = { w: 10.2, h: 5.3, r: 2.3 }, BLINK = { w: 10.2, h: 0.6, r: 0.3 }, SHUT = { w: 10.4, h: 0.5, r: 0.25 };
+        var SQUINT = { w: 10.2, h: 2.0, r: 1.0 }, PLEASED = { w: 10.4, h: 3.0, r: 1.4 }, HAPPY = { w: 11.0, h: 1.4, r: 0.7 };
+        var WIDE = { w: 11.6, h: 7.6, r: 3.2 }, TINY = { w: 4.2, h: 2.8, r: 1.4 };
+        var EYE = { x: 10.9, y: 9, width: 10.2, height: 5.3, rx: 2.3 };
+        tl.set(ap, { attr: { x: EYE.x, y: EYE.y, width: EYE.width, height: EYE.height, rx: EYE.rx } }, 0);
+        var eyeState = REST, gazeX = 0, gazeY = 0;
+        var eye = function (t, dur, st, gx, gy, ease) {
+          var to = { x: 16 + gx - st.w / 2, y: 11.65 + gy - st.h / 2, width: st.w, height: st.h, rx: st.r };
+          var from = { x: EYE.x, y: EYE.y, width: EYE.width, height: EYE.height, rx: EYE.rx };
+          tl.fromTo(ap, { attr: from }, { attr: to, duration: dur, ease: ease || "power2.inOut", immediateRender: false }, t);
+          EYE = to; eyeState = st; gazeX = gx; gazeY = gy;
+        };
+        var blink = function (t) {
+          var st = eyeState, gx = gazeX, gy = gazeY;
+          eye(t, 0.05, BLINK, gx, gy, "power2.in");
+          eye(t + 0.08, 0.1, st, gx, gy, "power2.out");
+        };
+
+        // ---- body ----
+        var P0 = pos(1760, 188);
+        chan("ax", amigo, { x: P0.x });
+        chan("ay", amigo, { y: P0.y });
+        chan("lean", lean, { rotation: 0 });
+        chan("spin", spin, { x: 0 });
+        chan("sq", sq, { scaleX: 1, scaleY: 1 });
+        chan("legL", legL, { y: 0 });
+        chan("legR", legR, { y: 0 });
+        var squash = function (t, dur, sx, sy, ease) { tw("sq", t, dur, { scaleX: sx, scaleY: sy }, ease); };
+        var legs = function (t, dur, l, r) { tw("legL", t, dur, { y: l }); tw("legR", t, dur, { y: r }); };
+
+        // one airborne move: x across, y up to the apex and down; legs tuck in the air
+        var hop = function (t0, t1, to, apexFeet, stamp) {
+          var Q = pos(to[0], to[1]), dur = t1 - t0, up = stamp ? dur * 0.4 : dur * 0.5;
+          tw("ax", t0, stamp ? dur * 0.7 : dur, { x: Q.x }, stamp ? "power2.inOut" : "none");
+          tw("ay", t0, up, { y: apexFeet - S }, "power2.out");
+          tw("ay", t0 + up, dur - up, { y: Q.y }, stamp ? "power3.in" : "power2.in");
+          squash(t0, 0.06, 0.88, 1.14, "power2.out");
+          squash(t0 + 0.06, up - 0.06, 1, 1, "power1.inOut");
+          if (stamp) squash(t0 + up, dur - up, 0.9, 1.12, "power2.in");
+          legs(t0, 0.07, -1.3, -1.3);
+        };
+        // impact: flatten, pop back to true proportions well inside 0.25s
+        var land = function (t, sx, sy) {
+          squash(t, 0.05, sx, sy, "power2.out");
+          squash(t + 0.05, 0.16, 1, 1, "back.out(2.2)");
+          legs(t, 0.05, 0, 0);
+        };
+
+        var I1 = b(2), I2 = b(3), I3 = b(4);
+        // Stamps land on the card's TOP EDGE (y 188), never on the content, so the component that
+        // pops in below is never covered (user: "it's jumping right on that number"). Kept right of
+        // x≈1470 so Amigo never overlaps the headline. The gaze points down at the slot being filled.
+        var SLOT1 = [1520, 188], SLOT2 = [1660, 188], SLOT3 = [1560, 188];
+
+        // Beat 1: perched on the card's edge, bobbing on the kick, reading the plan line as it types.
+        squash(0.01, 0.09, 1.1, 0.9, "power2.out");
+        squash(0.10, 0.09, 1, 1, "power2.out");
+        eye(0.03, 0.12, REST, -2.2, 0.4);                  // reads left
+        eye(0.16, 0.08, SQUINT, -2.0, 1.4);                // determined, eyes down-left on slot 1 (the 240)
+        squash(0.19, 0.04, 1.08, 0.92, "power2.out");      // crouch
+        hop(0.23, I1, SLOT1, 120, true);
+
+        // each stamp: eye shuts on impact, opens pleased, reads the next line, squints, goes
+        var afterStamp = function (I, nextGx, nextGy) {
+          land(I, 1.4, 0.6);
+          eye(I, 0.03, SHUT, 0, 0.3, "power2.in");
+          eye(I + 0.07, 0.08, PLEASED, 0, 0, "power2.out");
+          if (nextGx === null) return;
+          eye(I + 0.14, 0.08, REST, -2.2, 0.4);            // reads the plan line on the left
+          eye(I + 0.25, 0.07, SQUINT, nextGx, nextGy);     // determined
+          squash(I + 0.21, 0.04, 1.08, 0.92, "power2.out");
+        };
+        afterStamp(I1, 0.6, 1.4);
+        hop(I1 + 0.25, I2, SLOT2, 110, true);
+        afterStamp(I2, -2.2, 1.4);
+        hop(I2 + 0.25, I3, SLOT3, 120, true);
+        afterStamp(I3, null, null);
+
+        // After the third stamp: a proud glance up at the finished card, one blink.
+        eye(I3 + 0.15, 0.1, PLEASED, 2.0, -1.2, "power2.out");
+        tw("lean", I3 + 0.15, 0.16, { rotation: 5 }, "power2.out");
+        blink(I3 + 0.27);
+        tw("lean", I3 + 0.36, 0.12, { rotation: 0 }, "power2.inOut");
+
+        // Beat 5, "No AI?": WIDE, then TINY, and a small shrink-back with a tremble.
+        var B5 = b(5);
+        eye(B5, 0.06, WIDE, -0.6, -1.3, "power2.out");
+        squash(B5, 0.06, 0.95, 1.07, "power2.out");        // perk up
+        squash(B5 + 0.06, 0.1, 1, 1, "power2.out");
+        eye(B5 + 0.12, 0.06, TINY, -0.4, -0.8, "power2.in");
+        tw("ax", B5 + 0.12, 0.14, { x: pos(SLOT3[0] + 26, 0).x }, "power2.out");
+        tw("lean", B5 + 0.12, 0.12, { rotation: 8 }, "power2.out");
+        squash(B5 + 0.14, 0.07, 1.04, 0.93, "power2.out");
+        squash(B5 + 0.21, 0.12, 1, 1, "power2.out");
+        for (var j = 0; j < 6; j++) {
+          var fr = Math.sin((j + 1) * 12.9898) * 43758.5453; fr = fr - Math.floor(fr);
+          var amp = (j % 2 ? 1 : -1) * (1.6 + fr * 1.4) * (1 - j / 7);
+          tw("spin", B5 + 0.15 + j * 0.03, 0.03, { x: amp }, "none");
+        }
+        tw("spin", B5 + 0.33, 0.03, { x: 0 }, "power1.out");
+
+        // "It still works.": relief. Straighten up, exhale, happy squint toward the pills.
+        var RL = 2.22;
+        tw("lean", RL, 0.14, { rotation: 0 }, "power2.inOut");
+        eye(RL, 0.1, REST, 0, 0);
+        squash(RL, 0.05, 1.05, 0.95, "power2.out");
+        squash(RL + 0.05, 0.08, 1, 1, "power2.out");
+        eye(RL + 0.1, 0.1, HAPPY, 1.2, 0.8, "power2.out");
+
+        // Travel: one hop down onto Gemini, one lean-in slide along the pills, one hop onto No AI.
+        var pillFeet = function (k) { return [PILLS[k].cx, PILL_TOP]; };
+        // No path around the card is wide enough, and crossing it would cover the content, so Amigo
+        // takes a cartoon shortcut: leaps up out of frame, then pops up from below onto Gemini.
+        var G = pillFeet(0), T_OUT = 2.44, T_LAND = b(6) + HALF;
+        squash(2.34, 0.04, 1.08, 0.92, "power2.out");
+        squash(2.38, 0.05, 0.86, 1.16, "power2.out");
+        tw("ay", 2.38, T_OUT - 2.38, { y: -140 - S }, "power2.in");            // up and out the top
+        tw("ax", T_OUT, 0.01, { x: pos(G[0], 0).x }, "none");                   // off-screen reposition
+        tw("ay", T_OUT, 0.01, { y: 1180 - S }, "none");                         // now below the frame
+        tw("ay", T_OUT + 0.01, T_LAND - T_OUT - 0.01, { y: G[1] - S }, "power3.out"); // pops up onto the pill
+        squash(T_OUT + 0.01, 0.06, 1, 1, "power1.out");
+        land(T_LAND, 1.22, 0.8); pillDip(T_LAND, 0);
+
+        var SL0 = 2.64, SL1 = 3.05;
+        eye(2.60, 0.08, HAPPY, 1.8, 0.4);
+        tw("lean", 2.60, 0.12, { rotation: 10 }, "power2.out");      // leans into the slide
+        tw("ax", SL0, SL1 - SL0, { x: pos(PILLS[2].cx, 0).x }, "power2.inOut");
+        for (var s2 = 0; s2 < 4; s2++) {                             // little shuffling steps
+          var up2 = s2 % 2 === 0;
+          legs(SL0 + s2 * 0.095, 0.05, up2 ? -1.4 : 0, up2 ? 0 : -1.4);
+        }
+        legs(SL0 + 4 * 0.095, 0.05, 0, 0);
+        pillDip(2.845, 1);
+        eye(2.84, 0.08, REST, -0.5, -1.4);                           // glances up at "Drawn without a model."
+        eye(2.96, 0.08, HAPPY, 1.6, 0.8);
+        tw("lean", 2.98, 0.07, { rotation: -5 }, "power2.out");      // brakes
+        pillDip(3.03, 2);
+        tw("lean", 3.05, 0.1, { rotation: 0 }, "power2.out");
+
+        // Beat 8: lands on "No AI" with a big happy squint and a proud puff-up (1.05 -> 1).
+        hop(3.07, b(8), pillFeet(3), 800, false);   // low hop: stays below the card (bottom 720)
+        squash(b(8), 0.05, 1.26, 0.76, "power2.out");
+        legs(b(8), 0.05, 0, 0);
+        pillDip(b(8), 3);
+        eye(b(8), 0.08, HAPPY, 0, 0.3, "power2.out");
+        squash(b(8) + 0.05, 0.1, 1.05, 1.05, "back.out(2)");
+        squash(b(8) + 0.17, 0.18, 1, 1, "power2.out");
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

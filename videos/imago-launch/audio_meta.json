@@ -1,0 +1,187 @@
+{
+  "bgm": {
+    "path": "assets/bgm/track.mp3",
+    "volume": 0.9,
+    "query": "upbeat bright tech pop, confident, clean 120 bpm groove, launch promo",
+    "duration_s": 57
+  },
+  "bgm_pending": false,
+  "voices": [],
+  "sfx": [
+    {
+      "frame": 1,
+      "file": "assets/sfx/kick-synced-soft-pops-on-each-bob.mp3",
+      "offset_s": 0,
+      "duration_s": 2.811,
+      "volume": 0.35
+    },
+    {
+      "frame": 1,
+      "file": "assets/sfx/a-cartoon-whoosh-on-the-fall.mp3",
+      "offset_s": 0,
+      "duration_s": 2.961,
+      "volume": 0.35
+    },
+    {
+      "frame": 1,
+      "file": "assets/sfx/a-heavy-thud-squish-on-the-pancake.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/a-rushing-paper-data-cascade.mp3",
+      "offset_s": 0,
+      "duration_s": 1.2,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/a-counter-tick-roll.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/a-pop-as-amigo-bursts-out.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/a-quick-shake-rattle.mp3",
+      "offset_s": 0,
+      "duration_s": 1.672,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/key-ticks.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/a-slide-whoosh.mp3",
+      "offset_s": 0,
+      "duration_s": 1.834,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/rising-charge-ticks-on-each-eighth.mp3",
+      "offset_s": 0,
+      "duration_s": 1.441,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/a-big-launch-boing-click.mp3",
+      "offset_s": 0,
+      "duration_s": 1.557,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/a-whoosh-through.mp3",
+      "offset_s": 0,
+      "duration_s": 1.056,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/soft-digital-blips-per-type-swap.mp3",
+      "offset_s": 0,
+      "duration_s": 1.176,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/a-rising-riser-into-a-hard-silence-at-3-.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/a-big-drop-impact-at-0-0.mp3",
+      "offset_s": 0,
+      "duration_s": 2.386,
+      "volume": 0.35
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/a-card-slap-on-each-beat-8.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/a-whoosh-on-each-amigo-hop.mp3",
+      "offset_s": 0,
+      "duration_s": 1.834,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/typing-ticks.mp3",
+      "offset_s": 0,
+      "duration_s": 2.521,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/a-heavy-stamp-thunk-per-component.mp3",
+      "offset_s": 0,
+      "duration_s": 0.864,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/pops-for-the-chips.mp3",
+      "offset_s": 0,
+      "duration_s": 1.308,
+      "volume": 0.35
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/a-switch-click.mp3",
+      "offset_s": 0,
+      "duration_s": 0.192,
+      "volume": 0.35
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/a-soft-tick-per-second-of-the-counter.mp3",
+      "offset_s": 0,
+      "duration_s": 3.75,
+      "volume": 0.35
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/a-bright-chime-on-each-change.mp3",
+      "offset_s": 0,
+      "duration_s": 0.744,
+      "volume": 0.35
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/a-slam-per-beat-4.mp3",
+      "offset_s": 0,
+      "duration_s": 1.875,
+      "volume": 0.35
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/the-last-one-bigger.mp3",
+      "offset_s": 0,
+      "duration_s": 1.875,
+      "volume": 0.35
+    }
+  ]
+}

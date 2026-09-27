@@ -1,0 +1,337 @@
+<template>
+  <div id="root" data-composition-id="02-avalanche" data-start="0" data-duration="4.25" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f02-ground { position: absolute; inset: 0; background: #1B1B19; }
+      .f02-stage { position: absolute; inset: 0; overflow: hidden; }
+      .f02-cam { position: absolute; inset: 0; perspective: 2600px; perspective-origin: 50% 40%; }
+      .f02-plane { position: absolute; left: -200px; top: -170px; width: 2400px; height: 1640px; overflow: hidden; }
+      .f02-thud { position: absolute; inset: 0; }
+      .f02-sheet { position: absolute; left: 150px; width: 2400px; top: 0; height: 100px; background: #222220; border: 1px solid #2e2d2a; box-sizing: border-box; }
+      .f02-band { position: absolute; left: 151px; width: 2400px; height: 52px; background: #2B2A27; opacity: 0; }
+      .f02-code { position: absolute; inset: 0; }
+      .f02-row { position: absolute; left: 0; top: 0; width: 2400px; height: 52px; transform-origin: 50% 50%; display: none; }
+      .f02-g, .f02-c {
+        position: absolute; top: 0; height: 52px; line-height: 52px; white-space: pre;
+        font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 32px;
+        font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+      }
+      .f02-g { left: 300px; width: 260px; text-align: right; color: #66655F; }
+      .f02-c { left: 610px; color: #D9D7CF; }
+      .f02-k { color: #D9D7CF; }
+      .f02-s { color: #F6F5F1; }
+      .f02-n { color: #8FB4E3; }
+      .f02-p { color: #8A8981; }
+      .f02-dim { position: absolute; inset: 0; background: #1B1B19; opacity: 0; }
+      .f02-count {
+        position: absolute; left: 160px; width: 400px; height: 120px; text-align: right;
+        font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 108px; line-height: 120px;
+        letter-spacing: -0.02em; color: #F6F5F1; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+        transform-origin: 100% 22%; opacity: 0;
+      }
+      .f02-amigo-layer { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+      .f02-ride, .f02-pos { position: absolute; left: 0; top: 0; width: 170px; height: 170px; }
+      .f02-streak { position: absolute; inset: 0; transform-origin: 50% 52%; }
+      .f02-lean { position: absolute; inset: 0; transform-origin: 50% 93.75%; }
+      .f02-spin { position: absolute; inset: 0; transform-origin: 50% 52%; }
+      .f02-squash { position: absolute; inset: 0; transform-origin: 50% 93.75%; color: #F6F5F1; }
+      .f02-squash svg { display: block; width: 170px; height: 170px; }
+      .f02-chip {
+        position: absolute; right: 88px; top: 58px; padding: 0 26px; height: 52px; line-height: 50px;
+        border-radius: 100px; border: 1px solid #3A3935; background: #262523; box-sizing: border-box;
+        font-family: "JetBrains Mono", monospace; font-weight: 400; font-size: 24px; color: #D9D7CF;
+        white-space: nowrap; transform-origin: 100% 50%;
+      }
+      .f02-say {
+        position: absolute; right: 96px; white-space: nowrap; text-align: right;
+        font-family: "Inter Display", sans-serif; font-weight: 600; font-size: 150px;
+        line-height: 1.04; letter-spacing: -0.035em; transform-origin: 100% 60%; opacity: 0;
+      }
+      .f02-say-1 { top: 250px; color: #F6F5F1; }
+      .f02-say-2 { top: 412px; color: #A8A79F; }
+      .f02-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+    </style>
+
+    <div class="clip f02-ground" data-start="0" data-duration="4.25" data-track-index="0"></div>
+
+    <div class="clip f02-stage" data-start="0" data-duration="4.25" data-track-index="1">
+      <svg class="f02-defs" aria-hidden="true" focusable="false">
+        <filter id="f02-vblur" x="-2%" y="-25%" width="104%" height="150%" color-interpolation-filters="sRGB">
+          <feGaussianBlur id="f02-vblur-g" stdDeviation="0 0" />
+        </filter>
+      </svg>
+
+      <div class="f02-cam" id="f02-cam">
+        <div class="f02-plane" id="f02-plane" data-layout-allow-overlap="">
+          <div class="f02-thud" id="f02-thud">
+            <div class="f02-sheet" id="f02-sheet"></div>
+            <div class="f02-band" id="f02-band"></div>
+            <div class="f02-code" id="f02-code" data-layout-allow-overlap=""></div>
+            <div class="f02-dim" id="f02-dim"></div>
+            <div class="f02-count" id="f02-count" data-layout-allow-overlap>9</div>
+          </div>
+
+          <div class="f02-amigo-layer" data-layout-allow-overlap="">
+            <div class="f02-ride" id="f02-ride">
+              <div class="f02-pos" id="f02-pos">
+                <div class="f02-streak" id="f02-streak">
+                  <div class="f02-lean" id="f02-lean">
+                    <div class="f02-spin" id="f02-spin">
+                      <div class="f02-squash" id="f02-squash">
+                        <svg viewBox="0 0 32 32" aria-hidden="true">
+                          <g fill="currentColor">
+                            <rect x="9" y="21.5" width="6" height="8.5" rx="3" />
+                            <rect x="17" y="21.5" width="6" height="8.5" rx="3" />
+                            <path fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                          </g>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="f02-chip" id="f02-chip">pokeapi.co/api/v2/pokemon/pikachu</div>
+      <div class="f02-say f02-say-1" id="f02-say-1">Readable?</div>
+      <div class="f02-say f02-say-2" id="f02-say-2">Barely.</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "02-avalanche";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f02-" + s); };
+
+        // ---- 128 bpm grid, frame-local: beat n (1-indexed) = (n - 1) * 0.469.
+        var BEAT = 0.469, HALF = 0.2345;
+        var beat = function (n) { return (n - 1) * BEAT; };
+        var HOLD_END = 4.25; // mounted through the 0.5s slide-out; choreography ends at 3.75
+
+        // ---- The real pikachu response (pretty-printed, 15,411 lines).
+        var FIRST = ["{", "  \"id\": 25,", "  \"name\": \"pikachu\",", "  \"base_experience\": 112,", "  \"height\": 4,", "  \"is_default\": true,", "  \"order\": 35,", "  \"weight\": 60,", "  \"abilities\": [", "    {", "      \"is_hidden\": false,", "      \"slot\": 1,", "      \"ability\": {", "        \"name\": \"static\",", "        \"url\": \"https://pokeapi.co/api/v2/ability/9/\"", "      }", "    },", "    {", "      \"is_hidden\": true,", "      \"slot\": 3,", "      \"ability\": {", "        \"name\": \"lightning-rod\",", "        \"url\": \"https://pokeapi.co/api/v2/ability/31/\"", "      }", "    }", "  ],", "  \"past_abilities\": [", "    {", "      \"generation\": {", "        \"name\": \"generation-iv\",", "        \"url\": \"https://pokeapi.co/api/v2/generation/4/\"", "      },", "      \"abilities\": [", "        {", "          \"is_hidden\": true,", "          \"slot\": 3,", "          \"ability\": null", "        }", "      ]", "    }", "  ],", "  \"forms\": [", "    {", "      \"name\": \"pikachu\",", "      \"url\": \"https://pokeapi.co/api/v2/pokemon-form/25/\"", "    }", "  ],", "  \"game_indices\": [", "    {", "      \"game_index\": 84,", "      \"version\": {", "        \"name\": \"red\",", "        \"url\": \"https://pokeapi.co/api/v2/version/1/\"", "      }", "    },", "    {", "      \"game_index\": 84,", "      \"version\": {", "        \"name\": \"blue\",", "        \"url\": \"https://pokeapi.co/api/v2/version/2/\"", "      }", "    },", "    {", "      \"game_index\": 84,", "      \"version\": {", "        \"name\": \"yellow\",", "        \"url\": \"https://pokeapi.co/api/v2/version/3/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"gold\",", "        \"url\": \"https://pokeapi.co/api/v2/version/4/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"silver\",", "        \"url\": \"https://pokeapi.co/api/v2/version/5/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"crystal\",", "        \"url\": \"https://pokeapi.co/api/v2/version/6/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"ruby\",", "        \"url\": \"https://pokeapi.co/api/v2/version/7/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"sapphire\",", "        \"url\": \"https://pokeapi.co/api/v2/version/8/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"emerald\",", "        \"url\": \"https://pokeapi.co/api/v2/version/9/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"firered\",", "        \"url\": \"https://pokeapi.co/api/v2/version/10/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"leafgreen\",", "        \"url\": \"https://pokeapi.co/api/v2/version/11/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"diamond\",", "        \"url\": \"https://pokeapi.co/api/v2/version/12/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"pearl\",", "        \"url\": \"https://pokeapi.co/api/v2/version/13/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"platinum\",", "        \"url\": \"https://pokeapi.co/api/v2/version/14/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"heartgold\",", "        \"url\": \"https://pokeapi.co/api/v2/version/15/\"", "      }", "    },", "    {", "      \"game_index\": 25,", "      \"version\": {", "        \"name\": \"soulsilver\",", "        \"url\": \"https://pokeapi.co/api/v2/version/16/\"", "      }", "    },"];   // lines 1-160
+        var MID = ["          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 40,", "          \"version_group\": {", "            \"name\": \"scarlet-violet\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/25/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"level-up\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/1/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"scarlet-violet\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/25/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"champions\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/32/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"train\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/12/\"", "          },", "          \"order\": null", "        }", "      ]", "    },", "    {", "      \"move\": {", "        \"name\": \"reflect\",", "        \"url\": \"https://pokeapi.co/api/v2/move/115/\"", "      },", "      \"version_group_details\": [", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"red-blue\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/1/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"yellow\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/2/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"lets-go-pikachu-lets-go-eevee\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/19/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"sword-shield\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/20/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"brilliant-diamond-shining-pearl\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/23/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\"", "          },", "          \"order\": null", "        },", "        {", "          \"level_learned_at\": 0,", "          \"version_group\": {", "            \"name\": \"scarlet-violet\",", "            \"url\": \"https://pokeapi.co/api/v2/version-group/25/\"", "          },", "          \"move_learn_method\": {", "            \"name\": \"machine\",", "            \"url\": \"https://pokeapi.co/api/v2/move-learn-method/4/\""];       // lines 7001-7120
+        var TAIL = ["    \"front_female\": \"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/female/25.png\",", "    \"front_default\": \"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png\",", "    \"back_shiny_female\": \"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/female/25.png\",", "    \"front_shiny_female\": \"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/female/25.png\"", "  },", "  \"cries\": {", "    \"latest\": \"https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg\",", "    \"legacy\": \"https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/25.ogg\"", "  },", "  \"stats\": [", "    {", "      \"base_stat\": 35,", "      \"effort\": 0,", "      \"stat\": {", "        \"name\": \"hp\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/1/\"", "      }", "    },", "    {", "      \"base_stat\": 55,", "      \"effort\": 0,", "      \"stat\": {", "        \"name\": \"attack\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/2/\"", "      }", "    },", "    {", "      \"base_stat\": 40,", "      \"effort\": 0,", "      \"stat\": {", "        \"name\": \"defense\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/3/\"", "      }", "    },", "    {", "      \"base_stat\": 50,", "      \"effort\": 0,", "      \"stat\": {", "        \"name\": \"special-attack\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/4/\"", "      }", "    },", "    {", "      \"base_stat\": 50,", "      \"effort\": 0,", "      \"stat\": {", "        \"name\": \"special-defense\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/5/\"", "      }", "    },", "    {", "      \"base_stat\": 90,", "      \"effort\": 2,", "      \"stat\": {", "        \"name\": \"speed\",", "        \"url\": \"https://pokeapi.co/api/v2/stat/6/\"", "      }", "    }", "  ],", "  \"past_stats\": [", "    {", "      \"generation\": {", "        \"name\": \"generation-i\",", "        \"url\": \"https://pokeapi.co/api/v2/generation/1/\"", "      },", "      \"stats\": [", "        {", "          \"base_stat\": 50,", "          \"effort\": 0,", "          \"stat\": {", "            \"name\": \"special\",", "            \"url\": \"https://pokeapi.co/api/v2/stat/9/\"", "          }", "        }", "      ]", "    },", "    {", "      \"generation\": {", "        \"name\": \"generation-v\",", "        \"url\": \"https://pokeapi.co/api/v2/generation/5/\"", "      },", "      \"stats\": [", "        {", "          \"base_stat\": 30,", "          \"effort\": 0,", "          \"stat\": {", "            \"name\": \"defense\",", "            \"url\": \"https://pokeapi.co/api/v2/stat/3/\"", "          }", "        },", "        {", "          \"base_stat\": 40,", "          \"effort\": 0,", "          \"stat\": {", "            \"name\": \"special-defense\",", "            \"url\": \"https://pokeapi.co/api/v2/stat/5/\"", "          }", "        }", "      ]", "    }", "  ],", "  \"types\": [", "    {", "      \"slot\": 1,", "      \"type\": {", "        \"name\": \"electric\",", "        \"url\": \"https://pokeapi.co/api/v2/type/13/\"", "      }", "    }", "  ],", "  \"past_types\": []", "}"];     // lines 15300-15411
+        var TOTAL = 15411, MID0 = 7001, TAIL0 = 15300;
+        var lineText = function (n) {
+          if (n <= FIRST.length) return FIRST[n - 1];
+          if (n >= TAIL0) return TAIL[n - TAIL0];
+          var m = (n - MID0) % MID.length;
+          if (m < 0) m += MID.length;
+          return MID[m];
+        };
+        var esc = function (s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); };
+        var colorize = function (s) {
+          var out = "", re = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?|true|false|null)|([{}\[\],:])|(\s+)/g, m;
+          while ((m = re.exec(s))) {
+            if (m[1]) out += m[2] ? '<span data-layout-allow-overlap class="f02-k">' + esc(m[1]) + '</span><span data-layout-allow-overlap class="f02-p">:</span>' : '<span data-layout-allow-overlap class="f02-s">' + esc(m[1]) + "</span>";
+            else if (m[3]) out += '<span data-layout-allow-overlap class="f02-n">' + m[3] + "</span>";
+            else if (m[4]) out += '<span data-layout-allow-overlap class="f02-p">' + m[4] + "</span>";
+            else out += m[5];
+          }
+          return out;
+        };
+        var htmlCache = {};
+        var lineHTML = function (n) { return htmlCache[n] || (htmlCache[n] = colorize(lineText(n))); };
+
+        // ---- Sheet geometry (plane-local px). Line n sits at y = TOPPAD + (n - 1 - S) * LH.
+        var LH = 52, TOPPAD = 470, K_END = 8;
+        var REF_Y = TOPPAD + K_END * LH;          // the active row: counter + Amigo's landing floor
+        var S_F = TOTAL - 1 - K_END;              // 15402: line 15411 lands on the active row
+        var EDGE_PAD = 36, BOTTOM_PAD = 120, PLANE_H = 1640;
+
+        // ---- Scroll curve, analytic so every frame is computed from time alone.
+        var T2 = beat(2), T6 = beat(6), T7 = beat(7);
+        var TA = T6 - T2, TB = T7 - T6;
+        var BRAKE = 12;
+        var A = S_F / (1 + 5 * TB / (BRAKE * TA)); // power4.in takeoff (u^5)
+        var B = S_F - A;                          // hard brake (1-(1-w)^12), velocity-matched
+        var scrollAt = function (t) {
+          if (t <= T2) return { s: 0, v: 0 };
+          if (t < T6) { var u = (t - T2) / TA; return { s: A * Math.pow(u, 5), v: 5 * A * Math.pow(u, 4) / TA }; }
+          if (t < T7) { var w = (t - T6) / TB; return { s: A + B * (1 - Math.pow(1 - w, BRAKE)), v: BRAKE * B * Math.pow(1 - w, BRAKE - 1) / TB }; }
+          return { s: S_F, v: 0 };
+        };
+        var T_LEAVE = beat(2.5);
+        var S_LEAVE = scrollAt(T_LEAVE).s;
+        var T_LAND = beat(6.5);
+
+        // ---- Virtual scroll pool.
+        var POOL = 34, SLOT0 = -10;
+        var code = $("code"), rows = [], gut = [], txt = [], shown = [];
+        var poolHTML = "";
+        for (var i = 0; i < POOL; i++) {
+          poolHTML += '<div class="f02-row" data-layout-allow-overlap id="f02-row-' + i + '"><span class="f02-g" data-layout-allow-overlap></span><span class="f02-c" data-layout-allow-overlap></span></div>';
+        }
+        code.innerHTML = poolHTML;
+        for (var r = 0; r < POOL; r++) {
+          rows.push($("row-" + r));
+          gut.push(rows[r].children[0]);
+          txt.push(rows[r].children[1]);
+          shown.push(-1);
+        }
+        var sheet = $("sheet"), counter = $("count"), ride = $("ride"), streak = $("streak");
+        var blurNode = scope.querySelector("#f02-vblur-g");
+        gsap.set($("band"), { y: REF_Y });
+        gsap.set(counter, { y: REF_Y - 10 });
+
+        var render = function (t) {
+          var sc = scrollAt(t), S = sc.s;
+          var d = sc.v * LH / 30;                              // px travelled per frame
+          var blurY = Math.min(26, Math.max(0, d - 22) * 0.2);
+          var stretch = 1 + Math.min(0.8, Math.max(0, d - 40) / 420);
+          var fade = 1 - 0.28 * Math.min(1, Math.max(0, d - 40) / 900);
+          var counterOn = t >= T2;
+
+          var base = Math.floor(S);
+          for (var k = 0; k < POOL; k++) {
+            var n = base + SLOT0 + k + 1;
+            var y = TOPPAD + (n - 1 - S) * LH;
+            var row = rows[k];
+            if (n < 1 || n > TOTAL || y < -LH || y > PLANE_H) { row.style.display = "none"; continue; }
+            row.style.display = "block";
+            row.style.transform = "translate(0px," + y.toFixed(2) + "px) scaleY(" + stretch.toFixed(3) + ")";
+            if (shown[k] !== n) { txt[k].innerHTML = lineHTML(n); gut[k].textContent = String(n); shown[k] = n; }
+            var underCounter = counterOn && y > REF_Y - 0.5 * LH && y < REF_Y + 2.4 * LH;
+            gut[k].style.opacity = underCounter ? "0" : "1";
+          }
+          code.style.opacity = fade.toFixed(3);
+          if (blurY > 0.2) {
+            blurNode.setAttribute("stdDeviation", "0 " + blurY.toFixed(2));
+            code.style.filter = "url(#f02-vblur)";
+          } else {
+            blurNode.setAttribute("stdDeviation", "0 0");
+            code.style.filter = "none";
+          }
+
+          // The physical sheet: its top edge scrolls away, its bottom edge arrives with line 15411.
+          var top = TOPPAD - EDGE_PAD - S * LH;
+          var bot = TOPPAD + (TOTAL - S) * LH + BOTTOM_PAD;
+          top = Math.max(-60, top);
+          bot = Math.min(PLANE_H + 60, bot);
+          sheet.style.top = top.toFixed(2) + "px";
+          sheet.style.height = Math.max(0, bot - top).toFixed(2) + "px";
+
+          // The big line counter reads the true number on the active row.
+          counter.textContent = String(Math.min(TOTAL, Math.round(S + K_END + 1)));
+
+          // Amigo rides the top edge until it's yanked away, then streaks with the speed while airborne.
+          ride.style.transform = "translate(0px," + (-Math.min(S, S_LEAVE) * LH).toFixed(2) + "px)";
+          var airborne = t > T_LEAVE && t < T_LAND;
+          var sp = airborne ? Math.min(1, Math.log(1 + sc.v) / Math.log(1 + 5 * A / TA)) : 0;
+          var sy = 1 + 0.34 * sp * sp;
+          streak.style.transform = "scale(" + (1 / Math.sqrt(sy)).toFixed(3) + "," + sy.toFixed(3) + ")";
+        };
+
+        var tl = gsap.timeline({ paused: true });
+        var proxy = { t: 0 };
+        render(0);
+        tl.fromTo(proxy, { t: 0 }, {
+          t: HOLD_END, duration: HOLD_END, ease: "none", immediateRender: false,
+          onUpdate: function () { render(proxy.t); }
+        }, 0);
+
+        // ---- Camera: static read, a push into the rush, a snap back on the brake.
+        var plane = $("plane"), cam = $("cam"), thud = $("thud");
+        gsap.set(plane, { rotationX: 14, rotationZ: -3, transformOrigin: "50% 40%" });
+        tl.fromTo(cam, { scale: 1, y: 0 }, { scale: 1.07, y: 18, duration: TA, ease: "power3.in", immediateRender: false }, T2);
+        tl.fromTo(cam, { scale: 1.07, y: 18 }, { scale: 1, y: 0, duration: TB, ease: "power4.out", immediateRender: false }, T6);
+
+        // ---- Beat 1: the source chip.
+        tl.fromTo($("chip"), { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, 0.02);
+
+        // ---- Beat 2: the active row + the counter grow out of the gutter.
+        tl.fromTo($("band"), { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out", immediateRender: false }, T2);
+        tl.fromTo(counter, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.32, ease: "power3.out", immediateRender: false }, T2);
+
+        // ---- Amigo rig. Feet point (fx, fy) in plane space; the box is 170px with feet at 159px.
+        var pos = $("pos"), lean = $("lean"), spin = $("spin"), sq = $("squash");
+        var FX = 85, FY = 159;
+        var EDGE0 = TOPPAD - EDGE_PAD;
+        var P0 = { x: 700, y: EDGE0 };
+        var RIDE = S_LEAVE * LH;                  // the ride wrapper keeps this lift after the edge leaves
+        var LAND = { x: 1070, y: REF_Y + 38 + RIDE };  // feet on the "}" row's baseline
+        gsap.set(pos, { x: P0.x - FX, y: P0.y - FY });
+        gsap.set(sq, { scaleX: 1.4, scaleY: 0.25 });
+
+        // Beat 1.5: pops back up out of frame 01's pancake.
+        tl.fromTo(sq, { scaleX: 1.4, scaleY: 0.25 }, { scaleX: 0.82, scaleY: 1.26, duration: 0.1, ease: "power2.out", immediateRender: false }, beat(1.5));
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.2, ease: "back.out(2.2)" }, beat(1.5) + 0.1);
+
+        // Beat 2: bob on the kick as the page starts to creep; teeters.
+        tl.to(sq, { scaleX: 1.12, scaleY: 0.88, duration: 0.06, ease: "power2.out" }, T2);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.14, ease: "power2.out" }, T2 + 0.06);
+        tl.fromTo(lean, { rotation: 0 }, { rotation: -8, duration: 0.11, ease: "power2.out", immediateRender: false }, T2);
+        tl.to(lean, { rotation: 10, duration: 0.11, ease: "power2.inOut" }, T2 + 0.12);
+
+        // Beat 2.5: the edge is yanked away. Cartoon hang: a stretch of alarm, legs-out flail.
+        tl.to(sq, { scaleX: 0.86, scaleY: 1.18, duration: 0.08, ease: "power2.out" }, T_LEAVE);
+        tl.fromTo(pos, { y: P0.y - FY }, { y: P0.y - FY - 16, duration: 0.14, ease: "power2.out", immediateRender: false }, T_LEAVE);
+        var FLAIL = [-14, 12, -16, 14];
+        for (var f = 0; f < FLAIL.length; f++) {
+          tl.to(lean, { rotation: FLAIL[f], duration: 0.055, ease: "sine.inOut" }, T_LEAVE + 0.02 + f * 0.055);
+        }
+        tl.to(lean, { rotation: 0, duration: 0.1, ease: "power2.out" }, beat(3));
+
+        // Beats 3-6: the tumble. Falls and drifts across the page while the lines rush past.
+        var T3 = beat(3), FALL = T6 - T3;
+        var MIDP = { x: 1200, y: 640 + RIDE };
+        tl.to(pos, { x: MIDP.x - FX, duration: FALL, ease: "sine.inOut" }, T3);
+        tl.to(pos, { y: MIDP.y - FY, duration: FALL, ease: "power1.inOut" }, T3);
+        tl.fromTo(spin, { rotation: 0 }, { rotation: -600, duration: FALL, ease: "power2.in", immediateRender: false }, T3);
+        var FLAPS = [beat(3.5), beat(4), beat(4.5), beat(5), beat(5.5)];
+        for (var p = 0; p < FLAPS.length; p++) {
+          var wide = p % 2 === 0;
+          tl.to(sq, { scaleX: wide ? 1.16 : 0.86, scaleY: wide ? 0.86 : 1.16, duration: 0.1, ease: "sine.inOut" }, FLAPS[p]);
+        }
+        tl.to(sq, { scaleX: 0.9, scaleY: 1.12, duration: 0.12, ease: "sine.inOut" }, T6 - 0.1);
+
+        // Beat 6: the brake. Drops onto the final "}" row, lands on beat 6.5.
+        var DROP = T_LAND - T6;
+        tl.to(pos, { x: LAND.x - FX, duration: DROP, ease: "power2.out" }, T6);
+        tl.to(pos, { y: LAND.y - FY, duration: DROP, ease: "power2.in" }, T6);
+        tl.to(spin, { rotation: -720, duration: DROP - 0.03, ease: "power2.out" }, T6);
+        tl.to(sq, { scaleX: 0.84, scaleY: 1.22, duration: DROP - 0.02, ease: "power1.in" }, T6 + 0.02);
+        // Heavy squash, the page thuds.
+        tl.to(sq, { scaleX: 1.55, scaleY: 0.48, duration: 0.05, ease: "power3.out" }, T_LAND);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.3, ease: "back.out(2)" }, T_LAND + 0.05);
+        tl.fromTo(thud, { y: 0 }, { y: 12, duration: 0.04, ease: "power2.out", immediateRender: false }, T_LAND);
+        tl.to(thud, { y: 0, duration: 0.3, ease: "power3.out" }, T_LAND + 0.04);
+        // Dizzy wobble, damped over a beat.
+        var WOB = [8, -6.5, 4.5, -3, 1.5, 0];
+        for (var wb = 0; wb < WOB.length; wb++) {
+          tl.to(lean, { rotation: WOB[wb], duration: 0.08, ease: "sine.inOut" }, T_LAND + 0.06 + wb * 0.08);
+        }
+
+        // ---- Beat 7: "Readable?" slams; the page dims behind the words; Amigo bobs.
+        tl.fromTo($("dim"), { opacity: 0 }, { opacity: 0.5, duration: 0.3, ease: "power2.out", immediateRender: false }, T7);
+        tl.fromTo($("say-1"), { opacity: 0, scale: 1.45, y: -18 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: "expo.out", immediateRender: false }, T7 - 0.04);
+        tl.fromTo(cam, { x: 0 }, { x: -8, duration: 0.04, ease: "none", immediateRender: false }, T7);
+        tl.to(cam, { x: 0, duration: 0.24, ease: "power3.out" }, T7 + 0.04);
+        tl.to(sq, { scaleX: 1.12, scaleY: 0.88, duration: 0.06, ease: "power2.out" }, T7 + 0.02);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.2, ease: "power2.out" }, T7 + 0.08);
+
+        // ---- Beat 8: "Barely." lands under it; Amigo leans toward the words, skeptical, and bobs.
+        var T8 = beat(8);
+        tl.fromTo($("say-2"), { opacity: 0, x: 70 },
+          { opacity: 1, x: 0, duration: 0.28, ease: "expo.out", immediateRender: false }, T8 - 0.04);
+        tl.to(sq, { scaleX: 1.12, scaleY: 0.88, duration: 0.06, ease: "power2.out" }, T8);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.2, ease: "power2.out" }, T8 + 0.06);
+        tl.to(lean, { rotation: 13, duration: 0.3, ease: "power3.out" }, T8);
+        tl.to(pos, { x: LAND.x - FX + 14, duration: 0.2, ease: "power2.inOut" }, T8 + HALF);
+        tl.to(lean, { rotation: 9, duration: 0.2, ease: "power2.inOut" }, T8 + HALF);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

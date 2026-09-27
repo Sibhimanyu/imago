@@ -1,0 +1,612 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Inter Display";
+      src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      color: #1b1b19;
+      font-family: "Inter Display", sans-serif;
+    }
+    #f01-bg {
+      position: absolute;
+      inset: 0;
+      background: #f6f5f1;
+    }
+    #f01-stage {
+      position: absolute;
+      inset: 0;
+    }
+    #f01-shake,
+    #f01-impact {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    /* ink floor: an SVG path so the middle can dent under the impact */
+    #f01-floor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: visible;
+    }
+    #f01-floor-path {
+      fill: none;
+      stroke: #1b1b19;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 1800;
+    }
+    /* falling brace's cast shadow on the floor (centre x 540) */
+    #f01-shadow {
+      position: absolute;
+      left: 260px;
+      top: 746px;
+      width: 560px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1b1b19;
+      transform-origin: 50% 50%;
+    }
+    /* Amigo: 540px box, figure is 27/32 of it (~456px = 42% of 1080); feet on the floor at y 760 */
+    #f01-amigo-pos {
+      position: absolute;
+      left: 330px;
+      top: 253.75px;
+      width: 540px;
+      height: 540px;
+    }
+    #f01-amigo-hop,
+    #f01-amigo-shake,
+    #f01-amigo-pop,
+    #f01-amigo-lean,
+    #f01-amigo-spin,
+    #f01-amigo-body {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 540px;
+      height: 540px;
+    }
+    #f01-amigo-pop,
+    #f01-amigo-lean,
+    #f01-amigo-body {
+      transform-origin: 50% 93.75%; /* the feet: viewBox y=30 of 32 */
+    }
+    #f01-amigo-spin {
+      transform-origin: 50% 51.5%; /* centre of the figure (viewBox y 3..30) */
+    }
+    #f01-amigo-body svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      color: #1b1b19;
+    }
+    /* the brace: JetBrains Mono "{" glyph spans 0.03F..0.97F of a line-height:1 box, x 0.074F..0.507F */
+    #f01-brace {
+      position: absolute;
+      left: 343px; /* glyph centre (0.29F = 197px) sits over Amigo at x 540 */
+      top: -14px; /* rest: glyph bottom at y 646 = top of the pancaked Amigo */
+      width: 408px;
+      height: 680px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 680px;
+      line-height: 1;
+      color: #1b1b19;
+      transform-origin: 50% 0%;
+    }
+    .f01-speed {
+      position: absolute;
+      width: 6px;
+      border-radius: 3px;
+      background: #1b1b19;
+      transform-origin: 50% 100%;
+    }
+    #f01-speed-1 { left: 10px; top: 40px; height: 230px; }
+    #f01-speed-2 { left: -36px; top: 150px; height: 170px; }
+    #f01-speed-3 { left: 390px; top: 90px; height: 210px; }
+    /* impact marks at the pancake edges */
+    .f01-mark {
+      position: absolute;
+      width: 56px;
+      height: 6px;
+      border-radius: 3px;
+      background: #1b1b19;
+    }
+    .f01-mark-l { left: 196px; transform-origin: 100% 50%; }
+    .f01-mark-r { left: 828px; transform-origin: 0% 50%; }
+    #f01-mark-l1, #f01-mark-r1 { top: 668px; }
+    #f01-mark-l2, #f01-mark-r2 { top: 708px; }
+    #f01-mark-l3, #f01-mark-r3 { top: 744px; }
+    /* words: display h1, baseline of "API?" sits on the floor */
+    .f01-word {
+      position: absolute;
+      left: 930px;
+      font-family: "Inter Display", sans-serif;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+      color: #1b1b19;
+    }
+    #f01-w1 {
+      top: 330px;
+      font-size: 190px;
+      transform-origin: 0% 80%;
+    }
+    #f01-w2 {
+      top: 493px;
+      font-size: 300px;
+      transform-origin: 0% 86%;
+    }
+  </style>
+
+  <div data-hf-id="hf-fyvm" id="root" data-composition-id="01-groove" data-start="0" data-duration="3.75" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-enbm" id="f01-bg" class="clip" data-start="0" data-duration="3.75" data-track-index="0"></div>
+
+    <div data-hf-id="hf-lrk8" id="f01-stage" class="clip" data-start="0" data-duration="3.75" data-track-index="1">
+      <div data-hf-id="hf-v8tt" id="f01-shake">
+        <svg data-hf-id="hf-wusl" id="f01-floor" viewBox="0 0 1920 1080" aria-hidden="true">
+          <path data-hf-id="hf-ji7u" id="f01-floor-path" d="M120 760 L260 760 Q540 760 820 760 L1800 760" />
+        </svg>
+
+        <div data-hf-id="hf-jmav" id="f01-impact">
+          <div data-hf-id="hf-5hlx" id="f01-shadow"></div>
+
+          <div data-hf-id="hf-0b3n" id="f01-amigo-pos">
+            <div data-hf-id="hf-p5dc" id="f01-amigo-hop">
+              <div data-hf-id="hf-vrsv" id="f01-amigo-shake">
+                <div data-hf-id="hf-pfm0" id="f01-amigo-pop">
+                  <div data-hf-id="hf-m6cv" id="f01-amigo-lean">
+                    <div data-hf-id="hf-vr6j" id="f01-amigo-spin">
+                      <div data-hf-id="hf-o7mn" id="f01-amigo-body">
+                        <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                          <defs data-hf-id="hf-f01d">
+                            <mask data-hf-id="hf-f01m" id="f01-ap-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                              <rect data-hf-id="hf-f01w" x="0" y="0" width="32" height="32" fill="#fff" />
+                              <rect data-hf-id="hf-f01a" id="f01-ap" x="10.9" y="9" width="10.2" height="5.3" rx="2.3" fill="#000" />
+                            </mask>
+                          </defs>
+                          <g data-hf-id="hf-g1zz" fill="currentColor">
+                            <g data-hf-id="hf-f01l" class="f01-legL">
+                              <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+                            </g>
+                            <g data-hf-id="hf-f01r" class="f01-legR">
+                              <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+                            </g>
+                            <path data-hf-id="hf-q41y" mask="url(#f01-ap-mask)" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Z" />
+                          </g>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div data-hf-id="hf-o3q6" id="f01-brace">
+            <div data-hf-id="hf-oapi" id="f01-speed-1" class="f01-speed"></div>
+            <div data-hf-id="hf-kclh" id="f01-speed-2" class="f01-speed"></div>
+            <div data-hf-id="hf-jkxo" id="f01-speed-3" class="f01-speed"></div>
+            <span data-hf-id="hf-p60e">{</span>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-ana4" id="f01-mark-l1" class="f01-mark f01-mark-l"></div>
+        <div data-hf-id="hf-lirr" id="f01-mark-l2" class="f01-mark f01-mark-l"></div>
+        <div data-hf-id="hf-fd1y" id="f01-mark-l3" class="f01-mark f01-mark-l"></div>
+        <div data-hf-id="hf-tkgk" id="f01-mark-r1" class="f01-mark f01-mark-r"></div>
+        <div data-hf-id="hf-28cf" id="f01-mark-r2" class="f01-mark f01-mark-r"></div>
+        <div data-hf-id="hf-ya8e" id="f01-mark-r3" class="f01-mark f01-mark-r"></div>
+
+        <div data-hf-id="hf-0wzf" id="f01-w1" data-layout-allow-overlap="" class="f01-word">Another</div>
+        <div data-hf-id="hf-f2vu" id="f01-w2" data-layout-allow-overlap="" class="f01-word">API?</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var DURATION = 3.75;
+      var tl = gsap.timeline({ paused: true });
+
+      // ---- one tempo grid: 128 bpm, grid origin 0.01s; beat k (1-indexed) = 0.01 + (k-1) * 0.46875 ----
+      var BEAT = 0.46875;
+      function B(k) {
+        return Math.round((0.01 + (k - 1) * BEAT) * 1000) / 1000;
+      }
+
+      // Contiguous key chains: each segment is a fromTo from the previous key, so no two tweens
+      // ever touch the same property at the same time and every seek lands on the authored pose.
+      function track(target, keys) {
+        for (var i = 1; i < keys.length; i++) {
+          var a = keys[i - 1];
+          var b = keys[i];
+          var to = Object.assign({}, b[1], {
+            duration: b[0] - a[0],
+            ease: b[2] || "power2.out",
+            immediateRender: i === 1,
+          });
+          tl.fromTo(target, Object.assign({}, a[1]), to, a[0]);
+        }
+      }
+
+      var IMPACT = B(8); // 3.291
+
+      // =============== Scene 1 (bar 1): pop in, groove, spin-hop on beat 3, land on beat 4 ===============
+      // floor draws in under the pop
+      tl.fromTo("#f01-floor-path", { strokeDashoffset: 1800 }, { strokeDashoffset: 0, duration: 0.42, ease: "power3.out" }, 0);
+
+      // spring-pop-entrance (playful variant: overshoot is allowed on Amigo's body only)
+      tl.fromTo(
+        "#f01-amigo-pop",
+        { scale: 0, rotation: -8 },
+        { scale: 1, rotation: 0, duration: 0.42, ease: "back.out(1.7)" },
+        B(1),
+      );
+
+      // side-steps (off-beats) and travel
+      track("#f01-amigo-pos", [
+        [0, { x: 0 }],
+        [B(1.5), { x: 0 }, "none"],
+        [B(1.5) + 0.17, { x: 36 }, "power2.inOut"],
+        [B(2.5), { x: 36 }, "none"],
+        [B(2.5) + 0.17, { x: 0 }, "power2.inOut"],
+        [B(3), { x: 0 }, "none"],
+        [B(4), { x: 12 }, "none"], // drift through the air
+        [B(4.5), { x: 12 }, "none"],
+        [B(4.5) + 0.16, { x: 22 }, "power2.inOut"], // curious half-step toward the right
+        [B(5), { x: 22 }, "none"],
+        [B(5) + 0.12, { x: -30 }, "power3.out"], // recoils from "Another"
+        [B(5.5), { x: -30 }, "none"],
+        [B(5.5) + 0.12, { x: -20 }, "power2.out"], // eases back in
+        [B(6), { x: -20 }, "none"],
+        [B(6.5), { x: -40 }, "power2.inOut"], // skeptical little back-step from "API?"
+        [B(7), { x: -40 }, "none"],
+        [B(7) + 0.13, { x: -60 }, "power3.out"], // shrinks back, right under the thing above
+        [DURATION, { x: -60 }, "none"],
+      ]);
+
+      // hops: little off-beat lift, the big spin-hop, the hop back
+      track("#f01-amigo-hop", [
+        [0, { y: 0 }],
+        [B(1.5), { y: 0 }, "none"],
+        [B(1.5) + 0.12, { y: -30 }, "power2.out"],
+        [B(2), { y: 0 }, "power2.in"],
+        [B(3), { y: 0 }, "none"],
+        [B(3.5), { y: -330 }, "power2.out"], // apex on the half-beat
+        [B(4), { y: 0 }, "power2.in"], // lands on beat 4; from here on it reacts instead of hopping
+        [B(5), { y: 0 }, "none"],
+        [B(5) + 0.07, { y: -22 }, "power2.out"], // startled jolt off the floor
+        [B(5) + 0.2, { y: 0 }, "power2.in"],
+        [DURATION, { y: 0 }, "none"],
+      ]);
+
+      // the spin: a full rotation around the figure's centre on the big hop
+      track("#f01-amigo-spin", [
+        [0, { rotation: 0 }],
+        [B(3), { rotation: 0 }, "none"],
+        [B(4) - 0.03, { rotation: 360 }, "power2.inOut"],
+        [DURATION, { rotation: 360 }, "none"],
+      ]);
+
+      // lean (from the feet): groove sway, show-off lean back, double-take, look up
+      track("#f01-amigo-lean", [
+        [0, { rotation: 0 }],
+        [B(1.5), { rotation: 0 }, "none"],
+        [B(1.5) + 0.16, { rotation: 7 }, "power2.inOut"],
+        [B(2), { rotation: 7 }, "none"],
+        [B(2) + 0.12, { rotation: 0 }, "power2.out"],
+        [B(2.5), { rotation: 0 }, "none"],
+        [B(2.5) + 0.14, { rotation: -5 }, "power2.inOut"],
+        [B(3), { rotation: -5 }, "none"],
+        [B(3) + 0.1, { rotation: 0 }, "power2.out"],
+        [B(4.5), { rotation: 0 }, "none"],
+        [B(4.5) + 0.14, { rotation: 4 }, "power2.inOut"], // leans in: something's coming from the right
+        [B(5), { rotation: 4 }, "none"],
+        [B(5) + 0.1, { rotation: -15 }, "power3.out"], // "Another" slams: leans way back
+        [B(5.5), { rotation: -12 }, "power1.out"],
+        [B(5.5) + 0.14, { rotation: -4 }, "power2.out"],
+        [B(6), { rotation: -4 }, "none"],
+        [B(6) + 0.14, { rotation: 7 }, "power3.out"], // "API?": skeptical head tilt toward the word
+        [B(6.5), { rotation: 8 }, "power1.inOut"],
+        [B(6.5) + 0.16, { rotation: 4 }, "power2.inOut"],
+        [B(7), { rotation: 4 }, "none"],
+        [B(7) + 0.11, { rotation: -4 }, "power3.out"], // shrinks back under the brace
+        [IMPACT, { rotation: -3 }, "none"],
+        [IMPACT + 0.04, { rotation: 0 }, "power4.out"],
+        [DURATION, { rotation: 0 }, "none"],
+      ]);
+
+      // squash & stretch (from the feet): kick bob on every beat, charge-up, launch, land, pancake
+      track("#f01-amigo-body", [
+        [0, { scaleX: 1, scaleY: 1 }],
+        [B(1.5), { scaleX: 1, scaleY: 1 }, "none"],
+        [B(1.5) + 0.07, { scaleX: 0.96, scaleY: 1.05 }, "power2.out"],
+        [B(2), { scaleX: 1, scaleY: 1 }, "power1.in"],
+        [B(2) + 0.045, { scaleX: 1.1, scaleY: 0.88 }, "power2.out"], // kick
+        [B(2.5), { scaleX: 1, scaleY: 1 }, "power2.out"],
+        [B(3), { scaleX: 1.16, scaleY: 0.76 }, "power2.in"], // charge-up
+        [B(3) + 0.07, { scaleX: 0.86, scaleY: 1.2 }, "power2.out"], // launch stretch
+        [B(3) + 0.25, { scaleX: 1, scaleY: 1 }, "power2.inOut"],
+        [B(4) - 0.02, { scaleX: 0.93, scaleY: 1.09 }, "power1.in"],
+        [B(4) + 0.045, { scaleX: 1.28, scaleY: 0.7 }, "power2.out"], // landing squash
+        [B(4) + 0.16, { scaleX: 0.95, scaleY: 1.07 }, "power2.out"],
+        [B(4) + 0.3, { scaleX: 1, scaleY: 1 }, "power2.inOut"],
+        [B(5), { scaleX: 1, scaleY: 1 }, "none"],
+        [B(5) + 0.05, { scaleX: 0.9, scaleY: 1.12 }, "power2.out"], // startled stretch
+        [B(5) + 0.2, { scaleX: 1.08, scaleY: 0.92 }, "power2.in"], // drops back down
+        [B(5.5), { scaleX: 1, scaleY: 1 }, "power2.out"],
+        [B(6), { scaleX: 1, scaleY: 1 }, "none"],
+        [B(6) + 0.06, { scaleX: 1.04, scaleY: 0.96 }, "power2.out"], // settles into "hmm"
+        [B(6) + 0.24, { scaleX: 1, scaleY: 1 }, "power2.inOut"],
+        [B(7), { scaleX: 1, scaleY: 1 }, "none"],
+        [B(7) + 0.07, { scaleX: 1.08, scaleY: 0.92 }, "power3.out"], // cowers
+        [B(7) + 0.24, { scaleX: 1, scaleY: 1 }, "power2.inOut"],
+        [IMPACT - 0.07, { scaleX: 1, scaleY: 1 }, "none"],
+        [IMPACT - 0.04, { scaleX: 1.05, scaleY: 0.93 }, "power2.out"], // braces
+        [IMPACT + 0.04, { scaleX: 1.55, scaleY: 0.25 }, "power4.out"], // PANCAKE
+        [IMPACT + 0.08, { scaleX: 1.5, scaleY: 0.3 }, "power2.out"], // rides the brace's recoil
+        [IMPACT + 0.22, { scaleX: 1.56, scaleY: 0.25 }, "power2.in"],
+        [B(8.5), { scaleX: 1.56, scaleY: 0.25 }, "none"],
+        [B(8.5) + 0.045, { scaleX: 1.6, scaleY: 0.23 }, "power2.out"], // twitch
+        [B(8.5) + 0.16, { scaleX: 1.55, scaleY: 0.25 }, "power2.out"],
+        [DURATION, { scaleX: 1.55, scaleY: 0.25 }, "none"],
+      ]);
+
+      // ---- the eye: the aperture is Amigo's single eye (amigo-rig v2). States are w/h/rx around the
+      // rest centre (16, 11.65); gx/gy shift the gaze. Each key builds a fresh attr object.
+      var EYE = {
+        rest: [10.2, 5.3, 2.3],
+        squint: [10.2, 2.0, 1.0],
+        narrow: [10.2, 1.6, 0.8],
+        blink: [10.2, 0.6, 0.3],
+        wide: [11.6, 7.6, 3.2],
+        tiny: [4.2, 2.8, 1.4],
+        shut: [10.2, 0.5, 0.25],
+      };
+      function eye(state, gx, gy) {
+        var s = EYE[state];
+        var cx = 16 + (gx || 0);
+        var cy = 11.65 + (gy || 0);
+        return {
+          attr: {
+            x: Math.round((cx - s[0] / 2) * 1000) / 1000,
+            y: Math.round((cy - s[1] / 2) * 1000) / 1000,
+            width: s[0],
+            height: s[1],
+            rx: s[2],
+          },
+        };
+      }
+      function eyeTrack(keys) {
+        for (var i = 1; i < keys.length; i++) {
+          var a = keys[i - 1];
+          var b = keys[i];
+          var from = eye(a[1], a[2], a[3]);
+          var to = eye(b[1], b[2], b[3]);
+          to.duration = b[0] - a[0];
+          to.ease = b[4] || "power2.inOut";
+          to.immediateRender = i === 1;
+          tl.fromTo("#f01-ap", from, to, a[0]);
+        }
+      }
+      eyeTrack([
+        // grooving: happy squint on the kicks, a blink, a glance right before the words arrive
+        [0, "squint", 0, 0],
+        [0.3, "rest", 0, 0, "power2.out"],
+        [B(2), "rest", 0, 0, "none"],
+        [B(2) + 0.06, "squint", 0, 0, "power2.out"], // kick
+        [B(2) + 0.12, "squint", 0, 0, "none"],
+        [B(2) + 0.18, "rest", 0, 0, "power2.out"],
+        [0.69, "rest", 0, 0, "none"],
+        [0.76, "blink", 0, 0, "power2.in"], // blink
+        [0.85, "rest", 0, 0, "power2.out"],
+        [B(3) - 0.08, "rest", 0, 0, "none"],
+        [B(3), "squint", 0, 0, "power2.out"], // charge-up: determined
+        [B(3) + 0.3, "squint", 0, 0, "none"], // gleeful through the spin
+        [B(4) - 0.1, "rest", 0, 0, "power2.inOut"],
+        [B(4), "rest", 0, 0, "none"],
+        [B(4) + 0.05, "squint", 0, 0, "power2.out"], // landing kick
+        [B(4) + 0.1, "squint", 0, 0, "none"],
+        [B(4.5), "rest", 0.4, 0, "power2.out"],
+        [B(4.5) + 0.12, "rest", 2.2, 0.2, "power2.inOut"], // glances right: where the words will land
+        // beat 5 "Another": snaps WIDE
+        [B(5), "rest", 2.2, 0.2, "none"],
+        [B(5) + 0.07, "wide", 1.2, -0.2, "power3.out"],
+        [B(5.5), "wide", 1.0, -0.2, "none"],
+        [B(5.5) + 0.12, "wide", 1.4, 0, "power2.inOut"],
+        // beat 6 "API?": skeptical squint, eyeing the word
+        [B(6), "wide", 1.4, 0, "none"],
+        [B(6) + 0.12, "squint", 2.2, 0.7, "power3.out"],
+        [B(6.5), "squint", 2.2, 0.7, "none"],
+        [B(6.5) + 0.18, "narrow", 2.0, 0.7, "power2.inOut"], // "...really?"
+        // beat 7 the brace peeks in: gaze shoots UP, eye goes tiny
+        [B(7), "narrow", 2.0, 0.7, "none"],
+        [B(7) + 0.08, "tiny", -0.2, -1.4, "power3.out"],
+        [B(7.5), "tiny", -0.2, -1.4, "none"],
+        [B(7.5) + 0.06, "tiny", 0.5, -1.3, "power2.out"], // nervous dart
+        [B(7.5) + 0.14, "tiny", -0.4, -1.4, "power2.inOut"],
+        // beat 8 impact: squeezed SHUT, and it stays shut, flattened
+        [IMPACT - 0.05, "tiny", -0.4, -1.4, "none"],
+        [IMPACT - 0.01, "shut", 0, 0, "power2.in"],
+        [DURATION, "shut", 0, 0, "none"],
+      ]);
+
+      // =============== Scene 2 (beats 5-6): the words slam; Amigo reacts ===============
+      // kinetic-beat-slam: one grid, a different entrance per phrase
+      tl.fromTo(
+        "#f01-w1",
+        { scale: 1.7, opacity: 0, filter: "blur(18px)" },
+        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.38, ease: "power4.out" },
+        B(5),
+      );
+      tl.fromTo(
+        "#f01-w2",
+        { x: 460, skewX: -12, opacity: 0 },
+        { x: 0, skewX: 0, opacity: 1, duration: 0.34, ease: "expo.out" },
+        B(6),
+      );
+      // "Another" gets knocked by the second slam, then both jolt on the impact
+      track("#f01-w1", [
+        [0, { y: 0, rotation: 0 }],
+        [B(6), { y: 0, rotation: 0 }, "none"],
+        [B(6) + 0.05, { y: 10, rotation: 0 }, "power2.out"],
+        [B(6) + 0.35, { y: 0, rotation: 0 }, "power3.out"],
+        [IMPACT, { y: 0, rotation: 0 }, "none"],
+        [IMPACT + 0.04, { y: -30, rotation: -3.5 }, "power2.out"],
+        [DURATION - 0.05, { y: 0, rotation: -1.5 }, "power3.out"],
+        [DURATION, { y: 0, rotation: -1.5 }, "none"],
+      ]);
+      track("#f01-w2", [
+        [0, { y: 0, rotation: 0 }],
+        [IMPACT, { y: 0, rotation: 0 }, "none"],
+        [IMPACT + 0.04, { y: -18, rotation: 2.5 }, "power2.out"],
+        [DURATION - 0.05, { y: 0, rotation: 1 }, "power3.out"],
+        [DURATION, { y: 0, rotation: 1 }, "none"],
+      ]);
+
+      // =============== Scene 3 (beats 7-8): the brace drops and pancakes Amigo ===============
+      var HANG_Y = -346; // glyph bottom at y 300: the lower half of the "{" peeks in
+      track("#f01-brace", [
+        [0, { y: -740, rotation: 0 }],
+        [B(7), { y: -740, rotation: 0 }, "none"],
+        [B(7) + 0.12, { y: HANG_Y, rotation: -4 }, "power3.out"], // peeks in on beat 7
+        [B(7.5), { y: HANG_Y, rotation: 2 }, "power2.inOut"], // hangs there a half-beat
+        [IMPACT, { y: 0, rotation: 0 }, "expo.in"], // drops on the fast expo-in, hits on beat 8
+        [IMPACT + 0.08, { y: -26, rotation: 0 }, "power2.out"], // recoil
+        [IMPACT + 0.22, { y: 0, rotation: 0 }, "power2.in"],
+        [DURATION, { y: 0, rotation: 0 }, "none"],
+      ]);
+      ["#f01-speed-1", "#f01-speed-2", "#f01-speed-3"].forEach(function (sel, i) {
+        track(sel, [
+          [0, { opacity: 0, scaleY: 1 }],
+          [B(7.5) + i * 0.02, { opacity: 0, scaleY: 1 }, "none"],
+          [B(7.5) + 0.06 + i * 0.02, { opacity: 1, scaleY: 1 }, "none"],
+          [IMPACT, { opacity: 1, scaleY: 1 }, "none"],
+          [IMPACT + 0.06, { opacity: 1, scaleY: 0 }, "power2.in"],
+          [DURATION, { opacity: 1, scaleY: 0 }, "none"],
+        ]);
+      });
+      // cast shadow telegraphs the fall
+      track("#f01-shadow", [
+        [0, { opacity: 0, scaleX: 0.2, scaleY: 0.6 }],
+        [B(7), { opacity: 0, scaleX: 0.2, scaleY: 0.6 }, "none"],
+        [B(7) + 0.12, { opacity: 0.06, scaleX: 0.5, scaleY: 0.7 }, "power3.out"],
+        [B(7.5), { opacity: 0.06, scaleX: 0.5, scaleY: 0.7 }, "none"],
+        [IMPACT, { opacity: 0.16, scaleX: 1, scaleY: 1 }, "power2.in"],
+        [DURATION, { opacity: 0.16, scaleX: 1, scaleY: 1 }, "none"],
+      ]);
+
+      // tremble while the brace hangs: deterministic jitter every 30ms, growing as the drop nears
+      var shiverKeys = [[0, { x: 0 }]];
+      var s0 = B(7) + 0.1;
+      shiverKeys.push([s0, { x: 0 }, "none"]);
+      var nShiver = Math.floor((IMPACT - 0.05 - s0) / 0.03);
+      for (var j = 1; j <= nShiver; j++) {
+        var amp = 3 + (5 * j) / nShiver;
+        shiverKeys.push([Math.round((s0 + j * 0.03) * 1000) / 1000, { x: (j % 2 ? 1 : -1) * amp }, "none"]);
+      }
+      shiverKeys.push([IMPACT, { x: 0 }, "none"]);
+      shiverKeys.push([DURATION, { x: 0 }, "none"]);
+      track("#f01-amigo-shake", shiverKeys);
+
+      // impact marks burst out from the pancake edges and hold
+      var MARKS = [
+        ["#f01-mark-l1", 34, -1],
+        ["#f01-mark-l2", 14, -1],
+        ["#f01-mark-l3", -2, -1],
+        ["#f01-mark-r1", -34, 1],
+        ["#f01-mark-r2", -14, 1],
+        ["#f01-mark-r3", 2, 1],
+      ];
+      MARKS.forEach(function (m, i) {
+        tl.fromTo(
+          m[0],
+          { rotation: m[1], scaleX: 0, x: 0 },
+          { rotation: m[1], scaleX: 1, x: m[2] * (16 + (i % 3) * 6), duration: 0.24, ease: "power3.out" },
+          IMPACT + (i % 3) * 0.012,
+        );
+      });
+
+      // whole-stage jolt on the hit
+      track("#f01-shake", [
+        [0, { x: 0, y: 0 }],
+        [IMPACT, { x: 0, y: 0 }, "none"],
+        [IMPACT + 0.02, { x: 16, y: 10 }, "none"],
+        [IMPACT + 0.045, { x: -12, y: -4 }, "none"],
+        [IMPACT + 0.07, { x: 8, y: 2 }, "none"],
+        [IMPACT + 0.095, { x: -5, y: 0 }, "none"],
+        [IMPACT + 0.13, { x: 2, y: 0 }, "power1.out"],
+        [IMPACT + 0.17, { x: 0, y: 0 }, "power1.out"],
+        [DURATION, { x: 0, y: 0 }, "none"],
+      ]);
+
+      // floor dent: the middle of the floor (and everything on it) sinks under the weight
+      var DENT = [
+        [0, 0],
+        [IMPACT, 0, "none"],
+        [IMPACT + 0.05, 28, "power2.out"],
+        [IMPACT + 0.3, 14, "power3.out"],
+        [DURATION, 14, "none"],
+      ];
+      function dentAt(t) {
+        if (t <= DENT[0][0]) return DENT[0][1];
+        for (var k = 1; k < DENT.length; k++) {
+          if (t <= DENT[k][0]) {
+            var a = DENT[k - 1];
+            var b = DENT[k];
+            var p = (t - a[0]) / (b[0] - a[0]);
+            return a[1] + (b[1] - a[1]) * gsap.parseEase(b[2])(p);
+          }
+        }
+        return DENT[DENT.length - 1][1];
+      }
+      var floorPath = document.getElementById("f01-floor-path");
+      var impactEl = document.getElementById("f01-impact");
+      function render(t) {
+        var d = dentAt(t);
+        floorPath.setAttribute("d", "M120 760 L260 760 Q540 " + (760 + 2 * d) + " 820 760 L1800 760");
+        impactEl.style.transform = "translateY(" + d + "px)";
+      }
+      var driver = { t: 0 };
+      tl.fromTo(
+        driver,
+        { t: 0 },
+        {
+          t: DURATION,
+          duration: DURATION,
+          ease: "none",
+          onUpdate: function () {
+            render(driver.t);
+          },
+        },
+        0,
+      );
+      render(0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["01-groove"] = tl;
+    })();
+  </script>
+</template>

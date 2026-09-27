@@ -1,0 +1,459 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); }
+    @font-face { font-family: "Inter Display"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #1b1b19;
+    }
+
+    #f03-paper { position: absolute; inset: 0; background: #f6f5f1; }
+    #f03-stage { position: absolute; inset: 0; overflow: hidden; }
+    #f03-cam { position: absolute; inset: 0; }
+
+    /* ---------- headline (display h2) ---------- */
+    #f03-head {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 236px;
+      text-align: center;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 88px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: #1b1b19;
+      white-space: nowrap;
+    }
+    .f03-word { display: inline-block; margin: 0 0.11em; }
+
+    /* ---------- the GET bar (mirrors the real app input) ---------- */
+    #f03-bar {
+      position: absolute;
+      left: 380px;
+      top: 500px;
+      width: 1160px;
+      height: 136px;
+      box-sizing: border-box;
+      background: #ffffff;
+      border: 1px solid #e7e5df;
+      border-radius: 18px;
+      box-shadow: 0 2px 6px rgba(27, 27, 25, 0.04), 0 18px 46px -16px rgba(27, 27, 25, 0.2);
+    }
+    #f03-chip {
+      position: absolute;
+      left: 18px;
+      top: 23px;
+      width: 112px;
+      height: 88px;
+      box-sizing: border-box;
+      border: 1px solid #e7e5df;
+      border-radius: 12px;
+      background: #f1efe9;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 32px;
+      line-height: 86px;
+      text-align: center;
+      color: #1b1b19;
+    }
+    #f03-field {
+      position: absolute;
+      left: 152px;
+      top: 0;
+      width: 872px;
+      height: 134px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 32px;
+      color: #1b1b19;
+    }
+    #f03-placeholder {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 134px;
+      line-height: 134px;
+      font-family: "Inter", sans-serif;
+      font-weight: 400;
+      font-size: 34px;
+      color: #8a8981;
+    }
+    #f03-typed { white-space: pre; }
+    #f03-caret {
+      display: inline-block;
+      width: 3px;
+      height: 40px;
+      margin-left: 3px;
+      background: #1b1b19;
+    }
+    #f03-ring {
+      position: absolute;
+      left: 1040px;
+      top: 16px;
+      width: 104px;
+      height: 104px;
+      box-sizing: border-box;
+      border: 4px solid #1b1b19;
+      border-radius: 18px;
+      opacity: 0;
+    }
+    #f03-btn {
+      position: absolute;
+      left: 1040px;
+      top: 16px;
+      width: 104px;
+      height: 104px;
+      border-radius: 14px;
+      background: #1b1b19;
+      overflow: hidden;
+    }
+    #f03-btn svg { position: absolute; left: 32px; top: 32px; width: 40px; height: 40px; }
+    #f03-btnflash { position: absolute; inset: 0; background: #f6f5f1; opacity: 0; }
+
+    /* ---------- Amigo (176px box; feet at 165px = 30/32) ---------- */
+    .f03-amigo-box {
+      position: absolute;
+      left: 1384px;
+      top: 351px;
+      width: 176px;
+      height: 176px;
+    }
+    #f03-trail .f03-dash {
+      position: absolute;
+      height: 7px;
+      border-radius: 4px;
+      background: #1b1b19;
+    }
+    #f03-apos, #f03-abody, #f03-ashake { position: absolute; inset: 0; }
+    #f03-ashake { color: #1b1b19; }
+    #f03-ashake svg { display: block; width: 100%; height: 100%; }
+
+    /* tension lines around Amigo during the charge */
+    .f03-tl { position: absolute; width: 0; height: 0; }
+    .f03-tl i {
+      position: absolute;
+      left: -20px;
+      top: -3.5px;
+      width: 40px;
+      height: 7px;
+      border-radius: 4px;
+      background: #1b1b19;
+      transform-origin: 0% 50%;
+    }
+
+    /* launch speed lines */
+    .f03-speed {
+      position: absolute;
+      width: 7px;
+      border-radius: 4px;
+      background: #1b1b19;
+    }
+
+    #f03-press {
+      position: absolute;
+      right: 380px;
+      top: 676px;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 150px;
+      line-height: 1;
+      letter-spacing: -0.035em;
+      color: #1b1b19;
+      white-space: nowrap;
+      transform-origin: 100% 60%;
+    }
+  </style>
+
+  <div data-hf-id="hf-c60o" id="root" data-composition-id="03-paste" data-start="0" data-duration="4.15" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-mb08" id="f03-paper" class="clip" data-start="0" data-duration="4.15" data-track-index="0"></div>
+
+    <div data-hf-id="hf-h20r" id="f03-stage" class="clip" data-start="0" data-duration="4.15" data-track-index="1">
+      <div data-hf-id="hf-fi9c" id="f03-cam">
+        <div data-hf-id="hf-n23x" id="f03-head"><span data-hf-id="hf-f9sm" class="f03-word">Paste</span><span data-hf-id="hf-ybp7" class="f03-word">any</span><span data-hf-id="hf-of85" class="f03-word">GET</span><span data-hf-id="hf-fn0w" class="f03-word">endpoint.</span></div>
+
+        <div data-hf-id="hf-oy8i" id="f03-bar">
+          <div data-hf-id="hf-mze3" id="f03-chip">GET</div>
+          <div data-hf-id="hf-z3gh" id="f03-field">
+            <div data-hf-id="hf-l8qo" id="f03-placeholder">Paste an API URL or a curl command</div>
+            <span data-hf-id="hf-12fg" id="f03-typed"></span><span data-hf-id="hf-ezad" id="f03-caret"></span>
+          </div>
+          <div data-hf-id="hf-hf5h" id="f03-ring"></div>
+          <div data-hf-id="hf-fsoh" id="f03-btn">
+            <svg data-hf-id="hf-j3cc" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path data-hf-id="hf-kuq8" d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="#F6F5F1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div data-hf-id="hf-rl81" id="f03-btnflash"></div>
+          </div>
+        </div>
+
+        <!-- launch speed lines (behind Amigo) -->
+        <div data-hf-id="hf-2bcp" class="f03-speed" id="f03-sp0" style="left: 1432px; top: 150px; height: 300px;"></div>
+        <div data-hf-id="hf-urcb" class="f03-speed" id="f03-sp1" style="left: 1469px; top: 60px; height: 400px;"></div>
+        <div data-hf-id="hf-s2uf" class="f03-speed" id="f03-sp2" style="left: 1506px; top: 150px; height: 300px;"></div>
+
+        <!-- tension lines: centred on Amigo (1472, 430), radius 140 -->
+        <div data-hf-id="hf-uuza" id="f03-tlines"></div>
+
+        <!-- belly-slide trail -->
+        <div data-hf-id="hf-p1gp" id="f03-trail" class="f03-amigo-box">
+          <div data-hf-id="hf-xk2i" class="f03-dash" style="left: -250px; top: 78px; width: 150px;"></div>
+          <div data-hf-id="hf-l4cg" class="f03-dash" style="left: -330px; top: 108px; width: 210px;"></div>
+          <div data-hf-id="hf-udb3" class="f03-dash" style="left: -220px; top: 138px; width: 120px;"></div>
+        </div>
+
+        <div data-hf-id="hf-a73o" id="f03-amigo" class="f03-amigo-box">
+          <div data-hf-id="hf-up5q" id="f03-apos">
+            <div data-hf-id="hf-1kzg" id="f03-abody">
+              <div data-hf-id="hf-hbe2" id="f03-ashake">
+                <svg data-hf-id="hf-fun6" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <defs>
+                    <mask id="f03-ap-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                      <rect x="0" y="0" width="32" height="32" fill="#fff" />
+                      <rect id="f03-ap" x="10.9" y="9" width="10.2" height="5.3" rx="2.3" fill="#000" />
+                    </mask>
+                  </defs>
+                  <g fill="currentColor">
+                    <g class="f03-legL" id="f03-legL"><rect x="9" y="21.5" width="6" height="8.5" rx="3" /></g>
+                    <g class="f03-legR" id="f03-legR"><rect x="17" y="21.5" width="6" height="8.5" rx="3" /></g>
+                    <path mask="url(#f03-ap-mask)" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Z" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-4ohv" id="f03-press">Press.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const ID = "03-paste";
+      const $ = (id) => document.getElementById("f03-" + id);
+      const tl = gsap.timeline({ paused: true });
+      const B = 0.469; // beat
+      const H = 0.2345; // half beat (eighth note)
+      const DUR = 3.75;
+      const frac = (v) => v - Math.floor(v);
+      const hash = (i) => frac(Math.sin(i * 12.9898) * 43758.5453);
+      const FEET = "50% 93.75%";
+
+      const bar = $("bar"), btn = $("btn"), cam = $("cam");
+      const apos = $("apos"), abody = $("abody"), ashake = $("ashake");
+
+      // ============ Scene 1 (0–0.94): bar slams in from the right; headline builds on beats 1–2 ============
+      tl.fromTo(bar, { x: 1700, skewX: -14 }, { x: 0, skewX: 0, duration: 0.3, ease: "expo.out" }, 0);
+      const words = document.querySelectorAll("#f03-head .f03-word");
+      const wordAt = [H, B, B + H, B + H + H / 2];
+      words.forEach((w, i) => {
+        tl.fromTo(w, { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.22, ease: "power3.out" }, wordAt[i]);
+      });
+
+      // ============ Scene 2 (0.94–1.875): URL types ~3 chars per frame-tick; Amigo belly-slides in ============
+      const URL = "https://pokeapi.co/api/v2/pokemon/pikachu";
+      const T_TYPE = 2 * B; // 0.938
+      const TICK = 1 / 30;
+      const T_TYPED = T_TYPE + Math.ceil(URL.length / 3) * TICK; // ≈ 1.405 (beat 4)
+      const typed = $("typed"), caret = $("caret"), ph = $("placeholder");
+      const drv = { t: 0 };
+      tl.fromTo(drv, { t: 0 }, {
+        t: DUR,
+        duration: DUR,
+        ease: "none",
+        onUpdate: () => {
+          const t = drv.t;
+          let n = 0;
+          if (t >= T_TYPE) n = Math.min(URL.length, (Math.floor((t - T_TYPE) / TICK) + 1) * 3);
+          typed.textContent = URL.substring(0, n);
+          ph.style.opacity = t >= T_TYPE ? "0" : "1";
+          const typing = t >= T_TYPE && t < T_TYPED;
+          const blinkOn = Math.sin((t / 0.6) * Math.PI * 2) > -0.2;
+          caret.style.opacity = t < 0.3 ? "0" : typing || blinkOn ? "1" : "0";
+        },
+      }, 0);
+
+      // Amigo belly-slide: lying forward (rotated about the feet), riding the bar's top edge
+      gsap.set([apos, abody, ashake], { transformOrigin: FEET });
+      const T_POP = 3 * B; // beat 4 = 1.407
+      tl.fromTo(apos, { x: -1700, y: -48, rotation: 82 }, { x: -40, y: -48, rotation: 82, duration: 0.31, ease: "power2.out" }, T_TYPE);
+      tl.fromTo($("trail"), { x: -1700, opacity: 1 }, { x: -40, duration: 0.31, ease: "power2.out" }, T_TYPE);
+      tl.to($("trail"), { opacity: 0, duration: 0.12, ease: "power1.out" }, T_TYPE + 0.26);
+      // pop upright: flip up off the belly with a small hop, land on the button on beat 4
+      tl.to(apos, { x: 0, rotation: -10, y: -110, duration: 0.1, ease: "power2.out" }, T_TYPE + 0.31);
+      tl.to(apos, { rotation: 0, y: 0, duration: T_POP - (T_TYPE + 0.41), ease: "power2.in" }, T_TYPE + 0.41);
+      tl.fromTo(abody, { scaleX: 1, scaleY: 1 }, { scaleX: 0.9, scaleY: 1.12, duration: 0.1, ease: "power2.out" }, T_TYPE + 0.31);
+      tl.to(abody, { scaleX: 1, scaleY: 1, duration: T_POP - (T_TYPE + 0.41), ease: "power1.in" }, T_TYPE + 0.41);
+      // landing squash + overshoot, the bar dips under the weight
+      tl.to(abody, { scaleX: 1.2, scaleY: 0.78, duration: 0.06, ease: "power1.out" }, T_POP);
+      tl.to(abody, { scaleX: 0.95, scaleY: 1.06, duration: 0.1, ease: "power2.out" }, T_POP + 0.06);
+      tl.to(abody, { scaleX: 1, scaleY: 1, duration: 0.07, ease: "power2.inOut" }, T_POP + 0.16);
+      tl.to(bar, { y: 6, duration: 0.06, ease: "power1.out" }, T_POP);
+      tl.to(bar, { y: 0, duration: 0.3, ease: "power3.out" }, T_POP + 0.06);
+      // groove: off-beat side-step lean, bob on the kick
+      tl.to(apos, { x: 8, rotation: 5, duration: 0.11, ease: "power2.out" }, T_POP + H);
+      tl.to(abody, { scaleX: 1.05, scaleY: 0.94, duration: 0.06, ease: "power1.out" }, T_POP + H);
+      tl.to(abody, { scaleX: 1, scaleY: 1, duration: 0.1, ease: "power2.out" }, T_POP + H + 0.06);
+      tl.to(apos, { x: 0, rotation: -3, duration: 0.12, ease: "power2.inOut" }, T_POP + H + 0.11);
+
+      // ============ Amigo performance: the aperture is its eye (see amigo-rig.md) ============
+      const ap = $("ap"), legL = $("legL"), legR = $("legR");
+      // eye state: height h, width w, gaze (gx, gy), centred on the rest centre (16, 11.65)
+      const eyeS = (h, w, gx, gy, rx) => {
+        w = w || 10.2;
+        return { x: 16 - w / 2 + (gx || 0), y: 11.65 - h / 2 + (gy || 0), width: w, height: h, rx: rx != null ? rx : Math.min(2.3, h / 2) };
+      };
+      let eyeCur = eyeS(2.0, 10.2, 0, -1.4, 1.0); // gleeful squint, gazing forward along the bar (local up = screen right while lying)
+      gsap.set(ap, { attr: eyeCur });
+      tl.set(ap, { attr: eyeCur }, 0);
+      const eye = (t, to, d, ease) => {
+        tl.fromTo(ap, { attr: Object.assign({}, eyeCur) }, { attr: to, duration: d, ease: ease || "power2.inOut", immediateRender: false }, t);
+        eyeCur = to;
+      };
+      // belly-slide: glee squint pulses tighter once mid-slide
+      eye(T_TYPE + 0.12, eyeS(1.4, 10.4, 0.3, -1.4, 0.7), 0.08, "power2.out");
+      eye(T_TYPE + 0.2, eyeS(2.0, 10.2, 0, -1.4, 1.0), 0.08, "power2.out");
+      // flip upright: eye pops open
+      eye(T_TYPE + 0.31, eyeS(5.3, 10.2, 0, -0.5), 0.1, "power2.out");
+      // lands on the button (beat 4): impact blink
+      eye(T_POP, eyeS(0.6, 10.2, 0, 0, 0.3), 0.05, "power2.in");
+      eye(T_POP + 0.08, eyeS(5.3), 0.1, "power2.out");
+      // reads the URL: gaze sweeps left along the field, then back right and down to the button
+      eye(T_POP + 0.19, eyeS(5.3, 10.2, -2.2, 0.7), 0.12, "power2.inOut");
+      eye(T_POP + 0.36, eyeS(5.3, 10.2, 0.9, 1.4), 0.1, "power2.inOut");
+      // charge: narrows a notch per step, determined, ending in a tight squint
+      const eyeH = [4.6, 3.9, 3.3, 2.7, 2.1, 1.6, 1.05];
+      [0, 1, 2, 3, 4, 5].map((k) => 4 * B + k * H).concat([7 * B - H / 2]).forEach((t, k) => {
+        const f = k / 6;
+        eye(t, eyeS(eyeH[k], 10.2 + 0.1 * (k + 1), 0.9 * (1 - f), 1.4 - 1.1 * f), 0.06, "power2.out");
+      });
+      // launch (beat 8): snaps WIDE with excitement, looking up where it is going
+      eye(7 * B, eyeS(8.2, 12.2, 0, -1.3, 3.4), 0.06, "expo.out");
+      eye(7 * B + 0.06, eyeS(7.6, 11.6, 0, -1.1, 3.2), 0.12, "power2.out");
+
+      // legs paddle during the belly-slide (local y, SVG units), back to rest before the flip
+      const legKick = (el, vals, t0) => {
+        let prev = 0;
+        vals.forEach((v, i) => {
+          tl.fromTo(el, { y: prev }, { y: v, duration: 0.062, ease: "sine.inOut", immediateRender: false }, t0 + i * 0.062);
+          prev = v;
+        });
+      };
+      tl.set([legL, legR], { y: 0 }, 0);
+      legKick(legL, [-1.4, 0.8, -1.4, 0.8, 0], T_TYPE + 0.0);
+      legKick(legR, [0.8, -1.4, 0.8, -1.4, 0], T_TYPE + 0.0);
+
+      // ============ Scene 3 (1.875–3.28): charge-up on each eighth, tracking the filter build ============
+      const T_CH = 4 * B; // 1.876
+      const R = 7 * B; // beat 8 = 3.283, release
+      // six eighth-note steps, then a sixteenth "crunch" right before the release
+      const steps = [0, 1, 2, 3, 4, 5].map((k) => T_CH + k * H);
+      steps.push(R - H / 2);
+      const BTN_HALF = 52;
+
+      // tension lines: one per step, alternating sides, climbing over Amigo
+      const tlBox = $("tlines");
+      const angles = [180, 0, 205, -25, 150, 30, -90];
+      const CX = 1472, CY = 430, RAD = 150;
+      const lineEls = angles.map((a, i) => {
+        const w = document.createElement("div");
+        w.className = "f03-tl";
+        const rad = (a * Math.PI) / 180;
+        w.style.left = CX + RAD * Math.cos(rad) + "px";
+        w.style.top = CY + RAD * Math.sin(rad) + "px";
+        w.style.transform = "rotate(" + a + "deg)";
+        const inner = document.createElement("i");
+        w.appendChild(inner);
+        tlBox.appendChild(w);
+        return inner;
+      });
+
+      steps.forEach((t, k) => {
+        const n = k + 1;
+        const s = 1 - 0.018 * n; // button press scale → 0.874
+        const dy = 1.6 * n; // button sinks
+        const feet = BTN_HALF * (1 - s) + dy; // how far the button's top moved
+        const sy = 1 - 0.06 * n; // Amigo squash → 0.58
+        const sx = 1 + 0.046 * n; // → 1.32
+        const next = k < steps.length - 1 ? steps[k + 1] : R;
+        const settle = Math.min(0.12, next - t - 0.05);
+        // linear press on the button, Amigo rides it down
+        tl.to(btn, { scale: s, y: dy, duration: 0.05, ease: "power1.in" }, t);
+        tl.to(apos, { y: feet, x: 0, rotation: -1.5 * n, duration: 0.05, ease: "power1.in" }, t);
+        // squash a notch lower (overshoot a hair, then hold the notch)
+        tl.to(abody, { scaleX: sx * 1.03, scaleY: sy * 0.95, duration: 0.05, ease: "power1.in" }, t);
+        tl.to(abody, { scaleX: sx, scaleY: sy, duration: settle, ease: "power2.out" }, t + 0.05);
+        // camera punches in one notch per step, pinned on the button
+        tl.to(cam, { scale: 1 + 0.009 * n, duration: 0.08, ease: "power2.out", transformOrigin: "1472px 572px" }, t);
+        // a tension line snaps out
+        tl.fromTo(lineEls[k], { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.1, ease: "power3.out" }, t);
+      });
+
+      // shiver: deterministic x-jitter that grows with the charge
+      const shiver = { p: 0 };
+      tl.fromTo(shiver, { p: 0 }, {
+        p: 1,
+        duration: R - (T_CH + H),
+        ease: "none",
+        immediateRender: false,
+        onUpdate: () => {
+          const k = Math.floor(shiver.p * 44);
+          const amp = 7 * shiver.p * shiver.p + 1.2 * shiver.p;
+          gsap.set(ashake, { x: (hash(k * 3 + 1) * 2 - 1) * amp, rotation: (hash(k * 7 + 2) * 2 - 1) * amp * 0.2 });
+        },
+      }, T_CH + H);
+
+      // ============ Scene 4 (3.28–3.75): release — launch, button springs back, "Press." slams ============
+      tl.set(ashake, { x: 0, rotation: 0 }, R);
+      tl.to(abody, { scaleX: 0.58, scaleY: 1.75, duration: 0.07, ease: "power2.out" }, R);
+      tl.to(abody, { scaleX: 0.66, scaleY: 1.9, duration: 0.3, ease: "power1.out" }, R + 0.07);
+      tl.to(apos, { y: -1500, rotation: 0, duration: 0.47, ease: "power2.out" }, R + 0.02);
+
+      // press-release spring: adjacent to the last press, back.out release
+      tl.to(btn, { scale: 1, y: 0, duration: 0.46, ease: "back.out(2.6)" }, R);
+      tl.fromTo($("btnflash"), { opacity: 0.95 }, { opacity: 0, duration: 0.32, ease: "power2.in", immediateRender: false }, R);
+      tl.fromTo($("ring"), { scale: 1, opacity: 0.55 }, { scale: 2.3, opacity: 0, duration: 0.45, ease: "power2.out", transformOrigin: "50% 50%" }, R);
+
+      // camera snaps back out and kicks
+      tl.to(cam, { scale: 1, duration: 0.36, ease: "expo.out" }, R);
+      tl.to(cam, { y: 14, duration: 0.04, ease: "power1.out" }, R);
+      tl.to(cam, { y: 0, duration: 0.3, ease: "power3.out" }, R + 0.04);
+
+      // tension lines burst outward
+      lineEls.forEach((el) => {
+        tl.to(el, { x: 90, scaleX: 0.4, opacity: 0, duration: 0.26, ease: "power2.out" }, R);
+      });
+
+      // speed lines streak up behind the launch
+      ["sp0", "sp1", "sp2"].forEach((id, i) => {
+        const el = $(id);
+        tl.fromTo(el, { scaleY: 0, opacity: 1, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.1, ease: "power3.out" }, R + 0.02 + i * 0.02);
+        tl.to(el, { scaleY: 0.2, transformOrigin: "50% 0%", opacity: 0, duration: 0.26, ease: "power2.in" }, R + 0.14 + i * 0.02);
+      });
+
+      // "Press." one-word slam on beat 8
+      tl.fromTo($("press"), { opacity: 0, scale: 2.2, rotation: -6 }, { opacity: 1, scale: 1, rotation: -3, duration: 0.2, ease: "expo.out" }, R);
+      tl.to(bar, { y: 5, duration: 0.04, ease: "power1.out" }, R + 0.06);
+      tl.to(bar, { y: 0, duration: 0.28, ease: "power3.out" }, R + 0.1);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</template>

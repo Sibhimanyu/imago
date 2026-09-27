@@ -1,0 +1,420 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Inter Display"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #f6f5f1;
+    }
+
+    #f04-ground { position: absolute; inset: 0; background: #1b1b19; }
+    #f04-stage { position: absolute; inset: 0; overflow: hidden; }
+
+    /* ---------- headline (top centre) ---------- */
+    .f04-head {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 80px;
+      height: 92px;
+      text-align: center;
+      white-space: nowrap;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 76px;
+      line-height: 92px;
+      letter-spacing: -0.035em;
+      color: #f6f5f1;
+    }
+    .f04-w { display: inline-block; margin: 0 0.12em; }
+    #f04-sub {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 184px;
+      text-align: center;
+      white-space: nowrap;
+      font-family: "Inter", sans-serif;
+      font-weight: 400;
+      font-size: 34px;
+      line-height: 44px;
+      color: #a8a79f;
+    }
+
+    /* ---------- cards: both live at the merged box (630,360 660x494); GSAP x offsets them ---------- */
+    #f04-shake { position: absolute; inset: 0; }
+    #f04-merge { position: absolute; left: 630px; top: 360px; width: 660px; height: 494px; transform-origin: 50% 50%; }
+    .f04-card {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 660px;
+      height: 494px;
+      box-sizing: border-box;
+      background: #222220;
+      border: 1px solid #2e2d2a;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .f04-hdr {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 64px;
+      border-bottom: 1px solid #2e2d2a;
+      box-sizing: border-box;
+    }
+    .f04-hdr-t {
+      position: absolute;
+      left: 44px;
+      top: 0;
+      height: 63px;
+      line-height: 63px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 22px;
+      color: #8a8981;
+      white-space: nowrap;
+    }
+    .f04-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3d3c38; margin-right: 14px; vertical-align: 1px; }
+    .f04-body {
+      position: absolute;
+      left: 44px;
+      top: 90px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 30px;
+      line-height: 54px;
+      white-space: pre;
+      color: #d9d7cf;
+    }
+    .f04-ln { height: 54px; transform-origin: 0% 50%; }
+    .f04-in { padding-left: 2ch; }
+    .f04-k { color: #d9d7cf; }
+    .f04-s { color: #f6f5f1; }
+    .f04-n { color: #8fb4e3; }
+    .f04-p { color: #8a8981; }
+    .f04-slot { position: relative; display: inline-block; height: 54px; vertical-align: top; perspective: 400px; }
+    .f04-val { display: inline-block; transform-origin: 50% 50%; backface-visibility: hidden; }
+    .f04-pw {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      transform-origin: 50% 50%;
+      backface-visibility: hidden;
+    }
+    .f04-pill {
+      display: inline-block;
+      height: 38px;
+      line-height: 36px;
+      padding: 0 16px;
+      box-sizing: border-box;
+      border-radius: 100px;
+      background: #2e2d2a;
+      border: 1px solid #45443f;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 24px;
+      color: #f6f5f1;
+    }
+
+    /* ---------- wireframe (one design), inside the merged card ---------- */
+    #f04-wire { position: absolute; inset: 0; }
+    .f04-wf { position: absolute; box-sizing: border-box; }
+    .f04-wf-o { transform-origin: 0% 50%; }
+    #f04-outline {
+      position: absolute;
+      left: -1px;
+      top: -1px;
+      width: 662px;
+      height: 496px;
+      box-sizing: border-box;
+      border: 2px solid #f6f5f1;
+      border-radius: 17px;
+      transform-origin: 50% 50%;
+    }
+
+    /* ---------- Amigo (paper on ink) ---------- */
+    .f04-am { position: absolute; left: 0; top: 0; width: 120px; height: 120px; }
+    #f04-spin { transform-origin: 50% 52%; }
+    #f04-lean { transform-origin: 50% 93.75%; }
+    #f04-squash { transform-origin: 50% 93.75%; color: #f6f5f1; }
+    #f04-squash svg { display: block; width: 120px; height: 120px; }
+
+    #f04-black { position: absolute; inset: 0; background: #1b1b19; }
+  </style>
+
+  <div id="root" data-composition-id="04-shape" data-start="0" data-duration="3.75" data-width="1920" data-height="1080">
+    <div id="f04-ground" class="clip" data-start="0" data-duration="3.75" data-track-index="0"></div>
+
+    <div id="f04-stage" class="clip" data-start="0" data-duration="3.75" data-track-index="1">
+      <div id="f04-h1" class="f04-head"><span class="f04-w">Different</span><span class="f04-w">data.</span></div>
+      <div id="f04-h2" class="f04-head"><span class="f04-w">Same</span><span class="f04-w">shape.</span></div>
+      <div id="f04-h3" class="f04-head"><span class="f04-w">One</span><span class="f04-w">design.</span></div>
+      <div id="f04-sub">Two responses. No second model call.</div>
+
+      <div id="f04-shake">
+        <div id="f04-merge">
+          <div id="f04-card-a" class="f04-card">
+            <div class="f04-hdr"><div id="f04-hdr-a" class="f04-hdr-t"><span class="f04-dot"></span>pokemon/pikachu</div></div>
+            <div id="f04-body-a" class="f04-body"></div>
+          </div>
+          <div id="f04-card-b" class="f04-card">
+            <div class="f04-hdr">
+              <div id="f04-hdr-b" class="f04-hdr-t"><span class="f04-dot"></span>pokemon/charizard</div>
+              <div id="f04-hdr-m" class="f04-hdr-t"><span class="f04-dot"></span>2 responses · 1 shape</div>
+            </div>
+            <div id="f04-body-b" class="f04-body"></div>
+            <div id="f04-wire">
+              <!-- title bar + two chips -->
+              <div id="f04-wf-title" class="f04-wf f04-wf-o" style="left:44px; top:98px; width:250px; height:24px; border-radius:12px; background:#F6F5F1;"></div>
+              <div id="f04-wf-chip1" class="f04-wf" style="left:364px; top:90px; width:120px; height:40px; border-radius:100px; border:1.5px solid #F6F5F1;"><div style="position:absolute; left:26px; top:13px; width:66px; height:11px; border-radius:6px; background:#A8A79F;"></div></div>
+              <div id="f04-wf-chip2" class="f04-wf" style="left:496px; top:90px; width:120px; height:40px; border-radius:100px; border:1.5px solid #F6F5F1;"><div style="position:absolute; left:26px; top:13px; width:66px; height:11px; border-radius:6px; background:#A8A79F;"></div></div>
+              <!-- big stat block -->
+              <div id="f04-wf-stat" class="f04-wf f04-wf-o" style="left:44px; top:160px; width:572px; height:124px; border-radius:12px; background:#2E2D2A;">
+                <div style="position:absolute; left:26px; top:22px; width:150px; height:48px; border-radius:8px; background:#F6F5F1;"></div>
+                <div style="position:absolute; left:26px; top:84px; width:96px; height:12px; border-radius:6px; background:#8A8981;"></div>
+                <div style="position:absolute; right:26px; top:30px; width:180px; height:12px; border-radius:6px; background:#8A8981;"></div>
+                <div style="position:absolute; right:26px; top:56px; width:124px; height:12px; border-radius:6px; background:#5C5B56;"></div>
+              </div>
+              <!-- three bar rows -->
+              <div id="f04-wf-bar0" class="f04-wf f04-wf-o" style="left:44px; top:318px; width:572px; height:18px;">
+                <div style="position:absolute; left:0; top:2px; width:110px; height:14px; border-radius:7px; background:#8A8981;"></div>
+                <div style="position:absolute; left:136px; top:0; width:436px; height:18px; border-radius:9px; background:#2E2D2A;"><div style="width:42%; height:18px; border-radius:9px; background:#F6F5F1;"></div></div>
+              </div>
+              <div id="f04-wf-bar1" class="f04-wf f04-wf-o" style="left:44px; top:370px; width:572px; height:18px;">
+                <div style="position:absolute; left:0; top:2px; width:84px; height:14px; border-radius:7px; background:#8A8981;"></div>
+                <div style="position:absolute; left:136px; top:0; width:436px; height:18px; border-radius:9px; background:#2E2D2A;"><div style="width:78%; height:18px; border-radius:9px; background:#F6F5F1;"></div></div>
+              </div>
+              <div id="f04-wf-bar2" class="f04-wf f04-wf-o" style="left:44px; top:422px; width:572px; height:18px;">
+                <div style="position:absolute; left:0; top:2px; width:98px; height:14px; border-radius:7px; background:#8A8981;"></div>
+                <div style="position:absolute; left:136px; top:0; width:436px; height:18px; border-radius:9px; background:#2E2D2A;"><div style="width:56%; height:18px; border-radius:9px; background:#F6F5F1;"></div></div>
+              </div>
+            </div>
+          </div>
+          <div id="f04-outline"></div>
+        </div>
+
+        <!-- Amigo: pos (x/y) > spin (centre) > lean (feet) > squash (feet) -->
+        <div id="f04-pos" class="f04-am">
+          <div id="f04-spin" class="f04-am">
+            <div id="f04-lean" class="f04-am">
+              <div id="f04-squash" class="f04-am">
+                <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <g fill="currentColor">
+                    <rect x="9" y="21.5" width="6" height="8.5" rx="3" />
+                    <rect x="17" y="21.5" width="6" height="8.5" rx="3" />
+                    <path fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.55: pure ink so the next frame's hard cut lands on the drop -->
+    <div id="f04-black" class="clip" data-start="3.55" data-duration="0.2" data-track-index="2"></div>
+  </div>
+
+  <script>
+    (function () {
+      const ID = "04-shape";
+      const scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+      const $ = (s) => scope.querySelector("#f04-" + s);
+      const $$ = (s) => Array.prototype.slice.call(scope.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const B = 0.469, H = 0.2345, E = 0.11725;
+      const frac = (v) => v - Math.floor(v);
+      const hash = (i) => frac(Math.sin(i * 12.9898) * 43758.5453);
+
+      // ---------- seek-safe helper: every tween is a fromTo from the last known state ----------
+      const DEF = { x: 0, y: 0, rotation: 0, rotationX: 0, scale: 1, scaleX: 1, scaleY: 1, opacity: 1 };
+      const state = new Map();
+      const init = (el, vars) => { state.set(el, Object.assign({}, vars)); gsap.set(el, vars); };
+      const A = (el, vars, at, dur, ease) => {
+        let st = state.get(el);
+        const first = !st;
+        if (!st) { st = {}; state.set(el, st); }
+        const from = {}, to = { duration: dur, ease: ease || "power2.out" };
+        for (const k in vars) {
+          from[k] = k in st ? st[k] : DEF[k];
+          to[k] = vars[k];
+          st[k] = vars[k];
+        }
+        if (!first) to.immediateRender = false;
+        tl.fromTo(el, from, to, at);
+      };
+
+      // ---------- build the two real pokeapi cards ----------
+      const P = (t) => '<span class="f04-p">' + t + "</span>";
+      const Sv = (t) => '<span class="f04-s">"' + t + '"</span>';
+      const N = (t) => '<span class="f04-n">' + t + "</span>";
+      const arr = (items) => P("[") + items.map(Sv).join(P(", ")) + P("]");
+      const ROWS = [
+        { k: "name", t: "string", a: Sv("pikachu"), b: Sv("charizard") },
+        { k: "base_experience", t: "number", a: N(112), b: N(240) },
+        { k: "height", t: "number", a: N(4), b: N(17) },
+        { k: "weight", t: "number", a: N(60), b: N(905) },
+        { k: "types", t: "array", a: arr(["electric"]), b: arr(["fire", "flying"]), last: true },
+      ];
+      const build = (side) => {
+        let h = '<div class="f04-ln">' + P("{") + "</div>";
+        ROWS.forEach((r, i) => {
+          const comma = r.last ? "" : P(",");
+          h += '<div class="f04-ln f04-in"><span class="f04-k">"' + r.k + '"</span>' + P(": ") +
+            '<span class="f04-slot"><span class="f04-val" id="f04-v' + side + i + '">' + r[side] + comma + "</span>" +
+            '<span class="f04-pw" id="f04-t' + side + i + '"><span class="f04-pill">' + r.t + "</span>" + comma + "</span></span></div>";
+        });
+        h += '<div class="f04-ln">' + P("}") + "</div>";
+        $("body-" + side).innerHTML = h;
+      };
+      build("a");
+      build("b");
+
+      const cardA = $("card-a"), cardB = $("card-b"), merge = $("merge"), shake = $("shake");
+      const pos = $("pos"), spin = $("spin"), lean = $("lean"), squash = $("squash");
+      const h1w = $$("#f04-h1 .f04-w"), h2w = $$("#f04-h2 .f04-w"), h3w = $$("#f04-h3 .f04-w");
+      const OFF = 430; // each card sits 430px off the merged centre box
+
+      // ---------- initial states ----------
+      init(pos, { x: 900, y: -200 });
+      init(squash, { scaleX: 0.9, scaleY: 1.12 });
+      init(lean, { rotation: 0 });
+      init(spin, { rotation: 0 });
+      init(merge, { scaleX: 1, scaleY: 1 });
+      init(shake, { x: 0, y: 0 });
+      h2w.concat(h3w).forEach((w) => init(w, { y: 54, opacity: 0 }));
+      init($("sub"), { y: 16, opacity: 0 });
+      init($("hdr-m"), { opacity: 0 });
+      init($("outline"), { opacity: 0, scale: 1 });
+      const wire = ["wf-title", "wf-chip1", "wf-chip2", "wf-stat", "wf-bar0", "wf-bar1", "wf-bar2"].map($);
+      wire.forEach((w) => init(w, { opacity: 0, y: 14, scaleX: 0.9 }));
+      ROWS.forEach((_, i) => {
+        ["a", "b"].forEach((s) => {
+          init($("t" + s + i), { rotationX: -90, opacity: 0 });
+          init($("v" + s + i), { rotationX: 0, opacity: 1 });
+        });
+      });
+
+      // ================= Beats 1–2 (0.0–0.94): "Different data." — cards glide in; Amigo drops, compares =================
+      tl.fromTo(cardA, { x: -OFF - 1150 }, { x: -OFF, duration: 0.72, ease: "power3.out" }, 0);
+      tl.fromTo(cardB, { x: OFF + 1150 }, { x: OFF, duration: 0.72, ease: "power3.out" }, 0.06);
+      state.set(cardA, { x: -OFF });
+      state.set(cardB, { x: OFF });
+      h1w.forEach((w, i) => tl.fromTo(w, { y: 54, opacity: 0 }, { y: 0, opacity: 1, duration: 0.42, ease: "power3.out" }, 0.08 + i * 0.07));
+      h1w.forEach((w) => state.set(w, { y: 0, opacity: 1 }));
+
+      // drop on beat 2 with a squash
+      A(pos, { y: 738 }, 0.2, B - 0.2, "power2.in");
+      A(squash, { scaleX: 1.22, scaleY: 0.76 }, B, 0.06, "power1.out");
+      A(squash, { scaleX: 0.95, scaleY: 1.06 }, B + 0.06, 0.1, "power2.out");
+      A(squash, { scaleX: 1, scaleY: 1 }, B + 0.16, 0.12, "power2.inOut");
+      // double-take: look left (Pikachu) at 0.70, right (Charizard) at 0.94
+      A(lean, { rotation: -14 }, 0.70, 0.16, "power3.out");
+      A(pos, { x: 884 }, 0.70, 0.16, "power3.out");
+
+      // ================= Beats 3–4 (0.94–1.88): values become types, both cards at once =================
+      const LOOK = [16, -12, 12, -12, 0];
+      ROWS.forEach((_, i) => {
+        const t = 0.94 + i * H; // the swap lands on the half-beat
+        ["a", "b"].forEach((s) => {
+          A($("v" + s + i), { rotationX: 90, opacity: 0 }, t - 0.07, 0.07, "power2.in");
+          A($("t" + s + i), { rotationX: 0, opacity: 1 }, t, 0.12, "power3.out");
+        });
+        // Amigo follows the rows, comparing left/right with a bob on each swap
+        A(lean, { rotation: LOOK[i] }, t, 0.14, "power3.out");
+        A(pos, { x: 900 + LOOK[i] }, t, 0.14, "power3.out");
+        A(squash, { scaleX: 1.06, scaleY: 0.93 }, t, 0.05, "power1.out");
+        A(squash, { scaleX: 1, scaleY: 1 }, t + 0.05, 0.14, "power2.out");
+      });
+
+      // ================= Beats 5–6 (1.88–2.81): "Same shape." — slide, lock, one card =================
+      h1w.forEach((w, i) => A(w, { y: -36, opacity: 0 }, 1.876 + i * 0.035, 0.14, "power2.in"));
+      h2w.forEach((w, i) => A(w, { y: 0, opacity: 1 }, 1.99 + i * 0.06, 0.34, "power3.out"));
+
+      const LOCK = 5 * B; // 2.345, beat 6
+      A(cardA, { x: 0 }, 1.95, LOCK - 1.95, "power3.in");
+      A(cardB, { x: 0 }, 1.95, LOCK - 1.95, "power3.in");
+      A($("hdr-a"), { opacity: 0 }, 2.1, 0.15, "power1.in");
+      A($("hdr-b"), { opacity: 0 }, 2.1, 0.15, "power1.in");
+      A($("hdr-m"), { opacity: 1 }, LOCK + 0.04, 0.25, "power2.out");
+      // crisp snap + paper outline pulse
+      A(merge, { scaleX: 1.018, scaleY: 0.982 }, LOCK, 0.05, "power1.out");
+      A(merge, { scaleX: 1, scaleY: 1 }, LOCK + 0.05, 0.22, "power3.out");
+      tl.fromTo($("outline"), { opacity: 1, scale: 1 }, { opacity: 0, scale: 1.045, duration: 0.5, ease: "power2.out", immediateRender: false }, LOCK);
+      A(cardA, { opacity: 0 }, LOCK + 0.02, 0.01, "none"); // hidden under its twin
+
+      // Amigo: anticipation, bumped up by the closing cards, spin-hop onto the merged card
+      A(squash, { scaleX: 1.12, scaleY: 0.86 }, 2.0, 0.12, "power2.out");
+      A(squash, { scaleX: 0.88, scaleY: 1.14 }, 2.12, 0.08, "power2.out");
+      A(squash, { scaleX: 1, scaleY: 1 }, 2.2, 0.15, "power2.out");
+      A(pos, { x: 1150 }, 2.12, 0.69, "power1.inOut");
+      A(pos, { y: 170 }, 2.12, 0.33, "power2.out");
+      A(pos, { y: 240 }, 2.45, 0.36, "power2.in");
+      A(spin, { rotation: 360 }, 2.2, 0.5, "power2.inOut");
+      A(squash, { scaleX: 0.93, scaleY: 1.08 }, 2.68, 0.12, "power1.in");
+
+      // ================= Beat 7 (2.81–3.28): "One design." — skeleton morphs into one interface =================
+      const T7 = 6 * B; // 2.814
+      A(squash, { scaleX: 1.22, scaleY: 0.78 }, T7, 0.06, "power1.out");
+      A(squash, { scaleX: 0.96, scaleY: 1.05 }, T7 + 0.06, 0.1, "power2.out");
+      A(squash, { scaleX: 1, scaleY: 1 }, T7 + 0.16, 0.12, "power2.inOut");
+      A(merge, { scaleX: 1, scaleY: 0.985 }, T7, 0.05, "power1.out"); // the card dips under the landing
+      A(merge, { scaleX: 1, scaleY: 1 }, T7 + 0.05, 0.2, "power3.out");
+
+      h2w.forEach((w, i) => A(w, { y: -36, opacity: 0 }, T7 + i * 0.035, 0.14, "power2.in"));
+      h3w.forEach((w, i) => A(w, { y: 0, opacity: 1 }, T7 + 0.11 + i * 0.06, 0.34, "power3.out"));
+      A($("sub"), { y: 0, opacity: 1 }, T7 + 0.2, 0.4, "power3.out");
+
+      $$("#f04-body-b .f04-ln").forEach((ln, i) => {
+        A(ln, { opacity: 0, y: -8, scaleX: 0.97 }, T7 + i * 0.012, 0.12, "power2.in");
+      });
+      wire.forEach((w, i) => A(w, { opacity: 1, y: 0, scaleX: 1 }, T7 + 0.08 + i * 0.03, 0.32, "power3.out"));
+
+      // off-beat side-step while idle on top
+      A(pos, { x: 1162 }, T7 + H, 0.14, "power2.out");
+      A(lean, { rotation: 6 }, T7 + H, 0.12, "power2.out");
+      A(lean, { rotation: 0 }, T7 + H + 0.14, 0.09, "power2.inOut");
+
+      // ================= 3.28–3.55: tension — card trembles, Amigo charges =================
+      const T8 = 7 * B; // 3.283
+      [0, 1, 2].forEach((k) => {
+        const sy = [0.9, 0.82, 0.74][k], sx = [1.07, 1.13, 1.2][k];
+        A(squash, { scaleX: sx, scaleY: sy }, T8 + k * E, 0.06, "power2.out");
+      });
+      const jit = { p: 0 };
+      tl.fromTo(jit, { p: 0 }, {
+        p: 1,
+        duration: 3.55 - T8,
+        ease: "none",
+        immediateRender: false,
+        onUpdate: () => {
+          const p = jit.p, k = Math.floor(p * 16), amp = 1 + 5 * p;
+          gsap.set(shake, {
+            x: p <= 0 ? 0 : (hash(k * 2 + 3) * 2 - 1) * amp,
+            y: p <= 0 ? 0 : (hash(k * 2 + 7) * 2 - 1) * amp * 0.5,
+          });
+        },
+      }, T8);
+      // #f04-black owns 3.55–3.75
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</template>

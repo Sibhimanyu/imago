@@ -1,0 +1,149 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "test/audit.test.js"
+        ],
+        "createdAt": "2026-09-25T02:30:23.217Z",
+        "reason": "Claude: hostile <img srcset> fixture in the HTML sanitiser test; it is input the sanitiser must strip, never rendered"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:25:59.228Z",
+        "reason": "agent: storyboard cells are 16:9 video frames; clipping to the frame edge is the canvas (Amigo peeks from the bottom edge in 02)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:25:59.402Z",
+        "reason": "agent: faded #a8a79f lines are deliberate ghost/struck-through states (superseded text, earlier promises), not reading text"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:50:09.564Z",
+        "reason": "agent: docs/BRAND-SYSTEM.md mandates one family, Inter/system, no webfont"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:50:09.654Z",
+        "reason": "agent: warm paper #f6f5f1 is Imago's signature surface per docs/BRAND-SYSTEM.md (decided 21 Sep 2026)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:50:09.743Z",
+        "reason": "agent: storyboard cells are full-bleed 16:9 video frames; content placement is the frame composition, not container padding"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/storyboard.html"
+        ],
+        "createdAt": "2026-09-25T08:50:09.834Z",
+        "reason": "agent: inner blocks are Imago's bg-sink recessed wells (chart well, stat wells) as in the shipped app UI"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "videos/imago-launch/compositions/frames"
+        ],
+        "createdAt": "2026-09-25T15:45:03.417Z",
+        "reason": "agent: HyperFrames video frames clip to the 1920x1080 canvas by design (no tooltips/menus in a rendered video)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-26T09:18:59.915Z",
+        "reason": "Imago's brand system sets Inter as the typeface: docs/BRAND-SYSTEM.md:126, styles.css --sans; the report uses the product's own type"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "launch/index.html"
+        ],
+        "createdAt": "2026-09-26T09:20:07.245Z",
+        "reason": "Claude: only the 64px h1 (1.02) and 36px h2 display headings sit under 1.3; body text is 1.5-1.6, checked by computed style"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          ".context/report_template.html"
+        ],
+        "createdAt": "2026-09-26T09:20:07.337Z",
+        "reason": "Claude: only the 64px h1 (1.02) and 36px h2 display headings sit under 1.3; body text is 1.5-1.6, checked by computed style"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-09-26T11:30:05.726Z",
+        "reason": "Claude: the only hit is .inspector-head, the Inspect drawer tab strip; tabs sit on its bottom border by design. Predates this session"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "launch/press/reels/src/**"
+        ],
+        "createdAt": "2026-09-26T11:41:12.462Z",
+        "reason": "Claude: video compositions for 1080x1920 reels; the flagged text is display-size kinetic headlines, where tight leading is intended, not body copy"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "brand/index.html"
+        ],
+        "createdAt": "2026-09-26T14:23:36.459Z",
+        "reason": "Claude triage: only the display headings (h1 64px/1.02, h2 36px/1.1) are below 1.3, matching launch/index.html and the app's landing title; body text is 1.6"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "launch/press/reels/src/**"
+        ],
+        "createdAt": "2026-09-26T14:33:44.742Z",
+        "reason": "Claude: 1080x1920 video compositions; overflow-hidden frames crop zoomed/panned screenshots on purpose (camera framing), not UI popovers"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "launch/press/reels/src/**"
+        ],
+        "createdAt": "2026-09-26T14:47:41.430Z",
+        "reason": "Claude: video composition; the paste-curl reel stages a dev-tools panel with a context menu over it inside a framed shot, on purpose"
+      }
+    ]
+  }
+}

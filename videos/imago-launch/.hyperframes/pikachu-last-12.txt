@@ -1,0 +1,12 @@
+15400	  ],
+15401	  "types": [
+15402	    {
+15403	      "slot": 1,
+15404	      "type": {
+15405	        "name": "electric",
+15406	        "url": "https://pokeapi.co/api/v2/type/13/"
+15407	      }
+15408	    }
+15409	  ],
+15410	  "past_types": []
+15411	}

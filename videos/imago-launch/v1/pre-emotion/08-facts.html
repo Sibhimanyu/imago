@@ -1,0 +1,153 @@
+<template>
+  <div data-hf-id="hf-okyk" id="root" data-composition-id="08-facts" data-start="0" data-duration="1.875" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f08-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f08-ink { position: absolute; inset: 0; background: #1B1B19; }
+      .f08-stage { position: absolute; inset: 0; overflow: hidden; }
+      .f08-phrase {
+        position: absolute; left: 0; right: 0; margin: 0; text-align: center; white-space: nowrap;
+        font-family: "Inter Display", sans-serif; font-weight: 600; line-height: 1;
+        letter-spacing: -0.035em; color: #1B1B19; will-change: transform;
+      }
+      .f08-inv { color: #F6F5F1; }
+      /* line-height 1 with Inter metrics: baseline = top + 0.864F, x-height top = baseline - 0.546F, cap top = baseline - 0.727F */
+      #f08-p1 { top: 390px; height: 160px; font-size: 160px; transform-origin: 50% 50%; }
+      #f08-p2 { top: 330px; height: 240px; font-size: 240px; transform-origin: 50% 50%; }
+      #f08-p3 { top: 360px; height: 220px; font-size: 220px; transform-origin: 50% 86%; }
+      /* origin = top of the T crossbar, where Amigo lands, so the slam punches out from under his feet */
+      #f08-p4 { top: 250px; height: 400px; font-size: 400px; transform-origin: 662px 55px; }
+      .f08-amigo { position: absolute; left: 0; top: 0; width: 150px; height: 150px; color: #1B1B19; }
+      .f08-lean { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f08-spin { position: absolute; inset: 0; transform-origin: 50% 55%; }
+      .f08-squash { position: absolute; inset: 0; transform-origin: 50% 94%; }
+      .f08-squash svg { display: block; width: 150px; height: 150px; overflow: visible; }
+    </style>
+
+    <div data-hf-id="hf-n57z" class="clip f08-ground" data-start="0" data-duration="1.875" data-track-index="0"></div>
+    <div data-hf-id="hf-0s1g" class="clip f08-ink" id="f08-ink" data-start="0" data-duration="1.875" data-track-index="1"></div>
+
+    <div data-hf-id="hf-vvg4" class="clip f08-stage" data-start="0" data-duration="1.875" data-track-index="2">
+      <div data-hf-id="hf-2yzw" class="f08-phrase" id="f08-p1" data-layout-allow-overlap="">Runs in your browser.</div>
+      <div data-hf-id="hf-gcgx" class="f08-phrase f08-inv" id="f08-p2" data-layout-allow-overlap="">No account.</div>
+      <div data-hf-id="hf-ntzl" class="f08-phrase" id="f08-p3" data-layout-allow-overlap="">Open source.</div>
+      <div data-hf-id="hf-5jlr" class="f08-phrase f08-inv" id="f08-p4" data-layout-allow-overlap="">Free.</div>
+
+      <div data-hf-id="hf-cjck" class="f08-amigo" id="f08-amigo" data-layout-allow-overlap="">
+        <div data-hf-id="hf-w19q" class="f08-lean" id="f08-lean">
+          <div data-hf-id="hf-8lg6" class="f08-spin" id="f08-spin">
+            <div data-hf-id="hf-kivm" class="f08-squash" id="f08-squash">
+              <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                <g data-hf-id="hf-g1zz" fill="currentColor">
+                  <g data-hf-id="hf-jk9v" id="f08-leg-l"><rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" /></g>
+                  <g data-hf-id="hf-kc1p" id="f08-leg-r"><rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" /></g>
+                  <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "08-facts";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f08-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid: frame-local beat n = n * 0.469. Four facts, one per beat.
+        var BEAT = 0.469, HALF = 0.2345;
+        var B = [0, BEAT, 2 * BEAT, 3 * BEAT];
+        var PAPER = "#F6F5F1", INK = "#1B1B19";
+
+        var ink = $("ink"), am = $("amigo"), lean = $("lean"), spin = $("spin"), sq = $("squash");
+        var p = [$("p1"), $("p2"), $("p3"), $("p4")];
+
+        // Amigo is placed by his feet: box 150px, soles at 140.6px (legs end at y=30 of 32).
+        var foot = function (fx, fy) { return { x: fx - 75, y: fy - 140.6 }; };
+        var A0 = foot(1380, 441);  // standing on the x-height of "browser"
+        var A1 = foot(960, 800);   // under "No account."
+        var A2 = foot(1210, 430);  // stamped onto the x-height of "source"
+        var A3 = foot(662, 305);   // on top of the F crossbar of "Free."
+
+        // ---- Ground + phrase swaps: hard cuts on the beat. Ink ground on beats 2 and 4.
+        tl.set(ink, { opacity: 0 }, 0);
+        tl.set([p[1], p[2], p[3]], { opacity: 0 }, 0);
+        tl.set(p[0], { opacity: 1 }, 0);
+        for (var k = 1; k < 4; k++) {
+          tl.set(p[k - 1], { opacity: 0 }, B[k]);
+          tl.set(p[k], { opacity: 1 }, B[k]);
+          tl.set(ink, { opacity: k % 2 ? 1 : 0 }, B[k]);
+          tl.set(am, { color: k % 2 ? PAPER : INK }, B[k]);
+        }
+
+        // Distinct arrivals, each done inside 0.12s so the phrase is read for its whole beat.
+        tl.fromTo(p[0], { scale: 1.1 }, { scale: 1, duration: 0.1, ease: "power4.out" }, B[0]);
+        tl.fromTo(p[1], { x: -90 }, { x: 0, duration: 0.1, ease: "expo.out" }, B[1]);
+        // stamped: the phrase arrives pressed down under Amigo's impact and springs level (UI settle, power3)
+        tl.fromTo(p[2], { y: 22, scaleY: 0.93 }, { y: 0, scaleY: 1, duration: 0.24, ease: "power3.out" }, B[2]);
+        // the last one bigger: MIT punches out from the T top
+        tl.fromTo(p[3], { scale: 1.5 }, { scale: 1, duration: 0.12, ease: "power4.out" }, B[3]);
+
+        // ---- Amigo
+        tl.set(am, { x: A0.x, y: A0.y, color: INK }, 0);
+        tl.set(lean, { rotation: 0 }, 0);
+        tl.set(spin, { rotation: 0 }, 0);
+
+        var land = function (t, sx, sy, dur, ease, to) {
+          tl.fromTo(sq, { scaleX: sx, scaleY: sy },
+            { scaleX: to ? to.sx : 1, scaleY: to ? to.sy : 1, duration: dur, ease: ease, immediateRender: false }, t);
+        };
+        var charge = function (t) {
+          tl.to(sq, { scaleX: 1.14, scaleY: 0.84, duration: 0.07, ease: "power2.in" }, t - 0.07);
+        };
+
+        // Beat 1: SQUASH. Lands on "browser" as the frame cuts in.
+        tl.fromTo(sq, { scaleX: 1.32, scaleY: 0.66 }, { scaleX: 1, scaleY: 1, duration: 0.18, ease: "back.out(3)" }, B[0]);
+
+        // Off-beat launch -> Beat 2: SPIN. A full rotation in the air, lands under "No account."
+        charge(HALF);
+        tl.to(sq, { scaleX: 0.86, scaleY: 1.2, duration: 0.08, ease: "power2.out" }, HALF);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.12, ease: "sine.inOut" }, HALF + 0.08);
+        tl.to(am, { x: A1.x, duration: BEAT - HALF, ease: "power1.inOut" }, HALF);
+        tl.to(am, { y: foot(0, 290).y, duration: 0.1, ease: "power2.out" }, HALF);
+        tl.to(am, { y: A1.y, duration: BEAT - HALF - 0.1, ease: "power2.in" }, HALF + 0.1);
+        tl.fromTo(spin, { rotation: 0 }, { rotation: 360, duration: BEAT - HALF, ease: "power1.inOut", immediateRender: false }, HALF);
+        land(B[1], 1.3, 0.7, 0.18, "back.out(3)");
+
+        // Off-beat rocket up out of frame -> Beat 3: STAMP. Drops hard onto "source".
+        var t2 = B[1] + HALF;
+        charge(t2);
+        tl.to(sq, { scaleX: 0.8, scaleY: 1.35, duration: 0.06, ease: "power2.out" }, t2);
+        tl.to(am, { x: A2.x, duration: 0.117, ease: "power1.out" }, t2);
+        tl.to(am, { y: foot(0, -260).y, duration: 0.117, ease: "power2.in" }, t2);
+        tl.to(am, { y: A2.y, duration: B[2] - t2 - 0.117, ease: "power3.in" }, t2 + 0.117);
+        land(B[2], 1.45, 0.6, 0.24, "back.out(2.2)");
+
+        // Off-beat hop -> Beat 4: PROUD. Lands on the F, true proportions (no leg spread: the user found it deformed).
+        var t3 = B[2] + HALF;
+        charge(t3);
+        tl.to(sq, { scaleX: 0.88, scaleY: 1.18, duration: 0.08, ease: "power2.out" }, t3);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.1, ease: "sine.inOut" }, t3 + 0.08);
+        tl.to(am, { x: A3.x, duration: B[3] - t3, ease: "power1.inOut" }, t3);
+        tl.to(am, { y: foot(0, 170).y, duration: 0.1, ease: "power2.out" }, t3);
+        tl.to(am, { y: A3.y, duration: B[3] - t3 - 0.1, ease: "power2.in" }, t3 + 0.1);
+        tl.fromTo(lean, { rotation: 0 }, { rotation: -9, duration: 0.12, ease: "power2.out", immediateRender: false }, t3);
+        tl.to(lean, { rotation: 0, duration: B[3] - t3 - 0.12, ease: "power2.in" }, t3 + 0.12);
+        land(B[3], 1.3, 0.7, 0.2, "back.out(2.5)");
+
+        // Off-beat groove bob in the proud stance so he is never dead still.
+        tl.to(sq, { scaleX: 1.06, scaleY: 0.95, duration: 0.08, ease: "power2.out" }, B[3] + HALF);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.14, ease: "sine.inOut" }, B[3] + HALF + 0.08);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

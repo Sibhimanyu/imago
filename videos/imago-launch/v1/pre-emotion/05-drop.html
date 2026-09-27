@@ -1,0 +1,244 @@
+<template>
+  <div data-hf-id="hf-7kub" id="root" data-composition-id="05-drop" data-start="0" data-duration="4.25" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+      .f05-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f05-ink { position: absolute; inset: 0; background: #1B1B19; }
+      .f05-stage { position: absolute; inset: 0; overflow: hidden; }
+      .f05-deck { position: absolute; inset: 0; will-change: transform; }
+      .f05-card {
+        position: absolute; left: 870px; top: 222.5px; width: 880px; height: 495px;
+        background: #FFFFFF; border: 1px solid #E7E5DF; border-radius: 14px; overflow: hidden;
+        box-shadow: 0 2px 6px rgba(27,27,25,.04), 0 18px 46px -16px rgba(27,27,25,.20);
+        transform-origin: 50% 50%; will-change: transform;
+      }
+      /* crop: skip the sidebar (~17.5% of width) and the top bar (~5.6% of height) */
+      .f05-shot { position: absolute; left: -212px; top: -42.5px; width: 1214px; height: 759px; display: block; }
+      .f05-dim { position: absolute; inset: 0; background: rgba(27,27,25,.07); opacity: 0; }
+      .f05-head { position: absolute; left: 96px; top: 292px; width: 720px; }
+      .f05-line {
+        display: block; font-family: "Inter Display", "Inter", sans-serif; font-weight: 600;
+        font-size: 124px; line-height: 1.02; letter-spacing: -0.035em; color: #1B1B19;
+        transform-origin: 0% 60%; white-space: nowrap; will-change: transform;
+      }
+      .f05-label {
+        position: absolute; left: 100px; top: 580px; font-family: "Inter", sans-serif; font-weight: 500;
+        font-size: 28px; line-height: 1.3; color: #66655F; white-space: nowrap;
+      }
+      .f05-amigo { position: absolute; left: 0; top: 0; width: 110px; height: 110px; color: #1B1B19; }
+      .f05-lean { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f05-spin { position: absolute; inset: 0; transform-origin: 50% 55%; }
+      .f05-squash { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .f05-squash svg { display: block; width: 110px; height: 110px; }
+    </style>
+
+    <div data-hf-id="hf-tdvo" class="clip f05-ground" data-start="0" data-duration="4.25" data-track-index="0"></div>
+    <div data-hf-id="hf-jbc0" class="clip f05-ink" id="f05-ink" data-start="0" data-duration="4.25" data-track-index="1"></div>
+
+    <div data-hf-id="hf-1goz" class="clip f05-stage" data-start="0" data-duration="4.25" data-track-index="2">
+      <div data-hf-id="hf-ep0u" class="f05-deck" id="f05-deck">
+        <div data-hf-id="hf-amhx" class="f05-card" id="f05-card-0" data-app="pokemon">
+          <img data-hf-id="hf-2ih5" class="f05-shot" src="assets/app-pokemon.png" alt="Pikachu interface">
+          <div data-hf-id="hf-50jd" class="f05-dim" id="f05-dim-0"></div>
+        </div>
+        <div data-hf-id="hf-ktyr" class="f05-card" id="f05-card-1" data-app="weather">
+          <img data-hf-id="hf-ydre" class="f05-shot" src="assets/app-weather.png" alt="Forecast interface">
+          <div data-hf-id="hf-48vk" class="f05-dim" id="f05-dim-1"></div>
+        </div>
+        <div data-hf-id="hf-xsfb" class="f05-card" id="f05-card-2" data-app="currency">
+          <img data-hf-id="hf-5kv2" class="f05-shot" src="assets/app-currency.png" alt="Frankfurter interface">
+          <div data-hf-id="hf-cwrf" class="f05-dim" id="f05-dim-2"></div>
+        </div>
+        <div data-hf-id="hf-x9n8" class="f05-card" id="f05-card-3" data-app="library">
+          <img data-hf-id="hf-9q4f" class="f05-shot" src="assets/app-library.png" alt="Openlibrary interface">
+          <div data-hf-id="hf-8yne" class="f05-dim" id="f05-dim-3"></div>
+        </div>
+        <div data-hf-id="hf-i0mc" class="f05-card" id="f05-card-4" data-app="thirukkural">
+          <img data-hf-id="hf-jtar" class="f05-shot" src="assets/app-thirukkural.png" alt="Thirukkural interface">
+          <div data-hf-id="hf-q6xp" class="f05-dim" id="f05-dim-4"></div>
+        </div>
+        <div data-hf-id="hf-cjfu" class="f05-card" id="f05-card-5" data-app="wikipedia">
+          <img data-hf-id="hf-sdfv" class="f05-shot" src="assets/app-wikipedia.png" alt="Wikipedia interface">
+          <div data-hf-id="hf-pf9w" class="f05-dim" id="f05-dim-5"></div>
+        </div>
+        <div data-hf-id="hf-t4hx" class="f05-card" id="f05-card-6" data-app="sunrise">
+          <img data-hf-id="hf-mx2l" class="f05-shot" src="assets/app-sunrise.png" alt="Sunrise sunset interface">
+          <div data-hf-id="hf-0arj" class="f05-dim" id="f05-dim-6"></div>
+        </div>
+        <div data-hf-id="hf-w7ap" class="f05-card" id="f05-card-7" data-app="charizard">
+          <img data-hf-id="hf-ociz" class="f05-shot" src="assets/app-charizard.png" alt="Charizard interface">
+          <div data-hf-id="hf-wcni" class="f05-dim" id="f05-dim-7"></div>
+        </div>
+        <div data-hf-id="hf-0hrc" class="f05-amigo" id="f05-amigo" data-layout-allow-overlap="">
+          <div data-hf-id="hf-wwce" class="f05-lean" id="f05-lean">
+            <div data-hf-id="hf-bvey" class="f05-spin" id="f05-spin">
+              <div data-hf-id="hf-uh8i" class="f05-squash" id="f05-squash">
+                <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                  <g data-hf-id="hf-g1zz" fill="currentColor">
+                    <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+                    <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+                    <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-lkjw" class="f05-head" data-layout-allow-overlap="">
+        <span data-hf-id="hf-gbeu" class="f05-line" id="f05-l1">Whatever</span>
+        <span data-hf-id="hf-17m5" class="f05-line" id="f05-l2">it returns.</span>
+      </div>
+      <div data-hf-id="hf-d3k4" class="f05-label" id="f05-label">10 built-in examples · or paste your own</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "05-drop";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) { return scope.querySelector("#f05-" + s); };
+
+        var tl = gsap.timeline({ paused: true });
+
+        // 128 bpm grid: frame-local beat n = n * 0.469 (beat 0 = the drop).
+        var BEAT = 0.469, HALF = 0.2345;
+        var beat = function (n) { return n * BEAT; };
+
+        // Deck geometry (card box 880x495 centred at DX, DY).
+        var DX = 1310, DY = 470, W = 880, H = 495, N = 8;
+        var DEG = Math.PI / 180;
+        var frac = function (v) { return v - Math.floor(v); };
+        var prand = function (i, k) { return frac(Math.sin(i * 12.9898 + k * 78.233) * 43758.5453); };
+
+        // Pile slots: index-derived offset + rotation (+-2..6 deg, alternating sign), rising as it grows.
+        var pile = [];
+        for (var i = 0; i < N; i++) {
+          var sign = i % 2 ? 1 : -1;
+          var rot = i === 0 ? -4 : sign * (2 + prand(i, 1) * 4);
+          pile.push({ x: (prand(i, 2) - 0.5) * 44, y: -i * 8, r: rot, s: 1 });
+        }
+        // Fan slots: arc around a pivot below the deck.
+        var FAN_S = 0.64, R = 1100, FAN_Y = 44;
+        var fan = [];
+        for (var j = 0; j < N; j++) {
+          var a = -12.25 + 3.5 * j;
+          fan.push({ x: -20 + R * Math.sin(a * DEG), y: FAN_Y + R * (1 - Math.cos(a * DEG)), r: a, s: FAN_S });
+        }
+        // Top-centre point of a card slot (where Amigo's feet go).
+        var topOf = function (p) {
+          var hh = (H / 2) * p.s;
+          return { x: DX + p.x + hh * Math.sin(p.r * DEG), y: DY + p.y - hh * Math.cos(p.r * DEG), r: p.r };
+        };
+
+        var card = function (k) { return $("card-" + k); };
+        var dim = function (k) { return $("dim-" + k); };
+
+        // ---- Scene 1 (0.0s): the drop. Ink flips to paper, Pikachu slams in huge from below-front.
+        tl.fromTo($("ink"), { opacity: 1 }, { opacity: 0, duration: 0.1, ease: "power2.out" }, 0);
+        tl.fromTo(card(0),
+          { x: pile[0].x + 120, y: 760, rotation: -12, scale: 1.45 },
+          { x: pile[0].x, y: pile[0].y, rotation: pile[0].r, scale: 1, duration: 0.42, ease: "expo.out" }, 0);
+        tl.fromTo($("l1"), { x: -160, scale: 1.25, opacity: 0 },
+          { x: 0, scale: 1, opacity: 1, duration: 0.36, ease: "expo.out" }, 0);
+        // hide the rest of the deck until its beat
+        for (var h = 1; h < N; h++) tl.set(card(h), { opacity: 0 }, 0);
+
+        // Deck impact dip on every landing (UI: power3 settle, no overshoot).
+        var dip = function (t, amt) {
+          tl.fromTo($("deck"), { y: amt }, { y: 0, duration: 0.26, ease: "power3.out", immediateRender: false }, t);
+        };
+        dip(0.06, 14);
+
+        // ---- Scene 2 (beats 1-6): one card per beat from alternating sides, landing on the pile.
+        for (var c = 1; c <= 6; c++) {
+          var fromRight = c % 2 === 1;
+          var land = beat(c);
+          var p = pile[c];
+          tl.set(card(c), { opacity: 1 }, land - 0.05);
+          tl.fromTo(card(c),
+            { x: p.x + (fromRight ? 1350 : -1350), y: p.y + 240, rotation: p.r + (fromRight ? 18 : -18), scale: 1.08 },
+            { x: p.x, y: p.y, rotation: p.r, scale: 1, duration: 0.38, ease: "expo.out", immediateRender: false }, land - 0.05);
+          tl.fromTo(dim(c - 1), { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power2.out" }, land);
+          dip(land, 10);
+        }
+
+        // "it returns." completes the headline on beat 2 (the third beat).
+        tl.fromTo($("l2"), { y: 70, scale: 1.2, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.34, ease: "expo.out" }, beat(2) - 0.03);
+
+        // ---- Amigo: rig = pos (x,y) > lean (surf) > spin > squash (feet-anchored).
+        var amigo = $("amigo"), lean = $("lean"), spin = $("spin"), sq = $("squash");
+        var feet = function (pt) { return { x: pt.x - 55, y: pt.y - 110 }; };
+        var landSquash = function (t, wide) {
+          tl.fromTo(sq, { scaleX: 1.15, scaleY: 0.88 },
+            { scaleX: wide ? 1.38 : 1.26, scaleY: wide ? 0.66 : 0.74, duration: 0.05, ease: "power2.out", immediateRender: false }, t);
+          if (!wide) tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.13, ease: "back.out(2)" }, t + 0.05);
+        };
+        var hop = function (t0, t1, a, b, apex, doSpin) {
+          var A = feet(a), B = feet(b), air = t1 - t0;
+          // charge + stretch on take-off
+          tl.to(sq, { scaleX: 1.12, scaleY: 0.86, duration: 0.05, ease: "power2.out" }, t0 - 0.05);
+          tl.to(sq, { scaleX: 0.86, scaleY: 1.18, duration: 0.07, ease: "power2.out" }, t0);
+          tl.to(sq, { scaleX: 1, scaleY: 1, duration: air * 0.4, ease: "power1.inOut" }, t0 + 0.07);
+          tl.fromTo(amigo, { x: A.x }, { x: B.x, duration: air, ease: "none", immediateRender: false }, t0);
+          var top = Math.min(A.y, B.y) - apex;
+          tl.fromTo(amigo, { y: A.y }, { y: top, duration: air / 2, ease: "power2.out", immediateRender: false }, t0);
+          tl.to(amigo, { y: B.y, duration: air / 2, ease: "power2.in" }, t0 + air / 2);
+          tl.fromTo(lean, { rotation: a.r }, { rotation: b.r, duration: air, ease: "power1.inOut", immediateRender: false }, t0);
+          if (doSpin) tl.fromTo(spin, { rotation: 0 }, { rotation: 360, duration: air * 0.9, ease: "power2.inOut", immediateRender: false }, t0 + air * 0.05);
+          landSquash(t1, false);
+        };
+
+        // Stamp: drops hard from above onto Forecast as it lands on beat 1.
+        var t1pt = topOf(pile[1]);
+        var f1 = feet(t1pt);
+        tl.fromTo(amigo, { x: f1.x, y: -260, opacity: 1 }, { x: f1.x, y: f1.y, duration: 0.24, ease: "power3.in" }, beat(1) - 0.24);
+        tl.fromTo(lean, { rotation: 0 }, { rotation: pile[1].r, duration: 0.24, ease: "none" }, beat(1) - 0.24);
+        tl.fromTo(sq, { scaleX: 0.84, scaleY: 1.2 }, { scaleX: 0.9, scaleY: 1.12, duration: 0.2, ease: "none" }, beat(1) - 0.24);
+        landSquash(beat(1), false);
+
+        // Card to card on every beat, spin into beat 4 (the fifth beat).
+        for (var k = 2; k <= 6; k++) {
+          hop(beat(k - 1) + HALF - 0.01, beat(k), topOf(pile[k - 1]), topOf(pile[k]), 70, k === 4);
+        }
+
+        // ---- Scene 3 (beat 7): Charizard slams, the deck fans into an arc.
+        var FAN_AT = beat(7);
+        var f7 = fan[7];
+        tl.set(card(7), { opacity: 1 }, FAN_AT - 0.05);
+        tl.fromTo(card(7),
+          { x: f7.x + 1200, y: f7.y + 260, rotation: f7.r + 20, scale: 0.7 },
+          { x: f7.x, y: f7.y, rotation: f7.r, scale: f7.s, duration: 0.36, ease: "expo.out", immediateRender: false }, FAN_AT - 0.05);
+        for (var m = 0; m < 7; m++) {
+          var q = fan[m];
+          tl.to(card(m), { x: q.x, y: q.y, rotation: q.r, scale: q.s, duration: 0.3, ease: "power3.out" }, FAN_AT + m * 0.008);
+          tl.to(dim(m), { opacity: 0, duration: 0.2, ease: "power2.out" }, FAN_AT);
+        }
+        tl.fromTo($("label"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power3.out" }, FAN_AT + 0.06);
+
+        // Charge-up on Sunrise (eighth-note squashes), then a big launch onto the fan's top card.
+        tl.to(sq, { scaleX: 1.14, scaleY: 0.84, duration: 0.06, ease: "power2.out" }, beat(6) + HALF - 0.06);
+        tl.to(sq, { scaleX: 1.22, scaleY: 0.76, duration: 0.06, ease: "power2.out" }, beat(6) + HALF + 0.06);
+        var sunTop = topOf(pile[6]), charTop = topOf(f7);
+        var A = feet(sunTop), B = feet(charTop), T0 = beat(6) + HALF + 0.14, T1 = FAN_AT + HALF, AIR = T1 - T0;
+        tl.to(sq, { scaleX: 0.84, scaleY: 1.22, duration: 0.07, ease: "power2.out" }, T0);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.18, ease: "power1.inOut" }, T0 + 0.07);
+        tl.to(amigo, { x: B.x, duration: AIR, ease: "none" }, T0);
+        tl.to(amigo, { y: Math.min(A.y, B.y) - 100, duration: AIR / 2, ease: "power2.out" }, T0);
+        tl.to(amigo, { y: B.y, duration: AIR / 2, ease: "power2.in" }, T0 + AIR / 2);
+        tl.to(lean, { rotation: charTop.r, duration: AIR, ease: "power1.inOut" }, T0);
+        // land on the fan with a quick squash, then settle back to true proportions (user: no held deformation)
+        landSquash(T1, true);
+        tl.to(sq, { scaleX: 1, scaleY: 1, duration: 0.22, ease: "power2.out" }, T1 + 0.08);
+        dip(T1, 6);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

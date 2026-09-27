@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F6F5F1;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-j7pz" id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-lvtc" id="el-01-cold-open" class="scene" data-composition-id="01-cold-open" data-composition-src="compositions/frames/01-cold-open.html" data-start="0" data-duration="3.9" data-track-index="0"></div>
+
+      <div data-hf-id="hf-1wvp" id="el-02-json-wall" class="scene" data-composition-id="02-json-wall" data-composition-src="compositions/frames/02-json-wall.html" data-start="3.5" data-duration="3.6" data-track-index="1"></div>
+
+      <div data-hf-id="hf-m5sc" id="el-03-paste" class="scene" data-composition-id="03-paste" data-composition-src="compositions/frames/03-paste.html" data-start="6.5" data-duration="4.5" data-track-index="0"></div>
+
+      <div data-hf-id="hf-in6q" id="el-04-transform" class="scene" data-composition-id="04-transform" data-composition-src="compositions/frames/04-transform.html" data-start="10.5" data-duration="5" data-track-index="1"></div>
+
+      <div data-hf-id="hf-rnwl" id="el-05-any-api" class="scene" data-composition-id="05-any-api" data-composition-src="compositions/frames/05-any-api.html" data-start="15" data-duration="4.9" data-track-index="0"></div>
+
+      <div data-hf-id="hf-0d0a" id="el-06-promises" class="scene" data-composition-id="06-promises" data-composition-src="compositions/frames/06-promises.html" data-start="19.5" data-duration="6.6" data-track-index="1"></div>
+
+      <div data-hf-id="hf-s0ud" id="el-07-outro" class="scene" data-composition-id="07-outro" data-composition-src="compositions/frames/07-outro.html" data-start="25.5" data-duration="4.5" data-track-index="0"></div>
+
+      <!-- BGM -->
+      <audio data-hf-id="hf-jao1" id="el-bgm" data-timeline-role="music" src="assets/bgm/track.mp3" data-start="0" data-duration="30" data-track-index="11" data-volume="0.9"></audio>
+
+      <!-- SFX -->
+      <audio data-hf-id="hf-p2oz" id="el-sfx-0" src="assets/sfx/soft-pop-on-the-landing.mp3" data-start="0" data-duration="2.811" data-track-index="20" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-fl4r" id="el-sfx-1" src="assets/sfx/typewriter-ticks.mp3" data-start="0" data-duration="2.521" data-track-index="21" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-2dj0" id="el-sfx-2" src="assets/sfx/whoosh-on-entry.mp3" data-start="3.5" data-duration="1.834" data-track-index="22" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-fvbw" id="el-sfx-3" src="assets/sfx/low-riser-under-the-scroll.mp3" data-start="3.5" data-duration="5.708" data-track-index="23" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-e8it" id="el-sfx-4" src="assets/sfx/key-ticks.mp3" data-start="6.5" data-duration="7.778" data-track-index="24" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-p4z1" id="el-sfx-5" src="assets/sfx/a-click-press-thunk-on-the-button.mp3" data-start="6.5" data-duration="0.768" data-track-index="25" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-02xa" id="el-sfx-6" src="assets/sfx/a-bright-shimmer-on-submit.mp3" data-start="6.5" data-duration="3.329" data-track-index="26" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-pod0" id="el-sfx-7" src="assets/sfx/whoosh-as-lines-fly.mp3" data-start="10.5" data-duration="1.423" data-track-index="27" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-1luy" id="el-sfx-8" src="assets/sfx/soft-ticks-on-each-stat-bar.mp3" data-start="10.5" data-duration="0.768" data-track-index="28" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-3qgg" id="el-sfx-9" src="assets/sfx/a-pop-as-amigo-lands.mp3" data-start="10.5" data-duration="2.811" data-track-index="29" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-j5io" id="el-sfx-10" src="assets/sfx/a-soft-tick-on-each-hop-swap.mp3" data-start="15" data-duration="1.967" data-track-index="30" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-d86o" id="el-sfx-11" src="assets/sfx/a-light-whoosh-on-the-final-line.mp3" data-start="15" data-duration="1.834" data-track-index="31" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-pcqa" id="el-sfx-12" src="assets/sfx/a-slam-on-each-statement.mp3" data-start="19.5" data-duration="0.72" data-track-index="32" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-u1sb" id="el-sfx-13" src="assets/sfx/pops-on-the-pills.mp3" data-start="19.5" data-duration="3.623" data-track-index="33" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-j39q" id="el-sfx-14" src="assets/sfx/a-bright-chime-when-the-value-turns-ambe.mp3" data-start="19.5" data-duration="0.72" data-track-index="34" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-utzn" id="el-sfx-15" src="assets/sfx/two-soft-clicks-as-the-field-bars-merge.mp3" data-start="25.5" data-duration="0.768" data-track-index="35" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-t293" id="el-sfx-16" src="assets/sfx/a-warm-resolve-chord-whoosh-on-the-tagli.mp3" data-start="25.5" data-duration="3.463" data-track-index="36" data-volume="0.35"></audio>
+      <audio data-hf-id="hf-4xhe" id="el-sfx-17" src="assets/sfx/silence-on-the-hold.mp3" data-start="25.5" data-duration="5.708" data-track-index="37" data-volume="0.35"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-01-cold-open", { scale: 2.5, opacity: 0, filter: "blur(8px)", duration: 0.4, ease: "power3.in" }, 3.5);
+        tl.fromTo("#el-02-json-wall", { scale: 0.5, opacity: 0, filter: "blur(8px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 3.5);
+        tl.to("#el-02-json-wall", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 6.5);
+        tl.fromTo("#el-03-paste", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 6.5);
+        tl.to("#el-03-paste", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 10.5);
+        tl.fromTo("#el-04-transform", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 10.5);
+        tl.to("#el-04-transform", { x: -1920, duration: 0.5, ease: "power3.inOut" }, 15);
+        tl.fromTo("#el-05-any-api", { x: 1920, opacity: 1 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.inOut" }, 15);
+        tl.to("#el-05-any-api", { scale: 2.5, opacity: 0, filter: "blur(8px)", duration: 0.4, ease: "power3.in" }, 19.5);
+        tl.fromTo("#el-06-promises", { scale: 0.5, opacity: 0, filter: "blur(8px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 19.5);
+        tl.to("#el-06-promises", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 25.5);
+        tl.fromTo("#el-07-outro", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 25.5);
+        tl.to({}, { duration: 30 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

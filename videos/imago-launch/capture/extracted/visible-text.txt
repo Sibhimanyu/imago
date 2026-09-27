@@ -1,0 +1,196 @@
+[span] Imago
+[button] Open app
+[h1] APIs become interfaces.
+[p] Paste a GET endpoint. Imago reads the response, designs a view that fits its shape, and remembers it.
+[button] Get started
+[button] Try an example
+[p] Runs in your browser. No account. Bring your own Gemini or Groq key, or use none.
+[span] GET
+[span] https://pokeapi.co/api/v2/pokemon/pikachu
+[span] "id":
+[span] "name":
+[span] "pikachu"
+[span] "base_experience":
+[span] 112
+[span] "height":
+[span] "is_default":
+[span] true
+[span] "order":
+[span] "weight":
+[span] "abilities":
+[pre] [
+    {
+[span] "is_hidden":
+[span] false
+[span] "slot":
+[span] "ability":
+[span] "name":
+[span] "static"
+[span] "url":
+[span] "https://pokeapi.co/api/v2/ability/9/"
+[pre] }
+…
+[h3] Pikachu
+[span] Base experience
+[span] 112
+[span] Height
+[span] Is default
+[span] Yes
+[span] Order
+[span] Weight
+[span] Stats
+[span] Attack
+[span] Defense
+[span] Special attack
+[span] Special defense
+[span] Speed
+[span] Types
+[span] electric
+[span] Abilities
+[span] static
+[span] lightning-rod
+[span] Forms
+[span] pikachu
+[span] Held items
+[th] Item
+[th] Version details
+[td] oran-berry
+[td] ruby 50, sapphire 50, emerald 50 +7
+[td] light-ball
+[td] ruby 5, sapphire 5, emerald 5 +17
+[span] Species
+[span] Name
+[span] pikachu
+[span] URL
+[a] https://pokeapi.co/api/v2/pokemon-species/25/
+[span] Past stats
+[th] Generation
+[th] Stats
+[td] generation-i
+[td] special 50
+[td] generation-v
+[td] defense 30, special defense 40
+[span] Past abilities
+[th] Generation
+[th] Abilities
+[td] generation-iv
+[td] 1 item
+[span] Details
+[span] 1 more field · id
+[button] Pokémon
+[button] Weather
+[button] Library
+[p] Fetched live just now, drawn without a model.
+[h2] Reads the shape
+[p] Values become types, types become a fingerprint. Two responses with the same structure share one design.
+[span] a3f9c1e0
+[code] { "temperature": "number" }
+[h2] Remembers it
+[p] A shape it has seen before costs no model call. Refresh an endpoint for an hour and pay for one design.
+[span] From schema cache
+[h2] Watches it change
+[p] Auto-refresh every 10, 30 or 60 seconds. The values that moved are marked, not buried.
+[span] Live
+[span] · 24s
+[span] Changed
+[span] (n.): the final, fully formed stage after metamorphosis. Swap two letters and
+[span] , Spanish for friend.
+[span] Imago
+[span] GET
+[span] Settings
+[h2] Endpoints
+[p] Save an endpoint and it stays here, with a dot when it is live and a count when it changes.
+[h2] Try an example
+[span] Pokémon
+[span] pokeapi.co
+[span] Weather
+[span] api.open-meteo.com
+[span] Dictionary
+[span] api.dictionaryapi.dev
+[span] Currency
+[span] api.frankfurter.dev
+[span] Trivia
+[span] opentdb.com
+[span] Library
+[span] openlibrary.org
+[span] Thirukkural
+[span] tamil-kural-api.vercel.app
+[span] Wikipedia
+[span] en.wikipedia.org
+[span] Sunrise & Sunset
+[span] api.sunrise-sunset.org
+[span] Charizard
+[span] pokeapi.co
+[button] Back
+[span] Checked
+[span] Build
+[button] Structured
+[button] HTML
+[span] Watch
+[option] 10s
+[option] 30s
+[option] 60s
+[span] Save
+[span] Edit
+[span] Share
+[span] Inspect
+[p] Paste an API URL to start
+[p] Imago fetches it and turns the response into a page. Any public GET endpoint works.
+[p] Or open an example from the list on the left.
+[button] Pokémon
+[button] Weather
+[button] Dictionary
+[button] Library
+[button] Response
+[button] Schema
+[button] Changes
+[button] Headers
+[span] Response
+[button] Copy
+[span] Structural schema
+[h2] Snapshots
+[label] Request headers
+[p] One header per line,
+[span] Name: value
+[p] . Sent with every request to this endpoint.
+[h2] Settings
+[h3] Model
+[label] Provider
+[option] Google Gemini
+[option] Groq
+[option] Ollama (runs on your machine)
+[label] API key
+[span] Not set
+[button] Test
+[p] Free at
+[span] aistudio.google.com/apikey
+[label] API key
+[span] Not set
+[button] Test
+[p] Free at
+[span] console.groq.com/keys
+[label] Server
+[button] Test
+[p] No key needed. Allow this page on your server:
+[span] OLLAMA_ORIGINS=
+[span] https://imago.onslate.in
+[span] ollama serve
+[label] Model
+[p] If this model is unavailable, try
+[span] gemini-3.5-flash
+[p] Keys stay in this browser. Anyone using this browser profile can read them.
+[button] Clear all keys
+[h3] Try it
+[p] Send a message to the provider you have selected. Same key, same
+          model, same code path the interface builder uses — so if this answers, generating works.
+[span] Google Gemini · gemini-2.5-flash-lite
+[button] Clear
+[p] Nothing sent yet.
+[label] Message
+[button] Send
+[h3] Interface
+[option] Structured plan (default)
+[option] Full HTML page
+[p] Full HTML renders sandboxed with scripts disabled. Applies to the next request.
+[h3] Stored data
+[button] Clear all saved data

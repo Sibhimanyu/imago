@@ -1,0 +1,308 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Inter Display";
+      src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/Inter-SemiBold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      color: #1b1b19;
+      font-family: "Inter Display", "Inter", sans-serif;
+    }
+    #cold-open-01-bg {
+      position: absolute;
+      inset: 0;
+      background: #f6f5f1;
+    }
+    #cold-open-01-stage {
+      position: absolute;
+      inset: 0;
+    }
+    /* faint ink floor — sketch: left 10cqw, 0.25cqw tall, top 40.5cqw */
+    #cold-open-01-floor {
+      position: absolute;
+      left: 192px;
+      right: 0;
+      top: 777.6px;
+      height: 4.8px;
+      border-radius: 3px 0 0 3px;
+      background: #e7e5df;
+      transform-origin: 0% 50%;
+    }
+    /* Amigo — sketch: left 14cqw, 17cqw square; feet sit on the floor line */
+    #cold-open-01-amigo-pos,
+    #cold-open-01-amigo-hop,
+    #cold-open-01-amigo-lean,
+    #cold-open-01-amigo-body {
+      position: absolute;
+      width: 326.4px;
+      height: 326.4px;
+    }
+    #cold-open-01-amigo-pos {
+      left: 268.8px;
+      top: 471.6px;
+    }
+    #cold-open-01-amigo-hop,
+    #cold-open-01-amigo-lean,
+    #cold-open-01-amigo-body {
+      left: 0;
+      top: 0;
+    }
+    #cold-open-01-amigo-lean,
+    #cold-open-01-amigo-body {
+      transform-origin: 50% 93.75%; /* anchored at the feet (viewBox y=30 of 32) */
+    }
+    #cold-open-01-amigo-body svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      color: #1b1b19;
+    }
+    /* typed lines — display role, 6.2cqw at left 37cqw / top 22cqw */
+    .cold-open-01-line {
+      position: absolute;
+      left: 710.4px;
+      top: 422.4px;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 119.04px;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      white-space: pre;
+      transform-origin: 0% 0%;
+    }
+    #cold-open-01-l1 {
+      color: #1b1b19;
+    }
+    #cold-open-01-l2 {
+      width: 1075.2px;
+      color: #1b1b19;
+    }
+    .cold-open-01-textwrap {
+      position: relative;
+      display: inline-block;
+      white-space: pre;
+    }
+    #cold-open-01-strike {
+      position: absolute;
+      left: -0.02em;
+      right: -0.02em;
+      top: 0.575em;
+      height: 0.066em;
+      border-radius: 0.04em;
+      background: currentColor;
+      transform-origin: 0% 50%;
+    }
+    .cold-open-01-caret {
+      display: inline-block;
+      width: 0.08em;
+      height: 0.9em;
+      margin-left: 0.06em;
+      vertical-align: -0.08em;
+      background: #1b1b19;
+      opacity: 0;
+    }
+  </style>
+
+  <div data-hf-id="hf-voes" id="root" data-composition-id="01-cold-open" data-start="0" data-duration="3.9" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-1gmn" id="cold-open-01-bg" class="clip" data-start="0" data-duration="3.9" data-track-index="0"></div>
+
+    <div data-hf-id="hf-j1cd" id="cold-open-01-stage" class="clip" data-start="0" data-duration="3.9" data-track-index="1">
+      <div data-hf-id="hf-a46h" id="cold-open-01-floor"></div>
+
+      <div data-hf-id="hf-panf" id="cold-open-01-amigo-pos">
+        <div data-hf-id="hf-zq60" id="cold-open-01-amigo-hop">
+          <div data-hf-id="hf-jd8n" id="cold-open-01-amigo-lean">
+            <div data-hf-id="hf-m2t3" id="cold-open-01-amigo-body">
+              <svg data-hf-id="hf-nlni" viewBox="0 0 32 32" aria-hidden="true">
+                <g data-hf-id="hf-g1zz" fill="currentColor">
+                  <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+                  <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+                  <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- line 1: typed, struck, shrunk up to muted (sketch landed state: 3cqw at top 17cqw) -->
+      <div data-hf-id="hf-ld5p" id="cold-open-01-l1" class="cold-open-01-line"><span data-hf-id="hf-z6vw" class="cold-open-01-textwrap"><span data-hf-id="hf-kfn5" id="cold-open-01-t1"></span><span data-hf-id="hf-uqdu" id="cold-open-01-strike"></span></span><span data-hf-id="hf-y9j2" id="cold-open-01-c1" class="cold-open-01-caret"></span></div>
+
+      <!-- line 2: the correction, typed in place -->
+      <div data-hf-id="hf-pb9q" id="cold-open-01-l2" class="cold-open-01-line"><span data-hf-id="hf-odr6" id="cold-open-01-t2"></span><span data-hf-id="hf-ubf1" id="cold-open-01-c2" class="cold-open-01-caret"></span></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var DURATION = 3.5;
+      var tl = gsap.timeline({ paused: true });
+
+      // ---------- Scene 1 (0.0–1.0): floor, hop in on beat 1, land on beat 2 (0.5s) ----------
+      tl.fromTo(
+        "#cold-open-01-floor",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.45, ease: "power3.out" },
+        0,
+      );
+
+      // horizontal travel — ballistic, constant speed
+      tl.fromTo("#cold-open-01-amigo-pos", { x: -700 }, { x: 0, duration: 0.5, ease: "none" }, 0);
+      // vertical arc — rise, apex at 0.25, fall to the floor at 0.5
+      tl.fromTo("#cold-open-01-amigo-hop", { y: 0 }, { y: -250, duration: 0.25, ease: "power2.out" }, 0);
+      tl.to("#cold-open-01-amigo-hop", { y: 0, duration: 0.25, ease: "power2.in" }, 0.25);
+
+      // squash & stretch, anchored at the feet
+      tl.fromTo(
+        "#cold-open-01-amigo-body",
+        { scaleX: 0.86, scaleY: 1.18 },
+        { scaleX: 1, scaleY: 1, duration: 0.22, ease: "power2.out" },
+        0,
+      );
+      tl.to("#cold-open-01-amigo-body", { scaleX: 0.93, scaleY: 1.09, duration: 0.12, ease: "power1.in" }, 0.38);
+      tl.to("#cold-open-01-amigo-body", { scaleX: 1.2, scaleY: 0.76, duration: 0.06, ease: "power2.out" }, 0.5);
+      tl.to("#cold-open-01-amigo-body", { scaleX: 0.97, scaleY: 1.05, duration: 0.18, ease: "power2.out" }, 0.56);
+      tl.to("#cold-open-01-amigo-body", { scaleX: 1, scaleY: 1, duration: 0.24, ease: "power2.inOut" }, 0.74);
+
+      // in-flight tilt: leans back on take-off, forward into the landing, settles upright
+      tl.fromTo(
+        "#cold-open-01-amigo-lean",
+        { rotation: -8 },
+        { rotation: 6, duration: 0.45, ease: "sine.inOut" },
+        0,
+      );
+      tl.to("#cold-open-01-amigo-lean", { rotation: 0, duration: 0.3, ease: "power3.out" }, 0.5);
+
+      // ---------- Scene 2 (1.0–2.0): caret appears, line types, Amigo leans toward it ----------
+      tl.to("#cold-open-01-amigo-lean", { rotation: 9, duration: 0.5, ease: "power3.inOut" }, 1.05);
+
+      // ---------- Scene 3 (2.0–2.6): strike on beat 5, shrink up to muted ----------
+      tl.fromTo(
+        "#cold-open-01-strike",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.2, ease: "power2.inOut" },
+        2.0,
+      );
+      // Amigo's small reaction dip on the strike
+      tl.to("#cold-open-01-amigo-body", { scaleX: 1.04, scaleY: 0.93, duration: 0.1, ease: "power2.out" }, 2.0);
+      tl.to("#cold-open-01-amigo-body", { scaleX: 1, scaleY: 1, duration: 0.3, ease: "power2.inOut" }, 2.1);
+      // 6.2cqw -> 3cqw, top 22cqw -> 17cqw
+      tl.fromTo(
+        "#cold-open-01-l1",
+        { scale: 1, y: 0, color: "#1b1b19" },
+        { scale: 3 / 6.2, y: -96, color: "#a8a79f", duration: 0.4, ease: "power3.out" },
+        2.15,
+      );
+
+      // ---------- Scene 4 (2.6–3.5): the correction types; lean holds (slow drift keeps it alive) ----------
+      tl.to("#cold-open-01-amigo-lean", { rotation: 10.5, duration: 0.9, ease: "sine.inOut" }, 2.6);
+
+      // ---------- typing + caret (discrete-text-sequence + context-sensitive-cursor) ----------
+      var SEQ1 = [
+        { t: 0, text: "" },
+        { t: 1.1, text: "A" },
+        { t: 1.16, text: "An" },
+        { t: 1.22, text: "Ano" },
+        { t: 1.29, text: "Anot" },
+        { t: 1.35, text: "Anoth" },
+        { t: 1.41, text: "Anothe" },
+        { t: 1.47, text: "Another" },
+        { t: 1.6, text: "Another " },
+        { t: 1.7, text: "Another A" },
+        { t: 1.77, text: "Another AP" },
+        { t: 1.84, text: "Another API" },
+        { t: 1.93, text: "Another API." },
+      ];
+      var SEQ2 = [
+        { t: 0, text: "" },
+        { t: 2.62, text: "Another " },
+        { t: 2.72, text: "Another w" },
+        { t: 2.77, text: "Another wa" },
+        { t: 2.82, text: "Another wal" },
+        { t: 2.87, text: "Another wall" },
+        { t: 2.96, text: "Another wall\n" },
+        { t: 3.01, text: "Another wall\no" },
+        { t: 3.05, text: "Another wall\nof" },
+        { t: 3.09, text: "Another wall\nof " },
+        { t: 3.13, text: "Another wall\nof J" },
+        { t: 3.16, text: "Another wall\nof JS" },
+        { t: 3.19, text: "Another wall\nof JSO" },
+        { t: 3.22, text: "Another wall\nof JSON" },
+        { t: 3.29, text: "Another wall\nof JSON." },
+      ];
+      var C1_IN = 1.0, C1_OUT = 2.0, C2_IN = 2.5;
+      var TYPING_GRACE = 0.15;
+      var BLINK_CYCLES = 7; // 0.5s period — one blink per beat, whole number over 3.5s
+
+      function textAt(seq, time) {
+        for (var i = seq.length - 1; i >= 0; i--) {
+          if (time >= seq[i].t) return seq[i].text;
+        }
+        return "";
+      }
+      function changeTimes(seq, extra) {
+        var out = [extra];
+        for (var i = 1; i < seq.length; i++) {
+          if (seq[i].text !== seq[i - 1].text) out.push(seq[i].t);
+        }
+        return out;
+      }
+      var CH1 = changeTimes(SEQ1, C1_IN);
+      var CH2 = changeTimes(SEQ2, C2_IN);
+      function solid(ch, time) {
+        for (var i = 0; i < ch.length; i++) {
+          if (ch[i] <= time && time - ch[i] < TYPING_GRACE) return true;
+        }
+        return false;
+      }
+
+      var t1 = document.getElementById("cold-open-01-t1");
+      var t2 = document.getElementById("cold-open-01-t2");
+      var c1 = document.getElementById("cold-open-01-c1");
+      var c2 = document.getElementById("cold-open-01-c2");
+
+      function render(time) {
+        t1.textContent = textAt(SEQ1, time);
+        t2.textContent = textAt(SEQ2, time);
+        var blinkOn = Math.sin((Math.PI * 2 * BLINK_CYCLES * time) / DURATION) < 0;
+        var on1 = time >= C1_IN && time < C1_OUT && (solid(CH1, time) || blinkOn);
+        var on2 = time >= C2_IN && (solid(CH2, time) || blinkOn);
+        c1.style.opacity = on1 ? "1" : "0";
+        c2.style.opacity = on2 ? "1" : "0";
+      }
+
+      var driver = { t: 0 };
+      tl.fromTo(
+        driver,
+        { t: 0 },
+        {
+          t: DURATION,
+          duration: DURATION,
+          ease: "none",
+          onUpdate: function () {
+            render(driver.t);
+          },
+        },
+        0,
+      );
+      render(0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["01-cold-open"] = tl;
+    })();
+  </script>
+</template>

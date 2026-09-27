@@ -1,0 +1,523 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/Inter-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/Inter-Medium.otf") format("opentype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/Inter-SemiBold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Inter Display";
+      src: url("assets/fonts/InterDisplay-Medium.otf") format("opentype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Inter Display";
+      src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype");
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #1b1b19;
+    }
+    .f05-bg {
+      position: absolute;
+      inset: 0;
+      background: #f6f5f1;
+    }
+    .f05-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .f05-abs {
+      position: absolute;
+    }
+    .f05-t {
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+    }
+    .f05-mono {
+      font-family: "JetBrains Mono", monospace;
+    }
+    #f05-headline {
+      left: 115px;
+      top: 115px;
+      font-size: 88px;
+      white-space: nowrap;
+    }
+    #f05-ghost {
+      left: 922px;
+      top: 173px;
+      width: 806px;
+      height: 720px;
+      background: #ffffff;
+      border: 1px solid #e7e5df;
+      border-radius: 16px;
+      transform: translate(65px, -46px) rotate(3deg);
+      opacity: 0.5;
+    }
+    #f05-card {
+      left: 806px;
+      top: 115px;
+      width: 960px;
+      height: 778px;
+      background: #ffffff;
+      border: 1px solid #e7e5df;
+      border-radius: 16px;
+      box-shadow:
+        0 2px 6px rgba(27, 27, 25, 0.04),
+        0 18px 46px -16px rgba(27, 27, 25, 0.2);
+      transform-origin: 50% 50%;
+    }
+    .f05-panel {
+      position: absolute;
+      inset: 0;
+      padding: 58px;
+    }
+    .f05-title {
+      font-size: 65px;
+    }
+    .f05-sub {
+      font-size: 27px;
+      color: #66655f;
+      margin-top: 8px;
+    }
+    .f05-stats {
+      display: flex;
+      gap: 77px;
+      margin-top: 38px;
+    }
+    .f05-label {
+      font-size: 27px;
+      color: #66655f;
+    }
+    .f05-value {
+      font-size: 88px;
+      margin-top: 6px;
+    }
+    /* Pikachu bars */
+    .f05-bars {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .f05-bar {
+      display: grid;
+      grid-template-columns: 150px 1fr 70px;
+      align-items: center;
+      gap: 22px;
+    }
+    .f05-track {
+      height: 28px;
+      background: #f1efe9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .f05-fill {
+      display: block;
+      height: 100%;
+      background: #1b1b19;
+      border-radius: 6px;
+      transform-origin: 0 50%;
+    }
+    .f05-barval {
+      font-size: 30px;
+      font-weight: 600;
+      text-align: right;
+    }
+    /* Weather well */
+    .f05-well {
+      margin-top: 38px;
+      background: #f1efe9;
+      border-radius: 14px;
+      padding: 27px;
+    }
+    #f05-chart {
+      display: block;
+      width: 790px;
+      height: 170px;
+      margin-top: 14px;
+    }
+    #f05-line {
+      fill: none;
+      stroke: #1b1b19;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #f05-peak {
+      fill: #1b1b19;
+    }
+    .f05-foot {
+      font-size: 22px;
+      color: #66655f;
+      margin-top: 12px;
+    }
+    /* Library */
+    .f05-pill {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 24px;
+      background: #f1efe9;
+      border: 1px solid #e7e5df;
+      border-radius: 100px;
+      padding: 6px 18px;
+    }
+    .f05-rows {
+      margin-top: 34px;
+    }
+    .f05-row {
+      display: grid;
+      grid-template-columns: 1fr 250px 90px;
+      align-items: baseline;
+      gap: 20px;
+      padding: 20px 0;
+      border-top: 1px solid #e7e5df;
+    }
+    .f05-row-title {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .f05-row-author {
+      font-size: 27px;
+      color: #66655f;
+    }
+    .f05-row-year {
+      font-size: 27px;
+      color: #66655f;
+      text-align: right;
+    }
+    /* Anchor: Amigo + label stack */
+    #f05-amigo {
+      left: 154px;
+      top: 634px;
+      width: 211px;
+      height: 211px;
+      color: #1b1b19;
+      transform-origin: 50% 100%;
+    }
+    #f05-amigo svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #f05-labels {
+      left: 403px;
+      top: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 33px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .f05-lab {
+      color: #a8a79f;
+    }
+  </style>
+
+  <div data-hf-id="hf-do5x" id="root" data-composition-id="05-any-api" data-start="0" data-duration="4.9" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-o2ki" class="f05-bg clip" data-start="0" data-duration="4.9" data-track-index="0"></div>
+
+    <div data-hf-id="hf-7yoy" class="f05-stage clip" data-start="0" data-duration="4.9" data-track-index="1">
+      <div data-hf-id="hf-hqvk" id="f05-headline" class="f05-abs f05-t">Whatever<br data-hf-id="hf-x5px">it returns.</div>
+
+      <div data-hf-id="hf-12lb" id="f05-ghost" class="f05-abs"></div>
+
+      <div data-hf-id="hf-l7lo" id="f05-card" class="f05-abs">
+        <!-- 1 · Pikachu -->
+        <div data-hf-id="hf-2jhe" id="f05-p-poke" class="f05-panel">
+          <div data-hf-id="hf-btg9" class="f05-t f05-title">Pikachu</div>
+          <div data-hf-id="hf-az99" class="f05-stats">
+            <div data-hf-id="hf-yeow">
+              <div data-hf-id="hf-quwd" class="f05-label">Base experience</div>
+              <div data-hf-id="hf-8zo9" class="f05-t f05-value">112</div>
+            </div>
+            <div data-hf-id="hf-y7yw">
+              <div data-hf-id="hf-dect" class="f05-label">Height</div>
+              <div data-hf-id="hf-d3y9" class="f05-t f05-value">4</div>
+            </div>
+          </div>
+          <div data-hf-id="hf-va96" class="f05-bars">
+            <div data-hf-id="hf-v8ej" class="f05-bar">
+              <span data-hf-id="hf-zkx5" class="f05-label">Hp</span>
+              <div data-hf-id="hf-g3oh" class="f05-track"><span data-hf-id="hf-7ntd" class="f05-fill" style="width: 35%"></span></div>
+              <span data-hf-id="hf-0b2x" class="f05-barval">35</span>
+            </div>
+            <div data-hf-id="hf-t2uj" class="f05-bar">
+              <span data-hf-id="hf-h23l" class="f05-label">Attack</span>
+              <div data-hf-id="hf-qoc5" class="f05-track"><span data-hf-id="hf-9sab" class="f05-fill" style="width: 55%"></span></div>
+              <span data-hf-id="hf-1uej" class="f05-barval">55</span>
+            </div>
+            <div data-hf-id="hf-soji" class="f05-bar">
+              <span data-hf-id="hf-rrin" class="f05-label">Defense</span>
+              <div data-hf-id="hf-rv98" class="f05-track"><span data-hf-id="hf-2g5t" class="f05-fill" style="width: 40%"></span></div>
+              <span data-hf-id="hf-mjxp" class="f05-barval">40</span>
+            </div>
+            <div data-hf-id="hf-sa8h" class="f05-bar">
+              <span data-hf-id="hf-sskk" class="f05-label">Speed</span>
+              <div data-hf-id="hf-rgy7" class="f05-track"><span data-hf-id="hf-is6k" class="f05-fill" style="width: 90%"></span></div>
+              <span data-hf-id="hf-injc" class="f05-barval">90</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 · Chennai weather -->
+        <div data-hf-id="hf-g26j" id="f05-p-weather" class="f05-panel">
+          <div data-hf-id="hf-5iju" class="f05-t f05-title">Chennai</div>
+          <div data-hf-id="hf-enbw" class="f05-sub">Live weather</div>
+          <div data-hf-id="hf-jaxd" class="f05-stats">
+            <div data-hf-id="hf-x11t">
+              <div data-hf-id="hf-9crg" class="f05-label">Temperature</div>
+              <div data-hf-id="hf-03pk" class="f05-t f05-value">30.5°C</div>
+            </div>
+            <div data-hf-id="hf-xfcu">
+              <div data-hf-id="hf-3iur" class="f05-label">Humidity</div>
+              <div data-hf-id="hf-nmcx" class="f05-t f05-value">72%</div>
+            </div>
+          </div>
+          <div data-hf-id="hf-4lfg" class="f05-well">
+            <div data-hf-id="hf-zo5x" class="f05-label">Temperature today</div>
+            <svg data-hf-id="hf-0zd5" id="f05-chart" viewBox="0 0 790 170" xmlns="http://www.w3.org/2000/svg">
+              <path data-hf-id="hf-8eqx" id="f05-line" d="M0 0" />
+              <circle data-hf-id="hf-i6og" id="f05-peak" cx="0" cy="0" r="7" />
+            </svg>
+            <div data-hf-id="hf-s08v" id="f05-foot" class="f05-foot f05-mono">24 points · low 25.1 · high 34</div>
+          </div>
+        </div>
+
+        <!-- 3 · Open Library -->
+        <div data-hf-id="hf-ye5e" id="f05-p-lib" class="f05-panel">
+          <div data-hf-id="hf-4ayh" class="f05-t f05-title">Openlibrary</div>
+          <div data-hf-id="hf-lc7d" class="f05-pill f05-mono">q "dune"</div>
+          <div data-hf-id="hf-khug" class="f05-stats">
+            <div data-hf-id="hf-w8fr">
+              <div data-hf-id="hf-wp9f" class="f05-label">Number found</div>
+              <div data-hf-id="hf-1dny" id="f05-count" class="f05-t f05-value">0</div>
+            </div>
+          </div>
+          <div data-hf-id="hf-kn1n" class="f05-rows">
+            <div data-hf-id="hf-1vgo" class="f05-row">
+              <span data-hf-id="hf-maxc" class="f05-row-title">Dune</span>
+              <span data-hf-id="hf-1cyn" class="f05-row-author">Frank Herbert</span>
+              <span data-hf-id="hf-ebdn" class="f05-row-year f05-mono">1965</span>
+            </div>
+            <div data-hf-id="hf-2hhc" class="f05-row">
+              <span data-hf-id="hf-2eem" class="f05-row-title">Dune Messiah</span>
+              <span data-hf-id="hf-2w67" class="f05-row-author">Frank Herbert</span>
+              <span data-hf-id="hf-fwlr" class="f05-row-year f05-mono">1969</span>
+            </div>
+            <div data-hf-id="hf-1ak9" class="f05-row">
+              <span data-hf-id="hf-b2zg" class="f05-row-title">Children of Dune</span>
+              <span data-hf-id="hf-2hv6" class="f05-row-author">Frank Herbert</span>
+              <span data-hf-id="hf-g9yj" class="f05-row-year f05-mono">1976</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-f0ij" id="f05-amigo" class="f05-abs">
+        <svg data-hf-id="hf-fun6" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g data-hf-id="hf-g1zz" fill="currentColor">
+            <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+            <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+            <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+          </g>
+        </svg>
+      </div>
+
+      <div data-hf-id="hf-kp7r" id="f05-labels" class="f05-abs">
+        <span data-hf-id="hf-ftoe" id="f05-lab-poke" class="f05-lab">Pokémon</span>
+        <span data-hf-id="hf-2pzm" id="f05-lab-weather" class="f05-lab">Weather</span>
+        <span data-hf-id="hf-gl02" id="f05-lab-lib" class="f05-lab">Library</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const ID = "05-any-api";
+      const scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+      const $ = (sel) => scope.querySelector(sel);
+      const $$ = (sel) => Array.from(scope.querySelectorAll(sel));
+
+      const INK = "#1b1b19";
+      const MUTED = "#a8a79f";
+      const DURATION = 4.5;
+      // 120 bpm grid: beat n lands at (n - 1) * 0.5s. Swaps on beat 3 and beat 6.
+      const SWAP_WEATHER = 1.0;
+      const SWAP_LIB = 2.5;
+      const RESOLVE = 3.5;
+
+      // ---- Temperature curve: 24 deterministic points, 25.1 → 34 (7th point) → 25.3
+      const N = 24;
+      const PEAK_I = 6;
+      const temps = [];
+      for (let i = 0; i < N; i++) {
+        let v;
+        if (i <= PEAK_I) {
+          const u = i / PEAK_I;
+          v = 25.1 + (34 - 25.1) * Math.sin((Math.PI / 2) * u) ** 2;
+        } else {
+          const u = (i - PEAK_I) / (N - 1 - PEAK_I);
+          v = 25.3 + (34 - 25.3) * (1 + Math.cos(Math.PI * u)) / 2;
+        }
+        temps.push(v);
+      }
+      const W = 790, H = 170, PAD = 12;
+      const LO = 24.6, HI = 34.4;
+      const pts = temps.map((v, i) => [
+        PAD + (i / (N - 1)) * (W - PAD * 2),
+        PAD + (1 - (v - LO) / (HI - LO)) * (H - PAD * 2),
+      ]);
+      // Catmull-Rom → cubic Bézier for a smooth line through every point
+      let d = "M" + pts[0][0].toFixed(2) + " " + pts[0][1].toFixed(2);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(pts.length - 1, i + 2)];
+        const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+        const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+        const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+        const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += " C" + [c1x, c1y, c2x, c2y, p2[0], p2[1]].map((n) => n.toFixed(2)).join(" ");
+      }
+      const line = $("#f05-line");
+      line.setAttribute("d", d);
+      const peak = $("#f05-peak");
+      peak.setAttribute("cx", pts[PEAK_I][0].toFixed(2));
+      peak.setAttribute("cy", pts[PEAK_I][1].toFixed(2));
+      const len = line.getTotalLength() * 1.02;
+      line.style.strokeDasharray = String(len);
+      line.style.strokeDashoffset = String(len);
+
+      const tl = gsap.timeline({ paused: true });
+
+      // ---- Timeline span driver (keeps the timeline exactly the frame length)
+      tl.to({ v: 0 }, { v: 1, duration: DURATION, ease: "none" }, 0);
+
+      // ---- Initial discrete states
+      tl.set("#f05-p-poke", { autoAlpha: 1 }, 0);
+      tl.set(["#f05-p-weather", "#f05-p-lib"], { autoAlpha: 0 }, 0);
+      tl.set("#f05-lab-poke", { color: INK }, 0);
+      tl.set(["#f05-lab-weather", "#f05-lab-lib"], { color: MUTED }, 0);
+
+      // ---- Scene 1 (0–1.0): headline set on beat 1, Pikachu bars fill
+      tl.fromTo("#f05-headline", { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0);
+      tl.fromTo(
+        $$("#f05-p-poke .f05-fill"),
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.5, ease: "power3.out", stagger: 0.08 },
+        0.12,
+      );
+
+      // ---- Amigo hop: anticipation squash → stretch + arc up → fall → land squash on the beat
+      function hop(land, height) {
+        const a = "#f05-amigo";
+        tl.fromTo(a, { scaleX: 1, scaleY: 1, y: 0 }, { scaleX: 1.08, scaleY: 0.9, duration: 0.09, ease: "power2.out", immediateRender: false }, land - 0.45);
+        tl.to(a, { y: -height, scaleX: 0.93, scaleY: 1.1, duration: 0.18, ease: "power2.out" }, land - 0.36);
+        tl.to(a, { y: 0, scaleX: 0.97, scaleY: 1.04, duration: 0.18, ease: "power2.in" }, land - 0.18);
+        tl.to(a, { scaleX: 1.12, scaleY: 0.86, duration: 0.06, ease: "power2.out" }, land);
+        tl.to(a, { scaleX: 1, scaleY: 1, duration: 0.3, ease: "back.out(2)" }, land + 0.06);
+      }
+      hop(SWAP_WEATHER, 70);
+      hop(SWAP_LIB, 70);
+      hop(RESOLVE, 36);
+
+      // ---- Card punch on each hard cut (the shell settles; content swaps instantly)
+      function punch(t) {
+        tl.fromTo("#f05-card", { scale: 0.975 }, { scale: 1, duration: 0.28, ease: "power3.out", immediateRender: false }, t);
+      }
+
+      // ---- Scene 2 (1.0–2.5): hard cut to Chennai weather, line self-draws
+      tl.set("#f05-p-poke", { autoAlpha: 0 }, SWAP_WEATHER);
+      tl.set("#f05-p-weather", { autoAlpha: 1 }, SWAP_WEATHER);
+      tl.set("#f05-lab-poke", { color: MUTED }, SWAP_WEATHER);
+      tl.set("#f05-lab-weather", { color: INK }, SWAP_WEATHER);
+      punch(SWAP_WEATHER);
+      tl.fromTo(line, { strokeDashoffset: len }, { strokeDashoffset: 0, duration: 0.85, ease: "power2.out", immediateRender: false }, SWAP_WEATHER + 0.1);
+      tl.fromTo("#f05-peak", { autoAlpha: 0, scale: 0, transformOrigin: "50% 50%" }, { autoAlpha: 1, scale: 1, duration: 0.25, ease: "back.out(2)", immediateRender: false }, SWAP_WEATHER + 0.35);
+      tl.fromTo("#f05-foot", { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, SWAP_WEATHER + 0.9);
+
+      // ---- Scene 3 (2.5–3.5): hard cut to Open Library, count up, rows cascade
+      tl.set("#f05-p-weather", { autoAlpha: 0 }, SWAP_LIB);
+      tl.set("#f05-p-lib", { autoAlpha: 1 }, SWAP_LIB);
+      tl.set("#f05-lab-weather", { color: MUTED }, SWAP_LIB);
+      tl.set("#f05-lab-lib", { color: INK }, SWAP_LIB);
+      punch(SWAP_LIB);
+
+      const countEl = $("#f05-count");
+      const TARGET = 48232;
+      const counter = { v: 0 };
+      let lastShown = "";
+      const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      tl.fromTo(
+        counter,
+        { v: 0 },
+        {
+          v: TARGET,
+          duration: 0.7,
+          ease: "power2.out",
+          immediateRender: false,
+          onUpdate: () => {
+            const s = fmt(counter.v);
+            if (s !== lastShown) {
+              countEl.textContent = s;
+              lastShown = s;
+            }
+          },
+        },
+        SWAP_LIB,
+      );
+      tl.fromTo(
+        $$("#f05-p-lib .f05-row"),
+        { autoAlpha: 0, y: 26 },
+        { autoAlpha: 1, y: 0, duration: 0.36, ease: "power3.out", stagger: 0.12, immediateRender: false },
+        SWAP_LIB + 0.15,
+      );
+
+      // ---- Scene 4 (3.5–4.5): every label turns ink together; Library card holds
+      tl.set(["#f05-lab-poke", "#f05-lab-weather", "#f05-lab-lib"], { color: INK }, RESOLVE);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</template>

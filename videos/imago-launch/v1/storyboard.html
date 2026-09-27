@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Imago — launch film · storyboard v1.1</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --sink:#f1efe9; --card:#fff; --line:#e7e5df; --ink:#1b1b19; --ink-2:#45443f;
+    --muted:#66655f; --muted-2:#a8a79f; --changed:#f5ce47; --changed-bg:#fdf3cd; --changed-ink:#6f570b;
+    --live:#4fa96a; --live-bg:#e4f4e8; --num:#8fb4e3;
+    --sans:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --display:"Inter Display","Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+    --shadow:0 2px 6px rgba(27,27,25,.04),0 18px 46px -16px rgba(27,27,25,.20);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#e9e7e1;color:var(--ink);font-family:var(--sans);padding:48px 56px 80px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px}
+  header h1{font-family:var(--display);font-weight:600;font-size:34px;letter-spacing:-.03em}
+  header h1 small{font-size:15px;font-weight:600;color:var(--muted);margin-left:10px;letter-spacing:0}
+  header p{color:var(--muted);font-size:15px;margin-top:6px;max-width:760px;line-height:1.5}
+  .tag{font-family:var(--mono);font-size:12.5px;background:var(--ink);color:var(--bg);padding:7px 12px;border-radius:100px;white-space:nowrap}
+  .act{grid-column:1/-1;display:flex;align-items:center;gap:12px;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+  .act::after{content:"";flex:1;height:1px;background:#d6d3cb}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:34px 26px}
+  figure{display:flex;flex-direction:column;gap:10px}
+  .cell{aspect-ratio:16/9;container-type:inline-size;position:relative;overflow:hidden;border-radius:10px;background:var(--bg);box-shadow:0 1px 2px rgba(27,27,25,.08),0 10px 30px -14px rgba(27,27,25,.25)}
+  .lab{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.04em}
+  .lab span:last-child{font-family:var(--mono);font-weight:400;color:var(--muted);letter-spacing:0}
+  figcaption p{font-size:13px;line-height:1.5;color:var(--ink-2)}
+  .chip{align-self:flex-start;font-family:var(--mono);font-size:11px;border:1px solid #d6d3cb;border-radius:100px;padding:3px 9px;color:var(--muted)}
+  .abs{position:absolute}
+  .amigo{fill:var(--ink)}
+  .caret{display:inline-block;width:.08em;height:.9em;background:var(--ink);vertical-align:-.08em;margin-left:.06em}
+  .t{font-family:var(--display);font-weight:600;letter-spacing:-.035em;line-height:1.05}
+  .mono{font-family:var(--mono)}
+  .ghost{position:absolute;inset:0;pointer-events:none}
+  .motion{stroke:var(--muted-2);stroke-width:.25;stroke-dasharray:1 1;fill:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="amigo" viewBox="0 0 32 32"><rect x="9" y="21.5" width="6" height="8.5" rx="3"/><rect x="17" y="21.5" width="6" height="8.5" rx="3"/><path fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z"/></symbol>
+    <symbol id="mark" viewBox="0 0 32 32"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></symbol>
+  </defs>
+</svg>
+
+<header>
+  <div>
+    <h1>Imago — launch film <small>storyboard v1.1</small></h1>
+    <p>Paste an API, get the interface its data deserves. Amigo guides the eye from a wall of raw JSON to the finished interface, then signs off beside the logo.</p>
+  </div>
+  <span class="tag">1920×1080 · ~30s · 7 beats · music, no VO</span>
+</header>
+
+<div class="grid">
+  <div class="act">Act 1 · Before — 0.0–6.5s</div>
+
+  <!-- 01 -->
+  <figure>
+    <div class="cell" id="frame-01">
+      <svg class="abs amigo" style="left:14cqw;top:22cqw;width:17cqw;height:17cqw;transform:rotate(9deg);transform-origin:50% 100%"><use href="#amigo"/></svg>
+      <svg class="ghost" viewBox="0 0 100 56.25"><path class="motion" d="M-2 40 Q6 18 16 38"/></svg>
+      <div class="abs" style="left:10cqw;right:0;bottom:15.5cqw;height:.25cqw;background:var(--line)"></div>
+      <div class="abs t" style="left:37cqw;top:17cqw;font-size:3cqw;color:var(--muted-2);text-decoration:line-through;text-decoration-thickness:.2cqw">Another API.</div>
+      <div class="abs t" style="left:37cqw;top:22cqw;font-size:6.2cqw;width:56cqw">Another wall<br>of JSON.<span class="caret"></span></div>
+    </div>
+    <figcaption>
+      <div class="lab"><span>01 · COLD OPEN</span><span>cold-open · 0.0–3.5</span></div>
+      <p><b>Amigo hops in from the left on the first downbeat</b> and lands with a squash, then leans toward the line. "Another API." types, gets struck through, and "Another wall of JSON." types in its place. No face, no arms: the lean is the gesture.</p>
+    </figcaption>
+    <span class="chip">in: cut · out: zoom-through →</span>
+  </figure>
+
+  <!-- 02 -->
+  <figure>
+    <div class="cell" id="frame-02" style="background:var(--ink)">
+      <div class="abs mono" style="left:6cqw;top:-2cqw;font-size:1.9cqw;line-height:1.75;color:#d9d7cf;white-space:pre;opacity:.9">{
+  "id": <span style="color:var(--num)">25</span>,
+  "name": "pikachu",
+  "base_experience": <span style="color:var(--num)">112</span>,
+  "height": <span style="color:var(--num)">4</span>, "is_default": true,
+  "abilities": [ { "is_hidden": false, "slot": <span style="color:var(--num)">1</span>,
+    "ability": { "name": "static", "url": "https://pokeapi.co/api/v2/ability/9/" } },
+  { "is_hidden": true, "slot": <span style="color:var(--num)">3</span>, "ability": { "name": "lightning-rod",
+  "forms": [ { "name": "pikachu", "url": "https://pokeapi.co/api/v2/pokemon-form/25/" } ],
+  "game_indices": [ { "game_index": <span style="color:var(--num)">84</span>, "version": { "name": "red",
+  "held_items": [ { "item": { "name": "oran-berry", "url": "https://pokeapi.co/api/v2/item/
+  "moves": [ { "move": { "name": "mega-punch", "url": "https://pokeapi.co/api/v2/move/5/" },
+  "version_group_details": [ { "level_learned_at": <span style="color:var(--num)">0</span>, "move_learn_method":</div>
+      <div class="abs" style="inset:0;background:linear-gradient(180deg,rgba(27,27,25,0) 20%,rgba(27,27,25,.75) 45%,rgba(27,27,25,.97) 62%)"></div>
+      <div class="abs t" style="right:6cqw;bottom:9cqw;font-size:6.4cqw;color:var(--bg);text-align:right">Readable?<br><span style="color:var(--muted-2)">Barely.</span></div>
+      <svg class="abs" style="left:12cqw;bottom:-7cqw;width:15cqw;height:15cqw;fill:var(--bg);transform:rotate(-12deg)"><use href="#amigo"/></svg>
+    </div>
+    <figcaption>
+      <div class="lab"><span>02 · THE WALL</span><span>json-wall · 3.5–6.5</span></div>
+      <p><b>The JSON scrolls upward fast from the first frame</b> (the landing hero's real pikachu response). Amigo, in paper white, peeks up from the bottom edge and tilts back as the wall towers over them. The line lands on the second bar.</p>
+    </figcaption>
+    <span class="chip">in: zoom-through · out: blur-crossfade →</span>
+  </figure>
+
+  <!-- 03 -->
+  <figure>
+    <div class="cell" id="frame-03">
+      <div class="abs t" style="left:0;right:0;top:9cqw;text-align:center;font-size:5.6cqw">Paste an API.<br>Get its interface.</div>
+      <div class="abs" style="left:11cqw;right:11cqw;top:33cqw;height:8.4cqw;background:var(--card);border:1px solid var(--line);border-radius:1.4cqw;box-shadow:var(--shadow);display:flex;align-items:center;gap:1.4cqw;padding:0 1.2cqw">
+        <span class="mono" style="font-size:1.5cqw;font-weight:600;background:var(--sink);border:1px solid var(--line);border-radius:.8cqw;padding:1.2cqw 1.3cqw">GET</span>
+        <span class="mono" style="font-size:2cqw;flex:1;white-space:nowrap">https://pokeapi.co/api/v2/pokemon/pikachu<span class="caret"></span></span>
+        <span style="width:6cqw;height:6cqw;border-radius:1cqw;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:2.6cqw">→</span>
+      </div>
+      <svg class="abs amigo" style="right:11.6cqw;top:24.4cqw;width:7.2cqw;height:10.8cqw;transform:scaleY(.86) scaleX(1.08);transform-origin:50% 100%" viewBox="0 0 32 32" preserveAspectRatio="none"><use href="#amigo"/></svg>
+    </div>
+    <figcaption>
+      <div class="lab"><span>03 · PASTE IT IN</span><span>paste · 6.5–10.5</span></div>
+      <p><b>Imago's GET bar rises from below</b> as the URL types in (JetBrains Mono). Amigo hops onto the ink → button and presses it: squash, the button dips, then a flash. The two-line claim builds above on the beat.</p>
+    </figcaption>
+    <span class="chip">in: blur-crossfade · out: crossfade →</span>
+  </figure>
+
+  <div class="act">Act 2 · After — 10.5–19.5s</div>
+
+  <!-- 04 -->
+  <figure>
+    <div class="cell" id="frame-04">
+      <div class="abs mono" style="left:5cqw;top:9cqw;width:32cqw;height:38cqw;background:var(--ink);border-radius:1.6cqw;padding:2.6cqw 2.4cqw;color:#d9d7cf;font-size:1.55cqw;line-height:1.85;white-space:pre">{
+  "name": "pikachu",
+  "base_experience": <span style="color:var(--num)">112</span>,
+  "height": <span style="color:var(--num)">4</span>,
+  "stats": [ { "base_stat": <span style="color:var(--num)">35</span>,
+    "stat": { "name": "hp" } },
+  { "base_stat": <span style="color:var(--num)">55</span>, …
+  "types": [ "electric" ]</div>
+      <svg class="ghost" viewBox="0 0 100 56.25"><path class="motion" d="M30 20 C40 12 44 12 50 16"/><path class="motion" d="M30 28 C40 24 46 26 52 30"/><path class="motion" d="M30 38 C40 40 46 40 52 42"/></svg>
+      <div class="abs" style="left:45cqw;top:11cqw;width:48cqw;height:41cqw;background:var(--card);border:1px solid var(--line);border-radius:1.8cqw;box-shadow:var(--shadow);padding:3cqw">
+        <div class="t" style="font-size:3.6cqw">Pikachu</div>
+        <div style="display:flex;gap:4cqw;margin-top:2cqw">
+          <div><div style="font-size:1.4cqw;color:var(--muted)">Base experience</div><div class="t" style="font-size:6.4cqw;letter-spacing:-.04em">112</div></div>
+          <div><div style="font-size:1.4cqw;color:var(--muted)">Height</div><div class="t" style="font-size:6.4cqw">4</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:9cqw 1fr 3cqw;gap:.9cqw 1.2cqw;align-items:center;margin-top:2.2cqw;font-size:1.4cqw">
+          <span>Hp</span><i style="height:.7cqw;background:var(--sink);border-radius:1cqw;display:block"><b style="display:block;height:100%;width:39%;background:var(--ink);border-radius:1cqw"></b></i><span>35</span>
+          <span>Attack</span><i style="height:.7cqw;background:var(--sink);border-radius:1cqw;display:block"><b style="display:block;height:100%;width:61%;background:var(--ink);border-radius:1cqw"></b></i><span>55</span>
+          <span>Defense</span><i style="height:.7cqw;background:var(--sink);border-radius:1cqw;display:block"><b style="display:block;height:100%;width:44%;background:var(--ink);border-radius:1cqw"></b></i><span>40</span>
+          <span>Speed</span><i style="height:.7cqw;background:var(--sink);border-radius:1cqw;display:block"><b style="display:block;height:100%;width:100%;background:var(--ink);border-radius:1cqw"></b></i><span>90</span>
+        </div>
+        <span class="abs" style="right:3cqw;top:3.6cqw;font-size:1.4cqw;border:1px solid var(--line);background:var(--sink);border-radius:100px;padding:.5cqw 1.3cqw">electric</span>
+      </div>
+      <svg class="abs amigo" style="left:80cqw;top:2.3cqw;width:9cqw;height:9cqw"><use href="#amigo"/></svg>
+    </div>
+    <figcaption>
+      <div class="lab"><span>04 · JSON BECOMES PIKACHU</span><span>transform · 10.5–15.0</span></div>
+      <p><b>On the drop, JSON lines lift out of the dark panel and fly right</b>, snapping into the card as it assembles. 112 counts up, the four stat bars fill in a stagger and "electric" pops in. Amigo lands on the card's top edge, one bounce. Ink only: no rainbow stat bars.</p>
+    </figcaption>
+    <span class="chip">in: crossfade · out: push-slide LEFT →</span>
+  </figure>
+
+  <!-- 05 -->
+  <figure>
+    <div class="cell" id="frame-05">
+      <div class="abs t" style="left:6cqw;top:6cqw;font-size:4.6cqw">Whatever<br>it returns.</div>
+      <div class="abs" style="left:48cqw;top:9cqw;width:42cqw;height:40cqw;background:var(--card);border:1px solid var(--line);border-radius:1.8cqw;transform:translate(3.4cqw,-2.4cqw) rotate(3deg);opacity:.5"></div>
+      <div class="abs" style="left:42cqw;top:7cqw;width:50cqw;height:43cqw;background:var(--card);border:1px solid var(--line);border-radius:1.8cqw;box-shadow:var(--shadow);padding:3cqw">
+        <div class="t" style="font-size:3.4cqw">Chennai</div>
+        <div style="font-size:1.4cqw;color:var(--muted);margin-top:.4cqw">Live weather</div>
+        <div style="display:flex;gap:4cqw;margin-top:2cqw">
+          <div><div style="font-size:1.4cqw;color:var(--muted)">Temperature</div><div class="t" style="font-size:4.6cqw">30.5°C</div></div>
+          <div><div style="font-size:1.4cqw;color:var(--muted)">Humidity</div><div class="t" style="font-size:4.6cqw">72%</div></div>
+        </div>
+        <div style="margin-top:2cqw;background:var(--sink);border-radius:1.2cqw;height:14cqw;padding:1.4cqw">
+          <div style="font-size:1.4cqw;color:var(--muted)">Temperature today</div>
+          <svg viewBox="0 0 100 26" style="width:100%;height:9cqw" preserveAspectRatio="none"><path d="M0 22 L8 22 L16 18 L24 13 L32 8 L40 4 L48 4 L56 9 L64 10 L72 11 L80 15 L88 19 L100 20" fill="none" stroke="var(--ink)" stroke-width="1.2"/></svg>
+        </div>
+      </div>
+      <svg class="abs amigo" style="left:8cqw;top:33cqw;width:11cqw;height:11cqw"><use href="#amigo"/></svg>
+      <div class="abs" style="left:21cqw;top:38cqw;display:flex;flex-direction:column;gap:.5cqw;font-size:1.7cqw;font-weight:600">
+        <span style="color:var(--muted-2)">Pokémon</span><span>Weather</span><span style="color:var(--muted-2)">Library</span>
+      </div>
+    </div>
+    <figcaption>
+      <div class="lab"><span>05 · WHATEVER IT RETURNS</span><span>any-api · 15.0–19.5</span></div>
+      <p><b>Amigo is pinned bottom-left and hops on every beat</b>. Each hop hard-swaps the card: Pikachu → Chennai weather (the temperature line draws on) → Open Library "dune" (48,232 found, book rows cascade in). The label stack steps with it. The headline holds throughout.</p>
+    </figcaption>
+    <span class="chip">in: push-slide LEFT · out: zoom-through →</span>
+  </figure>
+
+  <!-- 06 -->
+  <figure>
+    <div class="cell" id="frame-06">
+      <div class="abs t" style="left:6cqw;top:6.5cqw;font-size:2.6cqw;color:var(--muted-2)">The model never writes HTML. <span class="mono" style="font-size:1.4cqw;font-weight:400;letter-spacing:0">{"type":"stat"}</span></div>
+      <div class="abs t" style="left:6cqw;top:11cqw;font-size:2.6cqw;color:var(--muted-2)">Remembers every shape. <span style="font-size:1.4cqw;font-weight:500;letter-spacing:0;border:1px solid var(--line);border-radius:100px;padding:.3cqw 1cqw;background:var(--card)">From schema cache</span></div>
+      <div class="abs t" style="left:6cqw;top:18cqw;font-size:7cqw">Watches it change.</div>
+      <div class="abs" style="left:6cqw;top:32cqw;width:40cqw;height:13cqw;background:#fffdf5;border:1.5px solid var(--changed);border-radius:1.4cqw;padding:2cqw 2.4cqw">
+        <div style="font-size:1.4cqw;color:var(--muted)">Temperature</div>
+        <div class="t" style="font-size:4.4cqw;margin-top:.6cqw"><span style="color:var(--muted-2);text-decoration:line-through;font-size:2.4cqw;margin-right:1cqw">30.5°C</span>31.2°C</div>
+        <span class="abs" style="right:1.8cqw;top:1.6cqw;font-size:1.4cqw;font-weight:600;letter-spacing:.08em;color:var(--changed-ink);background:var(--changed-bg);border-radius:.6cqw;padding:.4cqw .8cqw">CHANGED</span>
+      </div>
+      <div class="abs" style="left:52cqw;top:38.4cqw;display:flex;gap:1.6cqw;font-size:1.9cqw;font-weight:500">
+        <span style="background:var(--live-bg);color:#2f7a47;border:1px solid #c6e6cf;border-radius:100px;padding:.9cqw 2cqw">● Live · 24s</span>
+        <span style="background:var(--changed-bg);color:var(--changed-ink);border:1px solid #efe0a8;border-radius:100px;padding:.9cqw 2cqw">Changed 3</span>
+      </div>
+      <svg class="abs amigo" style="left:73cqw;top:28.2cqw;width:9cqw;height:9cqw"><use href="#amigo"/></svg>
+      <svg class="ghost" viewBox="0 0 100 56.25"><path class="motion" d="M64 38 Q68 26 74 36"/></svg>
+    </div>
+    <figcaption>
+      <div class="lab"><span>06 · THREE PROMISES</span><span>promises · 19.5–25.5</span></div>
+      <p><b>Three statements, one per two bars</b>, each sealed by the real pill it names. Each earlier line shrinks up to muted once the next one lands. The key moment: 30.5 flips to 31.2, the card turns amber, and "Live · 24s" and "Changed 3" pop in. Amigo hops from pill to pill. Colour appears only here, because here it means something.</p>
+    </figcaption>
+    <span class="chip">in: zoom-through · out: blur-crossfade →</span>
+  </figure>
+
+  <div class="act">Act 3 · Sign-off — 25.5–30.0s</div>
+
+  <!-- 07 -->
+  <figure>
+    <div class="cell" id="frame-07">
+      <div class="abs" style="left:0;right:0;top:11cqw;display:flex;justify-content:center;align-items:flex-end;gap:3.4cqw">
+        <svg class="amigo" style="width:6.4cqw;height:6.4cqw;margin-right:2cqw"><use href="#amigo"/></svg>
+        <div style="display:flex;align-items:center;gap:1.6cqw;padding-bottom:1cqw">
+          <svg class="amigo" style="width:8cqw;height:8cqw"><use href="#mark"/></svg>
+          <span class="t" style="font-size:5.4cqw;letter-spacing:-.025em">Imago</span>
+        </div>
+      </div>
+      <div class="abs t" style="left:0;right:0;top:27cqw;text-align:center;font-size:6cqw">APIs become interfaces.</div>
+      <div class="abs" style="left:0;right:0;top:38cqw;display:flex;flex-direction:column;align-items:center;gap:1.6cqw">
+        <span class="mono" style="background:var(--ink);color:var(--bg);font-size:2cqw;border-radius:100px;padding:1.2cqw 3cqw">imago.onslate.in</span>
+        <span style="font-size:1.6cqw;color:var(--muted)">Free · runs in your browser · MIT</span>
+      </div>
+    </div>
+    <figcaption>
+      <div class="lab"><span>07 · APIS BECOME INTERFACES</span><span>outro · 25.5–30.0</span></div>
+      <p><b>Amigo walks in from the left and stops.</b> Beside them, the Reveal mark assembles: two field bars slide in and merge into the body, and the aperture opens. "Imago" types on, the tagline lands, and the URL pill pops. One last hop, then a <b>held frame</b> for the final 1.2s: the only beat where nothing moves.</p>
+    </figcaption>
+    <span class="chip">in: blur-crossfade · end: hold</span>
+  </figure>
+
+  <!-- seam map -->
+  <figure>
+    <div class="cell" style="background:var(--card)"><div style="position:absolute;inset:6cqw">
+      <div style="font-size:2.2cqw;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Seam map</div>
+      <div style="display:flex;align-items:center;margin-top:4cqw;gap:0">
+        <span class="sm">01</span><i class="sl" title="zoom-through"></i><span class="sm" style="background:var(--ink);color:var(--bg)">02</span><i class="sl"></i><span class="sm">03</span><i class="sl"></i><span class="sm">04</span><i class="sl"></i><span class="sm">05</span><i class="sl"></i><span class="sm">06</span><i class="sl"></i><span class="sm">07</span>
+      </div>
+      <div class="mono" style="display:grid;grid-template-columns:repeat(6,1fr);font-size:1.7cqw;color:var(--muted);margin-top:1.4cqw;padding:0 3cqw;text-align:center;gap:.4cqw">
+        <span>zoom-<br>through</span><span>blur-<br>xfade</span><span>cross-<br>fade</span><span>push-<br>slide ←</span><span>zoom-<br>through</span><span>blur-<br>xfade</span>
+      </div>
+      <p style="font-size:2.5cqw;line-height:1.5;color:var(--ink-2);margin-top:4cqw">Everything flows leftward. The spine is <b>Amigo</b>, who is in every beat (paper-white on the dark 02) and ends beside the logo. The hero prop is the pikachu JSON: raw in 02, pasted in 03, turned into the card in 04, and returning as the first card of 05.</p>
+    </div></div>
+    <figcaption><div class="lab"><span>SEAMS</span><span>6 transitions</span></div></figcaption>
+  </figure>
+
+  <!-- tokens -->
+  <figure>
+    <div class="cell" style="background:var(--card)"><div style="position:absolute;inset:6cqw">
+      <div style="font-size:2.2cqw;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Tokens · bans</div>
+      <div style="display:flex;gap:1.6cqw;margin-top:2.6cqw">
+        <span class="sw" style="background:#1b1b19"></span><span class="sw" style="background:#f6f5f1;border:1px solid var(--line)"></span><span class="sw" style="background:#fff;border:1px solid var(--line)"></span><span class="sw" style="background:#66655f"></span><span class="sw" style="background:#f5ce47"></span><span class="sw" style="background:#4fa96a"></span>
+      </div>
+      <div class="mono" style="font-size:1.55cqw;color:var(--muted);margin-top:1.2cqw">ink #1b1b19 · paper #f6f5f1 · card #fff · muted #66655f · changed #f5ce47 · live #4fa96a</div>
+      <div style="margin-top:2.6cqw;font-size:2.4cqw;line-height:1.5">
+        <div><span class="t" style="font-size:2.4cqw">Inter Display 600</span> <span style="color:var(--muted)">display, −0.035em</span></div>
+        <div>Inter 400/500 <span style="color:var(--muted)">labels, UI</span></div>
+        <div class="mono">JetBrains Mono <span style="color:var(--muted);font-family:var(--sans)">URLs, JSON, hashes</span></div>
+      </div>
+      <p style="font-size:2.1cqw;line-height:1.45;color:var(--ink-2);margin-top:2.2cqw"><b>No:</b> a face, arms or speech bubbles on Amigo · a brand hue or gradient · glow · rainbow stat bars · decorative colour · slideshow cards · screensaver drift · a static end card before the final hold.</p>
+    </div></div>
+    <figcaption><div class="lab"><span>SYSTEM</span><span>frame.md</span></div></figcaption>
+  </figure>
+</div>
+
+<style>
+  .sm{width:8cqw;height:8cqw;border-radius:1cqw;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:2.2cqw;background:var(--bg)}
+  .sl{flex:1;height:.25cqw;background:var(--muted-2)}
+  .sw{width:7cqw;height:7cqw;border-radius:1.2cqw;display:block}
+</style>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-Medium.otf") format("opentype"); font-weight: 500; font-style: normal; }
+    @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; }
+
+    #root {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #1B1B19;
+    }
+    .\30 4-transform-bg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      background: #F6F5F1;
+    }
+    .\30 4-transform-world {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+
+    /* JSON panel (left 35%) */
+    .\30 4-transform-panel {
+      position: absolute;
+      left: 96px;
+      top: 158px;
+      width: 614px;
+      height: 700px;
+      background: #1B1B19;
+      border-radius: 30px;
+    }
+    .\30 4-transform-pre {
+      position: absolute;
+      left: 46px;
+      top: 50px;
+      margin: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 27px;
+      line-height: 50px;
+      color: #D9D7CF;
+      white-space: pre;
+    }
+    .\30 4-transform-num { color: #8FB4E3; }
+    .\30 4-transform-tok { display: inline-block; }
+
+    /* Pikachu card (right 65%) */
+    .\30 4-transform-card {
+      position: absolute;
+      left: 864px;
+      top: 188px;
+      width: 922px;
+      height: 700px;
+      background: #FFFFFF;
+      border: 1px solid #E7E5DF;
+      border-radius: 34px;
+      box-shadow: 0 2px 6px rgba(27, 27, 25, 0.04), 0 18px 46px -16px rgba(27, 27, 25, 0.2);
+    }
+    .\30 4-transform-skel {
+      position: absolute;
+      background: #F1EFE9;
+      border-radius: 10px;
+    }
+    .\30 4-transform-title {
+      position: absolute;
+      left: 58px;
+      top: 48px;
+      height: 76px;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 69px;
+      line-height: 76px;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+    }
+    .\30 4-transform-lbl {
+      position: absolute;
+      top: 160px;
+      font-size: 27px;
+      line-height: 32px;
+      font-weight: 400;
+      color: #66655F;
+      white-space: nowrap;
+    }
+    .\30 4-transform-big {
+      position: absolute;
+      top: 196px;
+      height: 123px;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 123px;
+      line-height: 123px;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .\30 4-transform-bx { left: 58px; width: 260px; }
+    .\30 4-transform-ht { left: 360px; width: 120px; }
+    .\30 4-transform-chip {
+      position: absolute;
+      right: 58px;
+      top: 66px;
+      height: 42px;
+      padding: 0 20px;
+      font-size: 24px;
+      line-height: 40px;
+      font-weight: 500;
+      color: #1B1B19;
+      background: #F1EFE9;
+      border: 1px solid #E7E5DF;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .\30 4-transform-rlbl {
+      position: absolute;
+      left: 58px;
+      width: 250px;
+      height: 32px;
+      font-size: 27px;
+      line-height: 32px;
+      font-weight: 400;
+      color: #1B1B19;
+      white-space: nowrap;
+    }
+    .\30 4-transform-track {
+      position: absolute;
+      left: 318px;
+      width: 470px;
+      height: 13px;
+      background: #F1EFE9;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .\30 4-transform-fill {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #1B1B19;
+      border-radius: 7px;
+      transform-origin: left center;
+    }
+    .\30 4-transform-val {
+      position: absolute;
+      left: 808px;
+      width: 56px;
+      height: 32px;
+      font-size: 27px;
+      line-height: 32px;
+      font-weight: 500;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #1B1B19;
+    }
+    .\30 4-transform-amigo {
+      position: absolute;
+      left: 696px;
+      top: -146px;
+      width: 108px;
+      height: 146px;
+      color: #1B1B19;
+    }
+    .\30 4-transform-amigo svg { display: block; width: 108px; height: 146px; }
+
+    /* Flying JSON tokens (mono ghosts) */
+    .\30 4-transform-ghost {
+      position: absolute;
+      height: 50px;
+      padding: 0 6px;
+      border-radius: 8px;
+      background-color: rgba(27, 27, 25, 1);
+      box-shadow: 0 10px 24px -10px rgba(27, 27, 25, 0.45);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 27px;
+      line-height: 50px;
+      white-space: pre;
+    }
+    .\30 4-transform-ghost-in { display: block; }
+  </style>
+
+  <div data-hf-id="hf-8u1f" id="root" data-composition-id="04-transform" data-start="0" data-duration="5" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-8gae" class="clip 04-transform-bg" data-start="0" data-duration="5" data-track-index="0"></div>
+
+    <div data-hf-id="hf-bwi2" id="04-transform-world" class="04-transform-world">
+      <div data-hf-id="hf-161u" id="04-transform-panel" class="04-transform-panel">
+<pre data-hf-id="hf-z9px" id="04-transform-pre" class="04-transform-pre">{
+  "name": <span data-hf-id="hf-s6x6" id="04-transform-src-name" class="04-transform-tok">"pikachu"</span>,
+  "base_experience": <span data-hf-id="hf-cevc" id="04-transform-src-bx" class="04-transform-tok 04-transform-num">112</span>,
+  "height": <span data-hf-id="hf-ozsu" id="04-transform-src-ht" class="04-transform-tok 04-transform-num">4</span>,
+  "stats": [ { "base_stat": <span data-hf-id="hf-h7g9" class="04-transform-num">35</span>,
+    "stat": { "name": "hp" } },
+  { "base_stat": <span data-hf-id="hf-ztl7" class="04-transform-num">55</span>, …
+  "types": [ "electric" ]</pre>
+      </div>
+
+      <div data-hf-id="hf-en36" id="04-transform-card" class="04-transform-card">
+        <!-- empty-frame skeletons -->
+        <div data-hf-id="hf-r60q" id="04-transform-sk-title" class="04-transform-skel" style="left:58px;top:62px;width:230px;height:50px;"></div>
+        <div data-hf-id="hf-2r24" id="04-transform-sk-chip" class="04-transform-skel" style="right:58px;top:66px;width:118px;height:42px;border-radius:100px;"></div>
+        <div data-hf-id="hf-3f0q" id="04-transform-sk-bxl" class="04-transform-skel" style="left:58px;top:168px;width:170px;height:16px;border-radius:8px;"></div>
+        <div data-hf-id="hf-6r8o" id="04-transform-sk-htl" class="04-transform-skel" style="left:360px;top:168px;width:80px;height:16px;border-radius:8px;"></div>
+        <div data-hf-id="hf-k032" id="04-transform-sk-bx" class="04-transform-skel" style="left:58px;top:214px;width:200px;height:88px;border-radius:12px;"></div>
+        <div data-hf-id="hf-n18c" id="04-transform-sk-ht" class="04-transform-skel" style="left:360px;top:214px;width:64px;height:88px;border-radius:12px;"></div>
+        <div data-hf-id="hf-ybdq" id="04-transform-sk-r0" class="04-transform-skel" style="left:58px;top:381px;width:60px;height:14px;border-radius:7px;"></div>
+        <div data-hf-id="hf-3xew" id="04-transform-sk-r1" class="04-transform-skel" style="left:58px;top:431px;width:100px;height:14px;border-radius:7px;"></div>
+        <div data-hf-id="hf-qo8j" id="04-transform-sk-r2" class="04-transform-skel" style="left:58px;top:481px;width:110px;height:14px;border-radius:7px;"></div>
+        <div data-hf-id="hf-nlqa" id="04-transform-sk-r3" class="04-transform-skel" style="left:58px;top:531px;width:170px;height:14px;border-radius:7px;"></div>
+        <div data-hf-id="hf-jpi6" id="04-transform-sk-r4" class="04-transform-skel" style="left:58px;top:581px;width:190px;height:14px;border-radius:7px;"></div>
+        <div data-hf-id="hf-rmjc" id="04-transform-sk-r5" class="04-transform-skel" style="left:58px;top:631px;width:90px;height:14px;border-radius:7px;"></div>
+
+        <!-- slots -->
+        <div data-hf-id="hf-aiid" id="04-transform-title" class="04-transform-title">Pikachu</div>
+        <div data-hf-id="hf-cclh" id="04-transform-chip" class="04-transform-chip">electric</div>
+        <div data-hf-id="hf-6eze" id="04-transform-bxl" data-layout-allow-overlap="" class="04-transform-lbl" style="left:58px;">Base experience</div>
+        <div data-hf-id="hf-b2rm" id="04-transform-htl" data-layout-allow-overlap="" class="04-transform-lbl" style="left:360px;">Height</div>
+        <div data-hf-id="hf-at0i" id="04-transform-bx" data-layout-allow-overlap="" class="04-transform-big 04-transform-bx">0</div>
+        <div data-hf-id="hf-1z72" id="04-transform-ht" data-layout-allow-overlap="" class="04-transform-big 04-transform-ht">4</div>
+
+        <!-- stat rows: ink fill on sink track, width = value / 90 -->
+        <div data-hf-id="hf-awmi" id="04-transform-rl0" class="04-transform-rlbl" style="top:372px;">Hp</div>
+        <div data-hf-id="hf-y0i2" class="04-transform-track" style="top:382px;"><i data-hf-id="hf-x0md" id="04-transform-f0" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-8zh1" id="04-transform-v0" class="04-transform-val" style="top:372px;">0</div>
+
+        <div data-hf-id="hf-epdt" id="04-transform-rl1" class="04-transform-rlbl" style="top:422px;">Attack</div>
+        <div data-hf-id="hf-tplc" class="04-transform-track" style="top:432px;"><i data-hf-id="hf-w8yk" id="04-transform-f1" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-dt7s" id="04-transform-v1" class="04-transform-val" style="top:422px;">0</div>
+
+        <div data-hf-id="hf-vxef" id="04-transform-rl2" class="04-transform-rlbl" style="top:472px;">Defense</div>
+        <div data-hf-id="hf-oven" class="04-transform-track" style="top:482px;"><i data-hf-id="hf-74g7" id="04-transform-f2" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-et68" id="04-transform-v2" class="04-transform-val" style="top:472px;">0</div>
+
+        <div data-hf-id="hf-h3ep" id="04-transform-rl3" class="04-transform-rlbl" style="top:522px;">Special attack</div>
+        <div data-hf-id="hf-3dlf" class="04-transform-track" style="top:532px;"><i data-hf-id="hf-0yqe" id="04-transform-f3" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-hbk3" id="04-transform-v3" class="04-transform-val" style="top:522px;">0</div>
+
+        <div data-hf-id="hf-rkjf" id="04-transform-rl4" class="04-transform-rlbl" style="top:572px;">Special defense</div>
+        <div data-hf-id="hf-97xg" class="04-transform-track" style="top:582px;"><i data-hf-id="hf-bu81" id="04-transform-f4" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-5iwf" id="04-transform-v4" class="04-transform-val" style="top:572px;">0</div>
+
+        <div data-hf-id="hf-sn1q" id="04-transform-rl5" class="04-transform-rlbl" style="top:622px;">Speed</div>
+        <div data-hf-id="hf-s24e" class="04-transform-track" style="top:632px;"><i data-hf-id="hf-b2k8" id="04-transform-f5" class="04-transform-fill"></i></div>
+        <div data-hf-id="hf-u5he" id="04-transform-v5" class="04-transform-val" style="top:622px;">0</div>
+
+        <!-- Amigo: body + aperture + legs, ink, anchored at the feet on the card's top edge -->
+        <div data-hf-id="hf-4vku" id="04-transform-amigo" class="04-transform-amigo">
+          <svg data-hf-id="hf-aka0" viewBox="6 3 20 27" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+            <g data-hf-id="hf-g1zz" fill="currentColor">
+              <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+              <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+              <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- mono ghosts: start exactly over their panel tokens (27px mono, 16.2px advance, 50px lines) -->
+      <div data-hf-id="hf-pxca" id="04-transform-g-name" class="04-transform-ghost" style="left:298px;top:258px;color:#D9D7CF;"><span data-hf-id="hf-5swv" id="04-transform-gi-name" class="04-transform-ghost-in">"pikachu"</span></div>
+      <div data-hf-id="hf-8jma" id="04-transform-g-bx" class="04-transform-ghost" style="left:476.2px;top:308px;color:#8FB4E3;"><span data-hf-id="hf-atk7" id="04-transform-gi-bx" class="04-transform-ghost-in">112</span></div>
+      <div data-hf-id="hf-v298" id="04-transform-g-ht" class="04-transform-ghost" style="left:330.4px;top:358px;color:#8FB4E3;"><span data-hf-id="hf-bnyt" id="04-transform-gi-ht" class="04-transform-ghost-in">4</span></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const ID = "04-transform";
+      const $ = (n) => document.getElementById(ID + "-" + n);
+      const tl = gsap.timeline({ paused: true });
+      const INK = "#1B1B19";
+
+      // ---- Scene 1 (0.0–0.8): panel settles left, empty card frame scales 0.94 -> 1 ----
+      tl.fromTo($("panel"), { x: -24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0);
+      tl.fromTo($("card"), { scale: 0.94, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.out" }, 0);
+
+      // Slot content + ghosts start hidden via their own fromTo entrances below (immediateRender).
+
+      // ---- Scene 2 (0.8–2.0): tokens lift out of the JSON and fly into their card slots ----
+      tl.fromTo($("pre"), { opacity: 1 }, { opacity: 0.45, duration: 1.2, ease: "power1.inOut" }, 0.8);
+
+      const PAD = 6; // ghost pill padding; content left = pill left + PAD * scale
+      const D = 0.55;
+      const ARC = 70;
+      const CARD_X = 864, CARD_Y = 188;
+      const flights = [
+        // key, launch, token left/center-y, slot left/center-y (world), target scale, slot ids, label + skeleton ids
+        { k: "name", at: 0.8, sx: 304, sy: 283, tx: CARD_X + 58, ty: CARD_Y + 86, s: 1.9, slot: "title", lbl: null, sk: ["sk-title"] },
+        { k: "bx", at: 1.0, sx: 482.2, sy: 333, tx: CARD_X + 58, ty: CARD_Y + 257.5, s: 3.2, slot: "bx", lbl: "bxl", sk: ["sk-bx", "sk-bxl"] },
+        { k: "ht", at: 1.25, sx: 336.4, sy: 383, tx: CARD_X + 360, ty: CARD_Y + 257.5, s: 3.2, slot: "ht", lbl: "htl", sk: ["sk-ht", "sk-htl"] },
+      ];
+      flights.forEach((f) => {
+        const g = $("g-" + f.k);
+        const gi = $("gi-" + f.k);
+        // left-center anchor of the pill, before and after (content edge lands on the slot edge)
+        const dx = (f.tx - PAD * f.s) - (f.sx - PAD);
+        const dy = f.ty - f.sy;
+        // lift out: the ghost is a copy; the source token stays in place (dimmed with the JSON)
+        tl.fromTo(g, { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "none" }, f.at);
+        // flight: eased travel + an upward arc on the inner layer
+        tl.fromTo(g, { x: 0, y: 0, scale: 1, transformOrigin: "0% 50%" }, { x: dx, y: dy, scale: f.s, duration: D, ease: "power2.inOut" }, f.at);
+        tl.fromTo(gi, { y: 0 }, { y: -ARC / f.s, duration: D / 2, ease: "sine.out" }, f.at);
+        tl.to(gi, { y: 0, duration: D / 2, ease: "sine.in" }, f.at + D / 2);
+        // morph (paint-only): dark mono pill dissolves into ink-on-white type
+        tl.to(g, { backgroundColor: "rgba(27, 27, 25, 0)", boxShadow: "0 10px 24px -10px rgba(27, 27, 25, 0)", color: INK, duration: D * 0.45, ease: "power2.inOut" }, f.at + D * 0.45);
+        tl.to(g, { opacity: 0, duration: D * 0.25, ease: "power1.in" }, f.at + D * 0.75);
+        // slot resolves under the ghost
+        f.sk.forEach((s) => tl.to($(s), { opacity: 0, duration: 0.2, ease: "power1.out" }, f.at + D * 0.55));
+        tl.fromTo($(f.slot), { opacity: 0, scale: 0.9, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: D * 0.4, ease: "power2.out" }, f.at + D * 0.7);
+        if (f.lbl) tl.fromTo($(f.lbl), { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, f.at + D * 0.7);
+      });
+
+      // ---- Scene 3 (2.0–3.4): 112 counts up, stat rows fill one per half-beat, chip pops ----
+      const bx = $("bx");
+      const bxState = { v: 0 };
+      tl.fromTo(bxState, { v: 0 }, {
+        v: 112, duration: 1.8, ease: "power2.out",
+        onUpdate: () => { bx.textContent = String(Math.round(bxState.v)); },
+      }, 1.0 + D * 0.7);
+
+      const STATS = [35, 55, 40, 50, 50, 90];
+      STATS.forEach((val, i) => {
+        const T = 2.0 + i * 0.25;
+        const vEl = $("v" + i);
+        const st = { v: 0 };
+        tl.to($("sk-r" + i), { opacity: 0, duration: 0.2, ease: "power1.out" }, T);
+        tl.fromTo($("rl" + i), { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, T);
+        tl.fromTo(vEl, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power1.out" }, T);
+        tl.fromTo($("f" + i), { scaleX: 0 }, { scaleX: val / 90, duration: 0.5, ease: "power3.out" }, T);
+        tl.fromTo(st, { v: 0 }, {
+          v: val, duration: 0.5, ease: "power3.out",
+          onUpdate: () => { vEl.textContent = String(Math.round(st.v)); },
+        }, T);
+      });
+
+      tl.to($("sk-chip"), { opacity: 0, duration: 0.15, ease: "power1.out" }, 3.0);
+      tl.fromTo($("chip"), { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" }, 3.0);
+
+      // ---- Scene 4 (3.4–4.5): Amigo drops onto the card's top edge on beat 8, squash + one settle ----
+      const amigo = $("amigo");
+      tl.fromTo(amigo, { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none" }, 3.5);
+      tl.fromTo(amigo, { y: -440, scaleX: 0.94, scaleY: 1.08, transformOrigin: "50% 100%" }, { y: 0, duration: 0.25, ease: "power2.in" }, 3.5);
+      tl.to(amigo, { scaleX: 1.16, scaleY: 0.78, duration: 0.07, ease: "power1.out" }, 3.75);
+      tl.to(amigo, { scaleX: 0.97, scaleY: 1.05, duration: 0.14, ease: "power2.out" }, 3.82);
+      tl.to(amigo, { scaleX: 1, scaleY: 1, duration: 0.22, ease: "power2.inOut" }, 3.96);
+      // the card takes the weight: a small dip and recover, then holds
+      tl.to($("card"), { y: 5, duration: 0.07, ease: "power1.out" }, 3.75);
+      tl.to($("card"), { y: 0, duration: 0.32, ease: "power2.out" }, 3.82);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[ID] = tl;
+    })();
+  </script>
+</template>

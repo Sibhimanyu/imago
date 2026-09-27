@@ -1,0 +1,226 @@
+<template>
+  <div data-hf-id="hf-6jpg" id="root" data-composition-id="02-json-wall" data-start="0" data-duration="3.6" data-width="1920" data-height="1080">
+    <style>
+      @font-face {
+        font-family: "Inter";
+        src: url("assets/fonts/Inter-SemiBold.otf") format("opentype");
+        font-weight: 600;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      .\30 2-json-wall-ground {
+        position: absolute;
+        inset: 0;
+        background: #1b1b19;
+      }
+      .\30 2-json-wall-stage {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      #\30 2-json-wall-wall {
+        position: absolute;
+        left: 115px;
+        top: -38px;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 400;
+        font-size: 36.5px;
+        line-height: 1.75;
+        color: #d9d7cf;
+        white-space: pre;
+        opacity: 0.9;
+        will-change: transform;
+      }
+      #\30 2-json-wall-wall .\30 2-json-wall-num {
+        color: #8fb4e3;
+      }
+      #\30 2-json-wall-shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(27, 27, 25, 0) 20%,
+          rgba(27, 27, 25, 0.75) 45%,
+          rgba(27, 27, 25, 0.97) 62%
+        );
+      }
+      #\30 2-json-wall-amigo {
+        position: absolute;
+        left: 230px;
+        bottom: -134px;
+        width: 288px;
+        height: 288px;
+        fill: #f6f5f1;
+        transform-origin: 50% 100%;
+      }
+      .\30 2-json-wall-type {
+        position: absolute;
+        right: 115px;
+        bottom: 180px;
+        text-align: right;
+        font-family: "Inter", sans-serif;
+        font-weight: 600;
+        font-size: 123px;
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+      }
+      .\30 2-json-wall-line {
+        display: block;
+      }
+      #\30 2-json-wall-l1 {
+        color: #f6f5f1;
+        transform-origin: 100% 60%;
+      }
+      #\30 2-json-wall-l2 {
+        color: #a8a79f;
+      }
+    </style>
+
+    <div data-hf-id="hf-42zb" class="02-json-wall-ground clip" data-start="0" data-duration="3.6" data-track-index="0"></div>
+
+    <div data-hf-id="hf-kek5" class="02-json-wall-stage clip" data-start="0" data-duration="3.6" data-track-index="1">
+      <svg data-hf-id="hf-p3r6" width="0" height="0" aria-hidden="true" style="position: absolute">
+        <filter data-hf-id="hf-itxd" id="02-json-wall-streak" x="-10%" y="-10%" width="120%" height="120%">
+          <fegaussianblur data-hf-id="hf-u3hr" id="02-json-wall-streak-blur" in="SourceGraphic" stdDeviation="0 7" />
+        </filter>
+      </svg>
+
+      <div data-hf-id="hf-qsm7" id="02-json-wall-wall" aria-hidden="true" style="filter: url(#02-json-wall-streak)"></div>
+      <div data-hf-id="hf-utcj" id="02-json-wall-shade"></div>
+
+      <svg data-hf-id="hf-vha8" id="02-json-wall-amigo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+        <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+        <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+      </svg>
+
+      <div data-hf-id="hf-vyxf" class="02-json-wall-type">
+        <span data-hf-id="hf-p5vd" class="02-json-wall-line" id="02-json-wall-l1" data-layout-allow-overlap="">Readable?</span>
+        <span data-hf-id="hf-6k5i" class="02-json-wall-line" id="02-json-wall-l2" data-layout-allow-overlap="">Barely.</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "02-json-wall";
+        var scope = document.querySelector('[data-composition-id="' + ID + '"]') || document;
+        var $ = function (s) {
+          return scope.querySelector("#" + CSS.escape(ID + "-" + s));
+        };
+
+        // The real pokeapi pikachu response (compacted like the landing hero panel).
+        // N(...) marks a numeric token (code-number blue). Values are real; the block repeats.
+        var N = function (v) {
+          return '<span class="02-json-wall-num">' + v + "</span>";
+        };
+        var BLOCK = [
+          "{",
+          '  "id": ' + N(25) + ",",
+          '  "name": "pikachu",',
+          '  "base_experience": ' + N(112) + ",",
+          '  "height": ' + N(4) + ', "is_default": true, "weight": ' + N(60) + ",",
+          '  "abilities": [ { "is_hidden": false, "slot": ' + N(1) + ",",
+          '    "ability": { "name": "static", "url": "https://pokeapi.co/api/v2/ability/9/" } },',
+          '  { "is_hidden": true, "slot": ' + N(3) + ",",
+          '    "ability": { "name": "lightning-rod", "url": "https://pokeapi.co/api/v2/ability/31/" } } ],',
+          '  "forms": [ { "name": "pikachu", "url": "https://pokeapi.co/api/v2/pokemon-form/25/" } ],',
+          '  "game_indices": [ { "game_index": ' + N(84) + ",",
+          '    "version": { "name": "red", "url": "https://pokeapi.co/api/v2/version/1/" } } ],',
+          '  "held_items": [ { "item": { "name": "oran-berry",',
+          '    "url": "https://pokeapi.co/api/v2/item/132/" } } ],',
+          '  "moves": [ { "move": { "name": "mega-punch", "url": "https://pokeapi.co/api/v2/move/5/" },',
+          '    "version_group_details": [ { "level_learned_at": ' + N(0) + ",",
+          '      "move_learn_method": { "name": "machine" } } ] } ]',
+          "}",
+        ];
+        var lines = [];
+        for (var r = 0; r < 4; r++) lines = lines.concat(BLOCK);
+        $("wall").innerHTML = lines.join("\n");
+
+        var tl = gsap.timeline({ paused: true });
+
+        // One beat grid: 120 bpm, a beat every 0.5s from t=0 (beat 1 = 0.0s).
+        var PULSE = 0.5;
+        var beat = function (n) {
+          return PULSE * (n - 1);
+        };
+
+        // Scene 1 (0.0–1.5s): constant high-speed upward scroll from frame 0.
+        var SPEED = 1400; // px/s
+        var CRUISE = 1.5;
+        var DECEL = 0.5;
+        var cruiseY = -SPEED * CRUISE;
+        // power3.out starts at 3x average speed, so the decel leg covers SPEED*DECEL/3
+        // to keep the velocity continuous at the hand-off.
+        var stopY = cruiseY - (SPEED * DECEL) / 3;
+        tl.fromTo($("wall"), { y: 0 }, { y: cruiseY, duration: CRUISE, ease: "none" }, 0);
+        // Scene 2 (1.5–2.0s): hard power3 deceleration to a stop.
+        tl.to($("wall"), { y: stopY, duration: DECEL, ease: "power3.out" }, CRUISE);
+
+        // motion-blur-streak (vertical): smear held at peak through the cruise
+        // (constant velocity = constant smear), resolving on the same power3 window.
+        var blurNode = $("streak-blur");
+        var PEAK_BLUR = 7;
+        var blur = { v: PEAK_BLUR };
+        var writeBlur = function () {
+          blurNode.setAttribute("stdDeviation", "0 " + blur.v.toFixed(2));
+        };
+        writeBlur();
+        tl.fromTo(
+          blur,
+          { v: PEAK_BLUR },
+          { v: 0, duration: DECEL, ease: "power3.out", onUpdate: writeBlur },
+          CRUISE,
+        );
+
+        // Beat 2 (0.5s): Amigo rises from below the bottom edge to peek in.
+        tl.fromTo(
+          $("amigo"),
+          { y: 300, rotation: 0 },
+          { y: 0, duration: 0.5, ease: "power3.out" },
+          beat(2),
+        );
+        // Scene 2: Amigo tilts back away from the towering wall.
+        tl.to($("amigo"), { rotation: -12, duration: DECEL, ease: "back.out(2)" }, CRUISE);
+
+        // Scene 2: dark gradient rises from the bottom so the type area is clean ink.
+        tl.fromTo(
+          $("shade"),
+          { opacity: 0, yPercent: 45 },
+          { opacity: 1, yPercent: 0, duration: DECEL, ease: "power3.out" },
+          CRUISE,
+        );
+
+        // Scene 3: kinetic-beat-slam, two beats, distinct entrances.
+        var BEATS = [beat(5), beat(6)]; // 2.0s, 2.5s
+        tl.fromTo(
+          $("l1"),
+          { scale: 1.5, filter: "blur(16px)", opacity: 0 },
+          { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.4, ease: "power4.out" },
+          BEATS[0],
+        );
+        tl.fromTo(
+          $("l2"),
+          { x: 220, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.4, ease: "expo.out" },
+          BEATS[1],
+        );
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

@@ -1,0 +1,116 @@
+<template>
+  <div data-hf-id="hf-8w3b" id="root" data-composition-id="09-sting" data-start="0" data-duration="1.875" data-width="1920" data-height="1080">
+    <style>
+      @font-face { font-family: "Inter"; src: url("assets/fonts/Inter-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; font-display: block; }
+      @font-face { font-family: "Inter Display"; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; font-style: normal; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: block; }
+
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: "Inter", sans-serif; color: #1B1B19; }
+      .f09-ground { position: absolute; inset: 0; background: #F6F5F1; }
+      .f09-stage { position: absolute; inset: 0; }
+
+      /* v1 outro proportions (1cqw = 19.2px): mark 154px, Amigo 0.8x = 123px */
+      .f09-row {
+        position: absolute; left: 0; right: 0; top: 211px;
+        display: flex; justify-content: center; align-items: flex-end; gap: 65px;
+      }
+
+      .f09-lockup { display: flex; align-items: center; gap: 31px; padding-bottom: 19px; }
+      .f09-mark { display: block; width: 154px; height: 154px; color: #1B1B19; overflow: visible; }
+      .f09-wordmark {
+        font-family: "Inter", sans-serif; font-weight: 600; font-size: 104px;
+        letter-spacing: -0.025em; line-height: 1.05; white-space: nowrap;
+      }
+      .f09-wordmark span { display: inline-block; }
+
+      .f09-tagline {
+        position: absolute; left: 0; right: 0; top: 518px; text-align: center;
+        font-family: "Inter Display", "Inter", sans-serif; font-weight: 600; font-size: 115px;
+        letter-spacing: -0.035em; line-height: 1.05; white-space: nowrap; color: #1B1B19;
+      }
+      .f09-tagline span { display: inline-block; }
+
+      .f09-cta { position: absolute; left: 0; right: 0; top: 730px; display: flex; justify-content: center; }
+      .f09-pill {
+        display: inline-block; background: #1B1B19; color: #F6F5F1;
+        font-family: "JetBrains Mono", monospace; font-weight: 500; font-size: 38px; line-height: 1.2;
+        border-radius: 100px; padding: 23px 58px; transform-origin: 50% 50%;
+      }
+    </style>
+
+    <div data-hf-id="hf-60hk" class="clip f09-ground" data-start="0" data-duration="1.875" data-track-index="0"></div>
+
+    <div data-hf-id="hf-qh9m" class="clip f09-stage" data-start="0" data-duration="1.875" data-track-index="1">
+      <div data-hf-id="hf-41i4" class="f09-row">
+        <div data-hf-id="hf-b2xq" class="f09-lockup">
+          <!-- Reveal mark: assets/imago-mark.svg assembled from its real parts (two field bars + body).
+               The body's evenodd aperture sub-path is carried as a mask so it can open from 0;
+               at rest the geometry is identical to the source. -->
+          <svg data-hf-id="hf-jx5f" class="f09-mark" viewBox="0 0 32 32" role="img" aria-label="Imago">
+            <defs data-hf-id="hf-mh0t">
+              <mask data-hf-id="hf-qh4b" id="f09-ap-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+                <rect data-hf-id="hf-dzr3" x="0" y="0" width="32" height="32" fill="#fff" />
+                <path data-hf-id="hf-951r" id="f09-ap" fill="#000" d="M21.4 12.6c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z" />
+              </mask>
+            </defs>
+            <g data-hf-id="hf-1n6n" fill="currentColor">
+              <rect data-hf-id="hf-sqwh" id="f09-bar1" x="4.2" y="6.4" width="12.8" height="6" rx="3" />
+              <rect data-hf-id="hf-lj6r" id="f09-bar2" x="3" y="14.3" width="11.5" height="6" rx="3" />
+              <path data-hf-id="hf-c49w" id="f09-body" mask="url(#f09-ap-mask)" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Z" />
+            </g>
+          </svg>
+          <div data-hf-id="hf-feca" class="f09-wordmark" id="f09-wordmark"><span data-hf-id="hf-jlq0">I</span><span data-hf-id="hf-uqas">m</span><span data-hf-id="hf-zhz4">a</span><span data-hf-id="hf-x44y">g</span><span data-hf-id="hf-txoq">o</span></div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-tp36" class="f09-tagline" id="f09-tagline"><span data-hf-id="hf-q0ag">APIs</span> <span data-hf-id="hf-ctv8">become</span> <span data-hf-id="hf-0p4p">interfaces.</span></div>
+
+      <div data-hf-id="hf-l8yu" class="f09-cta">
+        <span data-hf-id="hf-90mn" class="f09-pill" id="f09-pill">imago.onslate.in</span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function () {
+        var ID = "09-sting";
+        var B = 0.469; // beat
+        var $ = function (s) { return document.getElementById("f09-" + s); };
+        var bar1 = $("bar1"), bar2 = $("bar2"), body = $("body"), ap = $("ap");
+        var letters = Array.prototype.slice.call($("wordmark").children);
+        var words = Array.prototype.slice.call($("tagline").children);
+        var pill = $("pill");
+
+        var tl = gsap.timeline({ paused: true });
+
+        // Scene 1, beat 1 (0.0): the body settles in, the two field bars slide in from the left and
+        // merge into it (two clicks: 0.2s and 0.234s), the aperture opens.
+        tl.fromTo(body, { scale: 0.6, opacity: 0, svgOrigin: "18 17" }, { scale: 1, opacity: 1, svgOrigin: "18 17", duration: 0.3, ease: "power3.out" }, 0);
+        tl.fromTo(bar1, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "power3.out" }, 0);
+        tl.fromTo(bar2, { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.184, ease: "power3.out" }, 0.05);
+        tl.fromTo(ap, { scale: 0, svgOrigin: "21.75 17.1" }, { scale: 1, svgOrigin: "21.75 17.1", duration: 0.3, ease: "expo.out" }, 0.117);
+
+
+        // Beat 2 (0.469): "Imago" types on, live Inter 600.
+        letters.forEach(function (el, i) {
+          tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.03, ease: "none" }, B + i * 0.047);
+        });
+
+
+        // Scene 2, beat 3 (0.938): "APIs become interfaces." lands (warm hit).
+        words.forEach(function (el, i) {
+          tl.fromTo(el, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: "power3.out" }, B * 2 + i * 0.03);
+        });
+
+        // Beat 3.5 (1.172): the ink URL pill pops.
+        tl.fromTo(pill, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2, ease: "power3.out" }, B * 2.5);
+
+        // Held frame from ~1.37s (the logo stands alone; Amigo removed at the user's request): nothing moves while the music tails out. Pin the length.
+        tl.set({}, {}, 1.875);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines[ID] = tl;
+      })();
+    </script>
+  </div>
+</template>

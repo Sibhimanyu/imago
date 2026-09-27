@@ -1,0 +1,295 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/Inter-Medium.otf") format("opentype"); }
+    @font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/Inter-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "Inter Display"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/InterDisplay-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Regular.ttf") format("truetype"); }
+    @font-face { font-family: "JetBrains Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/JetBrainsMono-Medium.ttf") format("truetype"); }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #1b1b19;
+    }
+    [id="03-paste-bg"] {
+      position: absolute;
+      inset: 0;
+      background: #f6f5f1;
+    }
+    [id="03-paste-stage"] {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Headline: sketch top 9cqw, 5.6cqw display, centred, two lines */
+    [id="03-paste-head"] {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 172.8px;
+      text-align: center;
+      font-family: "Inter Display", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 107.52px;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: #1b1b19;
+    }
+    [id="03-paste-head"] .p03-line { display: block; white-space: nowrap; }
+    [id="03-paste-head"] .p03-w { display: inline-block; }
+
+    /* GET bar: sketch left/right 11cqw, top 33cqw, height 8.4cqw */
+    [id="03-paste-bar"] {
+      position: absolute;
+      left: 211.2px;
+      top: 633.6px;
+      width: 1497.6px;
+      height: 161.28px;
+      box-sizing: border-box;
+      background: #ffffff;
+      border: 1px solid #e7e5df;
+      border-radius: 26.88px;
+      box-shadow: 0 2px 6px rgba(27, 27, 25, 0.04), 0 18px 46px -16px rgba(27, 27, 25, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 26.88px;
+      padding: 0 23.04px;
+    }
+    [id="03-paste-chip"] {
+      flex: none;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 28.8px;
+      line-height: 1;
+      color: #1b1b19;
+      background: #f1efe9;
+      border: 1px solid #e7e5df;
+      border-radius: 15.36px;
+      padding: 23.04px 24.96px;
+    }
+    [id="03-paste-field"] {
+      flex: 1;
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      white-space: pre;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 38.4px;
+      line-height: 1;
+      color: #1b1b19;
+    }
+    [id="03-paste-caret"] {
+      display: inline-block;
+      width: 3px;
+      height: 0.95em;
+      margin-left: 3px;
+      background: #1b1b19;
+    }
+    [id="03-paste-btnwrap"] {
+      position: relative;
+      flex: none;
+      width: 115.2px;
+      height: 115.2px;
+    }
+    [id="03-paste-ring"] {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      border: 2px solid #1b1b19;
+      border-radius: 19.2px;
+      opacity: 0;
+    }
+    [id="03-paste-btn"] {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      border: 1.5px solid #1b1b19;
+      border-radius: 19.2px;
+      background: #1b1b19;
+      color: #f6f5f1;
+      display: grid;
+      place-items: center;
+      transform-origin: 50% 50%;
+      box-shadow: 0 10px 22px -10px rgba(27, 27, 25, 0.45);
+    }
+    [id="03-paste-arrow"] {
+      width: 50px;
+      height: 50px;
+      display: block;
+    }
+
+    /* Amigo: stands on the button (feet at viewBox y=30 meet the button top) */
+    [id="03-paste-amigo"] {
+      position: absolute;
+      left: 1539.2px;
+      top: 491.6px;
+      width: 176px;
+      height: 176px;
+      z-index: 5;
+      color: #1b1b19;
+      overflow: visible;
+      transform-origin: 50% 93.75%;
+    }
+  </style>
+
+  <div data-hf-id="hf-7oa7" id="root" data-composition-id="03-paste" data-start="0" data-duration="4.5" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-922a" id="03-paste-bg" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+
+    <div data-hf-id="hf-1p0e" id="03-paste-stage" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+      <div data-hf-id="hf-bphj" id="03-paste-head">
+        <span data-hf-id="hf-0lv4" class="p03-line" id="03-paste-l1"><span data-hf-id="hf-23tz" class="p03-w">Paste</span> <span data-hf-id="hf-ggir" class="p03-w">an</span> <span data-hf-id="hf-90vq" class="p03-w">API.</span></span>
+        <span data-hf-id="hf-bhcr" class="p03-line" id="03-paste-l2"><span data-hf-id="hf-qg8w" class="p03-w">Get</span> <span data-hf-id="hf-jzem" class="p03-w">its</span> <span data-hf-id="hf-crtn" class="p03-w">interface.</span></span>
+      </div>
+
+      <div data-hf-id="hf-ddfc" id="03-paste-bar">
+        <span data-hf-id="hf-dkva" id="03-paste-chip">GET</span>
+        <span data-hf-id="hf-eyzs" id="03-paste-field"><span data-hf-id="hf-huzt" id="03-paste-text"></span><span data-hf-id="hf-42k1" id="03-paste-caret"></span></span>
+        <span data-hf-id="hf-z0q0" id="03-paste-btnwrap">
+          <span data-hf-id="hf-5sai" id="03-paste-ring"></span>
+          <span data-hf-id="hf-f1k4" id="03-paste-btn">
+            <svg data-hf-id="hf-dhml" id="03-paste-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-8lpz" d="M4.5 12h15" /><path data-hf-id="hf-e409" d="M13.5 6l6 6-6 6" /></svg>
+          </span>
+        </span>
+      </div>
+
+      <svg data-hf-id="hf-ttev" id="03-paste-amigo" viewBox="0 0 32 32" aria-hidden="true">
+        <g data-hf-id="hf-g1zz" fill="currentColor">
+          <rect data-hf-id="hf-4wfe" x="9" y="21.5" width="6" height="8.5" rx="3" />
+          <rect data-hf-id="hf-ujlf" x="17" y="21.5" width="6" height="8.5" rx="3" />
+          <path data-hf-id="hf-q41y" fill-rule="evenodd" d="M13 3h6c4.4 0 7 2.9 7 7.3v9c0 4.2-2.7 6.7-6.9 6.7h-6.2C8.7 26 6 23.5 6 19.3v-9C6 5.9 8.6 3 13 3Zm.2 6c-1.4 0-2.3.9-2.3 2.3v.7c0 1.4.9 2.3 2.3 2.3h5.6c1.4 0 2.3-.9 2.3-2.3v-.7c0-1.4-.9-2.3-2.3-2.3h-5.6Z" />
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var FID = "03-paste";
+      var DUR = 4;
+      var scope = document.querySelector('[data-composition-id="' + FID + '"]') || document;
+      function el(name) { return scope.querySelector('[id="' + FID + "-" + name + '"]'); }
+
+      var bar = el("bar");
+      var textEl = el("text");
+      var caret = el("caret");
+      var btn = el("btn");
+      var ring = el("ring");
+      var arrow = el("arrow");
+      var amigo = el("amigo");
+      var w1 = el("l1").querySelectorAll(".p03-w");
+      var w2 = el("l2").querySelectorAll(".p03-w");
+
+      var tl = gsap.timeline({ paused: true });
+
+      // ---- Scene 1 (0.0–0.8): the GET bar rises from below and settles ----
+      tl.fromTo(bar, { y: 260, scale: 0.97 }, { y: 0, scale: 1, duration: 0.8, ease: "expo.out" }, 0);
+      tl.fromTo(bar, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out" }, 0);
+
+      // ---- Scene 2 (0.8–2.2): URL types in mono (discrete-text-sequence) ----
+      // Keystroke clusters with short pauses at the URL's natural breaks.
+      var CHUNKS = [
+        { s: "https://", t: 0.84, gap: 0.03 },
+        { s: "pokeapi.co", t: 1.16, gap: 0.035 },
+        { s: "/api/v2/", t: 1.56, gap: 0.03 },
+        { s: "pokemon/", t: 1.86, gap: 0.025 },
+        { s: "pikachu", t: 2.08, gap: 0.02 }
+      ];
+      var SEQUENCE = [{ t: 0, text: "" }];
+      var acc = "";
+      CHUNKS.forEach(function (c) {
+        for (var i = 0; i < c.s.length; i++) {
+          acc += c.s.charAt(i);
+          SEQUENCE.push({ t: +(c.t + i * c.gap).toFixed(3), text: acc });
+        }
+      });
+      var TYPE_START = 0.84;
+      var TYPE_END = SEQUENCE[SEQUENCE.length - 1].t;
+
+      function textAt(time) {
+        for (var i = SEQUENCE.length - 1; i >= 0; i--) {
+          if (time >= SEQUENCE[i].t) return SEQUENCE[i].text;
+        }
+        return "";
+      }
+
+      var driver = { t: 0 };
+      tl.to(driver, {
+        t: DUR,
+        duration: DUR,
+        ease: "none",
+        onUpdate: function () {
+          var t = driver.t;
+          textEl.textContent = textAt(t);
+          // Caret: solid while keys are landing, otherwise a beat-locked blink (1s period).
+          var typing = t >= TYPE_START - 0.02 && t <= TYPE_END + 0.25;
+          var on = typing || Math.sin(2 * Math.PI * t + 0.0001) >= 0;
+          caret.style.opacity = on ? "1" : "0";
+        }
+      }, 0);
+
+      // Beat 2 (1.0s): headline line 1 builds above
+      tl.fromTo(w1, { yPercent: 55, opacity: 0, filter: "blur(10px)" },
+        { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out", stagger: 0.08 }, 1.0);
+
+      // ---- Scene 3 (2.2–3.0): Amigo hops in from the right edge, lands on the button at 2.5 ----
+      gsap.set(amigo, { transformOrigin: "50% 93.75%" });
+      tl.fromTo(amigo, { x: 470 }, { x: 0, duration: 0.3, ease: "power1.out" }, 2.2);
+      tl.fromTo(amigo, { y: 70 }, { y: -200, duration: 0.16, ease: "power2.out" }, 2.2);
+      tl.to(amigo, { y: 0, duration: 0.14, ease: "power2.in" }, 2.36);
+      tl.fromTo(amigo, { rotation: -14, scaleX: 0.9, scaleY: 1.12 },
+        { rotation: 0, scaleX: 0.94, scaleY: 1.08, duration: 0.3, ease: "sine.inOut" }, 2.2);
+      // landing squash, anchored at the feet
+      tl.to(amigo, { scaleX: 1.16, scaleY: 0.8, duration: 0.07, ease: "power2.out" }, 2.5);
+      tl.to(amigo, { scaleX: 1, scaleY: 1, duration: 0.28, ease: "back.out(2.4)" }, 2.57);
+      // the button takes the weight of the landing
+      tl.to(btn, { y: 5, duration: 0.07, ease: "power2.out" }, 2.5);
+      tl.to(btn, { y: 0, duration: 0.3, ease: "back.out(2)" }, 2.57);
+      // anticipation: a small rise and stretch before the press
+      tl.to(amigo, { y: -16, scaleX: 0.95, scaleY: 1.08, duration: 0.15, ease: "power2.out" }, 2.85);
+
+      // ---- Scene 4 (3.0–4.0): beat 7 press (press-release-spring) ----
+      var PRESS_START = 3.0, PRESS_DUR = 0.12, RELEASE_START = PRESS_START + PRESS_DUR, RELEASE_DUR = 0.55;
+      // press: linear-feeling compression, Amigo squashes hard and rides the button down
+      tl.to(btn, {
+        y: 10, scale: 0.9,
+        boxShadow: "0 2px 4px -2px rgba(27, 27, 25, 0.35)",
+        duration: PRESS_DUR, ease: "power1.in"
+      }, PRESS_START);
+      tl.to(amigo, { y: 16, scaleX: 1.24, scaleY: 0.68, duration: PRESS_DUR, ease: "power1.in" }, PRESS_START);
+      // release: spring back (start values == press end values by adjacency)
+      tl.to(btn, {
+        y: 0, scale: 1,
+        boxShadow: "0 10px 22px -10px rgba(27, 27, 25, 0.45)",
+        duration: RELEASE_DUR, ease: "back.out(2)"
+      }, RELEASE_START);
+      tl.to(amigo, { y: 0, scaleX: 1, scaleY: 1, duration: RELEASE_DUR, ease: "back.out(2.6)" }, RELEASE_START);
+      // flash paper-white for one beat, then back to ink
+      tl.to(btn, { backgroundColor: "#f6f5f1", color: "#1b1b19", duration: 0.06, ease: "none" }, RELEASE_START);
+      tl.to(btn, { backgroundColor: "#1b1b19", color: "#f6f5f1", duration: 0.25, ease: "power1.inOut" }, RELEASE_START + 0.5);
+      tl.fromTo(arrow, { x: 0 }, { x: 7, duration: 0.14, ease: "power2.out" }, RELEASE_START);
+      tl.to(arrow, { x: 0, duration: 0.4, ease: "back.out(2)" }, RELEASE_START + 0.14);
+      // release ring pops behind the button
+      tl.fromTo(ring, { scale: 1, opacity: 0 }, { scale: 1.12, opacity: 0.55, duration: 0.06, ease: "none" }, RELEASE_START);
+      tl.to(ring, { scale: 1.9, opacity: 0, duration: 0.55, ease: "power2.out" }, RELEASE_START + 0.06);
+
+      // Beat 7 (3.0s): headline line 2 lands
+      tl.fromTo(w2, { yPercent: 55, opacity: 0, filter: "blur(10px)" },
+        { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out", stagger: 0.08 }, 3.0);
+
+      // hold the read to the frame's end
+      tl.set({}, {}, DUR);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[FID] = tl;
+    })();
+  </script>
+</template>
