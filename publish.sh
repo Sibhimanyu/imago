@@ -20,6 +20,9 @@ if [ -n "$clash" ]; then
 fi
 cp -R gallery/dist/. dist/
 
+# Slate caches every file for a year; new URLs per deploy get past that.
+node scripts/version-assets.mjs dist
+
 cat > dist/.catalyst/slate-config.toml <<'TOML'
 framework = "static"
 deployment_name = "default"

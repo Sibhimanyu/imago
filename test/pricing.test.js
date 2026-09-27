@@ -4,6 +4,7 @@
    form in a new tab. The form is only ever linked to, never embedded. */
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
+import { JSDOM } from 'jsdom';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { boot, LANDING, APP } from './harness.js';
@@ -113,7 +114,7 @@ describe('third-party code on this origin', () => {
   const PAGESENSE_SRC = SNIPPET.match(/src="([^"]+)"/)[1];
 
   it('index.html loads PageSense once, from pagesense.html, and no other outside script or iframe', () => {
-    expect(SNIPPET).toMatch(/^<script src="https:\/\/cdn-in\.pagesense\.io\/js\/[\w/]+\.js"><\/script>$/);
+    expect(SNIPPET).toMatch(/^<script async src="https:\/\/cdn-in\.pagesense\.io\/js\/[\w/]+\.js"><\/script>$/);
     const head = HTML.slice(0, HTML.indexOf('</head>'));
     expect(head.split(SNIPPET).length - 1).toBe(1);
     const lower = HTML.toLowerCase();
@@ -129,5 +130,44 @@ describe('third-party code on this origin', () => {
     expect(script).toBe("script-src 'self' https://cdn-in.pagesense.io https://static.zohocdn.com");
     expect(PAGESENSE_SRC.startsWith('https://cdn-in.pagesense.io/')).toBe(true);
     expect(csp).not.toMatch(/unsafe-eval/);
+  });
+
+  // PageSense prepends this to <head> and removes it only once its A/B and
+  // location checks finish; in Safari that was a blank page for seconds.
+  it('never lets PageSense hide the page', () => {
+    const SCREEN = '<style id="zps-page-screen">body{background:transparent !important; opacity:0  !important; visibility: hidden  !important;} html{ opacity:0  !important; visibility: hidden  !important; }</style>';
+    const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
+    // PageSense prepends the screen, so it comes first here too. Should it ever
+    // be appended, our rules must still win on specificity, which jsdom does not
+    // model for !important (Chrome does): so the selectors are checked as text.
+    expect(css).toMatch(/^html:root, html:root > body \{ opacity: 1 !important; visibility: visible !important; \}$/m);
+    const win = new JSDOM('<html><head>' + SCREEN + '<style>' + css + '</style></head><body></body></html>').window;
+    for (const el of [win.document.documentElement, win.document.body]) {
+      const cs = win.getComputedStyle(el);
+      expect(cs.visibility).toBe('visible');
+      expect(cs.opacity).toBe('1');
+    }
+    expect(win.getComputedStyle(win.document.body).backgroundColor).not.toBe('transparent');
+  });
+});
+
+describe('first paint', () => {
+  it('preloads exactly the modules in js/ that main.js pulls in', () => {
+    const preloaded = [...HTML.matchAll(/<link rel="modulepreload" href="js\/([\w-]+\.js)">/g)].map((m) => m[1]).sort();
+    const modules = fs.readdirSync(path.join(ROOT, 'js')).filter((f) => f.endsWith('.js') && f !== 'theme-boot.js').sort();
+    expect(preloaded).toEqual(modules);
+  });
+
+  it('asks for the stylesheet and every module before the one parser-blocking script', () => {
+    const head = HTML.slice(0, HTML.indexOf('</head>'));
+    const boot = head.indexOf('<script src="js/theme-boot.js"></script>');
+    expect(boot).toBeGreaterThan(0);
+    expect(head.indexOf('<link rel="stylesheet" href="styles.css">')).toBeGreaterThan(0);
+    expect(head.indexOf('<link rel="stylesheet" href="styles.css">')).toBeLessThan(boot);
+    expect(head.lastIndexOf('<link rel="modulepreload"')).toBeLessThan(boot);
+  });
+
+  it('no outside script blocks the parser', () => {
+    for (const tag of HTML.match(/<script\b[^>]*src="https?:[^"]*"[^>]*>/g) || []) expect(tag).toMatch(/\sasync\s/);
   });
 });

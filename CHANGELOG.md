@@ -2,6 +2,27 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.20.0.1] - 2026-09-27
+
+### Fixed
+
+- **The page shows at once, in Safari too.** Zoho PageSense hides the whole
+  page (html and body at opacity 0) until its A/B and location checks finish,
+  and in Safari that left a blank page for seconds. Imago runs no
+  experiments, so styles.css now keeps html and body visible with selectors
+  that outrank PageSense's. The PageSense script loads `async`, so it no
+  longer holds up the app's own scripts, and every app module is
+  modulepreloaded, fetched alongside main.js instead of one round trip after.
+  The stylesheet and those preloads now come before theme-boot.js, the one
+  script that blocks the parser, so they no longer wait a round trip for it.
+- **A deploy reaches people who already visited.** Slate serves every file
+  with a one-year cache and the project cannot change that header, so a
+  returning browser kept its old styles.css and modules (and could mix a new
+  main.js with old ones). `./publish.sh` now runs `scripts/version-assets.mjs`,
+  which puts one `?v=<hash>` of all the site's CSS and JS on every local
+  stylesheet, script, modulepreload and module import in `dist/`, so each
+  deploy is a new set of URLs. The source files are untouched.
+
 ## [0.20.0.0] - 2026-09-27
 
 ### Changed

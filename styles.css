@@ -147,6 +147,13 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* Zoho PageSense hides the whole page (html and body at opacity 0, visibility
+   hidden) until its A/B and location checks finish; in Safari that left a
+   blank page for seconds. Imago runs no experiments, so the page is never
+   hidden: these selectors outrank PageSense's plain html and body rules. */
+html:root, html:root > body { opacity: 1 !important; visibility: visible !important; }
+html:root > body { background: var(--bg) !important; }
+
 body {
   margin: 0;
   background: var(--bg);
