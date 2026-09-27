@@ -2,6 +2,16 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.1.0] - 2026-09-27
+
+### Added
+
+- **The three assignment reports link to each other.** A thin bar above each
+  report's header (Technology, Business, Design) goes to any of the three from
+  any of them, with the page you are on marked. It stays at the top as you
+  scroll and shows on phones too. The tech report's one-way "Business report"
+  chip is gone, since the bar replaces it.
+
 ## [0.22.0.0] - 2026-09-27
 
 ### Added

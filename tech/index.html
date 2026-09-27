@@ -26,7 +26,15 @@
 
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
   header.top { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
-  header.top .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  header.top > .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  nav.reports { border-bottom: 1px solid var(--line); background: var(--sink); font-size: 13px; }
+  nav.reports .wrap { display: flex; align-items: center; gap: 4px; height: 36px; overflow-x: auto; white-space: nowrap; }
+  nav.reports .label { color: var(--muted); margin-right: 8px; }
+  nav.reports a { color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; }
+  nav.reports a:hover { color: var(--ink); }
+  nav.reports a[aria-current="page"] { background: var(--ink); color: #fff; }
+  section[id] { scroll-margin-top: 110px; }
+  @media (max-width: 520px) { nav.reports .label { display: none; } }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
   .brand svg { width: 28px; height: 28px; }
   nav.jump { display: flex; gap: 18px; margin-left: auto; font-size: 14px; overflow-x: auto; white-space: nowrap; }
@@ -153,6 +161,9 @@
 <body>
 
 <header class="top">
+  <nav class="reports" aria-label="Assignment reports">
+    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/" aria-current="page">Technology</a><a href="../launch/">Business</a><a href="../brand/">Design</a></div>
+  </nav>
   <div class="wrap">
     <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Tech report</a>
     <nav class="jump">
@@ -169,7 +180,6 @@
     <div class="meta">
       <a class="chip dark" href="https://imago.onslate.in">App: imago.onslate.in</a>
       <a class="chip" href="https://github.com/Sibhimanyu/imago">Source on GitHub</a>
-      <a class="chip" href="../launch/">Business report</a>
       <span class="chip">HTML + CSS + JavaScript, no framework</span>
       <span class="chip">469 tests</span>
     </div>
