@@ -33,6 +33,8 @@
   nav.reports a { color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; }
   nav.reports a:hover { color: var(--ink); }
   nav.reports a[aria-current="page"] { background: var(--ink); color: #fff; }
+  nav.reports a.frozen { margin-left: auto; color: var(--ink-2); border: 1px solid var(--line); background: var(--card); }
+  @media (max-width: 520px) { nav.reports a.frozen { display: none; } }
   section[id] { scroll-margin-top: 110px; }
   @media (max-width: 520px) { nav.reports .label { display: none; } }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
@@ -195,7 +197,7 @@
 
 <header class="top">
   <nav class="reports" aria-label="Assignment reports">
-    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/" aria-current="page">Technology</a><a href="../launch/">Business</a><a href="../brand/">Design</a></div>
+    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/" aria-current="page">Technology</a><a href="../launch/">Business</a><a href="../brand/">Design</a><a class="frozen" href="https://github.com/Sibhimanyu/imago/releases/tag/submission-2026-09-28" title="The submitted version: a locked GitHub release">Submitted 28 Sep 2026 · locked</a></div>
   </nav>
   <div class="wrap">
     <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Tech report</a>
@@ -212,13 +214,13 @@
     <p class="lede">Paste the URL of any public JSON API. Imago fetches it, designs a page for the shape of the response, remembers the design, and watches the endpoint change. Getting, remembering and time are one product, not three demos.</p>
     <div class="meta">
       <a class="chip dark" href="https://imago.onslate.in">App: imago.onslate.in</a>
-      <a class="chip" href="https://github.com/Sibhimanyu/imago">Source on GitHub</a>
-      <a class="chip" href="https://github.com/Sibhimanyu/imago/archive/refs/heads/master.zip" download>Download source (.zip)</a>
+      <a class="chip" href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28">Source on GitHub</a>
+      <a class="chip" href="https://github.com/Sibhimanyu/imago/archive/refs/tags/submission-2026-09-28.zip" download>Download source (.zip)</a>
       <span class="chip">HTML + CSS + JavaScript, no framework</span>
-      <span class="chip">513 tests</span>
+      <span class="chip">517 tests</span>
     </div>
     <div class="stats" style="margin:40px 0 0">
-      <div><b>513</b><span>tests, all passing</span></div>
+      <div><b>517</b><span>tests, all passing</span></div>
       <div><b>0</b><span>runtime dependencies</span></div>
       <div><b>15</b><span>components, drawn by the app</span></div>
       <div><b>5</b><span>stores, all in the browser</span></div>
@@ -413,7 +415,7 @@
       <h2>How I know it works</h2>
       <p class="sub"><a href="https://vitest.dev/">Vitest</a> with <a href="https://github.com/jsdom/jsdom">jsdom</a> boots the real app in a fresh page for every test.</p>
       <div class="stats">
-        <div><b>513</b><span>tests in 30 files, all passing</span></div>
+        <div><b>517</b><span>tests in 31 files, all passing</span></div>
         <div><b>92%</b><span>of lines covered; <code>render.js</code> (67%) is the gap</span></div>
         <div><b>30</b><span>audit findings, each fixed with a test</span></div>
         <div><b>41 / 41</b><span>deliberate breaks of those fixes caught</span></div>
@@ -440,7 +442,7 @@
     <div class="wrap">
       <span class="num">07</span>
       <h2>How it grew</h2>
-      <p class="sub">141 commits and 29 tagged releases in seven days, each recorded in <a href="https://github.com/Sibhimanyu/imago/blob/master/CHANGELOG.md">CHANGELOG.md</a>.</p>
+      <p class="sub">141 commits and 29 tagged releases in seven days, each recorded in <a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/CHANGELOG.md">CHANGELOG.md</a>.</p>
       <div class="grid2">
         <ul class="timeline">
           <li class="done"><b>0.1 · 22 Sep</b><span>URL to page, shape cache, snapshots, Watch.</span></li>
@@ -480,7 +482,7 @@
             <li>The remembered designs have no size limit yet.</li>
             <li>Some touch targets are under 44px on phones.</li>
           </ul>
-          <p style="margin-top:10px">The open list is in <a href="https://github.com/Sibhimanyu/imago/blob/master/TODOS.md">TODOS.md</a>.</p>
+          <p style="margin-top:10px">The open list is in <a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/TODOS.md">TODOS.md</a>.</p>
         </div>
         <div class="card">
           <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.5-.5-.5-2.5z"/></svg></span>
@@ -498,7 +500,7 @@
 </main>
 
 <footer>
-  <div class="wrap">Imago · APIs become interfaces · The source of this page is <a href="https://github.com/Sibhimanyu/imago/tree/master/tech">tech/</a> on GitHub · The business assignment report is at <a href="../launch/">/launch/</a>.</div>
+  <div class="wrap">Imago · APIs become interfaces · The source of this page is <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28/tech">tech/</a> on GitHub · The business assignment report is at <a href="../launch/">/launch/</a>.</div>
 </footer>
 </body>
 </html>

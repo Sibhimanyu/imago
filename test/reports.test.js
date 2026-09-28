@@ -11,7 +11,7 @@ describe('assignment report switcher', () => {
   for (const slug of Object.keys(REPORTS)) {
     it(`${slug}/ links to every report and marks itself current`, () => {
       const d = doc(slug);
-      const links = [...d.querySelectorAll('header.top nav.reports a')];
+      const links = [...d.querySelectorAll('header.top nav.reports a:not(.frozen)')];
       expect(links.map((a) => [a.getAttribute('href'), a.textContent]))
         .toEqual(Object.entries(REPORTS).map(([s, name]) => [`../${s}/`, name]));
       expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.getAttribute('href'))).toEqual([`../${slug}/`]);
@@ -46,7 +46,7 @@ describe('what the reports point at', () => {
     for (const c of cards) {
       const name = c.querySelector('h3').textContent;
       expect(fs.existsSync(new URL(`../brand/kit/${name}`, import.meta.url))).toBe(true);
-      expect(c.querySelector('a[download]').getAttribute('href')).toBe(`https://github.com/Sibhimanyu/imago/raw/master/brand/kit/${name}`);
+      expect(c.querySelector('a[download]').getAttribute('href')).toBe(`https://github.com/Sibhimanyu/imago/raw/submission-2026-09-28/brand/kit/${name}`);
       const path = c.querySelector('button.copy').dataset.copy;
       expect(path.endsWith(`/brand/kit/${name}`)).toBe(true);
       expect(c.querySelector('.local-open').getAttribute('href')).toBe(`file://${path}`);
@@ -64,10 +64,23 @@ describe('what the reports point at', () => {
 });
 
 describe('tech/: the source code', () => {
-  it('can be downloaded as a zip of master from the hero', () => {
+  it('can be downloaded as a zip of the submitted tag from the hero', () => {
     const a = [...doc('tech').querySelectorAll('.hero .meta a')].find((x) => /\.zip$/.test(x.getAttribute('href')));
-    expect(a.getAttribute('href')).toBe('https://github.com/Sibhimanyu/imago/archive/refs/heads/master.zip');
+    expect(a.getAttribute('href')).toBe('https://github.com/Sibhimanyu/imago/archive/refs/tags/submission-2026-09-28.zip');
     expect(a.hasAttribute('download')).toBe(true);
     expect(a.textContent).toMatch(/Download source/);
   });
+});
+
+describe('the submitted reports are locked', () => {
+  const TAG = 'submission-2026-09-28';
+  for (const slug of Object.keys(REPORTS)) {
+    it(`${slug}/ points at the locked release, never at master`, () => {
+      const d = doc(slug);
+      expect(d.querySelector('nav.reports a.frozen').getAttribute('href')).toBe(`https://github.com/Sibhimanyu/imago/releases/tag/${TAG}`);
+      const moving = [...d.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'))
+        .filter((h) => /github\.com\/Sibhimanyu\/imago\/(blob|tree|raw)\/master\/|archive\/refs\/heads\//.test(h));
+      expect(moving).toEqual([]);
+    });
+  }
 });

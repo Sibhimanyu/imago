@@ -32,6 +32,8 @@
   nav.reports a { color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; }
   nav.reports a:hover { color: var(--ink); }
   nav.reports a[aria-current="page"] { background: var(--ink); color: #fff; }
+  nav.reports a.frozen { margin-left: auto; color: var(--ink-2); border: 1px solid var(--line); background: var(--card); }
+  @media (max-width: 520px) { nav.reports a.frozen { display: none; } }
   section[id] { scroll-margin-top: 110px; }
   @media (max-width: 520px) { nav.reports .label { display: none; } }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
@@ -179,7 +181,7 @@
 
 <header class="top">
   <nav class="reports" aria-label="Assignment reports">
-    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/">Technology</a><a href="../launch/" aria-current="page">Business</a><a href="../brand/">Design</a></div>
+    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/">Technology</a><a href="../launch/" aria-current="page">Business</a><a href="../brand/">Design</a><a class="frozen" href="https://github.com/Sibhimanyu/imago/releases/tag/submission-2026-09-28" title="The submitted version: a locked GitHub release">Submitted 28 Sep 2026 · locked</a></div>
   </nav>
   <div class="wrap">
     <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Launch Day</a>
@@ -275,7 +277,7 @@
         <tr><th>Piece</th><th>Tool</th><th>Runs without me</th></tr>
         <tr><td><b>Gallery</b>: PokeAPI, <a href="https://imago.onslate.in/apis/open-meteo/">Open-Meteo</a>, <a href="https://imago.onslate.in/apis/open-library/">Open Library</a>, <a href="https://imago.onslate.in/apis/frankfurter/">Frankfurter</a>, <a href="https://imago.onslate.in/apis/wikipedia/">Wikipedia</a>, <a href="https://imago.onslate.in/apis/iss/">ISS</a>; a sitemap for search</td><td><a href="https://console.catalyst.zoho.in/baas/index">Zoho Catalyst Slate</a>, at /apis</td><td>Search brings developers to each page</td></tr>
         <tr><td><b>Measurement</b>: visits, which APIs, <a href="https://pagesense.zoho.in/">heatmaps</a>, a goal counting clicks into Imago</td><td>Zoho PageSense (free to 5,000 visitors a month)</td><td>Counts on its own</td></tr>
-        <tr><td><b>Always on</b>: the landing page's live demo; the demo GIF atop the <a href="https://github.com/Sibhimanyu/imago#readme">README</a></td><td>Catalyst Slate, GitHub</td><td>Always</td></tr>
+        <tr><td><b>Always on</b>: the landing page's live demo; the demo GIF atop the <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28#readme">README</a></td><td>Catalyst Slate, GitHub</td><td>Always</td></tr>
       </table>
     </div>
   </section>
@@ -329,14 +331,14 @@
       <h3>The press kit page</h3>
       <figure class="shot"><a href="https://imago.onslate.in/press/"><img src="evidence/press-kit.png" alt="The press and share kit page"></a><figcaption><a href="https://imago.onslate.in/press/">/press</a>: fact sheet, reels, post images with copyable captions, logo, Amigo</figcaption></figure>
       <h3>Ready-made posts in the kit</h3>
-      <p class="sub">Fourteen posts, each with an X and a LinkedIn version. Every image is a screenshot of the live site; <a href="https://imago.onslate.in/apis/open-meteo/">Open-Meteo</a> is credited wherever its data appears. X copy below; both versions in <a href="https://github.com/Sibhimanyu/imago/blob/master/launch/social-posts.md">social-posts.md</a>.</p>
+      <p class="sub">Fourteen posts, each with an X and a LinkedIn version. Every image is a screenshot of the live site; <a href="https://imago.onslate.in/apis/open-meteo/">Open-Meteo</a> is credited wherever its data appears. X copy below; both versions in <a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/launch/social-posts.md">social-posts.md</a>.</p>
       <div class="posts">
 <article class="post">
   <img src="social/demo.gif" alt="" loading="lazy">
   <div class="post-body">
     <p class="post-day">Day 1</p>
     <h4>Imago is live</h4>
-    <details class="more"><summary>X post · 235/280</summary><div class="post-x"><p>Imago is live.</p><p>Paste an API URL. Instead of a wall of JSON, you get a page: headline values, a fact sheet, tables and charts.</p><p>Free, open source, runs in your browser. No account.</p><p><a href="https://imago.onslate.in">https://imago.onslate.in</a><br>Code: <a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+    <details class="more"><summary>X post · 235/280</summary><div class="post-x"><p>Imago is live.</p><p>Paste an API URL. Instead of a wall of JSON, you get a page: headline values, a fact sheet, tables and charts.</p><p>Free, open source, runs in your browser. No account.</p><p><a href="https://imago.onslate.in">https://imago.onslate.in</a><br>Code: <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28">https://github.com/Sibhimanyu/imago</a></p></div></details>
   </div>
 </article>
 <article class="post">
@@ -368,7 +370,7 @@
   <div class="post-body">
     <p class="post-day">Day 5</p>
     <h4>The model never writes HTML</h4>
-    <details class="more"><summary>X post · 255/280</summary><div class="post-x"><p>The model never writes HTML.</p><p>It gets the response&#x27;s shape and returns a small JSON plan: which fields matter, which component shows each. Imago&#x27;s own renderer draws it as text. Nothing from an API or a model is treated as markup.</p><p><a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+    <details class="more"><summary>X post · 255/280</summary><div class="post-x"><p>The model never writes HTML.</p><p>It gets the response&#x27;s shape and returns a small JSON plan: which fields matter, which component shows each. Imago&#x27;s own renderer draws it as text. Nothing from an API or a model is treated as markup.</p><p><a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28">https://github.com/Sibhimanyu/imago</a></p></div></details>
   </div>
 </article>
 <article class="post">
@@ -424,7 +426,7 @@
   <div class="post-body">
     <p class="post-day">Day 12</p>
     <h4>For people who run APIs</h4>
-    <details class="more"><summary>X post · 197/280</summary><div class="post-x"><p>Run a public API? One line in your README gives readers an &quot;Open in Imago&quot; button.</p><p>imago.onslate.in/app/#open= plus your endpoint. No sign-up, no script, no server in between.</p><p><a href="https://github.com/Sibhimanyu/imago/blob/master/launch/open-in-imago.md">https://github.com/Sibhimanyu/imago/blob/maste…</a></p></div></details>
+    <details class="more"><summary>X post · 197/280</summary><div class="post-x"><p>Run a public API? One line in your README gives readers an &quot;Open in Imago&quot; button.</p><p>imago.onslate.in/app/#open= plus your endpoint. No sign-up, no script, no server in between.</p><p><a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/launch/open-in-imago.md">https://github.com/Sibhimanyu/imago/blob/maste…</a></p></div></details>
   </div>
 </article>
 <article class="post">
@@ -432,7 +434,7 @@
   <div class="post-body">
     <p class="post-day">Day 13</p>
     <h4>Open source, no build step</h4>
-    <details class="more"><summary>X post · 170/280</summary><div class="post-x"><p>Imago is MIT-licensed with no build step: native ES modules, no framework. A static server runs it.</p><p>Issues and PRs welcome.</p><p>Data: Open-Meteo.com<br><a href="https://github.com/Sibhimanyu/imago">https://github.com/Sibhimanyu/imago</a></p></div></details>
+    <details class="more"><summary>X post · 170/280</summary><div class="post-x"><p>Imago is MIT-licensed with no build step: native ES modules, no framework. A static server runs it.</p><p>Issues and PRs welcome.</p><p>Data: Open-Meteo.com<br><a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28">https://github.com/Sibhimanyu/imago</a></p></div></details>
   </div>
 </article>
 <article class="post">
@@ -476,12 +478,12 @@
       <div class="grid2">
         <div class="card"><h3 class="t" style="text-decoration:line-through;color:var(--muted)">Partners</h3><p>Depends on someone else's yes, so the launch doesn't count on it. One listing request is open: <a href="https://github.com/open-meteo/open-meteo/pull/2155">Open-Meteo #2155</a>, sent after fixing a licence credit Imago was missing.</p></div>
         <div class="card"><h3 class="t" style="text-decoration:line-through;color:var(--muted)">Sales</h3><p>Nothing to sell yet. The <a href="https://imago.onslate.in/waitlist/">waitlist</a> tests demand before anything is built.</p></div>
-        <div class="card"><h3 class="t" style="text-decoration:line-through;color:var(--muted)">Support</h3><p>Not a separate job. The app explains its own errors, <a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md">SUPPORT.md</a> covers the rest, and <a href="https://github.com/Sibhimanyu/imago/discussions">Discussions</a> Q&amp;A takes questions. A help desk like <a href="https://www.zoho.com/desk/">Zoho Desk</a> would hide answers in private tickets.</p></div>
+        <div class="card"><h3 class="t" style="text-decoration:line-through;color:var(--muted)">Support</h3><p>Not a separate job. The app explains its own errors, <a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/SUPPORT.md">SUPPORT.md</a> covers the rest, and <a href="https://github.com/Sibhimanyu/imago/discussions">Discussions</a> Q&amp;A takes questions. A help desk like <a href="https://www.zoho.com/desk/">Zoho Desk</a> would hide answers in private tickets.</p></div>
         <div class="card"><h3 class="t" style="text-decoration:line-through;color:var(--muted)">Marketplace</h3><p>Developers don't browse marketplaces for a tool like this, and Zoho Marketplace is for Zoho add-ons.</p></div>
       </div>
       <div class="grid2" style="margin-top:20px">
         <figure class="shot"><a href="https://github.com/open-meteo/open-meteo/pull/2155/files"><img src="evidence/pr-2155-diff.png" alt="Pull request 2155 on open-meteo/open-meteo, adding one line for Imago to the README's list of apps" loading="lazy"></a><figcaption><a href="https://imago.onslate.in/apis/open-meteo/">Open-Meteo</a> #2155: one line adding Imago to "Who is using Open-Meteo?". Open when captured.</figcaption></figure>
-        <figure class="shot"><a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md"><img src="evidence/support-md.png" alt="SUPPORT.md on GitHub, starting with the 'This API does not allow browser apps' error and what to do about it" loading="lazy"></a><figcaption>SUPPORT.md starts with the error people hit first: an API that blocks browser apps.</figcaption></figure>
+        <figure class="shot"><a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/SUPPORT.md"><img src="evidence/support-md.png" alt="SUPPORT.md on GitHub, starting with the 'This API does not allow browser apps' error and what to do about it" loading="lazy"></a><figcaption>SUPPORT.md starts with the error people hit first: an API that blocks browser apps.</figcaption></figure>
       </div>
       <details class="more"><summary>More detail</summary>
         <figure class="shot"><a href="https://github.com/open-meteo/open-meteo/pull/2155"><img src="evidence/pr-2155.png" alt="The conversation tab of pull request 2155, describing Imago and its Open-Meteo credit" loading="lazy"></a><figcaption>The PR's description: the landing page fetches one live Open-Meteo forecast per visit and credits it next to the demo.</figcaption></figure>
@@ -496,14 +498,14 @@
       <p class="sub">Each app change was tested, broken on purpose to confirm its test fails, deployed and checked live.</p>
       <p class="key">The launch needed real changes, not just documents.</p>
       <div class="stats">
-        <div><b>513</b><span>tests passing</span></div>
+        <div><b>517</b><span>tests passing</span></div>
         <div><b>5</b><span>app releases for the launch</span></div>
         <div><b>1 site</b><span>app, gallery, press kit and waitlist on imago.onslate.in</span></div>
         <div><b>Synced</b><span>Figma matches every landing page change</span></div>
       </div>
       <table>
         <tr><th>What</th><th>Change</th></tr>
-        <tr><td><code>0.13.3.0</code></td><td>"Open in Imago" links (<code>#open=&lt;endpoint&gt;</code>), used by every gallery page and thread. <a href="https://github.com/Sibhimanyu/imago/blob/master/SUPPORT.md">SUPPORT.md</a> and issue forms.</td></tr>
+        <tr><td><code>0.13.3.0</code></td><td>"Open in Imago" links (<code>#open=&lt;endpoint&gt;</code>), used by every gallery page and thread. <a href="https://github.com/Sibhimanyu/imago/blob/submission-2026-09-28/SUPPORT.md">SUPPORT.md</a> and issue forms.</td></tr>
         <tr><td><code>0.13.3.1</code></td><td>A link pasted into a tab already on Imago now opens.</td></tr>
         <tr><td><code>0.13.4.0</code></td><td>The landing demo credits <a href="https://imago.onslate.in/apis/open-meteo/">Open-Meteo</a>, as its CC BY 4.0 licence requires.</td></tr>
         <tr><td><code>0.14.0.0</code></td><td>"Free, and why" on the landing page; <a href="https://imago.onslate.in/waitlist/">waitlist</a> links behind one constant, hidden until the form existed.</td></tr>
@@ -552,7 +554,7 @@
 </main>
 
 <footer>
-  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/master/launch">launch/</a> on GitHub.</div>
+  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28/launch">launch/</a> on GitHub.</div>
 </footer>
 </body>
 </html>

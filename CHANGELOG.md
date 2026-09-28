@@ -2,6 +2,23 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.4.0] - 2026-09-28
+
+### Changed
+
+- **The three assignment reports are submitted and locked.** They are the
+  immutable GitHub release `submission-2026-09-28`: GitHub timestamps it and
+  will not let its tag or files change. Every GitHub link on the reports
+  (the .ai downloads, the source zip, the docs) now points at that release
+  instead of master, and each report's top bar says "Submitted 28 Sep 2026 ·
+  locked" and links to it. Discussions and issues stay live.
+
+### Added
+
+- `test/frozen.test.js` fails if any file under `tech/`, `launch/` or
+  `brand/` changes, disappears or is added after the submission. The
+  SHA-256 of all 379 files is in `test/submission-freeze.json`.
+
 ## [0.22.3.1] - 2026-09-28
 
 ### Added

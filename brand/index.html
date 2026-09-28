@@ -33,6 +33,8 @@
   nav.reports a { color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; }
   nav.reports a:hover { color: var(--ink); }
   nav.reports a[aria-current="page"] { background: var(--ink); color: #fff; }
+  nav.reports a.frozen { margin-left: auto; color: var(--ink-2); border: 1px solid var(--line); background: var(--card); }
+  @media (max-width: 520px) { nav.reports a.frozen { display: none; } }
   section[id] { scroll-margin-top: 110px; }
   @media (max-width: 520px) { nav.reports .label { display: none; } }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
@@ -177,7 +179,7 @@
 
 <header class="top">
   <nav class="reports" aria-label="Assignment reports">
-    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/">Technology</a><a href="../launch/">Business</a><a href="../brand/" aria-current="page">Design</a></div>
+    <div class="wrap"><span class="label">Assignment reports</span><a href="../tech/">Technology</a><a href="../launch/">Business</a><a href="../brand/" aria-current="page">Design</a><a class="frozen" href="https://github.com/Sibhimanyu/imago/releases/tag/submission-2026-09-28" title="The submitted version: a locked GitHub release">Submitted 28 Sep 2026 · locked</a></div>
   </nav>
   <div class="wrap">
     <a class="brand" href="#top"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1b1b19"/><g fill="#fff"><rect x="4.2" y="6.4" width="12.8" height="6" rx="3"/><rect x="3" y="14.3" width="11.5" height="6" rx="3"/><path fill-rule="evenodd" d="M13.6 6.4h8c4.4 0 7 2.9 7 7.3v7.1c0 4.2-2.7 6.8-6.9 6.8h-8.1c-3.8 0-6-2.3-6-6.1v-9c0-3.8 2.2-6.1 6-6.1Zm7.8 6.2c-1.4 0-2.3.9-2.3 2.3v4.4c0 1.4.9 2.3 2.3 2.3h.7c1.4 0 2.3-.9 2.3-2.3v-4.4c0-1.4-.9-2.3-2.3-2.3h-.7Z"/></g></svg>Imago · Branding</a>
@@ -226,7 +228,7 @@
           <span class="num">Task 1 · App logo</span>
           <h3 class="t">imago-task1-logo.ai</h3>
           <p class="file-meta">1.4 MB · 13 artboards</p>
-          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/master/brand/kit/imago-task1-logo.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task1-logo.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task1-logo.ai">Copy Mac path</button></div>
+          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/submission-2026-09-28/brand/kit/imago-task1-logo.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task1-logo.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task1-logo.ai">Copy Mac path</button></div>
           <p class="file-ex">Exports: <a href="kit/exports/imago-brand-guidelines.pdf">Brand book PDF</a> · <a href="kit/exports/imago-task1-logo.pdf">Logo PDF</a> · <a href="kit/exports/imago-task1-logo_logo-primary.svg">Logo SVG</a> · <a href="kit/exports/imago-mascot_amigo.svg">Mascot SVG</a></p>
         </div>
         <div class="file card">
@@ -234,7 +236,7 @@
           <span class="num">Task 2 · A4 flyer</span>
           <h3 class="t">imago-task2-flyer-a4.ai</h3>
           <p class="file-meta">0.5 MB · A4 with bleed</p>
-          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/master/brand/kit/imago-task2-flyer-a4.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task2-flyer-a4.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task2-flyer-a4.ai">Copy Mac path</button></div>
+          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/submission-2026-09-28/brand/kit/imago-task2-flyer-a4.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task2-flyer-a4.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task2-flyer-a4.ai">Copy Mac path</button></div>
           <p class="file-ex">Exports: <a href="kit/exports/imago-task2-flyer-a4-print.pdf">Print PDF</a> · <a href="kit/exports/imago-task2-flyer-a4-preview.png">Preview PNG</a></p>
         </div>
         <div class="file card">
@@ -242,7 +244,7 @@
           <span class="num">Task 3 · Blog banner</span>
           <h3 class="t">imago-task3-blog-banner.ai</h3>
           <p class="file-meta">0.3 MB · 1200 × 700</p>
-          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/master/brand/kit/imago-task3-blog-banner.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task3-blog-banner.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task3-blog-banner.ai">Copy Mac path</button></div>
+          <div class="file-actions"><a class="chip dark" href="https://github.com/Sibhimanyu/imago/raw/submission-2026-09-28/brand/kit/imago-task3-blog-banner.ai" download>Download .ai</a><a class="chip local-open" href="file:///Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task3-blog-banner.ai" hidden>Open local file</a><button type="button" class="chip copy" data-copy="/Users/sibhi-zstch1643/conductor/workspaces/something-that-does-stuff/abu-dhabi/brand/kit/imago-task3-blog-banner.ai">Copy Mac path</button></div>
           <p class="file-ex">Exports: <a href="kit/exports/imago-task3-blog-banner.png">PNG</a> · <a href="kit/exports/imago-task3-blog-banner@2x.png">PNG @2x</a> · <a href="kit/exports/imago-task3-blog-banner.jpg">JPG</a></p>
         </div>
       </div>
@@ -437,7 +439,7 @@
       <h2>Tools, and how it was made</h2>
       <p class="key">Every piece is a layered <a href="https://www.adobe.com/products/illustrator.html">Illustrator</a> document drawn from scripts, so it rebuilds in seconds.</p>
       <div class="tools">
-        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="M13 7l4 4"/></svg></span><h3 class="t">Adobe Illustrator</h3><p>All three files, all vector. It ran Claude's <a href="https://github.com/Sibhimanyu/imago/tree/master/brand/kit/scripts">ExtendScript</a> scripts, with named layers, swatches and artboards, and wrote the .ai files and exports.</p></div>
+        <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="M13 7l4 4"/></svg></span><h3 class="t">Adobe Illustrator</h3><p>All three files, all vector. It ran Claude's <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28/brand/kit/scripts">ExtendScript</a> scripts, with named layers, swatches and artboards, and wrote the .ai files and exports.</p></div>
         <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M6 18l3-3M15 9l3-3"/></svg></span><h3 class="t">Claude (Claude Code)</h3><p>Research, copy, the scripts, and checking:</p><ul class="ticks"><li>every export viewed</li><li><a href="kit/exports/imago-task3-blog-banner@2x.png">banner</a> tested at 400 px</li><li>print PDF: PDF/X, CMYK, trim</li><li>QR code decoded</li></ul></div>
         <div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg></span><h3 class="t">For the tool usage form</h3><p class="tick">Adobe Illustrator</p><p class="tick">Claude</p><p style="margin-top:10px">Not used: Photoshop. The few raster images are exports of the vector files.</p></div>
       </div>
@@ -450,7 +452,7 @@
 </main>
 
 <footer>
-  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/master/brand">brand/</a> on GitHub. The business assignment is at <a href="../launch/">launch/</a>.</div>
+  <div class="wrap">Imago · APIs become interfaces · Every file behind this page is in <a href="https://github.com/Sibhimanyu/imago/tree/submission-2026-09-28/brand">brand/</a> on GitHub. The business assignment is at <a href="../launch/">launch/</a>.</div>
 </footer>
 </body>
 </html>
