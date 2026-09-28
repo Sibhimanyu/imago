@@ -2,6 +2,14 @@
 
 All notable changes to Imago are recorded here. Dates are YYYY-MM-DD.
 
+## [0.22.3.1] - 2026-09-28
+
+### Added
+
+- **The tech report offers the source as a zip.** "Download source (.zip)"
+  sits beside "Source on GitHub" in the hero and downloads the current
+  master branch.
+
 ## [0.22.3.0] - 2026-09-27
 
 ### Added

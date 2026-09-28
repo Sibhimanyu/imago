@@ -62,3 +62,12 @@ describe('what the reports point at', () => {
     for (const img of d.querySelectorAll('img[src$="blog-banner.png"]')) expect(img.getAttribute('srcset')).toMatch(/banner@2x\.png 2x/);
   });
 });
+
+describe('tech/: the source code', () => {
+  it('can be downloaded as a zip of master from the hero', () => {
+    const a = [...doc('tech').querySelectorAll('.hero .meta a')].find((x) => /\.zip$/.test(x.getAttribute('href')));
+    expect(a.getAttribute('href')).toBe('https://github.com/Sibhimanyu/imago/archive/refs/heads/master.zip');
+    expect(a.hasAttribute('download')).toBe(true);
+    expect(a.textContent).toMatch(/Download source/);
+  });
+});
